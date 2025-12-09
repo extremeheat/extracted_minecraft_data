@@ -9,10 +9,11 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,27 +24,42 @@ import net.minecraft.network.chat.Component;
 
 public class VideoSettingsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.videoTitle");
-   private static final Component FABULOUS;
+   private static final Component IMPROVED_TRANSPARENCY;
    private static final Component WARNING_MESSAGE;
    private static final Component WARNING_TITLE;
    private static final Component BUTTON_ACCEPT;
    private static final Component BUTTON_CANCEL;
+   private static final Component DISPLAY_HEADER;
+   private static final Component QUALITY_HEADER;
+   private static final Component PREFERENCES_HEADER;
    private final GpuWarnlistManager gpuWarnlistManager;
    private final int oldMipmaps;
+   private final int oldAnisotropyBit;
+   private final TextureFilteringMethod oldTextureFiltering;
 
-   private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.graphicsMode(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.framerateLimit(), var0.enableVsync(), var0.inactivityFpsLimit(), var0.guiScale(), var0.attackIndicator(), var0.gamma(), var0.cloudStatus(), var0.fullscreen(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.screenEffectScale(), var0.entityDistanceScaling(), var0.fovEffectScale(), var0.showAutosaveIndicator(), var0.glintSpeed(), var0.glintStrength(), var0.menuBackgroundBlurriness(), var0.bobView(), var0.cloudRange()};
+   private static OptionInstance<?>[] qualityOptions(Options var0) {
+      return new OptionInstance[]{var0.biomeBlendRadius(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.cloudStatus(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.entityDistanceScaling(), var0.menuBackgroundBlurriness(), var0.cloudRange(), var0.cutoutLeaves(), var0.improvedTransparency(), var0.textureFiltering(), var0.maxAnisotropyBit(), var0.weatherRadius()};
+   }
+
+   private static OptionInstance<?>[] displayOptions(Options var0) {
+      return new OptionInstance[]{var0.framerateLimit(), var0.enableVsync(), var0.inactivityFpsLimit(), var0.guiScale(), var0.fullscreen(), var0.gamma()};
+   }
+
+   private static OptionInstance<?>[] preferenceOptions(Options var0) {
+      return new OptionInstance[]{var0.showAutosaveIndicator(), var0.vignette(), var0.attackIndicator(), var0.chunkSectionFadeInTime()};
    }
 
    public VideoSettingsScreen(Screen var1, Minecraft var2, Options var3) {
       super(var1, var3, TITLE);
       this.gpuWarnlistManager = var2.getGpuWarnlistManager();
       this.gpuWarnlistManager.resetWarnings();
-      if (var3.graphicsMode().get() == GraphicsStatus.FABULOUS) {
+      if ((Boolean)var3.improvedTransparency().get()) {
          this.gpuWarnlistManager.dismissWarning();
       }
 
       this.oldMipmaps = (Integer)var3.mipmapLevels().get();
+      this.oldAnisotropyBit = (Integer)var3.maxAnisotropyBit().get();
+      this.oldTextureFiltering = (TextureFilteringMethod)var3.textureFiltering().get();
    }
 
    protected void addOptions() {
@@ -73,9 +89,26 @@ public class VideoSettingsScreen extends OptionsSubScreen {
             var2.setPreferredFullscreenVideoMode(var2x == -1 ? Optional.empty() : Optional.of(var3.getMode(var2x)));
          }
       });
+      this.list.addHeader(DISPLAY_HEADER);
       this.list.addBig(var6);
-      this.list.addBig(this.options.biomeBlendRadius());
-      this.list.addSmall(options(this.options));
+      this.list.addSmall(displayOptions(this.options));
+      this.list.addHeader(QUALITY_HEADER);
+      this.list.addBig(this.options.graphicsPreset());
+      this.list.addSmall(qualityOptions(this.options));
+      this.list.addHeader(PREFERENCES_HEADER);
+      this.list.addSmall(preferenceOptions(this.options));
+   }
+
+   public void tick() {
+      if (this.list != null) {
+         AbstractWidget var2 = this.list.findOption(this.options.maxAnisotropyBit());
+         if (var2 instanceof AbstractSliderButton) {
+            AbstractSliderButton var1 = (AbstractSliderButton)var2;
+            var1.active = this.options.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC;
+         }
+      }
+
+      super.tick();
    }
 
    public void onClose() {
@@ -84,7 +117,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    public void removed() {
-      if ((Integer)this.options.mipmapLevels().get() != this.oldMipmaps) {
+      if ((Integer)this.options.mipmapLevels().get() != this.oldMipmaps || (Integer)this.options.maxAnisotropyBit().get() != this.oldAnisotropyBit || this.options.textureFiltering().get() != this.oldTextureFiltering) {
          this.minecraft.updateMaxMipLevel((Integer)this.options.mipmapLevels().get());
          this.minecraft.delayTextureReload();
       }
@@ -115,12 +148,14 @@ public class VideoSettingsScreen extends OptionsSubScreen {
             }
 
             this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, var3, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (var1x) -> {
-               this.options.graphicsMode().set(GraphicsStatus.FABULOUS);
+               this.options.improvedTransparency().set(true);
                Minecraft.getInstance().levelRenderer.allChanged();
                this.gpuWarnlistManager.dismissWarning();
                this.minecraft.setScreen(this);
             }), new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_CANCEL, (var1x) -> {
-               this.gpuWarnlistManager.dismissWarningAndSkipFabulous();
+               this.gpuWarnlistManager.dismissWarning();
+               this.options.improvedTransparency().set(false);
+               this.updateTransparencyButton();
                this.minecraft.setScreen(this);
             }))));
          }
@@ -168,11 +203,26 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
    }
 
+   public void updateTransparencyButton() {
+      if (this.list != null) {
+         OptionInstance var1 = this.options.improvedTransparency();
+         AbstractWidget var2 = this.list.findOption(var1);
+         if (var2 != null) {
+            CycleButton var3 = (CycleButton)var2;
+            var3.setValue((Boolean)var1.get());
+         }
+      }
+
+   }
+
    static {
-      FABULOUS = Component.translatable("options.graphics.fabulous").withStyle(ChatFormatting.ITALIC);
-      WARNING_MESSAGE = Component.translatable("options.graphics.warning.message", FABULOUS, FABULOUS);
+      IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency").withStyle(ChatFormatting.ITALIC);
+      WARNING_MESSAGE = Component.translatable("options.graphics.warning.message", IMPROVED_TRANSPARENCY, IMPROVED_TRANSPARENCY);
       WARNING_TITLE = Component.translatable("options.graphics.warning.title").withStyle(ChatFormatting.RED);
       BUTTON_ACCEPT = Component.translatable("options.graphics.warning.accept");
       BUTTON_CANCEL = Component.translatable("options.graphics.warning.cancel");
+      DISPLAY_HEADER = Component.translatable("options.video.display.header");
+      QUALITY_HEADER = Component.translatable("options.video.quality.header");
+      PREFERENCES_HEADER = Component.translatable("options.video.preferences.header");
    }
 }

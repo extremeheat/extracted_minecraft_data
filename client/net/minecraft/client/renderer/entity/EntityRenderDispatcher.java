@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -40,14 +39,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<EntityType<?>, EntityRenderer<?, ?>> renderers = ImmutableMap.of();
    private Map<PlayerModelType, AvatarRenderer<AbstractClientPlayer>> playerRenderers = Map.of();
    private Map<PlayerModelType, AvatarRenderer<ClientMannequin>> mannequinRenderers = Map.of();
    public final TextureManager textureManager;
-   @Nullable
-   public Camera camera;
+   public @Nullable Camera camera;
    public Entity crosshairPickEntity;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
@@ -64,19 +63,19 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.getRenderer(var1).getPackedLightCoords(var1, var2);
    }
 
-   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, ItemRenderer var4, MapRenderer var5, BlockRenderDispatcher var6, AtlasManager var7, Font var8, Options var9, Supplier<EntityModelSet> var10, EquipmentAssetManager var11, PlayerSkinRenderCache var12) {
+   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, MapRenderer var4, BlockRenderDispatcher var5, AtlasManager var6, Font var7, Options var8, Supplier<EntityModelSet> var9, EquipmentAssetManager var10, PlayerSkinRenderCache var11) {
       super();
       this.textureManager = var2;
       this.itemModelResolver = var3;
-      this.mapRenderer = var5;
-      this.atlasManager = var7;
-      this.playerSkinRenderCache = var12;
-      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var4, var3);
-      this.blockRenderDispatcher = var6;
-      this.font = var8;
-      this.options = var9;
-      this.entityModels = var10;
-      this.equipmentAssets = var11;
+      this.mapRenderer = var4;
+      this.atlasManager = var6;
+      this.playerSkinRenderCache = var11;
+      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var3);
+      this.blockRenderDispatcher = var5;
+      this.font = var7;
+      this.options = var8;
+      this.entityModels = var9;
+      this.equipmentAssets = var10;
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
@@ -174,10 +173,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             var9.translate(-var12.x(), -var12.y(), -var12.z());
          }
 
-         if (var1.hitboxesRenderState != null) {
-            var10.submitHitbox(var9, var1, var1.hitboxesRenderState);
-         }
-
          var9.popPose();
       } catch (Throwable var19) {
          CrashReport var13 = CrashReport.forThrowable(var19, "Rendering entity in world");
@@ -199,7 +194,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public double distanceToSqr(Entity var1) {
-      return this.camera.getPosition().distanceToSqr(var1.position());
+      return this.camera.position().distanceToSqr(var1.position());
    }
 
    public ItemInHandRenderer getItemInHandRenderer() {

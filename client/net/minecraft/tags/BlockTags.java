@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 public final class BlockTags {
@@ -122,6 +122,7 @@ public final class BlockTags {
    public static final TagKey<Block> UNSTABLE_BOTTOM_CENTER = create("unstable_bottom_center");
    public static final TagKey<Block> MUSHROOM_GROW_BLOCK = create("mushroom_grow_block");
    public static final TagKey<Block> EDIBLE_FOR_SHEEP = create("edible_for_sheep");
+   public static final TagKey<Block> CAN_GLIDE_THROUGH = create("can_glide_through");
    public static final TagKey<Block> INFINIBURN_OVERWORLD = create("infiniburn_overworld");
    public static final TagKey<Block> INFINIBURN_NETHER = create("infiniburn_nether");
    public static final TagKey<Block> INFINIBURN_END = create("infiniburn_end");
@@ -214,6 +215,6 @@ public final class BlockTags {
    }
 
    private static TagKey<Block> create(String var0) {
-      return TagKey.<Block>create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Block>create(Registries.BLOCK, Identifier.withDefaultNamespace(var0));
    }
 }

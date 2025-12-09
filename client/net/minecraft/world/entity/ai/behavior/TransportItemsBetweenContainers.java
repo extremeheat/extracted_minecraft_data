@@ -10,7 +10,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -40,6 +39,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.function.TriConsumer;
+import org.jspecify.annotations.Nullable;
 
 public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    public static final int TARGET_INTERACTION_TIME = 60;
@@ -61,11 +61,9 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private final Predicate<TransportItemTarget> shouldQueueForTarget;
    private final Consumer<PathfinderMob> onStartTravelling;
    private final Map<ContainerInteractionState, OnTargetReachedInteraction> onTargetInteractionActions;
-   @Nullable
-   private TransportItemTarget target = null;
+   private @Nullable TransportItemTarget target = null;
    private TransportItemState state;
-   @Nullable
-   private ContainerInteractionState interactionState;
+   private @Nullable ContainerInteractionState interactionState;
    private int ticksSinceReachingTarget;
 
    public TransportItemsBetweenContainers(float var1, Predicate<BlockState> var2, Predicate<BlockState> var3, int var4, int var5, Map<ContainerInteractionState, OnTargetReachedInteraction> var6, Consumer<PathfinderMob> var7, Predicate<TransportItemTarget> var8) {
@@ -270,8 +268,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       return var7 == null ? Optional.empty() : Optional.of(var7);
    }
 
-   @Nullable
-   private TransportItemTarget isTargetValidToPick(PathfinderMob var1, Level var2, BlockEntity var3, Set<GlobalPos> var4, Set<GlobalPos> var5, AABB var6) {
+   private @Nullable TransportItemTarget isTargetValidToPick(PathfinderMob var1, Level var2, BlockEntity var3, Set<GlobalPos> var4, Set<GlobalPos> var5, AABB var6) {
       BlockPos var7 = var3.getBlockPos();
       boolean var8 = var6.contains((double)var7.getX(), (double)var7.getY(), (double)var7.getZ());
       if (!var8) {
@@ -614,22 +611,19 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
          this.state = var4;
       }
 
-      @Nullable
-      public static TransportItemTarget tryCreatePossibleTarget(BlockEntity var0, Level var1) {
+      public static @Nullable TransportItemTarget tryCreatePossibleTarget(BlockEntity var0, Level var1) {
          BlockPos var2 = var0.getBlockPos();
          BlockState var3 = var0.getBlockState();
          Container var4 = getBlockEntityContainer(var0, var3, var1, var2);
          return var4 != null ? new TransportItemTarget(var2, var4, var0, var3) : null;
       }
 
-      @Nullable
-      public static TransportItemTarget tryCreatePossibleTarget(BlockPos var0, Level var1) {
+      public static @Nullable TransportItemTarget tryCreatePossibleTarget(BlockPos var0, Level var1) {
          BlockEntity var2 = var1.getBlockEntity(var0);
          return var2 == null ? null : tryCreatePossibleTarget(var2, var1);
       }
 
-      @Nullable
-      private static Container getBlockEntityContainer(BlockEntity var0, BlockState var1, Level var2, BlockPos var3) {
+      private static @Nullable Container getBlockEntityContainer(BlockEntity var0, BlockState var1, Level var2, BlockPos var3) {
          Block var6 = var1.getBlock();
          if (var6 instanceof ChestBlock var4) {
             return ChestBlock.getContainer(var4, var1, var2, var3, false);

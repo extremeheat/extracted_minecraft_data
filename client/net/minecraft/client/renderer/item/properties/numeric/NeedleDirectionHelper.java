@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.item.properties.numeric;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public abstract class NeedleDirectionHelper {
    private final boolean wobble;
@@ -23,7 +23,7 @@ public abstract class NeedleDirectionHelper {
       if (var3 == null) {
          return 0.0F;
       } else {
-         if (var2 == null && var3 != null) {
+         if (var2 == null) {
             Level var6 = ((ItemOwner)var3).level();
             if (var6 instanceof ClientLevel) {
                ClientLevel var5 = (ClientLevel)var6;
@@ -35,7 +35,7 @@ public abstract class NeedleDirectionHelper {
       }
    }
 
-   protected abstract float calculate(ItemStack var1, ClientLevel var2, int var3, @Nullable ItemOwner var4);
+   protected abstract float calculate(ItemStack var1, ClientLevel var2, int var3, ItemOwner var4);
 
    protected boolean wobble() {
       return this.wobble;

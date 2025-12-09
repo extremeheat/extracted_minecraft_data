@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -26,6 +25,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class BlockEntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers = ImmutableMap.of();
@@ -51,22 +51,19 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       this.playerSkinRenderCache = var8;
    }
 
-   @Nullable
-   public <E extends BlockEntity, S extends BlockEntityRenderState> BlockEntityRenderer<E, S> getRenderer(E var1) {
+   public <E extends BlockEntity, S extends BlockEntityRenderState> @Nullable BlockEntityRenderer<E, S> getRenderer(E var1) {
       return (BlockEntityRenderer)this.renderers.get(var1.getType());
    }
 
-   @Nullable
-   public <E extends BlockEntity, S extends BlockEntityRenderState> BlockEntityRenderer<E, S> getRenderer(S var1) {
+   public <E extends BlockEntity, S extends BlockEntityRenderState> @Nullable BlockEntityRenderer<E, S> getRenderer(S var1) {
       return (BlockEntityRenderer)this.renderers.get(var1.blockEntityType);
    }
 
    public void prepare(Camera var1) {
-      this.cameraPos = var1.getPosition();
+      this.cameraPos = var1.position();
    }
 
-   @Nullable
-   public <E extends BlockEntity, S extends BlockEntityRenderState> S tryExtractRenderState(E var1, float var2, @Nullable ModelFeatureRenderer.CrumblingOverlay var3) {
+   public <E extends BlockEntity, S extends BlockEntityRenderState> @Nullable S tryExtractRenderState(E var1, float var2, ModelFeatureRenderer.@Nullable CrumblingOverlay var3) {
       BlockEntityRenderer var4 = this.getRenderer(var1);
       if (var4 == null) {
          return null;

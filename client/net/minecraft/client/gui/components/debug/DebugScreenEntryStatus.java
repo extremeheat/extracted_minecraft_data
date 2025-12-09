@@ -4,7 +4,7 @@ import net.minecraft.util.StringRepresentable;
 
 public enum DebugScreenEntryStatus implements StringRepresentable {
    ALWAYS_ON("alwaysOn"),
-   IN_F3("inF3"),
+   IN_OVERLAY("inOverlay"),
    NEVER("never");
 
    public static final StringRepresentable.EnumCodec<DebugScreenEntryStatus> CODEC = StringRepresentable.<DebugScreenEntryStatus>fromEnum(DebugScreenEntryStatus::values);
@@ -20,6 +20,6 @@ public enum DebugScreenEntryStatus implements StringRepresentable {
 
    // $FF: synthetic method
    private static DebugScreenEntryStatus[] $values() {
-      return new DebugScreenEntryStatus[]{ALWAYS_ON, IN_F3, NEVER};
+      return new DebugScreenEntryStatus[]{ALWAYS_ON, IN_OVERLAY, NEVER};
    }
 }

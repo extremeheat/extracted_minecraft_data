@@ -49,8 +49,8 @@ public class SmoothSwimmingMoveControl extends MoveControl {
                   this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var13, 5.0F));
                }
 
-               float var17 = Mth.cos(this.mob.getXRot() * 0.017453292F);
-               float var14 = Mth.sin(this.mob.getXRot() * 0.017453292F);
+               float var17 = Mth.cos((double)(this.mob.getXRot() * 0.017453292F));
+               float var14 = Mth.sin((double)(this.mob.getXRot() * 0.017453292F));
                this.mob.zza = var17 * var10;
                this.mob.yya = -var14 * var10;
             } else {

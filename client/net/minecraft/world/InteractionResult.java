@@ -1,7 +1,7 @@
 package net.minecraft.world;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public sealed interface InteractionResult {
    Success SUCCESS = new Success(InteractionResult.SwingSource.CLIENT, InteractionResult.ItemContext.DEFAULT);
@@ -52,16 +52,14 @@ public sealed interface InteractionResult {
          return this.itemContext.wasItemInteraction;
       }
 
-      @Nullable
-      public ItemStack heldItemTransformedTo() {
+      public @Nullable ItemStack heldItemTransformedTo() {
          return this.itemContext.heldItemTransformedTo;
       }
    }
 
    public static record ItemContext(boolean wasItemInteraction, @Nullable ItemStack heldItemTransformedTo) {
       final boolean wasItemInteraction;
-      @Nullable
-      final ItemStack heldItemTransformedTo;
+      final @Nullable ItemStack heldItemTransformedTo;
       static ItemContext NONE = new ItemContext(false, (ItemStack)null);
       static ItemContext DEFAULT = new ItemContext(true, (ItemStack)null);
 

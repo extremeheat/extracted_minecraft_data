@@ -2,8 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -14,13 +12,14 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -43,10 +42,10 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.animal.golem.AbstractGolem;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -59,9 +58,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class Shulker extends AbstractGolem implements Enemy {
-   private static final ResourceLocation COVERED_ARMOR_MODIFIER_ID = ResourceLocation.withDefaultNamespace("covered");
+   private static final Identifier COVERED_ARMOR_MODIFIER_ID = Identifier.withDefaultNamespace("covered");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER;
    protected static final EntityDataAccessor<Direction> DATA_ATTACH_FACE_ID;
    protected static final EntityDataAccessor<Byte> DATA_PEEK_ID;
@@ -79,8 +79,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
    private float currentPeekAmount;
-   @Nullable
-   private BlockPos clientOldAttachPosition;
+   private @Nullable BlockPos clientOldAttachPosition;
    private int clientSideTeleportInterpolation;
    private static final float MAX_LID_OPEN = 1.0F;
 
@@ -193,7 +192,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    private static float getPhysicalPeek(float var0) {
-      return 0.5F - Mth.sin((0.5F + var0) * 3.1415927F) * 0.5F;
+      return 0.5F - Mth.sin((double)((0.5F + var0) * 3.1415927F)) * 0.5F;
    }
 
    private boolean updatePeekAmount() {
@@ -260,8 +259,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       this.yBodyRot = 0.0F;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setYRot(0.0F);
       this.yHeadRot = this.getYRot();
       this.setOldPosAndRot();
@@ -296,7 +294,7 @@ public class Shulker extends AbstractGolem implements Enemy {
          BlockPos var8 = this.blockPosition();
          if (!var8.equals(var7)) {
             this.entityData.set(DATA_PEEK_ID, (byte)0);
-            this.hasImpulse = true;
+            this.needsSync = true;
             if (this.level().isClientSide() && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
                this.clientOldAttachPosition = var7;
                this.clientSideTeleportInterpolation = 6;
@@ -309,8 +307,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   @Nullable
-   protected Direction findAttachableSurface(BlockPos var1) {
+   protected @Nullable Direction findAttachableSurface(BlockPos var1) {
       for(Direction var5 : Direction.values()) {
          if (this.canStayAt(var1, var5)) {
             return var5;
@@ -482,8 +479,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    public void push(Entity var1) {
    }
 
-   @Nullable
-   public Vec3 getRenderPosition(float var1) {
+   public @Nullable Vec3 getRenderPosition(float var1) {
       if (this.clientOldAttachPosition != null && this.clientSideTeleportInterpolation > 0) {
          double var2 = (double)((float)this.clientSideTeleportInterpolation - var1) / 6.0;
          var2 *= var2;
@@ -510,14 +506,12 @@ public class Shulker extends AbstractGolem implements Enemy {
       return Optional.ofNullable(this.getColor());
    }
 
-   @Nullable
-   public DyeColor getColor() {
+   public @Nullable DyeColor getColor() {
       byte var1 = (Byte)this.entityData.get(DATA_COLOR_ID);
       return var1 != 16 && var1 <= 15 ? DyeColor.byId(var1) : null;
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.SHULKER_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
    }
 

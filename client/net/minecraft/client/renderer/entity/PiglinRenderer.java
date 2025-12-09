@@ -1,20 +1,20 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.PiglinModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.monster.piglin.PiglinModel;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PiglinRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.item.CrossbowItem;
 
 public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRenderState, PiglinModel> {
-   private static final ResourceLocation PIGLIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin.png");
-   private static final ResourceLocation PIGLIN_BRUTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin_brute.png");
+   private static final Identifier PIGLIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/piglin/piglin.png");
+   private static final Identifier PIGLIN_BRUTE_LOCATION = Identifier.withDefaultNamespace("textures/entity/piglin/piglin_brute.png");
    public static final CustomHeadLayer.Transforms PIGLIN_CUSTOM_HEAD_TRANSFORMS = new CustomHeadLayer.Transforms(0.0F, 0.0F, 1.0019531F);
 
    public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ArmorModelSet<ModelLayerLocation> var4, ArmorModelSet<ModelLayerLocation> var5) {
@@ -22,7 +22,7 @@ public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRe
       this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(var4, var1.getModelSet(), PiglinModel::new), ArmorModelSet.bake(var5, var1.getModelSet(), PiglinModel::new), var1.getEquipmentRenderer()));
    }
 
-   public ResourceLocation getTextureLocation(PiglinRenderState var1) {
+   public Identifier getTextureLocation(PiglinRenderState var1) {
       return var1.isBrute ? PIGLIN_BRUTE_LOCATION : PIGLIN_LOCATION;
    }
 
@@ -48,7 +48,7 @@ public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRe
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((PiglinRenderState)var1);
    }
 

@@ -1,6 +1,5 @@
 package net.minecraft.world.item.context;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -9,10 +8,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class UseOnContext {
-   @Nullable
-   private final Player player;
+   private final @Nullable Player player;
    private final InteractionHand hand;
    private final BlockHitResult hitResult;
    private final Level level;
@@ -55,8 +54,7 @@ public class UseOnContext {
       return this.itemStack;
    }
 
-   @Nullable
-   public Player getPlayer() {
+   public @Nullable Player getPlayer() {
       return this.player;
    }
 

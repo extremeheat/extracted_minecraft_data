@@ -1,10 +1,10 @@
 package net.minecraft.client.tutorial;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class MovementTutorialStepInstance implements TutorialStepInstance {
    private static final int MINIMUM_TIME_MOVED = 40;
@@ -17,10 +17,8 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
    private static final Component LOOK_TITLE = Component.translatable("tutorial.look.title");
    private static final Component LOOK_DESCRIPTION = Component.translatable("tutorial.look.description");
    private final Tutorial tutorial;
-   @Nullable
-   private TutorialToast moveToast;
-   @Nullable
-   private TutorialToast lookToast;
+   private @Nullable TutorialToast moveToast;
+   private @Nullable TutorialToast lookToast;
    private int timeWaiting;
    private int timeMoved;
    private int timeLooked;

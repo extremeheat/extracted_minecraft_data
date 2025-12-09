@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.util.Unit;
@@ -44,7 +44,7 @@ public class ReloadableResourceManager implements ResourceManager, AutoCloseable
       return SimpleReloadInstance.create(this.resources, this.listeners, var1, var2, var3, LOGGER.isDebugEnabled());
    }
 
-   public Optional<Resource> getResource(ResourceLocation var1) {
+   public Optional<Resource> getResource(Identifier var1) {
       return this.resources.getResource(var1);
    }
 
@@ -52,15 +52,15 @@ public class ReloadableResourceManager implements ResourceManager, AutoCloseable
       return this.resources.getNamespaces();
    }
 
-   public List<Resource> getResourceStack(ResourceLocation var1) {
+   public List<Resource> getResourceStack(Identifier var1) {
       return this.resources.getResourceStack(var1);
    }
 
-   public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
+   public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
       return this.resources.listResources(var1, var2);
    }
 
-   public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
+   public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
       return this.resources.listResourceStacks(var1, var2);
    }
 

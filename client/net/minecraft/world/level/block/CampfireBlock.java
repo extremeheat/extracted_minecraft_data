@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -52,6 +51,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((var0x) -> var0x.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((var0x) -> var0x.fireDamage), propertiesCodec()).apply(var0, CampfireBlock::new));
@@ -104,8 +104,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       super.entityInside(var1, var2, var3, var4, var5, var6);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       boolean var4 = var2.getFluidState(var3).getType() == Fluids.WATER;
@@ -234,8 +233,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return new CampfireBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       if (var1 instanceof ServerLevel var4) {
          if ((Boolean)var2.getValue(LIT)) {
             RecipeManager.CachedCheck var5 = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);

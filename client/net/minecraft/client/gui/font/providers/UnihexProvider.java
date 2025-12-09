@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.FastBufferedInputStream;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -49,8 +49,7 @@ public class UnihexProvider implements GlyphProvider {
       this.glyphs = var1;
    }
 
-   @Nullable
-   public UnbakedGlyph getGlyph(int var1) {
+   public @Nullable UnbakedGlyph getGlyph(int var1) {
       return this.glyphs.get(var1);
    }
 
@@ -259,11 +258,11 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    public static class Definition implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
-      private final ResourceLocation hexFile;
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
+      private final Identifier hexFile;
       private final List<OverrideRange> sizeOverrides;
 
-      private Definition(ResourceLocation var1, List<OverrideRange> var2) {
+      private Definition(Identifier var1, List<OverrideRange> var2) {
          super();
          this.hexFile = var1;
          this.sizeOverrides = var2;

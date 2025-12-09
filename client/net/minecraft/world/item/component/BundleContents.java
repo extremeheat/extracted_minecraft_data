@@ -6,7 +6,6 @@ import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -16,6 +15,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
+import org.jspecify.annotations.Nullable;
 
 public final class BundleContents implements TooltipComponent {
    public static final BundleContents EMPTY = new BundleContents(List.of());
@@ -217,8 +217,7 @@ public final class BundleContents implements TooltipComponent {
          return var1 < 0 || var1 >= this.items.size();
       }
 
-      @Nullable
-      public ItemStack removeOne() {
+      public @Nullable ItemStack removeOne() {
          if (this.items.isEmpty()) {
             return null;
          } else {

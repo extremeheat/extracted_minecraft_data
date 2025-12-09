@@ -5,8 +5,8 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public enum ServiceQuality {
@@ -17,15 +17,14 @@ public enum ServiceQuality {
    UNKNOWN(5, "icon/ping_unknown");
 
    final int value;
-   private final ResourceLocation icon;
+   private final Identifier icon;
 
    private ServiceQuality(final int var3, final String var4) {
       this.value = var3;
-      this.icon = ResourceLocation.withDefaultNamespace(var4);
+      this.icon = Identifier.withDefaultNamespace(var4);
    }
 
-   @Nullable
-   public static ServiceQuality byValue(int var0) {
+   public static @Nullable ServiceQuality byValue(int var0) {
       for(ServiceQuality var4 : values()) {
          if (var4.getValue() == var0) {
             return var4;
@@ -39,7 +38,7 @@ public enum ServiceQuality {
       return this.value;
    }
 
-   public ResourceLocation getIcon() {
+   public Identifier getIcon() {
       return this.icon;
    }
 

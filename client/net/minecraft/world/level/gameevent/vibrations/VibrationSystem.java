@@ -6,8 +6,6 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +19,7 @@ import net.minecraft.tags.GameEventTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipBlockStateContext;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public interface VibrationSystem {
    List<ResourceKey<GameEvent>> RESONANCE_EVENTS = List.of(GameEvent.RESONATE_1.key(), GameEvent.RESONATE_2.key(), GameEvent.RESONATE_3.key(), GameEvent.RESONATE_4.key(), GameEvent.RESONATE_5.key(), GameEvent.RESONATE_6.key(), GameEvent.RESONATE_7.key(), GameEvent.RESONATE_8.key(), GameEvent.RESONATE_9.key(), GameEvent.RESONATE_10.key(), GameEvent.RESONATE_11.key(), GameEvent.RESONATE_12.key(), GameEvent.RESONATE_13.key(), GameEvent.RESONATE_14.key(), GameEvent.RESONATE_15.key());
@@ -107,8 +107,7 @@ public interface VibrationSystem {
    public static final class Data {
       public static Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> Optional.ofNullable(var0x.currentVibration)), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(Data::getTravelTimeInTicks)).apply(var0, (var0x, var1, var2) -> new Data((VibrationInfo)var0x.orElse((Object)null), var1, var2, true)));
       public static final String NBT_TAG_KEY = "listener";
-      @Nullable
-      VibrationInfo currentVibration;
+      @Nullable VibrationInfo currentVibration;
       private int travelTimeInTicks;
       final VibrationSelector selectionStrategy;
       private boolean reloadVibrationParticle;
@@ -129,8 +128,7 @@ public interface VibrationSystem {
          return this.selectionStrategy;
       }
 
-      @Nullable
-      public VibrationInfo getCurrentVibration() {
+      public @Nullable VibrationInfo getCurrentVibration() {
          return this.currentVibration;
       }
 

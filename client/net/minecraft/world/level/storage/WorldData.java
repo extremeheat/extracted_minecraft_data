@@ -3,19 +3,19 @@ package net.minecraft.world.level.storage;
 import com.mojang.serialization.Lifecycle;
 import java.util.Locale;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import org.jspecify.annotations.Nullable;
 
 public interface WorldData {
    int ANVIL_VERSION_ID = 19133;
@@ -57,8 +57,7 @@ public interface WorldData {
       }
    }
 
-   @Nullable
-   CompoundTag getCustomBossEvents();
+   @Nullable CompoundTag getCustomBossEvents();
 
    void setCustomBossEvents(@Nullable CompoundTag var1);
 
@@ -90,8 +89,7 @@ public interface WorldData {
 
    GameRules getGameRules();
 
-   @Nullable
-   CompoundTag getLoadedPlayerTag();
+   @Nullable CompoundTag getLoadedPlayerTag();
 
    EndDragonFight.Data endDragonFightData();
 

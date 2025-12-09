@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
@@ -21,10 +21,11 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementsScreen extends Screen implements ClientAdvancements.Listener {
-   private static final ResourceLocation WINDOW_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/advancements/window.png");
+   private static final Identifier WINDOW_LOCATION = Identifier.withDefaultNamespace("textures/gui/advancements/window.png");
    public static final int WINDOW_WIDTH = 252;
    public static final int WINDOW_HEIGHT = 140;
    private static final int WINDOW_INSIDE_X = 9;
@@ -44,12 +45,10 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    private static final Component NO_ADVANCEMENTS_LABEL = Component.translatable("advancements.empty");
    private static final Component TITLE = Component.translatable("gui.advancements");
    private final HeaderAndFooterLayout layout;
-   @Nullable
-   private final Screen lastScreen;
+   private final @Nullable Screen lastScreen;
    private final ClientAdvancements advancements;
    private final Map<AdvancementHolder, AdvancementTab> tabs;
-   @Nullable
-   private AdvancementTab selectedTab;
+   private @Nullable AdvancementTab selectedTab;
    private boolean isScrolling;
 
    public AdvancementsScreen(ClientAdvancements var1) {
@@ -133,7 +132,17 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       var1.nextStratum();
       this.renderInside(var1, var5, var6);
       var1.nextStratum();
-      this.renderWindow(var1, var5, var6);
+      this.renderWindow(var1, var5, var6, var2, var3);
+      if (this.isScrolling && this.selectedTab != null) {
+         if (this.selectedTab.canScrollHorizontally() && this.selectedTab.canScrollVertically()) {
+            var1.requestCursor(CursorTypes.RESIZE_ALL);
+         } else if (this.selectedTab.canScrollHorizontally()) {
+            var1.requestCursor(CursorTypes.RESIZE_EW);
+         } else if (this.selectedTab.canScrollVertically()) {
+            var1.requestCursor(CursorTypes.RESIZE_NS);
+         }
+      }
+
       this.renderTooltips(var1, var2, var3, var5, var6);
    }
 
@@ -150,6 +159,11 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
          return true;
       }
+   }
+
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      this.isScrolling = false;
+      return super.mouseReleased(var1);
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
@@ -181,15 +195,15 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
    }
 
-   public void renderWindow(GuiGraphics var1, int var2, int var3) {
+   public void renderWindow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       var1.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
-         for(AdvancementTab var5 : this.tabs.values()) {
-            var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
+         for(AdvancementTab var7 : this.tabs.values()) {
+            var7.drawTab(var1, var2, var3, var4, var5, var7 == this.selectedTab);
          }
 
-         for(AdvancementTab var7 : this.tabs.values()) {
-            var7.drawIcon(var1, var2, var3);
+         for(AdvancementTab var9 : this.tabs.values()) {
+            var9.drawIcon(var1, var2, var3);
          }
       }
 
@@ -253,14 +267,12 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       this.selectedTab = null;
    }
 
-   @Nullable
-   public AdvancementWidget getAdvancementWidget(AdvancementNode var1) {
+   public @Nullable AdvancementWidget getAdvancementWidget(AdvancementNode var1) {
       AdvancementTab var2 = this.getTab(var1);
       return var2 == null ? null : var2.getWidget(var1.holder());
    }
 
-   @Nullable
-   private AdvancementTab getTab(AdvancementNode var1) {
+   private @Nullable AdvancementTab getTab(AdvancementNode var1) {
       AdvancementNode var2 = var1.root();
       return (AdvancementTab)this.tabs.get(var2.holder());
    }

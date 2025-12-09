@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.Objects;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommandSuggestions;
@@ -57,7 +56,7 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.previousEdit.setEditable(false);
       this.previousEdit.setValue("-");
       this.addWidget(this.previousEdit);
-      this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X")).withInitialValue(var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
+      this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X"), var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
          BaseCommandBlock var3 = this.getCommandBlock();
          var3.setTrackOutput(var2);
          this.updatePreviousOutput(var2);
@@ -82,10 +81,10 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return this.commandSuggestions.isVisible() ? this.commandSuggestions.getUsageNarration() : super.getUsageNarration();
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.commandEdit.getValue();
-      this.init(var1, var2, var3);
-      this.commandEdit.setValue(var4);
+   public void resize(int var1, int var2) {
+      String var3 = this.commandEdit.getValue();
+      this.init(var1, var2);
+      this.commandEdit.setValue(var3);
       this.commandSuggestions.updateCommandInfo();
    }
 
@@ -94,8 +93,8 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    }
 
    protected void onDone() {
+      this.populateAndSendPacket();
       BaseCommandBlock var1 = this.getCommandBlock();
-      this.populateAndSendPacket(var1);
       if (!var1.isTrackOutput()) {
          var1.setLastOutput((Component)null);
       }
@@ -103,7 +102,7 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.minecraft.setScreen((Screen)null);
    }
 
-   protected abstract void populateAndSendPacket(BaseCommandBlock var1);
+   protected abstract void populateAndSendPacket();
 
    private void onEdited(String var1) {
       this.commandSuggestions.updateCommandInfo();

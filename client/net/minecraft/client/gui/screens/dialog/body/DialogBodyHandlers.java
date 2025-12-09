@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.ItemDisplayWidget;
@@ -18,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.dialog.body.DialogBody;
 import net.minecraft.server.dialog.body.ItemBody;
 import net.minecraft.server.dialog.body.PlainMessage;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DialogBodyHandlers {
@@ -32,13 +32,11 @@ public class DialogBodyHandlers {
       HANDLERS.put(var0, var1);
    }
 
-   @Nullable
-   private static <B extends DialogBody> DialogBodyHandler<B> getHandler(B var0) {
+   private static <B extends DialogBody> @Nullable DialogBodyHandler<B> getHandler(B var0) {
       return (DialogBodyHandler)HANDLERS.get(var0.mapCodec());
    }
 
-   @Nullable
-   public static <B extends DialogBody> LayoutElement createBodyElement(DialogScreen<?> var0, B var1) {
+   public static <B extends DialogBody> @Nullable LayoutElement createBodyElement(DialogScreen<?> var0, B var1) {
       DialogBodyHandler var2 = getHandler(var1);
       if (var2 == null) {
          LOGGER.warn("Unrecognized dialog body {}", var1);
@@ -69,7 +67,7 @@ public class DialogBodyHandlers {
       }
 
       public LayoutElement createControls(DialogScreen<?> var1, PlainMessage var2) {
-         return (new FocusableTextWidget(var2.width(), var2.contents(), var1.getFont(), false, FocusableTextWidget.BackgroundFill.NEVER, 4)).configureStyleHandling(true, (var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)).setCentered(true);
+         return FocusableTextWidget.builder(var2.contents(), var1.getFont()).maxWidth(var2.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build().setCentered(true).setComponentClickHandler((var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x));
       }
    }
 
@@ -85,7 +83,7 @@ public class DialogBodyHandlers {
             var4.defaultCellSetting().alignVerticallyMiddle();
             ItemDisplayWidget var5 = new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), CommonComponents.EMPTY, var2.item(), var2.showDecorations(), var2.showTooltip());
             var4.addChild(var5);
-            var4.addChild((new FocusableTextWidget(var3.width(), var3.contents(), var1.getFont(), false, FocusableTextWidget.BackgroundFill.NEVER, 4)).configureStyleHandling(true, (var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)));
+            var4.addChild(FocusableTextWidget.builder(var3.contents(), var1.getFont()).maxWidth(var3.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build().setComponentClickHandler((var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)));
             return var4;
          } else {
             return new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), var2.item().getHoverName(), var2.item(), var2.showDecorations(), var2.showTooltip());

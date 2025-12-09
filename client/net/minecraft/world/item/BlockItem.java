@@ -1,11 +1,11 @@
 package net.minecraft.world.item;
 
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
 
 public class BlockItem extends Item {
    /** @deprecated */
@@ -88,8 +89,7 @@ public class BlockItem extends Item {
       return var1.getSoundType().getPlaceSound();
    }
 
-   @Nullable
-   public BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
+   public @Nullable BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
       return var1;
    }
 
@@ -106,8 +106,7 @@ public class BlockItem extends Item {
       return updateCustomBlockEntityTag(var2, var3, var1, var4);
    }
 
-   @Nullable
-   protected BlockState getPlacementState(BlockPlaceContext var1) {
+   protected @Nullable BlockState getPlacementState(BlockPlaceContext var1) {
       BlockState var2 = this.getBlock().getStateForPlacement(var1);
       return var2 != null && this.canPlace(var1, var2) ? var2 : null;
    }
@@ -165,7 +164,7 @@ public class BlockItem extends Item {
    }
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
-      if (var2 != null && var2.getPermissionLevel() >= 2) {
+      if (var2 != null && var2.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
          if (var3 != null) {
             return ((BlockEntityType)var3.type()).onlyOpCanSetNbt();

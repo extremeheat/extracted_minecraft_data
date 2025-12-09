@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,11 +16,12 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public class TestInstanceBlockEditScreen extends Screen {
    private static final Component ID_LABEL = Component.translatable("test_instance_block.test_id");
@@ -31,24 +31,15 @@ public class TestInstanceBlockEditScreen extends Screen {
    private static final int BUTTON_PADDING = 8;
    private static final int WIDTH = 316;
    private final TestInstanceBlockEntity blockEntity;
-   @Nullable
-   private EditBox idEdit;
-   @Nullable
-   private EditBox sizeXEdit;
-   @Nullable
-   private EditBox sizeYEdit;
-   @Nullable
-   private EditBox sizeZEdit;
-   @Nullable
-   private FittingMultiLineTextWidget infoWidget;
-   @Nullable
-   private Button saveButton;
-   @Nullable
-   private Button exportButton;
-   @Nullable
-   private CycleButton<Boolean> includeEntitiesButton;
-   @Nullable
-   private CycleButton<Rotation> rotationButton;
+   private @Nullable EditBox idEdit;
+   private @Nullable EditBox sizeXEdit;
+   private @Nullable EditBox sizeYEdit;
+   private @Nullable EditBox sizeZEdit;
+   private @Nullable FittingMultiLineTextWidget infoWidget;
+   private @Nullable Button saveButton;
+   private @Nullable Button exportButton;
+   private @Nullable CycleButton<Boolean> includeEntitiesButton;
+   private @Nullable CycleButton<Rotation> rotationButton;
 
    public TestInstanceBlockEditScreen(TestInstanceBlockEntity var1) {
       super(var1.getBlockState().getBlock().getName());
@@ -64,7 +55,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       this.idEdit.setMaxLength(128);
       Optional var5 = this.blockEntity.test();
       if (var5.isPresent()) {
-         this.idEdit.setValue(((ResourceKey)var5.get()).location().toString());
+         this.idEdit.setValue(((ResourceKey)var5.get()).identifier().toString());
       }
 
       this.idEdit.setResponder((var1x) -> this.updateTestInfo(false));
@@ -84,7 +75,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       this.sizeZEdit.setMaxLength(15);
       this.addRenderableWidget(this.sizeZEdit);
       this.setSize(var6);
-      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay).withValues(Rotation.values()).withInitialValue(this.blockEntity.getRotation()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (var1x, var2x) -> this.updateSaveState()));
+      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay, this.blockEntity.getRotation()).withValues(Rotation.values()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (var1x, var2x) -> this.updateSaveState()));
       this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.blockEntity.ignoreEntities()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, INCLUDE_ENTITIES_LABEL));
       var7 = 0;
       this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.reset"), (var1x) -> {
@@ -112,7 +103,7 @@ public class TestInstanceBlockEditScreen extends Screen {
    }
 
    private void updateSaveState() {
-      boolean var1 = this.rotationButton.getValue() == Rotation.NONE && ResourceLocation.tryParse(this.idEdit.getValue()) != null;
+      boolean var1 = this.rotationButton.getValue() == Rotation.NONE && Identifier.tryParse(this.idEdit.getValue()) != null;
       this.saveButton.active = var1;
       if (this.exportButton != null) {
          this.exportButton.active = var1;
@@ -178,7 +169,7 @@ public class TestInstanceBlockEditScreen extends Screen {
    }
 
    private boolean sendToServer(ServerboundTestInstanceBlockActionPacket.Action var1) {
-      Optional var2 = Optional.ofNullable(ResourceLocation.tryParse(this.idEdit.getValue()));
+      Optional var2 = Optional.ofNullable(Identifier.tryParse(this.idEdit.getValue()));
       Optional var3 = var2.map((var0) -> ResourceKey.create(Registries.TEST_INSTANCE, var0));
       Vec3i var4 = new Vec3i(parseSize(this.sizeXEdit.getValue()), parseSize(this.sizeYEdit.getValue()), parseSize(this.sizeZEdit.getValue()));
       boolean var5 = !(Boolean)this.includeEntitiesButton.getValue();

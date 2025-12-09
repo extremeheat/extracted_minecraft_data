@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -27,19 +26,20 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.SnbtGrammar;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
 import net.minecraft.util.parsing.packrat.NamedRule;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
-import net.minecraft.util.parsing.packrat.commands.ResourceLocationParseRule;
+import net.minecraft.util.parsing.packrat.commands.IdentifierParseRule;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.jspecify.annotations.Nullable;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
@@ -67,10 +67,10 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       Atom var4 = Atom.of("result");
       Atom var5 = Atom.of("id");
       Atom var6 = Atom.of("value");
-      var3.put(var5, ResourceLocationParseRule.INSTANCE);
+      var3.put(var5, IdentifierParseRule.INSTANCE);
       var3.put(var6, var2.top().value());
       NamedRule var7 = var3.put(var4, Term.alternative(var3.named(var5), var3.named(var6)), (var3x) -> {
-         ResourceLocation var4 = (ResourceLocation)var3x.get(var5);
+         Identifier var4 = (Identifier)var3x.get(var5);
          if (var4 != null) {
             return new ReferenceResult(ResourceKey.create(var0, var4));
          } else {
@@ -117,13 +117,11 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       return (Holder)var0.getArgument(var1, Holder.class);
    }
 
-   @Nullable
-   public Holder<T> parse(StringReader var1) throws CommandSyntaxException {
+   public @Nullable Holder<T> parse(StringReader var1) throws CommandSyntaxException {
       return this.parse(var1, this.grammar, OPS);
    }
 
-   @Nullable
-   private <O> Holder<T> parse(StringReader var1, Grammar<Result<T, O>> var2, DynamicOps<O> var3) throws CommandSyntaxException {
+   private <O> @Nullable Holder<T> parse(StringReader var1, Grammar<Result<T, O>> var2, DynamicOps<O> var3) throws CommandSyntaxException {
       Result var4 = (Result)var2.parseForCommands(var1);
       return this.elementLookup.isEmpty() ? null : var4.parse(var1, this.registryLookup, var3, this.codec, (HolderLookup.RegistryLookup)this.elementLookup.get());
    }
@@ -137,8 +135,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
+   public @Nullable Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -152,8 +149,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       }
 
       // $FF: synthetic method
-      @Nullable
-      public Object parse(final StringReader var1) throws CommandSyntaxException {
+      public @Nullable Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }
@@ -164,8 +160,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       }
 
       // $FF: synthetic method
-      @Nullable
-      public Object parse(final StringReader var1) throws CommandSyntaxException {
+      public @Nullable Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }
@@ -176,8 +171,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       }
 
       // $FF: synthetic method
-      @Nullable
-      public Object parse(final StringReader var1) throws CommandSyntaxException {
+      public @Nullable Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }
@@ -188,8 +182,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       }
 
       // $FF: synthetic method
-      @Nullable
-      public Object parse(final StringReader var1) throws CommandSyntaxException {
+      public @Nullable Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }
@@ -212,7 +205,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       }
 
       public Holder<T> parse(ImmutableStringReader var1, HolderLookup.Provider var2, DynamicOps<O> var3, Codec<T> var4, HolderLookup.RegistryLookup<T> var5) throws CommandSyntaxException {
-         return (Holder)var5.get(this.key).orElseThrow(() -> ResourceOrIdArgument.ERROR_NO_SUCH_ELEMENT.createWithContext(var1, this.key.location(), this.key.registry()));
+         return (Holder)var5.get(this.key).orElseThrow(() -> ResourceOrIdArgument.ERROR_NO_SUCH_ELEMENT.createWithContext(var1, this.key.identifier(), this.key.registry()));
       }
    }
 

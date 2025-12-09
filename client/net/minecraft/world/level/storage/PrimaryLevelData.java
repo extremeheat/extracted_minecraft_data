@@ -15,10 +15,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
@@ -28,18 +26,20 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.timers.TimerCallbacks;
 import net.minecraft.world.level.timers.TimerQueue;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PrimaryLevelData implements ServerLevelData, WorldData {
@@ -54,8 +54,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private LevelData.RespawnData respawnData;
    private long gameTime;
    private long dayTime;
-   @Nullable
-   private final CompoundTag loadedPlayerTag;
+   private final @Nullable CompoundTag loadedPlayerTag;
    private final int version;
    private int clearWeatherTime;
    private boolean raining;
@@ -68,12 +67,10 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    @Deprecated
    private Optional<WorldBorder.Settings> legacyWorldBorderSettings;
    private EndDragonFight.Data endDragonFightData;
-   @Nullable
-   private CompoundTag customBossEvents;
+   private @Nullable CompoundTag customBossEvents;
    private int wanderingTraderSpawnDelay;
    private int wanderingTraderSpawnChance;
-   @Nullable
-   private UUID wanderingTraderId;
+   private @Nullable UUID wanderingTraderId;
    private final Set<String> knownServerBrands;
    private boolean wasModded;
    private final Set<String> removedFeatureFlags;
@@ -191,7 +188,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       this.legacyWorldBorderSettings.ifPresent((var1x) -> var2.store("world_border", WorldBorder.Settings.CODEC, var1x));
       var2.putByte("Difficulty", (byte)this.settings.difficulty().getId());
       var2.putBoolean("DifficultyLocked", this.difficultyLocked);
-      var2.put("GameRules", this.settings.gameRules().createTag());
+      var2.store("game_rules", GameRules.codec(this.enabledFeatures()), this.settings.gameRules());
       var2.store("DragonFight", EndDragonFight.Data.CODEC, this.endDragonFightData);
       if (var3 != null) {
          var2.put("Player", var3);
@@ -228,8 +225,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.dayTime;
    }
 
-   @Nullable
-   public CompoundTag getLoadedPlayerTag() {
+   public @Nullable CompoundTag getLoadedPlayerTag() {
       return this.loadedPlayerTag;
    }
 
@@ -386,8 +382,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       this.settings = this.settings.withDataConfiguration(var1);
    }
 
-   @Nullable
-   public CompoundTag getCustomBossEvents() {
+   public @Nullable CompoundTag getCustomBossEvents() {
       return this.customBossEvents;
    }
 
@@ -411,8 +406,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       this.wanderingTraderSpawnChance = var1;
    }
 
-   @Nullable
-   public UUID getWanderingTraderId() {
+   public @Nullable UUID getWanderingTraderId() {
       return this.wanderingTraderId;
    }
 

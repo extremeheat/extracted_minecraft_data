@@ -7,12 +7,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.advancements.criterion.NbtPredicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.nbt.CompoundTag;
+import org.jspecify.annotations.Nullable;
 
 public record EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) implements DataSource {
    public static final MapCodec<EntityDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new));
@@ -27,8 +27,7 @@ public record EntityDataSource(String selectorPattern, @Nullable EntitySelector 
       this.compiledSelector = var2;
    }
 
-   @Nullable
-   private static EntitySelector compileSelector(String var0) {
+   private static @Nullable EntitySelector compileSelector(String var0) {
       try {
          EntitySelectorParser var1 = new EntitySelectorParser(new StringReader(var0), true);
          return var1.parse();

@@ -15,12 +15,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsServer extends ValueObject implements ReflectionBasedSerialization {
@@ -29,19 +29,16 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    public static final Component WORLD_CLOSED_COMPONENT = Component.translatable("mco.play.button.realm.closed");
    @SerializedName("id")
    public long id = -1L;
-   @Nullable
    @SerializedName("remoteSubscriptionId")
-   public String remoteSubscriptionId;
-   @Nullable
+   public @Nullable String remoteSubscriptionId;
    @SerializedName("name")
-   public String name;
+   public @Nullable String name;
    @SerializedName("motd")
    public String motd = "";
    @SerializedName("state")
    public State state;
-   @Nullable
    @SerializedName("owner")
-   public String owner;
+   public @Nullable String owner;
    @SerializedName("ownerUUID")
    @JsonAdapter(UUIDTypeAdapter.class)
    public UUID ownerUUID;
@@ -65,26 +62,22 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    public int gameMode;
    @SerializedName("activeSlot")
    public int activeSlot;
-   @Nullable
    @SerializedName("minigameName")
-   public String minigameName;
+   public @Nullable String minigameName;
    @SerializedName("minigameId")
    public int minigameId;
-   @Nullable
    @SerializedName("minigameImage")
-   public String minigameImage;
+   public @Nullable String minigameImage;
    @SerializedName("parentWorldId")
    public long parentRealmId;
-   @Nullable
    @SerializedName("parentWorldName")
-   public String parentWorldName;
+   public @Nullable String parentWorldName;
    @SerializedName("activeVersion")
    public String activeVersion;
    @SerializedName("compatibility")
    public Compatibility compatibility;
-   @Nullable
    @SerializedName("regionSelectionPreference")
-   public RegionSelectionPreferenceDto regionSelectionPreference;
+   public @Nullable RegionSelectionPreferenceDto regionSelectionPreference;
 
    public RealmsServer() {
       super();
@@ -108,13 +101,11 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       return this.motd;
    }
 
-   @Nullable
-   public String getName() {
+   public @Nullable String getName() {
       return this.name;
    }
 
-   @Nullable
-   public String getMinigameName() {
+   public @Nullable String getMinigameName() {
       return this.minigameName;
    }
 
@@ -137,7 +128,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
             return var2;
          }
       } catch (Exception var3) {
-         LOGGER.error("Could not parse McoServer: {}", var3.getMessage());
+         LOGGER.error("Could not parse McoServer", var3);
          return new RealmsServer();
       }
    }
@@ -176,7 +167,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    }
 
    private static void sortInvited(RealmsServer var0) {
-      var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.getAccepted(), var0x.getAccepted()).compare(var0x.getName().toLowerCase(Locale.ROOT), var1.getName().toLowerCase(Locale.ROOT)).result());
+      var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.accepted, var0x.accepted).compare(var0x.name.toLowerCase(Locale.ROOT), var1.name.toLowerCase(Locale.ROOT)).result());
    }
 
    private static void finalizeSlots(RealmsServer var0) {
@@ -236,7 +227,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       }
    }
 
-   public RealmsServer clone() {
+   public RealmsServer copy() {
       RealmsServer var1 = new RealmsServer();
       var1.id = this.id;
       var1.remoteSubscriptionId = this.remoteSubscriptionId;
@@ -245,7 +236,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       var1.state = this.state;
       var1.owner = this.owner;
       var1.players = this.players;
-      var1.slotList = this.slotList.stream().map(RealmsSlot::clone).toList();
+      var1.slotList = this.slotList.stream().map(RealmsSlot::copy).toList();
       var1.slots = this.cloneSlots(this.slots);
       var1.expired = this.expired;
       var1.expiredTrial = this.expiredTrial;
@@ -262,7 +253,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       var1.parentRealmId = this.parentRealmId;
       var1.activeVersion = this.activeVersion;
       var1.compatibility = this.compatibility;
-      var1.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.clone() : null;
+      var1.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.copy() : null;
       return var1;
    }
 
@@ -270,7 +261,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       HashMap var2 = Maps.newHashMap();
 
       for(Map.Entry var4 : var1.entrySet()) {
-         var2.put((Integer)var4.getKey(), new RealmsSlot((Integer)var4.getKey(), ((RealmsSlot)var4.getValue()).options.clone(), ((RealmsSlot)var4.getValue()).settings));
+         var2.put((Integer)var4.getKey(), new RealmsSlot((Integer)var4.getKey(), ((RealmsSlot)var4.getValue()).options.copy(), ((RealmsSlot)var4.getValue()).settings));
       }
 
       return var2;
@@ -295,11 +286,6 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
 
    public ServerData toServerData(String var1) {
       return new ServerData((String)Objects.requireNonNullElse(this.name, "unknown server"), var1, ServerData.Type.REALM);
-   }
-
-   // $FF: synthetic method
-   public Object clone() throws CloneNotSupportedException {
-      return this.clone();
    }
 
    public static class McoServerComparator implements Comparator<RealmsServer> {
@@ -335,18 +321,27 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    }
 
    public static enum WorldType {
-      NORMAL,
-      MINIGAME,
-      ADVENTUREMAP,
-      EXPERIENCE,
-      INSPIRATION;
+      NORMAL("normal"),
+      MINIGAME("minigame"),
+      ADVENTUREMAP("adventureMap"),
+      EXPERIENCE("experience"),
+      INSPIRATION("inspiration"),
+      UNKNOWN("unknown");
 
-      private WorldType() {
+      private static final String TRANSLATION_PREFIX = "mco.backup.entry.worldType.";
+      private final Component displayName;
+
+      private WorldType(final String var3) {
+         this.displayName = Component.translatable("mco.backup.entry.worldType." + var3);
+      }
+
+      public Component getDisplayName() {
+         return this.displayName;
       }
 
       // $FF: synthetic method
       private static WorldType[] $values() {
-         return new WorldType[]{NORMAL, MINIGAME, ADVENTUREMAP, EXPERIENCE, INSPIRATION};
+         return new WorldType[]{NORMAL, MINIGAME, ADVENTUREMAP, EXPERIENCE, INSPIRATION, UNKNOWN};
       }
    }
 

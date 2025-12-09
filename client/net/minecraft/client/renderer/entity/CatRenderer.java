@@ -2,16 +2,16 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.CatModel;
+import net.minecraft.client.model.animal.feline.CatModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.CatCollarLayer;
 import net.minecraft.client.renderer.entity.state.CatRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.entity.animal.CatVariant;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.feline.CatVariant;
 import org.joml.Quaternionfc;
 
 public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, CatModel> {
@@ -20,7 +20,7 @@ public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, CatMode
       this.addLayer(new CatCollarLayer(this, var1.getModelSet()));
    }
 
-   public ResourceLocation getTextureLocation(CatRenderState var1) {
+   public Identifier getTextureLocation(CatRenderState var1) {
       return var1.texture;
    }
 
@@ -55,7 +55,7 @@ public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, CatMode
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CatRenderState)var1);
    }
 

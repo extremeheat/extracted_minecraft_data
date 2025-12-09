@@ -17,12 +17,12 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.Util;
 import net.minecraft.util.DelegateDataOutput;
 import net.minecraft.util.FastBufferedInputStream;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class NbtIo {
    private static final OpenOption[] SYNC_OUTPUT_OPTIONS;
@@ -274,8 +274,7 @@ public class NbtIo {
 
    }
 
-   @Nullable
-   public static CompoundTag read(Path var0) throws IOException {
+   public static @Nullable CompoundTag read(Path var0) throws IOException {
       if (!Files.exists(var0, new LinkOption[0])) {
          return null;
       } else {

@@ -1,30 +1,30 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import net.minecraft.advancements.AdvancementType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public enum AdvancementWidgetType {
-   OBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_obtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_obtained")),
-   UNOBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_unobtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_unobtained"));
+   OBTAINED(Identifier.withDefaultNamespace("advancements/box_obtained"), Identifier.withDefaultNamespace("advancements/task_frame_obtained"), Identifier.withDefaultNamespace("advancements/challenge_frame_obtained"), Identifier.withDefaultNamespace("advancements/goal_frame_obtained")),
+   UNOBTAINED(Identifier.withDefaultNamespace("advancements/box_unobtained"), Identifier.withDefaultNamespace("advancements/task_frame_unobtained"), Identifier.withDefaultNamespace("advancements/challenge_frame_unobtained"), Identifier.withDefaultNamespace("advancements/goal_frame_unobtained"));
 
-   private final ResourceLocation boxSprite;
-   private final ResourceLocation taskFrameSprite;
-   private final ResourceLocation challengeFrameSprite;
-   private final ResourceLocation goalFrameSprite;
+   private final Identifier boxSprite;
+   private final Identifier taskFrameSprite;
+   private final Identifier challengeFrameSprite;
+   private final Identifier goalFrameSprite;
 
-   private AdvancementWidgetType(final ResourceLocation var3, final ResourceLocation var4, final ResourceLocation var5, final ResourceLocation var6) {
+   private AdvancementWidgetType(final Identifier var3, final Identifier var4, final Identifier var5, final Identifier var6) {
       this.boxSprite = var3;
       this.taskFrameSprite = var4;
       this.challengeFrameSprite = var5;
       this.goalFrameSprite = var6;
    }
 
-   public ResourceLocation boxSprite() {
+   public Identifier boxSprite() {
       return this.boxSprite;
    }
 
-   public ResourceLocation frameSprite(AdvancementType var1) {
-      ResourceLocation var10000;
+   public Identifier frameSprite(AdvancementType var1) {
+      Identifier var10000;
       switch (var1) {
          case TASK -> var10000 = this.taskFrameSprite;
          case CHALLENGE -> var10000 = this.challengeFrameSprite;

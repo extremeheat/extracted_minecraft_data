@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -32,53 +31,54 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
-public class CommandSourceStack implements ExecutionCommandSource<CommandSourceStack>, PermissionSource, SharedSuggestionProvider {
+public class CommandSourceStack implements ExecutionCommandSource<CommandSourceStack>, SharedSuggestionProvider {
    public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(Component.translatable("permissions.requires.player"));
    public static final SimpleCommandExceptionType ERROR_NOT_ENTITY = new SimpleCommandExceptionType(Component.translatable("permissions.requires.entity"));
    private final CommandSource source;
    private final Vec3 worldPosition;
    private final ServerLevel level;
-   private final int permissionLevel;
+   private final PermissionSet permissions;
    private final String textName;
    private final Component displayName;
    private final MinecraftServer server;
    private final boolean silent;
-   @Nullable
-   private final Entity entity;
+   private final @Nullable Entity entity;
    private final CommandResultCallback resultCallback;
    private final EntityAnchorArgument.Anchor anchor;
    private final Vec2 rotation;
    private final CommandSigningContext signingContext;
    private final TaskChainer chatMessageChainer;
 
-   public CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, int var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9) {
+   public CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, PermissionSet var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9) {
       this(var1, var2, var3, var4, var5, var6, var7, var8, var9, false, CommandResultCallback.EMPTY, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(var8));
    }
 
-   protected CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, int var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9, boolean var10, CommandResultCallback var11, EntityAnchorArgument.Anchor var12, CommandSigningContext var13, TaskChainer var14) {
+   private CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, PermissionSet var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9, boolean var10, CommandResultCallback var11, EntityAnchorArgument.Anchor var12, CommandSigningContext var13, TaskChainer var14) {
       super();
       this.source = var1;
       this.worldPosition = var2;
       this.level = var4;
       this.silent = var10;
       this.entity = var9;
-      this.permissionLevel = var5;
+      this.permissions = var5;
       this.textName = var6;
       this.displayName = var7;
       this.server = var8;
@@ -90,23 +90,23 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public CommandSourceStack withSource(CommandSource var1) {
-      return this.source == var1 ? this : new CommandSourceStack(var1, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.source == var1 ? this : new CommandSourceStack(var1, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withEntity(Entity var1) {
-      return this.entity == var1 ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, var1.getPlainTextName(), var1.getDisplayName(), this.server, var1, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.entity == var1 ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, var1.getPlainTextName(), var1.getDisplayName(), this.server, var1, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withPosition(Vec3 var1) {
-      return this.worldPosition.equals(var1) ? this : new CommandSourceStack(this.source, var1, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.worldPosition.equals(var1) ? this : new CommandSourceStack(this.source, var1, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withRotation(Vec2 var1) {
-      return this.rotation.equals(var1) ? this : new CommandSourceStack(this.source, this.worldPosition, var1, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.rotation.equals(var1) ? this : new CommandSourceStack(this.source, this.worldPosition, var1, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withCallback(CommandResultCallback var1) {
-      return Objects.equals(this.resultCallback, var1) ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, var1, this.anchor, this.signingContext, this.chatMessageChainer);
+      return Objects.equals(this.resultCallback, var1) ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, var1, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withCallback(CommandResultCallback var1, BinaryOperator<CommandResultCallback> var2) {
@@ -115,19 +115,19 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public CommandSourceStack withSuppressedOutput() {
-      return !this.silent && !this.source.alwaysAccepts() ? new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, true, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer) : this;
+      return !this.silent && !this.source.alwaysAccepts() ? new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, true, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer) : this;
    }
 
-   public CommandSourceStack withPermission(int var1) {
-      return var1 == this.permissionLevel ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+   public CommandSourceStack withPermission(PermissionSet var1) {
+      return var1 == this.permissions ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
-   public CommandSourceStack withMaximumPermission(int var1) {
-      return var1 <= this.permissionLevel ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+   public CommandSourceStack withMaximumPermission(PermissionSet var1) {
+      return this.withPermission(this.permissions.union(var1));
    }
 
    public CommandSourceStack withAnchor(EntityAnchorArgument.Anchor var1) {
-      return var1 == this.anchor ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, var1, this.signingContext, this.chatMessageChainer);
+      return var1 == this.anchor ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, var1, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withLevel(ServerLevel var1) {
@@ -136,7 +136,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       } else {
          double var2 = DimensionType.getTeleportationScale(this.level.dimensionType(), var1.dimensionType());
          Vec3 var4 = new Vec3(this.worldPosition.x * var2, this.worldPosition.y, this.worldPosition.z * var2);
-         return new CommandSourceStack(this.source, var4, this.rotation, var1, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+         return new CommandSourceStack(this.source, var4, this.rotation, var1, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
       }
    }
 
@@ -156,7 +156,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public CommandSourceStack withSigningContext(CommandSigningContext var1, TaskChainer var2) {
-      return var1 == this.signingContext && var2 == this.chatMessageChainer ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, var1, var2);
+      return var1 == this.signingContext && var2 == this.chatMessageChainer ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, var1, var2);
    }
 
    public Component getDisplayName() {
@@ -167,8 +167,8 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       return this.textName;
    }
 
-   public boolean hasPermission(int var1) {
-      return this.permissionLevel >= var1;
+   public PermissionSet permissions() {
+      return this.permissions;
    }
 
    public Vec3 getPosition() {
@@ -179,8 +179,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       return this.level;
    }
 
-   @Nullable
-   public Entity getEntity() {
+   public @Nullable Entity getEntity() {
       return this.entity;
    }
 
@@ -201,8 +200,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       }
    }
 
-   @Nullable
-   public ServerPlayer getPlayer() {
+   public @Nullable ServerPlayer getPlayer() {
       Entity var2 = this.entity;
       ServerPlayer var10000;
       if (var2 instanceof ServerPlayer var1) {
@@ -289,15 +287,16 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    private void broadcastToAdmins(Component var1) {
       MutableComponent var2 = Component.translatable("chat.type.admin", this.getDisplayName(), var1).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
-      if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
-         for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-            if (var4.commandSource() != this.source && this.server.getPlayerList().isOp(var4.nameAndId())) {
-               var4.sendSystemMessage(var2);
+      GameRules var3 = this.level.getGameRules();
+      if ((Boolean)var3.get(GameRules.SEND_COMMAND_FEEDBACK)) {
+         for(ServerPlayer var5 : this.server.getPlayerList().getPlayers()) {
+            if (var5.commandSource() != this.source && this.server.getPlayerList().isOp(var5.nameAndId())) {
+               var5.sendSystemMessage(var2);
             }
          }
       }
 
-      if (this.source != this.server && this.server.getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
+      if (this.source != this.server && (Boolean)var3.get(GameRules.LOG_ADMIN_COMMANDS)) {
          this.server.sendSystemMessage(var2);
       }
 
@@ -322,7 +321,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       return this.server.getScoreboard().getTeamNames();
    }
 
-   public Stream<ResourceLocation> getAvailableSounds() {
+   public Stream<Identifier> getAvailableSounds() {
       return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::location);
    }
 
@@ -332,7 +331,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
       if (var1 == Registries.RECIPE) {
-         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> var0.id().location()), var3);
+         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> var0.id().identifier()), var3);
       } else if (var1 == Registries.ADVANCEMENT) {
          Collection var5 = this.server.getAdvancements().getAllAdvancements();
          return SharedSuggestionProvider.suggestResource(var5.stream().map(AdvancementHolder::id), var3);

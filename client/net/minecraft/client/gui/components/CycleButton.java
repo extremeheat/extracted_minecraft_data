@@ -5,20 +5,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import javax.annotation.Nullable;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
-public class CycleButton<T> extends AbstractButton {
+public class CycleButton<T> extends AbstractButton implements ResettableOptionWidget {
    public static final BooleanSupplier DEFAULT_ALT_LIST_SELECTOR = () -> Minecraft.getInstance().hasAltDown();
    private static final List<Boolean> BOOLEAN_OPTIONS;
+   private final Supplier<T> defaultValueSupplier;
    private final Component name;
    private int index;
    private T value;
@@ -26,21 +31,38 @@ public class CycleButton<T> extends AbstractButton {
    private final Function<T, Component> valueStringifier;
    private final Function<CycleButton<T>, MutableComponent> narrationProvider;
    private final OnValueChange<T> onValueChange;
-   private final boolean displayOnlyValue;
+   private final DisplayState displayState;
    private final OptionInstance.TooltipSupplier<T> tooltipSupplier;
+   private final SpriteSupplier<T> spriteSupplier;
 
-   CycleButton(int var1, int var2, int var3, int var4, Component var5, Component var6, int var7, T var8, ValueListSupplier<T> var9, Function<T, Component> var10, Function<CycleButton<T>, MutableComponent> var11, OnValueChange<T> var12, OptionInstance.TooltipSupplier<T> var13, boolean var14) {
+   CycleButton(int var1, int var2, int var3, int var4, Component var5, Component var6, int var7, T var8, Supplier<T> var9, ValueListSupplier<T> var10, Function<T, Component> var11, Function<CycleButton<T>, MutableComponent> var12, OnValueChange<T> var13, OptionInstance.TooltipSupplier<T> var14, DisplayState var15, SpriteSupplier<T> var16) {
       super(var1, var2, var3, var4, var5);
       this.name = var6;
       this.index = var7;
+      this.defaultValueSupplier = var9;
       this.value = var8;
-      this.values = var9;
-      this.valueStringifier = var10;
-      this.narrationProvider = var11;
-      this.onValueChange = var12;
-      this.displayOnlyValue = var14;
-      this.tooltipSupplier = var13;
+      this.values = var10;
+      this.valueStringifier = var11;
+      this.narrationProvider = var12;
+      this.onValueChange = var13;
+      this.displayState = var15;
+      this.tooltipSupplier = var14;
+      this.spriteSupplier = var16;
       this.updateTooltip();
+   }
+
+   protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+      Identifier var5 = this.spriteSupplier.apply(this, this.getValue());
+      if (var5 != null) {
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+      } else {
+         this.renderDefaultSprite(var1);
+      }
+
+      if (this.displayState != CycleButton.DisplayState.HIDE) {
+         this.renderDefaultLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+      }
+
    }
 
    private void updateTooltip() {
@@ -89,6 +111,10 @@ public class CycleButton<T> extends AbstractButton {
       this.updateValue(var1);
    }
 
+   public void resetValue() {
+      this.setValue(this.defaultValueSupplier.get());
+   }
+
    private void updateValue(T var1) {
       Component var2 = this.createLabelForValue(var1);
       this.setMessage(var2);
@@ -97,7 +123,7 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    private Component createLabelForValue(T var1) {
-      return (Component)(this.displayOnlyValue ? (Component)this.valueStringifier.apply(var1) : this.createFullName(var1));
+      return (Component)(this.displayState == CycleButton.DisplayState.VALUE ? (Component)this.valueStringifier.apply(var1) : this.createFullName(var1));
    }
 
    private MutableComponent createFullName(T var1) {
@@ -127,23 +153,23 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    public MutableComponent createDefaultNarrationMessage() {
-      return wrapDefaultNarrationMessage((Component)(this.displayOnlyValue ? this.createFullName(this.value) : this.getMessage()));
+      return wrapDefaultNarrationMessage((Component)(this.displayState == CycleButton.DisplayState.VALUE ? this.createFullName(this.value) : this.getMessage()));
    }
 
-   public static <T> Builder<T> builder(Function<T, Component> var0) {
-      return new Builder<T>(var0);
+   public static <T> Builder<T> builder(Function<T, Component> var0, Supplier<T> var1) {
+      return new Builder<T>(var0, var1);
    }
 
-   public static Builder<Boolean> booleanBuilder(Component var0, Component var1) {
-      return (new Builder((var2) -> var2 ? var0 : var1)).withValues(BOOLEAN_OPTIONS);
+   public static <T> Builder<T> builder(Function<T, Component> var0, T var1) {
+      return new Builder<T>(var0, () -> var1);
    }
 
-   public static Builder<Boolean> onOffBuilder() {
-      return (new Builder((var0) -> var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)).withValues(BOOLEAN_OPTIONS);
+   public static Builder<Boolean> booleanBuilder(Component var0, Component var1, boolean var2) {
+      return (new Builder((var2x) -> var2x == Boolean.TRUE ? var0 : var1, () -> var2)).withValues(BOOLEAN_OPTIONS);
    }
 
    public static Builder<Boolean> onOffBuilder(boolean var0) {
-      return onOffBuilder().withInitialValue(var0);
+      return (new Builder((var0x) -> var0x == Boolean.TRUE ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF, () -> var0)).withValues(BOOLEAN_OPTIONS);
    }
 
    static {
@@ -151,18 +177,19 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    public static class Builder<T> {
-      private int initialIndex;
-      @Nullable
-      private T initialValue;
+      private final Supplier<T> defaultValueSupplier;
       private final Function<T, Component> valueStringifier;
       private OptionInstance.TooltipSupplier<T> tooltipSupplier = (var0) -> null;
+      private SpriteSupplier<T> spriteSupplier = (var0, var1x) -> null;
       private Function<CycleButton<T>, MutableComponent> narrationProvider = CycleButton::createDefaultNarrationMessage;
       private ValueListSupplier<T> values = CycleButton.ValueListSupplier.<T>create(ImmutableList.of());
-      private boolean displayOnlyValue;
+      private DisplayState displayState;
 
-      public Builder(Function<T, Component> var1) {
+      public Builder(Function<T, Component> var1, Supplier<T> var2) {
          super();
+         this.displayState = CycleButton.DisplayState.NAME_AND_VALUE;
          this.valueStringifier = var1;
+         this.defaultValueSupplier = var2;
       }
 
       public Builder<T> withValues(Collection<T> var1) {
@@ -192,28 +219,23 @@ public class CycleButton<T> extends AbstractButton {
          return this;
       }
 
-      public Builder<T> withInitialValue(T var1) {
-         this.initialValue = var1;
-         int var2 = this.values.getDefaultList().indexOf(var1);
-         if (var2 != -1) {
-            this.initialIndex = var2;
-         }
-
-         return this;
-      }
-
       public Builder<T> withCustomNarration(Function<CycleButton<T>, MutableComponent> var1) {
          this.narrationProvider = var1;
          return this;
       }
 
-      public Builder<T> displayOnlyValue(boolean var1) {
-         this.displayOnlyValue = var1;
+      public Builder<T> withSprite(SpriteSupplier<T> var1) {
+         this.spriteSupplier = var1;
+         return this;
+      }
+
+      public Builder<T> displayState(DisplayState var1) {
+         this.displayState = var1;
          return this;
       }
 
       public Builder<T> displayOnlyValue() {
-         return this.displayOnlyValue(true);
+         return this.displayState(CycleButton.DisplayState.VALUE);
       }
 
       public CycleButton<T> create(Component var1, OnValueChange<T> var2) {
@@ -230,10 +252,11 @@ public class CycleButton<T> extends AbstractButton {
          if (var7.isEmpty()) {
             throw new IllegalStateException("No values for cycle button");
          } else {
-            Object var8 = this.initialValue != null ? this.initialValue : var7.get(this.initialIndex);
-            Component var9 = (Component)this.valueStringifier.apply(var8);
-            Object var10 = this.displayOnlyValue ? var9 : CommonComponents.optionNameValue(var5, var9);
-            return new CycleButton<T>(var1, var2, var3, var4, (Component)var10, var5, this.initialIndex, var8, this.values, this.valueStringifier, this.narrationProvider, var6, this.tooltipSupplier, this.displayOnlyValue);
+            Object var8 = this.defaultValueSupplier.get();
+            int var9 = var7.indexOf(var8);
+            Component var10 = (Component)this.valueStringifier.apply(var8);
+            Object var11 = this.displayState == CycleButton.DisplayState.VALUE ? var10 : CommonComponents.optionNameValue(var5, var10);
+            return new CycleButton<T>(var1, var2, var3, var4, (Component)var11, var5, var9, var8, this.defaultValueSupplier, this.values, this.valueStringifier, this.narrationProvider, var6, this.tooltipSupplier, this.displayState, this.spriteSupplier);
          }
       }
    }
@@ -271,8 +294,27 @@ public class CycleButton<T> extends AbstractButton {
       }
    }
 
+   public static enum DisplayState {
+      NAME_AND_VALUE,
+      VALUE,
+      HIDE;
+
+      private DisplayState() {
+      }
+
+      // $FF: synthetic method
+      private static DisplayState[] $values() {
+         return new DisplayState[]{NAME_AND_VALUE, VALUE, HIDE};
+      }
+   }
+
    @FunctionalInterface
    public interface OnValueChange<T> {
       void onValueChange(CycleButton<T> var1, T var2);
+   }
+
+   @FunctionalInterface
+   public interface SpriteSupplier<T> {
+      @Nullable Identifier apply(CycleButton<T> var1, T var2);
    }
 }

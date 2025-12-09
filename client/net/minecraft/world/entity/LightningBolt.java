@@ -1,11 +1,11 @@
 package net.minecraft.world.entity;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -16,7 +16,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
@@ -28,6 +28,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class LightningBolt extends Entity {
    private static final int START_LIFE = 2;
@@ -37,8 +38,7 @@ public class LightningBolt extends Entity {
    public long seed;
    private int flashes;
    private boolean visualOnly;
-   @Nullable
-   private ServerPlayer cause;
+   private @Nullable ServerPlayer cause;
    private final Set<Entity> hitEntities = Sets.newHashSet();
    private int blocksSetOnFire;
 
@@ -56,8 +56,7 @@ public class LightningBolt extends Entity {
       return SoundSource.WEATHER;
    }
 
-   @Nullable
-   public ServerPlayer getCause() {
+   public @Nullable ServerPlayer getCause() {
       return this.cause;
    }
 
@@ -142,25 +141,27 @@ public class LightningBolt extends Entity {
          Level var3 = this.level();
          if (var3 instanceof ServerLevel) {
             ServerLevel var2 = (ServerLevel)var3;
-            if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
-               BlockPos var7 = this.blockPosition();
-               BlockState var4 = BaseFireBlock.getState(this.level(), var7);
-               if (this.level().getBlockState(var7).isAir() && var4.canSurvive(this.level(), var7)) {
-                  this.level().setBlockAndUpdate(var7, var4);
-                  ++this.blocksSetOnFire;
-               }
-
-               for(int var5 = 0; var5 < var1; ++var5) {
-                  BlockPos var6 = var7.offset(this.random.nextInt(3) - 1, this.random.nextInt(3) - 1, this.random.nextInt(3) - 1);
-                  var4 = BaseFireBlock.getState(this.level(), var6);
-                  if (this.level().getBlockState(var6).isAir() && var4.canSurvive(this.level(), var6)) {
-                     this.level().setBlockAndUpdate(var6, var4);
-                     ++this.blocksSetOnFire;
-                  }
-               }
-
+            BlockPos var7 = this.blockPosition();
+            if (!var2.canSpreadFireAround(var7)) {
                return;
             }
+
+            BlockState var4 = BaseFireBlock.getState(var2, var7);
+            if (var2.getBlockState(var7).isAir() && var4.canSurvive(var2, var7)) {
+               var2.setBlockAndUpdate(var7, var4);
+               ++this.blocksSetOnFire;
+            }
+
+            for(int var5 = 0; var5 < var1; ++var5) {
+               BlockPos var6 = var7.offset(this.random.nextInt(3) - 1, this.random.nextInt(3) - 1, this.random.nextInt(3) - 1);
+               var4 = BaseFireBlock.getState(var2, var6);
+               if (var2.getBlockState(var6).isAir() && var4.canSurvive(var2, var6)) {
+                  var2.setBlockAndUpdate(var6, var4);
+                  ++this.blocksSetOnFire;
+               }
+            }
+
+            return;
          }
       }
 
@@ -168,14 +169,19 @@ public class LightningBolt extends Entity {
 
    private static void clearCopperOnLightningStrike(Level var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
-      if (var2.getBlock() instanceof WeatheringCopper) {
-         var0.setBlockAndUpdate(var1, WeatheringCopper.getFirst(var0.getBlockState(var1)));
-         BlockPos.MutableBlockPos var3 = var1.mutable();
-         int var4 = var0.random.nextInt(3) + 3;
+      boolean var3 = ((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var2.getBlock()) != null;
+      boolean var4 = var2.getBlock() instanceof WeatheringCopper;
+      if (var4 || var3) {
+         if (var4) {
+            var0.setBlockAndUpdate(var1, WeatheringCopper.getFirst(var0.getBlockState(var1)));
+         }
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            int var6 = var0.random.nextInt(8) + 1;
-            randomWalkCleaningCopper(var0, var1, var3, var6);
+         BlockPos.MutableBlockPos var5 = var1.mutable();
+         int var6 = var0.random.nextInt(3) + 3;
+
+         for(int var7 = 0; var7 < var6; ++var7) {
+            int var8 = var0.random.nextInt(8) + 1;
+            randomWalkCleaningCopper(var0, var1, var5, var8);
          }
 
       }

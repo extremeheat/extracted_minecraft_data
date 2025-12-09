@@ -25,21 +25,21 @@ public class FileToIdConverter {
       return json(Registries.elementsDirPath(var0));
    }
 
-   public ResourceLocation idToFile(ResourceLocation var1) {
+   public Identifier idToFile(Identifier var1) {
       String var10001 = this.prefix;
       return var1.withPath(var10001 + "/" + var1.getPath() + this.extension);
    }
 
-   public ResourceLocation fileToId(ResourceLocation var1) {
+   public Identifier fileToId(Identifier var1) {
       String var2 = var1.getPath();
       return var1.withPath(var2.substring(this.prefix.length() + 1, var2.length() - this.extension.length()));
    }
 
-   public Map<ResourceLocation, Resource> listMatchingResources(ResourceManager var1) {
+   public Map<Identifier, Resource> listMatchingResources(ResourceManager var1) {
       return var1.listResources(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
    }
 
-   public Map<ResourceLocation, List<Resource>> listMatchingResourceStacks(ResourceManager var1) {
+   public Map<Identifier, List<Resource>> listMatchingResourceStacks(ResourceManager var1) {
       return var1.listResourceStacks(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
    }
 }

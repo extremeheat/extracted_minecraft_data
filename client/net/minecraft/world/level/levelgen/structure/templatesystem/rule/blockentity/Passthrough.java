@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class Passthrough implements RuleBlockEntityModifier {
    public static final Passthrough INSTANCE = new Passthrough();
@@ -13,8 +13,7 @@ public class Passthrough implements RuleBlockEntityModifier {
       super();
    }
 
-   @Nullable
-   public CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2) {
+   public @Nullable CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2) {
       return var2;
    }
 

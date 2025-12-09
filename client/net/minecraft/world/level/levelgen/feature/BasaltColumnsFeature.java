@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -12,6 +11,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.ColumnFeatureConfiguration;
+import org.jspecify.annotations.Nullable;
 
 public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
    private static final ImmutableList<Block> CANNOT_PLACE_ON;
@@ -78,8 +78,7 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
       return var6;
    }
 
-   @Nullable
-   private static BlockPos findSurface(LevelAccessor var0, int var1, BlockPos.MutableBlockPos var2, int var3) {
+   private static @Nullable BlockPos findSurface(LevelAccessor var0, int var1, BlockPos.MutableBlockPos var2, int var3) {
       while(var2.getY() > var0.getMinY() + 1 && var3 > 0) {
          --var3;
          if (canPlaceAt(var0, var1, var2)) {
@@ -102,8 +101,7 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
       }
    }
 
-   @Nullable
-   private static BlockPos findAir(LevelAccessor var0, BlockPos.MutableBlockPos var1, int var2) {
+   private static @Nullable BlockPos findAir(LevelAccessor var0, BlockPos.MutableBlockPos var1, int var2) {
       while(var1.getY() <= var0.getMaxY() && var2 > 0) {
          --var2;
          BlockState var3 = var0.getBlockState(var1);

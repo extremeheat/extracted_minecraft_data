@@ -1,8 +1,6 @@
 package net.minecraft.client.gui.screens.options.controls;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,11 +12,12 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class KeyBindsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("controls.keybinds.title");
-   @Nullable
-   public KeyMapping selectedKey;
+   public @Nullable KeyMapping selectedKey;
    public long lastKeySelection;
    private KeyBindsList keyBindsList;
    private Button resetButton;

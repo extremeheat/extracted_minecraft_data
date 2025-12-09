@@ -1,28 +1,28 @@
 package net.minecraft.network.protocol.cookie;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
-public record ServerboundCookieResponsePacket(ResourceLocation key, @Nullable byte[] payload) implements Packet<ServerCookiePacketListener> {
+public record ServerboundCookieResponsePacket(Identifier key, byte @Nullable [] payload) implements Packet<ServerCookiePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundCookieResponsePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundCookieResponsePacket>codec(ServerboundCookieResponsePacket::write, ServerboundCookieResponsePacket::new);
 
    private ServerboundCookieResponsePacket(FriendlyByteBuf var1) {
-      this(var1.readResourceLocation(), (byte[])var1.readNullable(ClientboundStoreCookiePacket.PAYLOAD_STREAM_CODEC));
+      this(var1.readIdentifier(), (byte[])var1.readNullable(ClientboundStoreCookiePacket.PAYLOAD_STREAM_CODEC));
    }
 
-   public ServerboundCookieResponsePacket(ResourceLocation var1, @Nullable byte[] var2) {
+   public ServerboundCookieResponsePacket(Identifier var1, byte @Nullable [] var2) {
       super();
       this.key = var1;
       this.payload = var2;
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeResourceLocation(this.key);
+      var1.writeIdentifier(this.key);
       var1.writeNullable(this.payload, ClientboundStoreCookiePacket.PAYLOAD_STREAM_CODEC);
    }
 

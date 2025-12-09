@@ -3,8 +3,6 @@ package net.minecraft.world.level.block.entity;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,6 +15,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ConduitBlockEntity extends BlockEntity {
    private static final int BLOCK_REFRESH_RATE = 2;
@@ -46,8 +46,7 @@ public class ConduitBlockEntity extends BlockEntity {
    private boolean isActive;
    private boolean isHunting;
    private final List<BlockPos> effectBlocks = Lists.newArrayList();
-   @Nullable
-   private EntityReference<LivingEntity> destroyTarget;
+   private @Nullable EntityReference<LivingEntity> destroyTarget;
    private long nextAmbientSoundActivation;
 
    public ConduitBlockEntity(BlockPos var1, BlockState var2) {
@@ -195,8 +194,7 @@ public class ConduitBlockEntity extends BlockEntity {
 
    }
 
-   @Nullable
-   private static EntityReference<LivingEntity> updateDestroyTarget(@Nullable EntityReference<LivingEntity> var0, ServerLevel var1, BlockPos var2, boolean var3) {
+   private static @Nullable EntityReference<LivingEntity> updateDestroyTarget(@Nullable EntityReference<LivingEntity> var0, ServerLevel var1, BlockPos var2, boolean var3) {
       if (!var3) {
          return null;
       } else if (var0 == null) {
@@ -207,8 +205,7 @@ public class ConduitBlockEntity extends BlockEntity {
       }
    }
 
-   @Nullable
-   private static EntityReference<LivingEntity> selectNewTarget(ServerLevel var0, BlockPos var1) {
+   private static @Nullable EntityReference<LivingEntity> selectNewTarget(ServerLevel var0, BlockPos var1) {
       List var2 = var0.getEntitiesOfClass(LivingEntity.class, getDestroyRangeAABB(var1), (var0x) -> var0x instanceof Enemy && var0x.isInWaterOrRain());
       return var2.isEmpty() ? null : EntityReference.of((LivingEntity)Util.getRandom(var2, var0.random));
    }
@@ -219,7 +216,7 @@ public class ConduitBlockEntity extends BlockEntity {
 
    private static void animationTick(Level var0, BlockPos var1, List<BlockPos> var2, @Nullable Entity var3, int var4) {
       RandomSource var5 = var0.random;
-      double var6 = (double)(Mth.sin((float)(var4 + 35) * 0.1F) / 2.0F + 0.5F);
+      double var6 = (double)(Mth.sin((double)((float)(var4 + 35) * 0.1F)) / 2.0F + 0.5F);
       var6 = (var6 * var6 + var6) * 0.30000001192092896;
       Vec3 var8 = new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 1.5 + var6, (double)var1.getZ() + 0.5);
 

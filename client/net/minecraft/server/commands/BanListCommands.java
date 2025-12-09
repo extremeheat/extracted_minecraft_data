@@ -17,7 +17,7 @@ public class BanListCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("banlist").requires(Commands.hasPermission(3))).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("banlist").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).executes((var0x) -> {
          PlayerList var1 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
          return showList((CommandSourceStack)var0x.getSource(), Lists.newArrayList(Iterables.concat(var1.getBans().getEntries(), var1.getIpBans().getEntries())));
       })).then(Commands.literal("ips").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getEntries())))).then(Commands.literal("players").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getBans().getEntries()))));

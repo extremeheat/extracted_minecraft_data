@@ -5,9 +5,9 @@ import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.UnbakedGlyph;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.SpecialGlyphs;
+import org.jspecify.annotations.Nullable;
 
 public class AllMissingGlyphProvider implements GlyphProvider {
    private static final UnbakedGlyph MISSING_INSTANCE = new UnbakedGlyph() {
@@ -24,8 +24,7 @@ public class AllMissingGlyphProvider implements GlyphProvider {
       super();
    }
 
-   @Nullable
-   public UnbakedGlyph getGlyph(int var1) {
+   public @Nullable UnbakedGlyph getGlyph(int var1) {
       return MISSING_INSTANCE;
    }
 

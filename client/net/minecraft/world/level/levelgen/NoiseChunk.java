@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ColumnPos;
@@ -20,9 +19,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.material.MaterialRuleList;
+import org.jspecify.annotations.Nullable;
 
 public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunction.FunctionContext {
-   private final NoiseSettings noiseSettings;
    final int cellCountXZ;
    final int cellCountY;
    final int cellNoiseMinY;
@@ -90,7 +89,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
          }
       };
-      this.noiseSettings = var5;
       this.cellWidth = var5.getCellWidth();
       this.cellHeight = var5.getCellHeight();
       this.cellCountXZ = var1;
@@ -150,8 +148,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       return new Climate.Sampler(var1.temperature().mapAll(this::wrap), var1.vegetation().mapAll(this::wrap), var1.continents().mapAll(this::wrap), var1.erosion().mapAll(this::wrap), var1.depth().mapAll(this::wrap), var1.ridges().mapAll(this::wrap), var2);
    }
 
-   @Nullable
-   protected BlockState getInterpolatedState() {
+   protected @Nullable BlockState getInterpolatedState() {
       return this.blockStateRule.calculate(this);
    }
 
@@ -589,8 +586,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private long lastCounter;
       private long lastArrayCounter;
       private double lastValue;
-      @Nullable
-      private double[] lastArray;
+      private double @Nullable [] lastArray;
 
       CacheOnce(final DensityFunction var2) {
          super();
@@ -744,7 +740,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
    @FunctionalInterface
    public interface BlockStateFiller {
-      @Nullable
-      BlockState calculate(DensityFunction.FunctionContext var1);
+      @Nullable BlockState calculate(DensityFunction.FunctionContext var1);
    }
 }

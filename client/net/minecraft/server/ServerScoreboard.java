@@ -2,13 +2,11 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
@@ -17,8 +15,6 @@ import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
@@ -27,16 +23,30 @@ import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardSaveData;
+import org.jspecify.annotations.Nullable;
 
 public class ServerScoreboard extends Scoreboard {
-   public static final SavedDataType<ScoreboardSaveData> TYPE;
    private final MinecraftServer server;
    private final Set<Objective> trackedObjectives = Sets.newHashSet();
-   private final List<Runnable> dirtyListeners = Lists.newArrayList();
+   private boolean dirty;
 
    public ServerScoreboard(MinecraftServer var1) {
       super();
       this.server = var1;
+   }
+
+   public void load(ScoreboardSaveData.Packed var1) {
+      var1.objectives().forEach((var1x) -> this.loadObjective(var1x));
+      var1.scores().forEach((var1x) -> this.loadPlayerScore(var1x));
+      var1.displaySlots().forEach((var1x, var2) -> {
+         Objective var3 = this.getObjective(var2);
+         this.setDisplayObjective(var1x, var3);
+      });
+      var1.teams().forEach((var1x) -> this.loadPlayerTeam(var1x));
+   }
+
+   private ScoreboardSaveData.Packed store() {
+      return new ScoreboardSaveData.Packed(this.packObjectives(), this.packPlayerScores(), this.packDisplaySlots(), this.packPlayerTeams());
    }
 
    protected void onScoreChanged(ScoreHolder var1, Objective var2, Score var3) {
@@ -151,13 +161,14 @@ public class ServerScoreboard extends Scoreboard {
       this.setDirty();
    }
 
-   public void addDirtyListener(Runnable var1) {
-      this.dirtyListeners.add(var1);
+   protected void setDirty() {
+      this.dirty = true;
    }
 
-   protected void setDirty() {
-      for(Runnable var2 : this.dirtyListeners) {
-         var2.run();
+   public void storeToSaveDataIfDirty(ScoreboardSaveData var1) {
+      if (this.dirty) {
+         this.dirty = false;
+         var1.setData(this.store());
       }
 
    }
@@ -228,26 +239,10 @@ public class ServerScoreboard extends Scoreboard {
       return var2;
    }
 
-   private ScoreboardSaveData createData() {
-      ScoreboardSaveData var1 = new ScoreboardSaveData(this);
-      Objects.requireNonNull(var1);
-      this.addDirtyListener(var1::setDirty);
-      return var1;
-   }
-
-   private ScoreboardSaveData createData(ScoreboardSaveData.Packed var1) {
-      ScoreboardSaveData var2 = this.createData();
-      var2.loadFrom(var1);
-      return var2;
-   }
-
    private void updatePlayerWaypoint(String var1) {
       ServerPlayer var2 = this.server.getPlayerList().getPlayerByName(var1);
       if (var2 != null) {
-         ServerLevel var4 = var2.level();
-         if (var4 instanceof ServerLevel) {
-            var4.getWaypointManager().remakeConnections(var2);
-         }
+         var2.level().getWaypointManager().remakeConnections(var2);
       }
 
    }
@@ -257,14 +252,5 @@ public class ServerScoreboard extends Scoreboard {
          var1.getPlayers().stream().map((var1x) -> this.server.getPlayerList().getPlayerByName(var1x)).filter(Objects::nonNull).forEach((var1x) -> var3.getWaypointManager().remakeConnections(var1x));
       }
 
-   }
-
-   static {
-      TYPE = new SavedDataType<ScoreboardSaveData>("scoreboard", (var0) -> var0.levelOrThrow().getScoreboard().createData(), (var0) -> {
-         ServerScoreboard var1 = var0.levelOrThrow().getScoreboard();
-         Codec var10000 = ScoreboardSaveData.Packed.CODEC;
-         Objects.requireNonNull(var1);
-         return var10000.xmap(var1::createData, ScoreboardSaveData::pack);
-      }, DataFixTypes.SAVED_DATA_SCOREBOARD);
    }
 }

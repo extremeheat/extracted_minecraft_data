@@ -7,7 +7,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
@@ -48,6 +47,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.GameType;
@@ -61,6 +61,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MultiPlayerGameMode {
@@ -74,8 +75,7 @@ public class MultiPlayerGameMode {
    private int destroyDelay;
    private boolean isDestroying;
    private GameType localPlayerMode;
-   @Nullable
-   private GameType previousLocalPlayerMode;
+   private @Nullable GameType previousLocalPlayerMode;
    private int carriedIndex;
 
    public MultiPlayerGameMode(Minecraft var1, ClientPacketListener var2) {
@@ -314,7 +314,7 @@ public class MultiPlayerGameMode {
             var4.setValue(this.performUseItemOn(var1, var2, var3));
             return new ServerboundUseItemOnPacket(var2, var3, var5);
          });
-         return (InteractionResult)var4.getValue();
+         return (InteractionResult)var4.get();
       }
    }
 
@@ -393,7 +393,7 @@ public class MultiPlayerGameMode {
                return var5;
             }
          });
-         return (InteractionResult)var3.getValue();
+         return (InteractionResult)var3.get();
       }
    }
 
@@ -487,6 +487,14 @@ public class MultiPlayerGameMode {
       var1.releaseUsingItem();
    }
 
+   public void piercingAttack(PiercingWeapon var1) {
+      this.ensureHasSentCarriedItem();
+      this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STAB, BlockPos.ZERO, Direction.DOWN));
+      this.minecraft.player.onAttack();
+      this.minecraft.player.lungeForwardMaybe();
+      var1.makeSound(this.minecraft.player);
+   }
+
    public boolean hasExperience() {
       return this.localPlayerMode.isSurvival();
    }
@@ -499,12 +507,11 @@ public class MultiPlayerGameMode {
       return this.minecraft.player.isPassenger() && this.minecraft.player.getVehicle() instanceof HasCustomInventoryScreen;
    }
 
-   public boolean isAlwaysFlying() {
+   public boolean isSpectator() {
       return this.localPlayerMode == GameType.SPECTATOR;
    }
 
-   @Nullable
-   public GameType getPreviousPlayerMode() {
+   public @Nullable GameType getPreviousPlayerMode() {
       return this.previousLocalPlayerMode;
    }
 

@@ -7,8 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -27,6 +25,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,6 +41,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class VaultBlockEntity extends BlockEntity {
    private final VaultServerData serverData = new VaultServerData();
@@ -54,8 +54,7 @@ public class VaultBlockEntity extends BlockEntity {
       this.config = VaultConfig.DEFAULT;
    }
 
-   @Nullable
-   public Packet<ClientGamePacketListener> getUpdatePacket() {
+   public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
@@ -83,8 +82,7 @@ public class VaultBlockEntity extends BlockEntity {
       var10000.ifPresent(var3::set);
    }
 
-   @Nullable
-   public VaultServerData getServerData() {
+   public @Nullable VaultServerData getServerData() {
       return this.level != null && !this.level.isClientSide() ? this.serverData : null;
    }
 

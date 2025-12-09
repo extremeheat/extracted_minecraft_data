@@ -1,20 +1,20 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryBiome implements DebugScreenEntry {
-   private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("biome");
+   private static final Identifier GROUP = Identifier.withDefaultNamespace("biome");
 
    public DebugEntryBiome() {
       super();
@@ -27,7 +27,7 @@ public class DebugEntryBiome implements DebugScreenEntry {
          BlockPos var7 = var6.blockPosition();
          if (var5.level.isInsideBuildHeight(var7.getY())) {
             if (SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES && var2 instanceof ServerLevel) {
-               ResourceLocation var8 = GROUP;
+               Identifier var8 = GROUP;
                String var10002 = "Biome: " + printBiome(var5.level.getBiome(var7));
                Holder var10003 = var2.getBiome(var7);
                var1.addToGroup(var8, List.of(var10002, "Server Biome: " + printBiome(var10003)));
@@ -41,6 +41,6 @@ public class DebugEntryBiome implements DebugScreenEntry {
    }
 
    private static String printBiome(Holder<Biome> var0) {
-      return (String)var0.unwrap().map((var0x) -> var0x.location().toString(), (var0x) -> "[unregistered " + String.valueOf(var0x) + "]");
+      return (String)var0.unwrap().map((var0x) -> var0x.identifier().toString(), (var0x) -> "[unregistered " + String.valueOf(var0x) + "]");
    }
 }

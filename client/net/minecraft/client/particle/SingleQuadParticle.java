@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +50,7 @@ public abstract class SingleQuadParticle extends Particle {
    }
 
    protected void extractRotatedQuad(QuadParticleRenderState var1, Camera var2, Quaternionf var3, float var4) {
-      Vec3 var5 = var2.getPosition();
+      Vec3 var5 = var2.position();
       float var6 = (float)(Mth.lerp((double)var4, this.xo, this.x) - var5.x());
       float var7 = (float)(Mth.lerp((double)var4, this.yo, this.y) - var5.y());
       float var8 = (float)(Mth.lerp((double)var4, this.zo, this.z) - var5.z());
@@ -125,12 +125,13 @@ public abstract class SingleQuadParticle extends Particle {
       void setRotation(Quaternionf var1, Camera var2, float var3);
    }
 
-   public static record Layer(boolean translucent, ResourceLocation textureAtlasLocation, RenderPipeline pipeline) {
+   public static record Layer(boolean translucent, Identifier textureAtlasLocation, RenderPipeline pipeline) {
       public static final Layer TERRAIN;
+      public static final Layer ITEMS;
       public static final Layer OPAQUE;
       public static final Layer TRANSLUCENT;
 
-      public Layer(boolean var1, ResourceLocation var2, RenderPipeline var3) {
+      public Layer(boolean var1, Identifier var2, RenderPipeline var3) {
          super();
          this.translucent = var1;
          this.textureAtlasLocation = var2;
@@ -139,6 +140,7 @@ public abstract class SingleQuadParticle extends Particle {
 
       static {
          TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE);
+         ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, RenderPipelines.TRANSLUCENT_PARTICLE);
          OPAQUE = new Layer(false, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.OPAQUE_PARTICLE);
          TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_PARTICLE);
       }

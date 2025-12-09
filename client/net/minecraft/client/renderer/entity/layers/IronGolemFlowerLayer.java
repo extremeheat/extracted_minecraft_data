@@ -2,10 +2,9 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.IronGolemModel;
+import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -13,11 +12,8 @@ import net.minecraft.world.level.block.Blocks;
 import org.joml.Quaternionfc;
 
 public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
-   private final BlockRenderDispatcher blockRenderer;
-
-   public IronGolemFlowerLayer(RenderLayerParent<IronGolemRenderState, IronGolemModel> var1, BlockRenderDispatcher var2) {
+   public IronGolemFlowerLayer(RenderLayerParent<IronGolemRenderState, IronGolemModel> var1) {
       super(var1);
-      this.blockRenderer = var2;
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IronGolemRenderState var4, float var5, float var6) {

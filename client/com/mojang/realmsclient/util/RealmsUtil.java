@@ -3,20 +3,20 @@ package com.mojang.realmsclient.util;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.exception.RealmsServiceException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsUtil {
@@ -50,8 +50,8 @@ public class RealmsUtil {
       }
    }
 
-   public static Component convertToAgePresentationFromInstant(Date var0) {
-      return convertToAgePresentation(System.currentTimeMillis() - var0.getTime());
+   public static Component convertToAgePresentationFromInstant(Instant var0) {
+      return convertToAgePresentation(System.currentTimeMillis() - var0.toEpochMilli());
    }
 
    public static void renderPlayerFace(GuiGraphics var0, int var1, int var2, int var3, UUID var4) {

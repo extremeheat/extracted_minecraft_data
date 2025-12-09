@@ -10,9 +10,9 @@ import com.mojang.datafixers.util.Unit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ThrowingComponent;
+import net.minecraft.util.Util;
 
 public interface AbuseReportSender {
    static AbuseReportSender create(ReportEnvironment var0, UserApiService var1) {

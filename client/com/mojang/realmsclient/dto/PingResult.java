@@ -1,16 +1,22 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Lists;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
-public class PingResult extends ValueObject implements ReflectionBasedSerialization {
-   @SerializedName("pingResults")
-   public List<RegionPingResult> pingResults = Lists.newArrayList();
-   @SerializedName("worldIds")
-   public List<Long> realmIds = Lists.newArrayList();
-
-   public PingResult() {
+public record PingResult(List<RegionPingResult> pingResults, List<Long> realmIds) implements ReflectionBasedSerialization {
+   public PingResult(List<RegionPingResult> var1, List<Long> var2) {
       super();
+      this.pingResults = var1;
+      this.realmIds = var2;
+   }
+
+   @SerializedName("pingResults")
+   public List<RegionPingResult> pingResults() {
+      return this.pingResults;
+   }
+
+   @SerializedName("worldIds")
+   public List<Long> realmIds() {
+      return this.realmIds;
    }
 }

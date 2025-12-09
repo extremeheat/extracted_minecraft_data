@@ -5,7 +5,7 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -33,11 +33,11 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class IglooPieces {
    public static final int GENERATION_HEIGHT = 90;
-   static final ResourceLocation STRUCTURE_LOCATION_IGLOO = ResourceLocation.withDefaultNamespace("igloo/top");
-   private static final ResourceLocation STRUCTURE_LOCATION_LADDER = ResourceLocation.withDefaultNamespace("igloo/middle");
-   private static final ResourceLocation STRUCTURE_LOCATION_LABORATORY = ResourceLocation.withDefaultNamespace("igloo/bottom");
-   static final Map<ResourceLocation, BlockPos> PIVOTS;
-   static final Map<ResourceLocation, BlockPos> OFFSETS;
+   static final Identifier STRUCTURE_LOCATION_IGLOO = Identifier.withDefaultNamespace("igloo/top");
+   private static final Identifier STRUCTURE_LOCATION_LADDER = Identifier.withDefaultNamespace("igloo/middle");
+   private static final Identifier STRUCTURE_LOCATION_LABORATORY = Identifier.withDefaultNamespace("igloo/bottom");
+   static final Map<Identifier, BlockPos> PIVOTS;
+   static final Map<Identifier, BlockPos> OFFSETS;
 
    public IglooPieces() {
       super();
@@ -62,7 +62,7 @@ public class IglooPieces {
    }
 
    public static class IglooPiece extends TemplateStructurePiece {
-      public IglooPiece(StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4, int var5) {
+      public IglooPiece(StructureTemplateManager var1, Identifier var2, BlockPos var3, Rotation var4, int var5) {
          super(StructurePieceType.IGLOO, 0, var1, var2, var2.toString(), makeSettings(var4, var2), makePosition(var2, var3, var5));
       }
 
@@ -70,11 +70,11 @@ public class IglooPieces {
          super(StructurePieceType.IGLOO, var2, var1, (var1x) -> makeSettings((Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow(), var1x));
       }
 
-      private static StructurePlaceSettings makeSettings(Rotation var0, ResourceLocation var1) {
+      private static StructurePlaceSettings makeSettings(Rotation var0, Identifier var1) {
          return (new StructurePlaceSettings()).setRotation(var0).setMirror(Mirror.NONE).setRotationPivot((BlockPos)IglooPieces.PIVOTS.get(var1)).addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK).setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
       }
 
-      private static BlockPos makePosition(ResourceLocation var0, BlockPos var1, int var2) {
+      private static BlockPos makePosition(Identifier var0, BlockPos var1, int var2) {
          return var1.offset((Vec3i)IglooPieces.OFFSETS.get(var0)).below(var2);
       }
 
@@ -95,7 +95,7 @@ public class IglooPieces {
       }
 
       public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         ResourceLocation var8 = ResourceLocation.parse(this.templateName);
+         Identifier var8 = Identifier.parse(this.templateName);
          StructurePlaceSettings var9 = makeSettings(this.placeSettings.getRotation(), var8);
          BlockPos var10 = (BlockPos)IglooPieces.OFFSETS.get(var8);
          BlockPos var11 = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(var9, new BlockPos(3 - var10.getX(), 0, -var10.getZ())));

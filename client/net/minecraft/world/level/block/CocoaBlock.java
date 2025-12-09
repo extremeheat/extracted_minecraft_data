@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class CocoaBlock extends HorizontalDirectionalBlock implements BonemealableBlock {
    public static final MapCodec<CocoaBlock> CODEC = simpleCodec(CocoaBlock::new);
@@ -63,8 +63,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
       return (VoxelShape)((Map)SHAPES.get((Integer)var1.getValue(AGE))).get(var1.getValue(FACING));
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = this.defaultBlockState();
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();

@@ -13,9 +13,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FluidState;
 
 public class PhantomSpawner implements CustomSpawner {
@@ -27,7 +27,7 @@ public class PhantomSpawner implements CustomSpawner {
 
    public void tick(ServerLevel var1, boolean var2) {
       if (var2) {
-         if (var1.getGameRules().getBoolean(GameRules.RULE_DOINSOMNIA)) {
+         if ((Boolean)var1.getGameRules().get(GameRules.SPAWN_PHANTOMS)) {
             RandomSource var3 = var1.random;
             --this.nextTick;
             if (this.nextTick <= 0) {

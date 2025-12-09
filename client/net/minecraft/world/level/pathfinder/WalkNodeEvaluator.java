@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import java.util.EnumSet;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class WalkNodeEvaluator extends NodeEvaluator {
    public static final double SPACE_BETWEEN_WALL_POSTS = 0.5;
@@ -214,8 +214,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return false;
    }
 
-   @Nullable
-   protected Node findAcceptedNode(int var1, int var2, int var3, int var4, double var5, Direction var7, PathType var8) {
+   protected @Nullable Node findAcceptedNode(int var1, int var2, int var3, int var4, double var5, Direction var7, PathType var8) {
       Node var9 = null;
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
       double var11 = this.getFloorLevel(var10.set(var1, var2, var3));
@@ -276,8 +275,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return var5;
    }
 
-   @Nullable
-   private Node tryJumpOn(int var1, int var2, int var3, int var4, double var5, Direction var7, PathType var8, BlockPos.MutableBlockPos var9) {
+   private @Nullable Node tryJumpOn(int var1, int var2, int var3, int var4, double var5, Direction var7, PathType var8, BlockPos.MutableBlockPos var9) {
       Node var10 = this.findAcceptedNode(var1, var2 + 1, var3, var4 - 1, var5, var7, var8);
       if (var10 == null) {
          return null;
@@ -294,8 +292,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       }
    }
 
-   @Nullable
-   private Node tryFindFirstNonWaterBelow(int var1, int var2, int var3, @Nullable Node var4) {
+   private @Nullable Node tryFindFirstNonWaterBelow(int var1, int var2, int var3, @Nullable Node var4) {
       --var2;
 
       while(var2 > this.mob.level().getMinY()) {

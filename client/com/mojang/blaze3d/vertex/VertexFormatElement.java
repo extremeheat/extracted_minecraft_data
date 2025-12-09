@@ -4,12 +4,12 @@ import com.mojang.blaze3d.DontObfuscate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
 public record VertexFormatElement(int id, int index, Type type, Usage usage, int count) {
    public static final int MAX_COUNT = 32;
-   private static final VertexFormatElement[] BY_ID = new VertexFormatElement[32];
+   private static final @Nullable VertexFormatElement[] BY_ID = new VertexFormatElement[32];
    private static final List<VertexFormatElement> ELEMENTS = new ArrayList(32);
    public static final VertexFormatElement POSITION;
    public static final VertexFormatElement COLOR;
@@ -18,6 +18,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
    public static final VertexFormatElement UV1;
    public static final VertexFormatElement UV2;
    public static final VertexFormatElement NORMAL;
+   public static final VertexFormatElement LINE_WIDTH;
 
    public VertexFormatElement(int var1, int var2, Type var3, Usage var4, int var5) {
       super();
@@ -64,13 +65,12 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       return this.type.size() * this.count;
    }
 
-   @Nullable
-   public static VertexFormatElement byId(int var0) {
+   public static @Nullable VertexFormatElement byId(int var0) {
       return BY_ID[var0];
    }
 
    public static Stream<VertexFormatElement> elementsFromMask(int var0) {
-      return ELEMENTS.stream().filter((var1) -> var1 != null && (var0 & var1.mask()) != 0);
+      return ELEMENTS.stream().filter((var1) -> (var0 & var1.mask()) != 0);
    }
 
    static {
@@ -81,6 +81,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       UV1 = register(3, 1, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
       UV2 = register(4, 2, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
       NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
+      LINE_WIDTH = register(6, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
    }
 
    @DontObfuscate

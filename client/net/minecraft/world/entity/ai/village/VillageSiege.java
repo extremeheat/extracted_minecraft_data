@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.village;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
@@ -10,11 +9,12 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class VillageSiege implements CustomSpawner {
@@ -34,8 +34,8 @@ public class VillageSiege implements CustomSpawner {
 
    public void tick(ServerLevel var1, boolean var2) {
       if (!var1.isBrightOutside() && var2) {
-         float var3 = var1.getTimeOfDay(0.0F);
-         if ((double)var3 == 0.5) {
+         long var3 = var1.getDayTime() % 24000L;
+         if (var3 == 18000L) {
             this.siegeState = var1.random.nextInt(10) == 0 ? VillageSiege.State.SIEGE_TONIGHT : VillageSiege.State.SIEGE_DONE;
          }
 
@@ -74,9 +74,9 @@ public class VillageSiege implements CustomSpawner {
             if (var1.isVillage(var4) && !var1.getBiome(var4).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
                for(int var5 = 0; var5 < 10; ++var5) {
                   float var6 = var1.random.nextFloat() * 6.2831855F;
-                  this.spawnX = var4.getX() + Mth.floor(Mth.cos(var6) * 32.0F);
+                  this.spawnX = var4.getX() + Mth.floor(Mth.cos((double)var6) * 32.0F);
                   this.spawnY = var4.getY();
-                  this.spawnZ = var4.getZ() + Mth.floor(Mth.sin(var6) * 32.0F);
+                  this.spawnZ = var4.getZ() + Mth.floor(Mth.sin((double)var6) * 32.0F);
                   if (this.findRandomSpawnPos(var1, new BlockPos(this.spawnX, this.spawnY, this.spawnZ)) != null) {
                      this.nextSpawnTime = 0;
                      this.zombiesToSpawn = 20;
@@ -109,8 +109,7 @@ public class VillageSiege implements CustomSpawner {
       }
    }
 
-   @Nullable
-   private Vec3 findRandomSpawnPos(ServerLevel var1, BlockPos var2) {
+   private @Nullable Vec3 findRandomSpawnPos(ServerLevel var1, BlockPos var2) {
       for(int var3 = 0; var3 < 10; ++var3) {
          int var4 = var2.getX() + var1.random.nextInt(16) - 8;
          int var5 = var2.getZ() + var1.random.nextInt(16) - 8;

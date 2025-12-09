@@ -10,7 +10,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.DynamicMBean;
@@ -25,6 +24,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import net.minecraft.server.MinecraftServer;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class MinecraftServerStatistics implements DynamicMBean {
@@ -58,8 +58,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       return this.server.getTickTimesNanos();
    }
 
-   @Nullable
-   public Object getAttribute(String var1) {
+   public @Nullable Object getAttribute(String var1) {
       AttributeDescription var2 = (AttributeDescription)this.attributeDescriptionByName.get(var1);
       return var2 == null ? null : var2.getter.get();
    }
@@ -79,8 +78,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       return new AttributeList();
    }
 
-   @Nullable
-   public Object invoke(String var1, Object[] var2, String[] var3) {
+   public @Nullable Object invoke(String var1, Object[] var2, String[] var3) {
       return null;
    }
 

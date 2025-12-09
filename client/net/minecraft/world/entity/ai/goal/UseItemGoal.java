@@ -1,19 +1,18 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class UseItemGoal<T extends Mob> extends Goal {
    private final T mob;
    private final ItemStack item;
    private final Predicate<? super T> canUseSelector;
-   @Nullable
-   private final SoundEvent finishUsingSound;
+   private final @Nullable SoundEvent finishUsingSound;
 
    public UseItemGoal(T var1, ItemStack var2, @Nullable SoundEvent var3, Predicate<? super T> var4) {
       super();

@@ -7,7 +7,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -20,10 +19,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public interface BlockGetter extends LevelHeightAccessor {
-   @Nullable
-   BlockEntity getBlockEntity(BlockPos var1);
+   @Nullable BlockEntity getBlockEntity(BlockPos var1);
 
    default <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2) {
       BlockEntity var3 = this.getBlockEntity(var1);
@@ -72,8 +71,7 @@ public interface BlockGetter extends LevelHeightAccessor {
       });
    }
 
-   @Nullable
-   default BlockHitResult clipWithInteractionOverride(Vec3 var1, Vec3 var2, BlockPos var3, VoxelShape var4, BlockState var5) {
+   default @Nullable BlockHitResult clipWithInteractionOverride(Vec3 var1, Vec3 var2, BlockPos var3, VoxelShape var4, BlockState var5) {
       BlockHitResult var6 = var4.clip(var1, var2, var3);
       if (var6 != null) {
          BlockHitResult var7 = var5.getInteractionShape(this, var3).clip(var1, var2, var3);
@@ -101,7 +99,7 @@ public interface BlockGetter extends LevelHeightAccessor {
       });
    }
 
-   static <T, C> T traverseBlocks(Vec3 var0, Vec3 var1, C var2, BiFunction<C, BlockPos, T> var3, Function<C, T> var4) {
+   static <T, C> T traverseBlocks(Vec3 var0, Vec3 var1, C var2, BiFunction<C, BlockPos, @Nullable T> var3, Function<C, T> var4) {
       if (var0.equals(var1)) {
          return (T)var4.apply(var2);
       } else {

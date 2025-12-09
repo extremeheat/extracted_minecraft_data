@@ -3,7 +3,7 @@ package net.minecraft.network.protocol.common;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class CommonPacketTypes {
    public static final PacketType<ClientboundClearDialogPacket> CLIENTBOUND_CLEAR_DIALOG = createClientbound("clear_dialog");
@@ -31,10 +31,10 @@ public class CommonPacketTypes {
    }
 
    private static <T extends Packet<ClientCommonPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerCommonPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
    }
 }

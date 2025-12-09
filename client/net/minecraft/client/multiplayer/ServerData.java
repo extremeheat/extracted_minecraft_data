@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.PngInfo;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerData {
@@ -23,15 +23,13 @@ public class ServerData {
    public String ip;
    public Component status;
    public Component motd;
-   @Nullable
-   public ServerStatus.Players players;
+   public ServerStatus.@Nullable Players players;
    public long ping;
    public int protocol = SharedConstants.getCurrentVersion().protocolVersion();
    public Component version = Component.literal(SharedConstants.getCurrentVersion().name());
    public List<Component> playerList = Collections.emptyList();
    private ServerPackStatus packStatus;
-   @Nullable
-   private byte[] iconBytes;
+   private byte @Nullable [] iconBytes;
    private Type type;
    private int acceptedCodeOfConduct;
    private State state;
@@ -74,12 +72,11 @@ public class ServerData {
       return var1;
    }
 
-   @Nullable
-   public byte[] getIconBytes() {
+   public byte @Nullable [] getIconBytes() {
       return this.iconBytes;
    }
 
-   public void setIconBytes(@Nullable byte[] var1) {
+   public void setIconBytes(byte @Nullable [] var1) {
       this.iconBytes = var1;
    }
 
@@ -127,8 +124,7 @@ public class ServerData {
       this.state = var1;
    }
 
-   @Nullable
-   public static byte[] validateIcon(@Nullable byte[] var0) {
+   public static byte @Nullable [] validateIcon(byte @Nullable [] var0) {
       if (var0 != null) {
          try {
             PngInfo var1 = PngInfo.fromBytes(var0);

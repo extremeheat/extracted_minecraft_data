@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.PacketListener;
+import org.jspecify.annotations.Nullable;
 
 public interface BundlerInfo {
    int BUNDLE_SIZE_LIMIT = 4096;
@@ -24,13 +24,11 @@ public interface BundlerInfo {
 
          }
 
-         @Nullable
-         public Bundler startPacketBundling(Packet<?> var1x) {
+         public @Nullable Bundler startPacketBundling(Packet<?> var1x) {
             return var1x == var2 ? new Bundler() {
                private final List<Packet<? super T>> bundlePackets = new ArrayList();
 
-               @Nullable
-               public Packet<?> addPacket(Packet<?> var1x) {
+               public @Nullable Packet<?> addPacket(Packet<?> var1x) {
                   if (var1x == var2) {
                      return (Packet)var1.apply(this.bundlePackets);
                   } else if (this.bundlePackets.size() >= 4096) {
@@ -47,11 +45,9 @@ public interface BundlerInfo {
 
    void unbundlePacket(Packet<?> var1, Consumer<Packet<?>> var2);
 
-   @Nullable
-   Bundler startPacketBundling(Packet<?> var1);
+   @Nullable Bundler startPacketBundling(Packet<?> var1);
 
    public interface Bundler {
-      @Nullable
-      Packet<?> addPacket(Packet<?> var1);
+      @Nullable Packet<?> addPacket(Packet<?> var1);
    }
 }

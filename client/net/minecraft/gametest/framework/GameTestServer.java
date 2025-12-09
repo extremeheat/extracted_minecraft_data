@@ -18,11 +18,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportType;
 import net.minecraft.SystemReport;
-import net.minecraft.Util;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceSelectorArgument;
 import net.minecraft.core.BlockPos;
@@ -31,6 +29,8 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.gizmos.GizmoCollector;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldLoader;
@@ -39,10 +39,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.server.players.UserNameToIdResolver;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
@@ -50,11 +53,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
@@ -62,6 +65,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class GameTestServer extends MinecraftServer {
@@ -76,8 +80,7 @@ public class GameTestServer extends MinecraftServer {
    private List<GameTestBatch> testBatches = new ArrayList();
    private final Stopwatch stopwatch = Stopwatch.createUnstarted();
    private static final WorldOptions WORLD_OPTIONS;
-   @Nullable
-   private MultipleTestTracker testTracker;
+   private @Nullable MultipleTestTracker testTracker;
 
    public static GameTestServer create(Thread var0, LevelStorageSource.LevelStorageAccess var1, PackRepository var2, Optional<String> var3, boolean var4) {
       var2.reload();
@@ -87,7 +90,7 @@ public class GameTestServer extends MinecraftServer {
       WorldDataConfiguration var6 = new WorldDataConfiguration(new DataPackConfig(var5, List.of()), ENABLED_FEATURES);
       LevelSettings var7 = new LevelSettings("Test Level", GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(ENABLED_FEATURES), var6);
       WorldLoader.PackConfig var8 = new WorldLoader.PackConfig(var2, var6, false, true);
-      WorldLoader.InitConfig var9 = new WorldLoader.InitConfig(var8, Commands.CommandSelection.DEDICATED, 4);
+      WorldLoader.InitConfig var9 = new WorldLoader.InitConfig(var8, Commands.CommandSelection.DEDICATED, LevelBasedPermissionSet.OWNER);
 
       try {
          LOGGER.debug("Starting resource loading");
@@ -116,6 +119,7 @@ public class GameTestServer extends MinecraftServer {
    public boolean initServer() {
       this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {
       });
+      Gizmos.withCollector(GizmoCollector.NOOP);
       this.loadLevel();
       ServerLevel var1 = this.overworld();
       this.testBatches = this.evaluateTestsToRun(var1);
@@ -251,12 +255,12 @@ public class GameTestServer extends MinecraftServer {
       return false;
    }
 
-   public int operatorUserPermissionLevel() {
-      return 0;
+   public LevelBasedPermissionSet operatorUserPermissions() {
+      return LevelBasedPermissionSet.ALL;
    }
 
-   public int getFunctionCompilationLevel() {
-      return 4;
+   public PermissionSet getFunctionCompilationPermissions() {
+      return LevelBasedPermissionSet.OWNER;
    }
 
    public boolean shouldRconBroadcast() {
@@ -271,16 +275,8 @@ public class GameTestServer extends MinecraftServer {
       return 0;
    }
 
-   public boolean isEpollEnabled() {
+   public boolean useNativeTransport() {
       return false;
-   }
-
-   public boolean isCommandBlockEnabled() {
-      return true;
-   }
-
-   public boolean isSpawnerBlockEnabled() {
-      return true;
    }
 
    public boolean isPublished() {

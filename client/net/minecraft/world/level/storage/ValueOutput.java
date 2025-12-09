@@ -2,7 +2,7 @@ package net.minecraft.world.level.storage;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface ValueOutput {
    <T> void store(String var1, Codec<T> var2, T var3);

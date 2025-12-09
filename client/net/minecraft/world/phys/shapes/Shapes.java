@@ -5,15 +5,14 @@ import com.google.common.collect.Maps;
 import com.google.common.math.DoubleMath;
 import com.google.common.math.IntMath;
 import com.mojang.math.OctahedralGroup;
-import com.mojang.math.Quadrant;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.core.AxisCycle;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -264,34 +263,35 @@ public final class Shapes {
          if (var0 instanceof CubeVoxelShape && BLOCK_CENTER.equals(var2)) {
             return new CubeVoxelShape(var3);
          } else {
-            Direction.Axis var4 = var1.permute(Direction.Axis.X);
-            Direction.Axis var5 = var1.permute(Direction.Axis.Y);
-            Direction.Axis var6 = var1.permute(Direction.Axis.Z);
+            Direction.Axis var4 = var1.permutation().permuteAxis(Direction.Axis.X);
+            Direction.Axis var5 = var1.permutation().permuteAxis(Direction.Axis.Y);
+            Direction.Axis var6 = var1.permutation().permuteAxis(Direction.Axis.Z);
             DoubleList var7 = var0.getCoords(var4);
             DoubleList var8 = var0.getCoords(var5);
             DoubleList var9 = var0.getCoords(var6);
-            boolean var10 = var1.inverts(var4);
-            boolean var11 = var1.inverts(var5);
-            boolean var12 = var1.inverts(var6);
-            boolean var13 = var4.choose(var10, var11, var12);
-            boolean var14 = var5.choose(var10, var11, var12);
-            boolean var15 = var6.choose(var10, var11, var12);
-            return new ArrayVoxelShape(var3, makeAxis(var7, var13, var2.get(var4), var2.x), makeAxis(var8, var14, var2.get(var5), var2.y), makeAxis(var9, var15, var2.get(var6), var2.z));
+            boolean var10 = var1.inverts(Direction.Axis.X);
+            boolean var11 = var1.inverts(Direction.Axis.Y);
+            boolean var12 = var1.inverts(Direction.Axis.Z);
+            return new ArrayVoxelShape(var3, flipAxisIfNeeded(var7, var10, var2.get(var4), var2.x), flipAxisIfNeeded(var8, var11, var2.get(var5), var2.y), flipAxisIfNeeded(var9, var12, var2.get(var6), var2.z));
          }
       }
    }
 
    @VisibleForTesting
-   static DoubleList makeAxis(DoubleList var0, boolean var1, double var2, double var4) {
+   static DoubleList flipAxisIfNeeded(DoubleList var0, boolean var1, double var2, double var4) {
       if (!var1 && var2 == var4) {
          return var0;
       } else {
          int var6 = var0.size();
          DoubleArrayList var7 = new DoubleArrayList(var6);
-         int var8 = var1 ? -1 : 1;
-
-         for(int var9 = var1 ? var6 - 1 : 0; var9 >= 0 && var9 < var6; var9 += var8) {
-            var7.add(var4 + (double)var8 * (var0.getDouble(var9) - var2));
+         if (var1) {
+            for(int var8 = var6 - 1; var8 >= 0; --var8) {
+               var7.add(-(var0.getDouble(var8) - var2) + var4);
+            }
+         } else {
+            for(int var9 = 0; var9 >= 0 && var9 < var6; ++var9) {
+               var7.add(var0.getDouble(var9) - var2 + var4);
+            }
          }
 
          return var7;
@@ -307,7 +307,7 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1)));
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90, var1)));
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0) {
@@ -315,27 +315,39 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R0), var1)));
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90, var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.BLOCK_ROT_X_90, var1)));
    }
 
    public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0) {
-      return rotateHorizontal(var0, BLOCK_CENTER);
+      return rotateHorizontal(var0, OctahedralGroup.IDENTITY, BLOCK_CENTER);
    }
 
-   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R270), var1)));
+   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, OctahedralGroup var1) {
+      return rotateHorizontal(var0, var1, BLOCK_CENTER);
+   }
+
+   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
+      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(var0, var1), Direction.EAST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90.compose(var1), var2), Direction.SOUTH, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(var1), var2), Direction.WEST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_270.compose(var1), var2)));
    }
 
    public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0) {
-      return rotateAll(var0, BLOCK_CENTER);
+      return rotateAll(var0, OctahedralGroup.IDENTITY, BLOCK_CENTER);
    }
 
    public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R270), var1), Direction.UP, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R270, Quadrant.R0), var1), Direction.DOWN, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R0), var1)));
+      return rotateAll(var0, OctahedralGroup.IDENTITY, var1);
+   }
+
+   public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
+      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(var0, var1), Direction.EAST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90.compose(var1), var2), Direction.SOUTH, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(var1), var2), Direction.WEST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_270.compose(var1), var2), Direction.UP, rotate(var0, OctahedralGroup.BLOCK_ROT_X_270.compose(var1), var2), Direction.DOWN, rotate(var0, OctahedralGroup.BLOCK_ROT_X_90.compose(var1), var2)));
    }
 
    public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0) {
-      return Map.of(AttachFace.WALL, rotateHorizontal(var0), AttachFace.FLOOR, rotateHorizontal(rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R270, Quadrant.R0))), AttachFace.CEILING, rotateHorizontal(rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R180))));
+      return rotateAttachFace(var0, OctahedralGroup.IDENTITY);
+   }
+
+   public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0, OctahedralGroup var1) {
+      return Map.of(AttachFace.WALL, rotateHorizontal(var0, var1), AttachFace.FLOOR, rotateHorizontal(var0, OctahedralGroup.BLOCK_ROT_X_270.compose(var1)), AttachFace.CEILING, rotateHorizontal(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(OctahedralGroup.BLOCK_ROT_X_90).compose(var1)));
    }
 
    public interface DoubleLineConsumer {

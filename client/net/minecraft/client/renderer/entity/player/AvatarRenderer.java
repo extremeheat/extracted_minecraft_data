@@ -6,10 +6,9 @@ import java.util.Objects;
 import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -28,10 +27,13 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Avatar;
@@ -44,6 +46,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SwingAnimationType;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
@@ -99,8 +103,8 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
                return HumanoidModel.ArmPose.BOW_AND_ARROW;
             }
 
-            if (var3 == ItemUseAnimation.SPEAR) {
-               return HumanoidModel.ArmPose.THROW_SPEAR;
+            if (var3 == ItemUseAnimation.TRIDENT) {
+               return HumanoidModel.ArmPose.THROW_TRIDENT;
             }
 
             if (var3 == ItemUseAnimation.CROSSBOW) {
@@ -118,13 +122,22 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
             if (var3 == ItemUseAnimation.BRUSH) {
                return HumanoidModel.ArmPose.BRUSH;
             }
+
+            if (var3 == ItemUseAnimation.SPEAR) {
+               return HumanoidModel.ArmPose.SPEAR;
+            }
          }
 
-         return HumanoidModel.ArmPose.ITEM;
+         SwingAnimation var4 = (SwingAnimation)var1.get(DataComponents.SWING_ANIMATION);
+         if (var4 != null && var4.type() == SwingAnimationType.STAB && var0.swinging) {
+            return HumanoidModel.ArmPose.SPEAR;
+         } else {
+            return var1.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.ITEM;
+         }
       }
    }
 
-   public ResourceLocation getTextureLocation(AvatarRenderState var1) {
+   public Identifier getTextureLocation(AvatarRenderState var1) {
       return var1.skin.body().texturePath();
    }
 
@@ -217,8 +230,8 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       double var7 = var4.getInterpolatedCloakY(var3) - Mth.lerp((double)var3, var1.yo, var1.getY());
       double var9 = var4.getInterpolatedCloakZ(var3) - Mth.lerp((double)var3, var1.zo, var1.getZ());
       float var11 = Mth.rotLerp(var3, var1.yBodyRotO, var1.yBodyRot);
-      double var12 = (double)Mth.sin(var11 * 0.017453292F);
-      double var14 = (double)(-Mth.cos(var11 * 0.017453292F));
+      double var12 = (double)Mth.sin((double)(var11 * 0.017453292F));
+      double var14 = (double)(-Mth.cos((double)(var11 * 0.017453292F)));
       var2.capeFlap = (float)var7 * 10.0F;
       var2.capeFlap = Mth.clamp(var2.capeFlap, -6.0F, 32.0F);
       var2.capeLean = (float)(var5 * var12 + var9 * var14) * 100.0F;
@@ -228,18 +241,18 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       var2.capeLean2 = Mth.clamp(var2.capeLean2, -20.0F, 20.0F);
       float var16 = var4.getInterpolatedBob(var3);
       float var17 = var4.getInterpolatedWalkDistance(var3);
-      var2.capeFlap += Mth.sin(var17 * 6.0F) * 32.0F * var16;
+      var2.capeFlap += Mth.sin((double)(var17 * 6.0F)) * 32.0F * var16;
    }
 
-   public void renderRightHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
+   public void renderRightHand(PoseStack var1, SubmitNodeCollector var2, int var3, Identifier var4, boolean var5) {
       this.renderHand(var1, var2, var3, var4, (this.model).rightArm, var5);
    }
 
-   public void renderLeftHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
+   public void renderLeftHand(PoseStack var1, SubmitNodeCollector var2, int var3, Identifier var4, boolean var5) {
       this.renderHand(var1, var2, var3, var4, (this.model).leftArm, var5);
    }
 
-   private void renderHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
+   private void renderHand(PoseStack var1, SubmitNodeCollector var2, int var3, Identifier var4, ModelPart var5, boolean var6) {
       PlayerModel var7 = (PlayerModel)this.getModel();
       var5.resetPose();
       var5.visible = true;
@@ -247,7 +260,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       var7.rightSleeve.visible = var6;
       var7.leftArm.zRot = -0.1F;
       var7.rightArm.zRot = 0.1F;
-      var2.submitModelPart(var5, var1, RenderType.entityTranslucent(var4), var3, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
+      var2.submitModelPart(var5, var1, RenderTypes.entityTranslucent(var4), var3, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
    }
 
    protected void setupRotations(AvatarRenderState var1, PoseStack var2, float var3, float var4) {
@@ -300,7 +313,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((AvatarRenderState)var1);
    }
 

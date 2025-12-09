@@ -1,6 +1,7 @@
 package net.minecraft.client.resources.language;
 
 import java.util.IllegalFormatException;
+import java.util.Locale;
 import net.minecraft.locale.Language;
 
 public class I18n {
@@ -18,7 +19,7 @@ public class I18n {
       String var2 = language.getOrDefault(var0);
 
       try {
-         return String.format(var2, var1);
+         return String.format(Locale.ROOT, var2, var1);
       } catch (IllegalFormatException var4) {
          return "Format error: " + var2;
       }

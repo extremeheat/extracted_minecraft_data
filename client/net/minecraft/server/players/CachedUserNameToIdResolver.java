@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -86,7 +87,7 @@ public class CachedUserNameToIdResolver implements UserNameToIdResolver {
    }
 
    private GameProfileInfo addInternal(NameAndId var1) {
-      Calendar var2 = Calendar.getInstance();
+      Calendar var2 = Calendar.getInstance(TimeZone.getDefault(), Locale.ROOT);
       var2.setTime(new Date());
       var2.add(2, 1);
       Date var3 = var2.getTime();

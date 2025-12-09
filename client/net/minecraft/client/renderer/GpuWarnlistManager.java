@@ -15,22 +15,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparations> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation GPU_WARNLIST_LOCATION = ResourceLocation.withDefaultNamespace("gpu_warnlist.json");
+   private static final Identifier GPU_WARNLIST_LOCATION = Identifier.withDefaultNamespace("gpu_warnlist.json");
    private ImmutableMap<String, String> warnings = ImmutableMap.of();
    private boolean showWarning;
    private boolean warningDismissed;
-   private boolean skipFabulous;
 
    public GpuWarnlistManager() {
       super();
@@ -52,45 +51,31 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       this.warningDismissed = true;
    }
 
-   public void dismissWarningAndSkipFabulous() {
-      this.warningDismissed = true;
-      this.skipFabulous = true;
-   }
-
    public boolean isShowingWarning() {
       return this.showWarning && !this.warningDismissed;
-   }
-
-   public boolean isSkippingFabulous() {
-      return this.skipFabulous;
    }
 
    public void resetWarnings() {
       this.showWarning = false;
       this.warningDismissed = false;
-      this.skipFabulous = false;
    }
 
-   @Nullable
-   public String getRendererWarnings() {
+   public @Nullable String getRendererWarnings() {
       return (String)this.warnings.get("renderer");
    }
 
-   @Nullable
-   public String getVersionWarnings() {
+   public @Nullable String getVersionWarnings() {
       return (String)this.warnings.get("version");
    }
 
-   @Nullable
-   public String getVendorWarnings() {
+   public @Nullable String getVendorWarnings() {
       return (String)this.warnings.get("vendor");
    }
 
-   @Nullable
-   public String getAllWarnings() {
+   public @Nullable String getAllWarnings() {
       StringBuilder var1 = new StringBuilder();
       this.warnings.forEach((var1x, var2) -> var1.append(var1x).append(": ").append(var2));
-      return var1.length() == 0 ? null : var1.toString();
+      return var1.isEmpty() ? null : var1.toString();
    }
 
    protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -117,8 +102,7 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       var0.forEach((var1x) -> var1.add(Pattern.compile(var1x.getAsString(), 2)));
    }
 
-   @Nullable
-   private static JsonObject parseJson(ResourceManager var0, ProfilerFiller var1) {
+   private static @Nullable JsonObject parseJson(ResourceManager var0, ProfilerFiller var1) {
       try {
          JsonObject var4;
          try (Zone var2 = var1.zone("parse_json")) {

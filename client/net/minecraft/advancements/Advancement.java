@@ -8,9 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.critereon.CriterionValidator;
+import net.minecraft.advancements.criterion.CriterionValidator;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.network.FriendlyByteBuf;
@@ -22,21 +21,22 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
-public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInfo> display, AdvancementRewards rewards, Map<String, Criterion<?>> criteria, AdvancementRequirements requirements, boolean sendsTelemetryEvent, Optional<Component> name) {
+public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> display, AdvancementRewards rewards, Map<String, Criterion<?>> criteria, AdvancementRequirements requirements, boolean sendsTelemetryEvent, Optional<Component> name) {
    private static final Codec<Map<String, Criterion<?>>> CRITERIA_CODEC;
    public static final Codec<Advancement> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Advancement> STREAM_CODEC;
 
-   public Advancement(Optional<ResourceLocation> var1, Optional<DisplayInfo> var2, AdvancementRewards var3, Map<String, Criterion<?>> var4, AdvancementRequirements var5, boolean var6) {
+   public Advancement(Optional<Identifier> var1, Optional<DisplayInfo> var2, AdvancementRewards var3, Map<String, Criterion<?>> var4, AdvancementRequirements var5, boolean var6) {
       this(var1, var2, var3, Map.copyOf(var4), var5, var6, var2.map(Advancement::decorateName));
    }
 
-   public Advancement(Optional<ResourceLocation> var1, Optional<DisplayInfo> var2, AdvancementRewards var3, Map<String, Criterion<?>> var4, AdvancementRequirements var5, boolean var6, Optional<Component> var7) {
+   public Advancement(Optional<Identifier> var1, Optional<DisplayInfo> var2, AdvancementRewards var3, Map<String, Criterion<?>> var4, AdvancementRequirements var5, boolean var6, Optional<Component> var7) {
       super();
       this.parent = var1;
       this.display = var2;
@@ -64,14 +64,14 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeOptional(this.parent, FriendlyByteBuf::writeResourceLocation);
+      var1.writeOptional(this.parent, FriendlyByteBuf::writeIdentifier);
       DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).encode(var1, this.display);
       this.requirements.write(var1);
       var1.writeBoolean(this.sendsTelemetryEvent);
    }
 
    private static Advancement read(RegistryFriendlyByteBuf var0) {
-      return new Advancement(var0.readOptional(FriendlyByteBuf::readResourceLocation), (Optional)DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).decode(var0), AdvancementRewards.EMPTY, Map.of(), new AdvancementRequirements(var0), var0.readBoolean());
+      return new Advancement(var0.readOptional(FriendlyByteBuf::readIdentifier), (Optional)DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).decode(var0), AdvancementRewards.EMPTY, Map.of(), new AdvancementRequirements(var0), var0.readBoolean());
    }
 
    public boolean isRoot() {
@@ -87,7 +87,7 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
 
    static {
       CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, Criterion.CODEC).validate((var0) -> var0.isEmpty() ? DataResult.error(() -> "Advancement criteria cannot be empty") : DataResult.success(var0));
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.optionalFieldOf("parent").forGetter(Advancement::parent), DisplayInfo.CODEC.optionalFieldOf("display").forGetter(Advancement::display), AdvancementRewards.CODEC.optionalFieldOf("rewards", AdvancementRewards.EMPTY).forGetter(Advancement::rewards), CRITERIA_CODEC.fieldOf("criteria").forGetter(Advancement::criteria), AdvancementRequirements.CODEC.optionalFieldOf("requirements").forGetter((var0x) -> Optional.of(var0x.requirements())), Codec.BOOL.optionalFieldOf("sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)).apply(var0, (var0x, var1, var2, var3, var4, var5) -> {
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.optionalFieldOf("parent").forGetter(Advancement::parent), DisplayInfo.CODEC.optionalFieldOf("display").forGetter(Advancement::display), AdvancementRewards.CODEC.optionalFieldOf("rewards", AdvancementRewards.EMPTY).forGetter(Advancement::rewards), CRITERIA_CODEC.fieldOf("criteria").forGetter(Advancement::criteria), AdvancementRequirements.CODEC.optionalFieldOf("requirements").forGetter((var0x) -> Optional.of(var0x.requirements())), Codec.BOOL.optionalFieldOf("sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)).apply(var0, (var0x, var1, var2, var3, var4, var5) -> {
             AdvancementRequirements var6 = (AdvancementRequirements)var4.orElseGet(() -> AdvancementRequirements.allOf(var3.keySet()));
             return new Advancement(var0x, var1, var2, var3, var6, var5);
          })).validate(Advancement::validate);
@@ -95,7 +95,7 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
    }
 
    public static class Builder {
-      private Optional<ResourceLocation> parent = Optional.empty();
+      private Optional<Identifier> parent = Optional.empty();
       private Optional<DisplayInfo> display = Optional.empty();
       private AdvancementRewards rewards;
       private final ImmutableMap.Builder<String, Criterion<?>> criteria;
@@ -128,16 +128,16 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
       @Deprecated(
          forRemoval = true
       )
-      public Builder parent(ResourceLocation var1) {
+      public Builder parent(Identifier var1) {
          this.parent = Optional.of(var1);
          return this;
       }
 
-      public Builder display(ItemStack var1, Component var2, Component var3, @Nullable ResourceLocation var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
+      public Builder display(ItemStack var1, Component var2, Component var3, @Nullable Identifier var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
          return this.display(new DisplayInfo(var1, var2, var3, Optional.ofNullable(var4).map(ClientAsset.ResourceTexture::new), var5, var6, var7, var8));
       }
 
-      public Builder display(ItemLike var1, Component var2, Component var3, @Nullable ResourceLocation var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
+      public Builder display(ItemLike var1, Component var2, Component var3, @Nullable Identifier var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
          return this.display(new DisplayInfo(new ItemStack(var1.asItem()), var2, var3, Optional.ofNullable(var4).map(ClientAsset.ResourceTexture::new), var5, var6, var7, var8));
       }
 
@@ -175,14 +175,14 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
          return this;
       }
 
-      public AdvancementHolder build(ResourceLocation var1) {
+      public AdvancementHolder build(Identifier var1) {
          ImmutableMap var2 = this.criteria.buildOrThrow();
          AdvancementRequirements var3 = (AdvancementRequirements)this.requirements.orElseGet(() -> this.requirementsStrategy.create(var2.keySet()));
          return new AdvancementHolder(var1, new Advancement(this.parent, this.display, this.rewards, var2, var3, this.sendsTelemetryEvent));
       }
 
       public AdvancementHolder save(Consumer<AdvancementHolder> var1, String var2) {
-         AdvancementHolder var3 = this.build(ResourceLocation.parse(var2));
+         AdvancementHolder var3 = this.build(Identifier.parse(var2));
          var1.accept(var3);
          return var3;
       }

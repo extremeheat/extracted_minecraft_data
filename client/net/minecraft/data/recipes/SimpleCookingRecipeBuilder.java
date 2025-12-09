@@ -3,12 +3,11 @@ package net.minecraft.data.recipes;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
@@ -24,6 +23,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public class SimpleCookingRecipeBuilder implements RecipeBuilder {
    private final RecipeCategory category;
@@ -33,8 +33,7 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
    private final float experience;
    private final int cookingTime;
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
-   @Nullable
-   private String group;
+   private @Nullable String group;
    private final AbstractCookingRecipe.Factory<?> factory;
 
    private SimpleCookingRecipeBuilder(RecipeCategory var1, CookingBookCategory var2, ItemLike var3, Ingredient var4, float var5, int var6, AbstractCookingRecipe.Factory<?> var7) {
@@ -89,7 +88,7 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
       AbstractCookingRecipe var4 = this.factory.create((String)Objects.requireNonNullElse(this.group, ""), this.bookCategory, this.ingredient, new ItemStack(this.result), this.experience, this.cookingTime);
-      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private static CookingBookCategory determineSmeltingRecipeCategory(ItemLike var0) {
@@ -118,12 +117,12 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
 
    private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.location()));
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
       }
    }
 
    // $FF: synthetic method
-   public RecipeBuilder group(@Nullable final String var1) {
+   public RecipeBuilder group(final @Nullable String var1) {
       return this.group(var1);
    }
 

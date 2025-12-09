@@ -12,7 +12,6 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
@@ -29,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class QuickPlay {
@@ -87,8 +87,7 @@ public class QuickPlay {
       }
    }
 
-   @Nullable
-   private static String getLatestSingleplayerWorld(LevelStorageSource var0) {
+   private static @Nullable String getLatestSingleplayerWorld(LevelStorageSource var0) {
       try {
          List var1 = (List)var0.loadLevelSummaries(var0.findLevelCandidates()).get();
          if (var1.isEmpty()) {
@@ -142,7 +141,7 @@ public class QuickPlay {
          return;
       }
 
-      RealmsServer var6 = (RealmsServer)var5.servers.stream().filter((var2x) -> var2x.id == var3).findFirst().orElse((Object)null);
+      RealmsServer var6 = (RealmsServer)var5.servers().stream().filter((var2x) -> var2x.id == var3).findFirst().orElse((Object)null);
       if (var6 == null) {
          RealmsMainScreen var12 = new RealmsMainScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var12, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));

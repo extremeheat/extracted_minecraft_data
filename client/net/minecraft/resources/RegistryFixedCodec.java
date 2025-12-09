@@ -31,7 +31,7 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
                return DataResult.error(() -> "Element " + String.valueOf(var1) + " is not valid in current registry set");
             }
 
-            return (DataResult)var1.unwrap().map((var2x) -> ResourceLocation.CODEC.encode(var2x.location(), var2, var3), (var1x) -> DataResult.error(() -> "Elements from registry " + String.valueOf(this.registryKey) + " can't be serialized to a value"));
+            return (DataResult)var1.unwrap().map((var2x) -> Identifier.CODEC.encode(var2x.identifier(), var2, var3), (var1x) -> DataResult.error(() -> "Elements from registry " + String.valueOf(this.registryKey) + " can't be serialized to a value"));
          }
       }
 
@@ -42,8 +42,8 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
          if (var4.isPresent()) {
-            return ResourceLocation.CODEC.decode(var1, var2).flatMap((var2x) -> {
-               ResourceLocation var3 = (ResourceLocation)var2x.getFirst();
+            return Identifier.CODEC.decode(var1, var2).flatMap((var2x) -> {
+               Identifier var3 = (Identifier)var2x.getFirst();
                return ((DataResult)((HolderGetter)var4.get()).get(ResourceKey.create(this.registryKey, var3)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Failed to get element " + String.valueOf(var3)))).map((var1) -> Pair.of(var1, var2x.getSecond())).setLifecycle(Lifecycle.stable());
             });
          }

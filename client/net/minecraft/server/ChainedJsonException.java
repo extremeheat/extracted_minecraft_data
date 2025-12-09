@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class ChainedJsonException extends IOException {
    private final List<Entry> entries = Lists.newArrayList();
@@ -51,8 +51,7 @@ public class ChainedJsonException extends IOException {
    }
 
    public static class Entry {
-      @Nullable
-      String filename;
+      @Nullable String filename;
       private final List<String> jsonKeys = Lists.newArrayList();
 
       Entry() {
@@ -63,8 +62,7 @@ public class ChainedJsonException extends IOException {
          this.jsonKeys.add(0, var1);
       }
 
-      @Nullable
-      public String getFilename() {
+      public @Nullable String getFilename() {
          return this.filename;
       }
 

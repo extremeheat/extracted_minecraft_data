@@ -13,12 +13,12 @@ import java.util.Spliterators;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class EntitySectionStorage<T extends EntityAccess> {
    public static final int CHONKY_ENTITY_SEARCH_GRACE = 2;
@@ -95,8 +95,7 @@ public class EntitySectionStorage<T extends EntityAccess> {
       return (EntitySection)this.sections.computeIfAbsent(var1, this::createSection);
    }
 
-   @Nullable
-   public EntitySection<T> getSection(long var1) {
+   public @Nullable EntitySection<T> getSection(long var1) {
       return (EntitySection)this.sections.get(var1);
    }
 

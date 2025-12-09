@@ -1,13 +1,13 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.SpectralArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.SpectralArrow;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class SpectralArrowItem extends ArrowItem {
    public SpectralArrowItem(Item.Properties var1) {

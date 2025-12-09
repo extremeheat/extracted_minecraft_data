@@ -6,10 +6,11 @@ import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import java.util.stream.IntStream;
 import javax.annotation.concurrent.Immutable;
-import net.minecraft.Util;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
+import org.joml.Vector3i;
 
 @Immutable
 public class Vec3i implements Comparable<Vec3i> {
@@ -38,13 +39,7 @@ public class Vec3i implements Comparable<Vec3i> {
          return false;
       } else {
          Vec3i var2 = (Vec3i)var1;
-         if (this.getX() != var2.getX()) {
-            return false;
-         } else if (this.getY() != var2.getY()) {
-            return false;
-         } else {
-            return this.getZ() == var2.getZ();
-         }
+         return this.getX() == var2.getX() && this.getY() == var2.getY() && this.getZ() == var2.getZ();
       }
    }
 
@@ -105,6 +100,10 @@ public class Vec3i implements Comparable<Vec3i> {
       } else {
          return var1 == 0 ? ZERO : new Vec3i(this.getX() * var1, this.getY() * var1, this.getZ() * var1);
       }
+   }
+
+   public Vec3i multiply(int var1, int var2, int var3) {
+      return new Vec3i(this.getX() * var1, this.getY() * var2, this.getZ() * var3);
    }
 
    public Vec3i above() {
@@ -224,6 +223,10 @@ public class Vec3i implements Comparable<Vec3i> {
 
    public int get(Direction.Axis var1) {
       return var1.choose(this.x, this.y, this.z);
+   }
+
+   public Vector3i toMutable() {
+      return new Vector3i(this.x, this.y, this.z);
    }
 
    public String toString() {

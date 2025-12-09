@@ -14,7 +14,6 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.advancements.packs.VanillaAdvancementProvider;
@@ -48,6 +47,7 @@ import net.minecraft.data.tags.PaintingVariantTagsProvider;
 import net.minecraft.data.tags.PoiTypeTagsProvider;
 import net.minecraft.data.tags.StructureTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.data.tags.TimelineTagsProvider;
 import net.minecraft.data.tags.TradeRebalanceEnchantmentTagsProvider;
 import net.minecraft.data.tags.VanillaBlockTagsProvider;
 import net.minecraft.data.tags.VanillaEnchantmentTagsProvider;
@@ -56,6 +56,7 @@ import net.minecraft.data.tags.WorldPresetTagsProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.server.jsonrpc.dataprovider.JsonRpcApiSchema;
+import net.minecraft.util.Util;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 
@@ -90,6 +91,7 @@ public class Main {
          DataGenerator var16 = new DataGenerator(var10, SharedConstants.getCurrentVersion(), true);
          addServerProviders(var16, var15, var12, var13, var14);
          var16.run();
+         Util.shutdownExecutors();
       } else {
          var1.printHelpOn(System.out);
       }
@@ -124,6 +126,7 @@ public class Main {
       var11.addProvider(bindRegistries(PoiTypeTagsProvider::new, var14));
       var11.addProvider(bindRegistries(WorldPresetTagsProvider::new, var14));
       var11.addProvider(bindRegistries(VanillaEnchantmentTagsProvider::new, var14));
+      var11.addProvider(bindRegistries(TimelineTagsProvider::new, var14));
       var11 = var0.getVanillaPack(var3);
       var11.addProvider((var1x) -> new NbtToSnbt(var1x, var1));
       var11 = var0.getVanillaPack(var4);

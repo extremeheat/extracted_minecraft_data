@@ -1,6 +1,5 @@
 package net.minecraft.client.tutorial;
 
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -13,11 +12,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
 
 public class Tutorial {
    private final Minecraft minecraft;
-   @Nullable
-   private TutorialStepInstance instance;
+   private @Nullable TutorialStepInstance instance;
 
    public Tutorial(Minecraft var1, Options var2) {
       super();

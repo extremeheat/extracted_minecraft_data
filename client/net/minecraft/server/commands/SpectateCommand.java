@@ -6,13 +6,13 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class SpectateCommand {
    private static final SimpleCommandExceptionType ERROR_SELF = new SimpleCommandExceptionType(Component.translatable("commands.spectate.self"));
@@ -24,7 +24,7 @@ public class SpectateCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spectate").requires(Commands.hasPermission(2))).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), (Entity)null, ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))).then(Commands.argument("player", EntityArgument.player()).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), EntityArgument.getPlayer(var0x, "player"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spectate").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), (Entity)null, ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))).then(Commands.argument("player", EntityArgument.player()).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), EntityArgument.getPlayer(var0x, "player"))))));
    }
 
    private static int spectate(CommandSourceStack var0, @Nullable Entity var1, ServerPlayer var2) throws CommandSyntaxException {

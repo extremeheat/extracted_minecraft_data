@@ -1,14 +1,14 @@
 package net.minecraft.stats;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 
 public class Stat<T> extends ObjectiveCriteria {
    public static final StreamCodec<RegistryFriendlyByteBuf, Stat<?>> STREAM_CODEC;
@@ -28,7 +28,7 @@ public class Stat<T> extends ObjectiveCriteria {
       return var10000 + ":" + locationToKey(var0.getRegistry().getKey(var1));
    }
 
-   private static <T> String locationToKey(@Nullable ResourceLocation var0) {
+   private static String locationToKey(@Nullable Identifier var0) {
       return var0.toString().replace(':', '.');
    }
 

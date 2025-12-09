@@ -6,8 +6,6 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -22,10 +20,12 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class OptimizeWorldScreen extends Screen {
@@ -39,8 +39,7 @@ public class OptimizeWorldScreen extends Screen {
    private final BooleanConsumer callback;
    private final WorldUpgrader upgrader;
 
-   @Nullable
-   public static OptimizeWorldScreen create(Minecraft var0, BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, boolean var4) {
+   public static @Nullable OptimizeWorldScreen create(Minecraft var0, BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, boolean var4) {
       try {
          WorldOpenFlows var5 = var0.createWorldOpenFlows();
          PackRepository var6 = ServerPacksSource.createPackRepository(var3);

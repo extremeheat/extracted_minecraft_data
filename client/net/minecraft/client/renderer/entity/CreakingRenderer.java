@@ -1,25 +1,25 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.CreakingModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.monster.creaking.CreakingModel;
 import net.minecraft.client.renderer.entity.layers.LivingEntityEmissiveLayer;
 import net.minecraft.client.renderer.entity.state.CreakingRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 
 public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, CreakingRenderState, CreakingModel> {
-   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/creaking/creaking.png");
-   private static final ResourceLocation EYES_TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/creaking/creaking_eyes.png");
+   private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/creaking/creaking.png");
+   private static final Identifier EYES_TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/creaking/creaking_eyes.png");
 
    public CreakingRenderer(EntityRendererProvider.Context var1) {
       super(var1, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING)), 0.6F);
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> EYES_TEXTURE_LOCATION, (var0, var1x) -> var0.eyesGlowing ? 1.0F : 0.0F, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING_EYES)), RenderType::eyes, true));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> EYES_TEXTURE_LOCATION, (var0, var1x) -> var0.eyesGlowing ? 1.0F : 0.0F, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING_EYES)), RenderTypes::eyes, true));
    }
 
-   public ResourceLocation getTextureLocation(CreakingRenderState var1) {
+   public Identifier getTextureLocation(CreakingRenderState var1) {
       return TEXTURE_LOCATION;
    }
 
@@ -44,7 +44,7 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CreakingRenderState)var1);
    }
 

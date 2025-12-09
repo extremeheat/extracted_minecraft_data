@@ -6,8 +6,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -62,7 +62,7 @@ public class FeatureUtils {
    }
 
    public static ResourceKey<ConfiguredFeature<?, ?>> createKey(String var0) {
-      return ResourceKey.create(Registries.CONFIGURED_FEATURE, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.CONFIGURED_FEATURE, Identifier.withDefaultNamespace(var0));
    }
 
    public static void register(BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, Feature<NoneFeatureConfiguration> var2) {

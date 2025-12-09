@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -18,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
@@ -34,7 +34,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
@@ -47,6 +47,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public class Slime extends Mob implements Enemy {
    private static final EntityDataAccessor<Integer> ID_SIZE;
@@ -134,8 +135,8 @@ public class Slime extends Mob implements Enemy {
          for(int var3 = 0; (float)var3 < var1 * 16.0F; ++var3) {
             float var4 = this.random.nextFloat() * 6.2831855F;
             float var5 = this.random.nextFloat() * 0.5F + 0.5F;
-            float var6 = Mth.sin(var4) * var2 * var5;
-            float var7 = Mth.cos(var4) * var2 * var5;
+            float var6 = Mth.sin((double)var4) * var2 * var5;
+            float var7 = Mth.cos((double)var4) * var2 * var5;
             this.level().addParticle(this.getParticleType(), this.getX() + (double)var6, this.getY(), this.getZ() + (double)var7, 0.0, 0.0, 0.0);
          }
 
@@ -263,16 +264,19 @@ public class Slime extends Mob implements Enemy {
             return checkMobSpawnRules(var0, var1, var2, var3, var4);
          }
 
-         if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70 && var4.nextFloat() < 0.5F && var4.nextFloat() < var1.getMoonBrightness() && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
-            return checkMobSpawnRules(var0, var1, var2, var3, var4);
+         if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70) {
+            float var5 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.SURFACE_SLIME_SPAWN_CHANCE, var3);
+            if (var4.nextFloat() < var5 && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
+               return checkMobSpawnRules(var0, var1, var2, var3, var4);
+            }
          }
 
          if (!(var1 instanceof WorldGenLevel)) {
             return false;
          }
 
-         ChunkPos var5 = new ChunkPos(var3);
-         boolean var6 = WorldgenRandom.seedSlimeChunk(var5.x, var5.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
+         ChunkPos var7 = new ChunkPos(var3);
+         boolean var6 = WorldgenRandom.seedSlimeChunk(var7.x, var7.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
          if (var4.nextInt(10) == 0 && var6 && var3.getY() < 40) {
             return checkMobSpawnRules(var0, var1, var2, var3, var4);
          }
@@ -296,11 +300,10 @@ public class Slime extends Mob implements Enemy {
    public void jumpFromGround() {
       Vec3 var1 = this.getDeltaMovement();
       this.setDeltaMovement(var1.x, (double)this.getJumpPower(), var1.z);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       int var6 = var5.nextInt(3);
       if (var6 < 2 && var5.nextFloat() < 0.5F * var2.getSpecialMultiplier()) {

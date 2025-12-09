@@ -7,14 +7,14 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record MapDecorationType(ResourceLocation assetId, boolean showOnItemFrame, int mapColor, boolean explorationMapElement, boolean trackCount) {
+public record MapDecorationType(Identifier assetId, boolean showOnItemFrame, int mapColor, boolean explorationMapElement, boolean trackCount) {
    public static final int NO_MAP_COLOR = -1;
    public static final Codec<Holder<MapDecorationType>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<MapDecorationType>> STREAM_CODEC;
 
-   public MapDecorationType(ResourceLocation var1, boolean var2, int var3, boolean var4, boolean var5) {
+   public MapDecorationType(Identifier var1, boolean var2, int var3, boolean var4, boolean var5) {
       super();
       this.assetId = var1;
       this.showOnItemFrame = var2;

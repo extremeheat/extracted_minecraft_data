@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundRotateHeadPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundRotateHeadPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundRotateHeadPacket>codec(ClientboundRotateHeadPacket::write, ClientboundRotateHeadPacket::new);
@@ -38,7 +39,7 @@ public class ClientboundRotateHeadPacket implements Packet<ClientGamePacketListe
       var1.handleRotateMob(this);
    }
 
-   public Entity getEntity(Level var1) {
+   public @Nullable Entity getEntity(Level var1) {
       return var1.getEntity(this.entityId);
    }
 

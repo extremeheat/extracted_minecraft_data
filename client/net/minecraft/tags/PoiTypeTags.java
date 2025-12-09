@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 
 public class PoiTypeTags {
@@ -14,6 +14,6 @@ public class PoiTypeTags {
    }
 
    private static TagKey<PoiType> create(String var0) {
-      return TagKey.<PoiType>create(Registries.POINT_OF_INTEREST_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<PoiType>create(Registries.POINT_OF_INTEREST_TYPE, Identifier.withDefaultNamespace(var0));
    }
 }

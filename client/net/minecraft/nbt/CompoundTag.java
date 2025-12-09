@@ -18,9 +18,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class CompoundTag implements Tag {
@@ -89,8 +89,7 @@ public final class CompoundTag implements Tag {
       return this.tags.size();
    }
 
-   @Nullable
-   public Tag put(String var1, Tag var2) {
+   public @Nullable Tag put(String var1, Tag var2) {
       return (Tag)this.tags.put(var1, var2);
    }
 
@@ -138,8 +137,7 @@ public final class CompoundTag implements Tag {
       this.tags.put(var1, ByteTag.valueOf(var2));
    }
 
-   @Nullable
-   public Tag get(String var1) {
+   public @Nullable Tag get(String var1) {
       return (Tag)this.tags.get(var1);
    }
 
@@ -312,8 +310,8 @@ public final class CompoundTag implements Tag {
       return this.getByteOr(var1, (byte)(var2 ? 1 : 0)) != 0;
    }
 
-   public void remove(String var1) {
-      this.tags.remove(var1);
+   public @Nullable Tag remove(String var1) {
+      return (Tag)this.tags.remove(var1);
    }
 
    public String toString() {

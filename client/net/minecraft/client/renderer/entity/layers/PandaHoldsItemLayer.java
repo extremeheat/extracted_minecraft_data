@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.PandaModel;
+import net.minecraft.client.model.animal.panda.PandaModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.PandaRenderState;
@@ -20,8 +20,8 @@ public class PandaHoldsItemLayer extends RenderLayer<PandaRenderState, PandaMode
          float var8 = -0.6F;
          float var9 = 1.4F;
          if (var4.isEating) {
-            var8 -= 0.2F * Mth.sin(var4.ageInTicks * 0.6F) + 0.2F;
-            var9 -= 0.09F * Mth.sin(var4.ageInTicks * 0.6F);
+            var8 -= 0.2F * Mth.sin((double)(var4.ageInTicks * 0.6F)) + 0.2F;
+            var9 -= 0.09F * Mth.sin((double)(var4.ageInTicks * 0.6F));
          }
 
          var1.pushPose();

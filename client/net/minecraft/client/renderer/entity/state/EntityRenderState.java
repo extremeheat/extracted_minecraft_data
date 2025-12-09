@@ -3,12 +3,12 @@ package net.minecraft.client.renderer.entity.state;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class EntityRenderState {
    public static final int NO_OUTLINE = 0;
@@ -24,20 +24,12 @@ public class EntityRenderState {
    public boolean isInvisible;
    public boolean isDiscrete;
    public boolean displayFireAnimation;
-   public int lightCoords;
+   public int lightCoords = 15728880;
    public int outlineColor = 0;
-   @Nullable
-   public Vec3 passengerOffset;
-   @Nullable
-   public Component nameTag;
-   @Nullable
-   public Vec3 nameTagAttachment;
-   @Nullable
-   public List<LeashState> leashStates;
-   @Nullable
-   public HitboxesRenderState hitboxesRenderState;
-   @Nullable
-   public ServerHitboxesRenderState serverHitboxesRenderState;
+   public @Nullable Vec3 passengerOffset;
+   public @Nullable Component nameTag;
+   public @Nullable Vec3 nameTagAttachment;
+   public @Nullable List<LeashState> leashStates;
    public float shadowRadius;
    public final List<ShadowPiece> shadowPieces = new ArrayList();
 

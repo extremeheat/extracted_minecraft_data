@@ -3,45 +3,33 @@ package com.mojang.realmsclient.dto;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class WorldTemplate extends ValueObject {
+public record WorldTemplate(String id, String name, String version, String author, String link, @Nullable String image, String trailer, String recommendedPlayers, WorldTemplateType type) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public String id = "";
-   public String name = "";
-   public String version = "";
-   public String author = "";
-   public String link = "";
-   @Nullable
-   public String image;
-   public String trailer = "";
-   public String recommendedPlayers = "";
-   public WorldTemplateType type;
 
-   public WorldTemplate() {
+   public WorldTemplate(String var1, String var2, String var3, String var4, String var5, @Nullable String var6, String var7, String var8, WorldTemplateType var9) {
       super();
-      this.type = WorldTemplate.WorldTemplateType.WORLD_TEMPLATE;
+      this.id = var1;
+      this.name = var2;
+      this.version = var3;
+      this.author = var4;
+      this.link = var5;
+      this.image = var6;
+      this.trailer = var7;
+      this.recommendedPlayers = var8;
+      this.type = var9;
    }
 
-   public static WorldTemplate parse(JsonObject var0) {
-      WorldTemplate var1 = new WorldTemplate();
-
+   public static @Nullable WorldTemplate parse(JsonObject var0) {
       try {
-         var1.id = JsonUtils.getStringOr("id", var0, "");
-         var1.name = JsonUtils.getStringOr("name", var0, "");
-         var1.version = JsonUtils.getStringOr("version", var0, "");
-         var1.author = JsonUtils.getStringOr("author", var0, "");
-         var1.link = JsonUtils.getStringOr("link", var0, "");
-         var1.image = JsonUtils.getStringOr("image", var0, (String)null);
-         var1.trailer = JsonUtils.getStringOr("trailer", var0, "");
-         var1.recommendedPlayers = JsonUtils.getStringOr("recommendedPlayers", var0, "");
-         var1.type = WorldTemplate.WorldTemplateType.valueOf(JsonUtils.getStringOr("type", var0, WorldTemplate.WorldTemplateType.WORLD_TEMPLATE.name()));
-      } catch (Exception var3) {
-         LOGGER.error("Could not parse WorldTemplate: {}", var3.getMessage());
+         String var1 = JsonUtils.getStringOr("type", var0, (String)null);
+         return new WorldTemplate(JsonUtils.getStringOr("id", var0, ""), JsonUtils.getStringOr("name", var0, ""), JsonUtils.getStringOr("version", var0, ""), JsonUtils.getStringOr("author", var0, ""), JsonUtils.getStringOr("link", var0, ""), JsonUtils.getStringOr("image", var0, (String)null), JsonUtils.getStringOr("trailer", var0, ""), JsonUtils.getStringOr("recommendedPlayers", var0, ""), var1 == null ? WorldTemplate.WorldTemplateType.WORLD_TEMPLATE : WorldTemplate.WorldTemplateType.valueOf(var1));
+      } catch (Exception var2) {
+         LOGGER.error("Could not parse WorldTemplate", var2);
+         return null;
       }
-
-      return var1;
    }
 
    public static enum WorldTemplateType {

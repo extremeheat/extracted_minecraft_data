@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.StructureManager;
@@ -25,12 +24,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSetting
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jspecify.annotations.Nullable;
 
 public abstract class StructurePoolElement {
    public static final Codec<StructurePoolElement> CODEC;
    private static final Holder<StructureProcessorList> EMPTY;
-   @Nullable
-   private volatile StructureTemplatePool.Projection projection;
+   private volatile StructureTemplatePool.@Nullable Projection projection;
 
    protected static <E extends StructurePoolElement> RecordCodecBuilder<E, StructureTemplatePool.Projection> projectionCodec() {
       return StructureTemplatePool.Projection.CODEC.fieldOf("projection").forGetter(StructurePoolElement::getProjection);
@@ -77,27 +76,27 @@ public abstract class StructurePoolElement {
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0) {
-      return (var1) -> new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
+      return (var1) -> new LegacySinglePoolElement(Either.left(Identifier.parse(var0)), EMPTY, var1, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0, Holder<StructureProcessorList> var1) {
-      return (var2) -> new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
+      return (var2) -> new LegacySinglePoolElement(Either.left(Identifier.parse(var0)), var1, var2, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0) {
-      return (var1) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
+      return (var1) -> new SinglePoolElement(Either.left(Identifier.parse(var0)), EMPTY, var1, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1) {
-      return (var2) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
+      return (var2) -> new SinglePoolElement(Either.left(Identifier.parse(var0)), var1, var2, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, LiquidSettings var1) {
-      return (var2) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var2, Optional.of(var1));
+      return (var2) -> new SinglePoolElement(Either.left(Identifier.parse(var0)), EMPTY, var2, Optional.of(var1));
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1, LiquidSettings var2) {
-      return (var3) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var3, Optional.of(var2));
+      return (var3) -> new SinglePoolElement(Either.left(Identifier.parse(var0)), var1, var3, Optional.of(var2));
    }
 
    public static Function<StructureTemplatePool.Projection, FeaturePoolElement> feature(Holder<PlacedFeature> var0) {

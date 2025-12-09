@@ -5,8 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.WeightedListInt;
@@ -54,7 +54,7 @@ public class PlacementUtils {
    }
 
    public static ResourceKey<PlacedFeature> createKey(String var0) {
-      return ResourceKey.create(Registries.PLACED_FEATURE, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.withDefaultNamespace(var0));
    }
 
    public static void register(BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3) {

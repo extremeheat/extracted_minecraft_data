@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components.toasts;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
@@ -11,15 +10,16 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementToast implements Toast {
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/advancement");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("toast/advancement");
    public static final int DISPLAY_TIME = 5000;
    private final AdvancementHolder advancement;
    private Toast.Visibility wantedVisibility;
@@ -43,8 +43,7 @@ public class AdvancementToast implements Toast {
       }
    }
 
-   @Nullable
-   public SoundEvent getSoundEvent() {
+   public @Nullable SoundEvent getSoundEvent() {
       return this.isChallengeAdvancement() ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : null;
    }
 
@@ -55,7 +54,7 @@ public class AdvancementToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       DisplayInfo var5 = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (var5 != null) {
          List var6 = var2.split(var5.getTitle(), 125);
          int var7 = var5.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
@@ -76,7 +75,7 @@ public class AdvancementToast implements Toast {
                int var11 = var10000 - var10001 * 9 / 2;
 
                for(FormattedCharSequence var13 : var6) {
-                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.color(var14, -1), false);
+                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.white(var14), false);
                   Objects.requireNonNull(var2);
                   var11 += 9;
                }

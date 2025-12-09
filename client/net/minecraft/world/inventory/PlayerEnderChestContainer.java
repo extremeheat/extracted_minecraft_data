@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.ContainerUser;
@@ -9,10 +8,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerEnderChestContainer extends SimpleContainer {
-   @Nullable
-   private EnderChestBlockEntity activeChest;
+   private @Nullable EnderChestBlockEntity activeChest;
 
    public PlayerEnderChestContainer() {
       super(27);

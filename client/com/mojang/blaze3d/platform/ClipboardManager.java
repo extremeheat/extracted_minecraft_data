@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.platform;
 
-import com.google.common.base.Charsets;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import net.minecraft.util.StringDecomposer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -38,7 +38,7 @@ public class ClipboardManager {
    }
 
    public void setClipboard(Window var1, String var2) {
-      byte[] var3 = var2.getBytes(Charsets.UTF_8);
+      byte[] var3 = var2.getBytes(StandardCharsets.UTF_8);
       int var4 = var3.length + 1;
       if (var4 < this.clipboardScratchBuffer.capacity()) {
          pushClipboard(var1, this.clipboardScratchBuffer, var3);

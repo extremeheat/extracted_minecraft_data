@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Checkbox;
@@ -29,6 +28,7 @@ import net.minecraft.server.dialog.input.InputControl;
 import net.minecraft.server.dialog.input.NumberRangeInput;
 import net.minecraft.server.dialog.input.SingleOptionInput;
 import net.minecraft.server.dialog.input.TextInput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class InputControlHandlers {
@@ -43,8 +43,7 @@ public class InputControlHandlers {
       HANDLERS.put(var0, var1);
    }
 
-   @Nullable
-   private static <T extends InputControl> InputControlHandler<T> get(T var0) {
+   private static <T extends InputControl> @Nullable InputControlHandler<T> get(T var0) {
       return (InputControlHandler)HANDLERS.get(var0.mapCodec());
    }
 
@@ -122,13 +121,9 @@ public class InputControlHandlers {
       }
 
       public void addControl(SingleOptionInput var1, Screen var2, InputControlHandler.Output var3) {
-         CycleButton.Builder var4 = CycleButton.builder(SingleOptionInput.Entry::displayOrDefault).withValues(var1.entries()).displayOnlyValue(!var1.labelVisible());
-         Optional var5 = var1.initial();
-         if (var5.isPresent()) {
-            var4 = var4.withInitialValue((SingleOptionInput.Entry)var5.get());
-         }
-
-         CycleButton var6 = var4.create(0, 0, var1.width(), 20, var1.label());
+         SingleOptionInput.Entry var4 = (SingleOptionInput.Entry)var1.initial().orElse((SingleOptionInput.Entry)var1.entries().getFirst());
+         CycleButton.Builder var5 = CycleButton.builder(SingleOptionInput.Entry::displayOrDefault, var4).withValues(var1.entries()).displayState(!var1.labelVisible() ? CycleButton.DisplayState.VALUE : CycleButton.DisplayState.NAME_AND_VALUE);
+         CycleButton var6 = var5.create(0, 0, var1.width(), 20, var1.label());
          var3.accept(var6, Action.ValueGetter.of((Supplier)(() -> ((SingleOptionInput.Entry)var6.getValue()).id())));
       }
 

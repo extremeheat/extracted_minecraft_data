@@ -6,12 +6,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
@@ -23,6 +22,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public class ShapedRecipeBuilder implements RecipeBuilder {
    private final HolderGetter<Item> items;
@@ -32,8 +32,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    private final List<String> rows = Lists.newArrayList();
    private final Map<Character, Ingredient> key = Maps.newLinkedHashMap();
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
-   @Nullable
-   private String group;
+   private @Nullable String group;
    private boolean showNotification = true;
 
    private ShapedRecipeBuilder(HolderGetter<Item> var1, RecipeCategory var2, ItemLike var3, int var4) {
@@ -106,19 +105,19 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
       Objects.requireNonNull(var4);
       var10000.forEach(var4::addCriterion);
       ShapedRecipe var5 = new ShapedRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), var3, new ItemStack(this.result, this.count), this.showNotification);
-      var1.accept(var2, var5, var4.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var5, var4.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private ShapedRecipePattern ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.location()));
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
       } else {
          return ShapedRecipePattern.of(this.key, this.rows);
       }
    }
 
    // $FF: synthetic method
-   public RecipeBuilder group(@Nullable final String var1) {
+   public RecipeBuilder group(final @Nullable String var1) {
       return this.group(var1);
    }
 

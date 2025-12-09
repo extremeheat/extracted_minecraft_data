@@ -1,24 +1,24 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class GenericWaitingScreen extends Screen {
    private static final int TITLE_Y = 80;
    private static final int MESSAGE_Y = 120;
    private static final int MESSAGE_MAX_WIDTH = 360;
-   @Nullable
-   private final Component messageText;
+   private final @Nullable Component messageText;
    private final Component buttonLabel;
    private final Runnable buttonCallback;
-   @Nullable
-   private MultiLineLabel message;
+   private @Nullable MultiLineLabel message;
    private Button button;
    private int disableButtonTicks;
 
@@ -64,16 +64,17 @@ public class GenericWaitingScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      ActiveTextCollector var5 = var1.textRenderer();
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
       if (this.message == null) {
-         String var5 = LoadingDotsText.get(Util.getMillis());
-         var1.drawCenteredString(this.font, (String)var5, this.width / 2, 120, -6250336);
+         String var6 = LoadingDotsText.get(Util.getMillis());
+         var1.drawCenteredString(this.font, (String)var6, this.width / 2, 120, -6250336);
       } else {
          MultiLineLabel var10000 = this.message;
-         MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
-         int var10003 = this.width / 2;
+         TextAlignment var10001 = TextAlignment.CENTER;
+         int var10002 = this.width / 2;
          Objects.requireNonNull(this.font);
-         var10000.render(var1, var10002, var10003, 120, 9, true, -1);
+         var10000.visitLines(var10001, var10002, 120, 9, var5);
       }
 
    }

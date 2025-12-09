@@ -5,6 +5,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.ScissorState;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
@@ -12,8 +13,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import org.jspecify.annotations.Nullable;
 
 public class GlRenderPass implements RenderPass {
    protected static final int MAX_VERTEX_BUFFERS = 1;
@@ -21,15 +22,13 @@ public class GlRenderPass implements RenderPass {
    private final GlCommandEncoder encoder;
    private final boolean hasDepthTexture;
    private boolean closed;
-   @Nullable
-   protected GlRenderPipeline pipeline;
-   protected final GpuBuffer[] vertexBuffers = new GpuBuffer[1];
-   @Nullable
-   protected GpuBuffer indexBuffer;
+   protected @Nullable GlRenderPipeline pipeline;
+   protected final @Nullable GpuBuffer[] vertexBuffers = new GpuBuffer[1];
+   protected @Nullable GpuBuffer indexBuffer;
    protected VertexFormat.IndexType indexType;
    private final ScissorState scissorState;
    protected final HashMap<String, GpuBufferSlice> uniforms;
-   protected final HashMap<String, GpuTextureView> samplers;
+   protected final HashMap<String, TextureViewAndSampler> samplers;
    protected final Set<String> dirtyUniforms;
    protected int pushedDebugGroups;
 
@@ -77,11 +76,11 @@ public class GlRenderPass implements RenderPass {
       this.pipeline = this.encoder.getDevice().getOrCompilePipeline(var1);
    }
 
-   public void bindSampler(String var1, @Nullable GpuTextureView var2) {
-      if (var2 == null) {
+   public void bindTexture(String var1, @Nullable GpuTextureView var2, @Nullable GpuSampler var3) {
+      if (var3 == null) {
          this.samplers.remove(var1);
       } else {
-         this.samplers.put(var1, var2);
+         this.samplers.put(var1, new TextureViewAndSampler((GlTextureView)var2, (GlSampler)var3));
       }
 
       this.dirtyUniforms.add(var1);
@@ -94,7 +93,7 @@ public class GlRenderPass implements RenderPass {
 
    public void setUniform(String var1, GpuBufferSlice var2) {
       int var3 = this.encoder.getDevice().getUniformOffsetAlignment();
-      if (var2.offset() % var3 > 0) {
+      if (var2.offset() % (long)var3 > 0L) {
          throw new IllegalArgumentException("Uniform buffer offset must be aligned to " + var3);
       } else {
          this.uniforms.put(var1, var2);
@@ -151,7 +150,7 @@ public class GlRenderPass implements RenderPass {
       }
    }
 
-   public <T> void drawMultipleIndexed(Collection<RenderPass.Draw<T>> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4, T var5) {
+   public <T> void drawMultipleIndexed(Collection<RenderPass.Draw<T>> var1, @Nullable GpuBuffer var2, VertexFormat.@Nullable IndexType var3, Collection<String> var4, T var5) {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
@@ -181,5 +180,13 @@ public class GlRenderPass implements RenderPass {
 
    static {
       VALIDATION = SharedConstants.IS_RUNNING_IN_IDE;
+   }
+
+   protected static record TextureViewAndSampler(GlTextureView view, GlSampler sampler) {
+      protected TextureViewAndSampler(GlTextureView var1, GlSampler var2) {
+         super();
+         this.view = var1;
+         this.sampler = var2;
+      }
    }
 }

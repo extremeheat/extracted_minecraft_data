@@ -15,56 +15,52 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class ServerFunctionLibrary implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final ResourceKey<Registry<CommandFunction<CommandSourceStack>>> TYPE_KEY = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace("function"));
+   public static final ResourceKey<Registry<CommandFunction<CommandSourceStack>>> TYPE_KEY = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("function"));
    private static final FileToIdConverter LISTER;
-   private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
+   private volatile Map<Identifier, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
    private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader;
-   private volatile Map<ResourceLocation, List<CommandFunction<CommandSourceStack>>> tags;
-   private final int functionCompilationLevel;
+   private volatile Map<Identifier, List<CommandFunction<CommandSourceStack>>> tags;
+   private final PermissionSet functionCompilationPermissions;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
-   public Optional<CommandFunction<CommandSourceStack>> getFunction(ResourceLocation var1) {
+   public Optional<CommandFunction<CommandSourceStack>> getFunction(Identifier var1) {
       return Optional.ofNullable((CommandFunction)this.functions.get(var1));
    }
 
-   public Map<ResourceLocation, CommandFunction<CommandSourceStack>> getFunctions() {
+   public Map<Identifier, CommandFunction<CommandSourceStack>> getFunctions() {
       return this.functions;
    }
 
-   public List<CommandFunction<CommandSourceStack>> getTag(ResourceLocation var1) {
+   public List<CommandFunction<CommandSourceStack>> getTag(Identifier var1) {
       return (List)this.tags.getOrDefault(var1, List.of());
    }
 
-   public Iterable<ResourceLocation> getAvailableTags() {
+   public Iterable<Identifier> getAvailableTags() {
       return this.tags.keySet();
    }
 
-   public ServerFunctionLibrary(int var1, CommandDispatcher<CommandSourceStack> var2) {
+   public ServerFunctionLibrary(PermissionSet var1, CommandDispatcher<CommandSourceStack> var2) {
       super();
       this.tagsLoader = new TagLoader<CommandFunction<CommandSourceStack>>((var1x, var2x) -> this.getFunction(var1x), Registries.tagsDirPath(TYPE_KEY));
       this.tags = Map.of();
-      this.functionCompilationLevel = var1;
+      this.functionCompilationPermissions = var1;
       this.dispatcher = var2;
    }
 
@@ -73,11 +69,11 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       CompletableFuture var6 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var5), var2);
       CompletableFuture var7 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
          HashMap var3 = Maps.newHashMap();
-         CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationLevel, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+         CommandSourceStack var4 = Commands.createCompilationContext(this.functionCompilationPermissions);
 
          for(Map.Entry var6 : var2x.entrySet()) {
-            ResourceLocation var7 = (ResourceLocation)var6.getKey();
-            ResourceLocation var8 = LISTER.fileToId(var7);
+            Identifier var7 = (Identifier)var6.getKey();
+            Identifier var8 = LISTER.fileToId(var7);
             var3.put(var8, CompletableFuture.supplyAsync(() -> {
                List var4x = readLines((Resource)var6.getValue());
                return CommandFunction.fromLines(var8, this.dispatcher, var4, var4x);

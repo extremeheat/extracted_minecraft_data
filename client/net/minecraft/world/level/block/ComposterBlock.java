@@ -3,8 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
@@ -40,6 +39,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ComposterBlock extends Block implements WorldlyContainerHolder {
    public static final MapCodec<ComposterBlock> CODEC = simpleCodec(ComposterBlock::new);
@@ -264,7 +264,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    public static BlockState extractProduce(Entity var0, BlockState var1, Level var2, BlockPos var3) {
       if (!var2.isClientSide()) {
-         Vec3 var4 = Vec3.atLowerCornerWithOffset(var3, 0.5, 1.01, 0.5).offsetRandom(var2.random, 0.7F);
+         Vec3 var4 = Vec3.atLowerCornerWithOffset(var3, 0.5, 1.01, 0.5).offsetRandomXZ(var2.random, 0.7F);
          ItemEntity var5 = new ItemEntity(var2, var4.x(), var4.y(), var4.z(), new ItemStack(Items.BONE_MEAL));
          var5.setDefaultPickUpDelay();
          var2.addFreshEntity(var5);

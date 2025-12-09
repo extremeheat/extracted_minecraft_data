@@ -6,7 +6,6 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.realms.RepeatedNarrator;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
@@ -28,8 +28,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    private final Screen lastScreen;
    protected final LinearLayout layout = LinearLayout.vertical();
    private volatile Component title;
-   @Nullable
-   private LoadingDotsWidget loadingDotsWidget;
+   private @Nullable LoadingDotsWidget loadingDotsWidget;
 
    public RealmsLongRunningMcoTaskScreen(Screen var1, LongRunningTask... var2) {
       super(GameNarrator.NO_TITLE);

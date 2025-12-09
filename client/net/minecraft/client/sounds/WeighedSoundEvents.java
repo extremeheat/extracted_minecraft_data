@@ -2,21 +2,20 @@ package net.minecraft.client.sounds;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class WeighedSoundEvents implements Weighted<Sound> {
    private final List<Weighted<Sound>> list = Lists.newArrayList();
-   @Nullable
-   private final Component subtitle;
+   private final @Nullable Component subtitle;
 
-   public WeighedSoundEvents(ResourceLocation var1, @Nullable String var2) {
+   public WeighedSoundEvents(Identifier var1, @Nullable String var2) {
       super();
       if (SharedConstants.DEBUG_SUBTITLES) {
          MutableComponent var3 = Component.literal(var1.getPath());
@@ -63,8 +62,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
       this.list.add(var1);
    }
 
-   @Nullable
-   public Component getSubtitle() {
+   public @Nullable Component getSubtitle() {
       return this.subtitle;
    }
 

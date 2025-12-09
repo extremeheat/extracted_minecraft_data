@@ -1,20 +1,20 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.WitherBossModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.renderer.entity.layers.WitherArmorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.WitherRenderState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 
 public class WitherBossRenderer extends MobRenderer<WitherBoss, WitherRenderState, WitherBossModel> {
-   private static final ResourceLocation WITHER_INVULNERABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
-   private static final ResourceLocation WITHER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither.png");
+   private static final Identifier WITHER_INVULNERABLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
+   private static final Identifier WITHER_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither.png");
 
    public WitherBossRenderer(EntityRendererProvider.Context var1) {
       super(var1, new WitherBossModel(var1.bakeLayer(ModelLayers.WITHER)), 1.0F);
@@ -25,7 +25,7 @@ public class WitherBossRenderer extends MobRenderer<WitherBoss, WitherRenderStat
       return 15;
    }
 
-   public ResourceLocation getTextureLocation(WitherRenderState var1) {
+   public Identifier getTextureLocation(WitherRenderState var1) {
       int var2 = Mth.floor(var1.invulnerableTicks);
       return var2 > 0 && (var2 > 80 || var2 / 5 % 2 != 1) ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
    }
@@ -53,7 +53,7 @@ public class WitherBossRenderer extends MobRenderer<WitherBoss, WitherRenderStat
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((WitherRenderState)var1);
    }
 

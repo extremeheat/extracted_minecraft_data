@@ -9,14 +9,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MobSpawnSettings {
@@ -47,8 +47,7 @@ public class MobSpawnSettings {
       return (WeightedList)this.spawners.getOrDefault(var1, EMPTY_MOB_LIST);
    }
 
-   @Nullable
-   public MobSpawnCost getMobSpawnCost(EntityType<?> var1) {
+   public @Nullable MobSpawnCost getMobSpawnCost(EntityType<?> var1) {
       return (MobSpawnCost)this.mobSpawnCosts.get(var1);
    }
 

@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 
 public abstract class WorldCarver<C extends CarverConfiguration> {
    public static final WorldCarver<CaveCarverConfiguration> CAVE;
@@ -144,8 +144,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       }
    }
 
-   @Nullable
-   private BlockState getCarveState(CarvingContext var1, C var2, BlockPos var3, Aquifer var4) {
+   private @Nullable BlockState getCarveState(CarvingContext var1, C var2, BlockPos var3, Aquifer var4) {
       if (var3.getY() <= var2.lavaLevel.resolveY(var1)) {
          return LAVA.createLegacyBlock();
       } else {

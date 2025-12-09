@@ -19,13 +19,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Scoreboard {
@@ -42,8 +42,7 @@ public class Scoreboard {
       super();
    }
 
-   @Nullable
-   public Objective getObjective(@Nullable String var1) {
+   public @Nullable Objective getObjective(@Nullable String var1) {
       return (Objective)this.objectivesByName.get(var1);
    }
 
@@ -106,8 +105,7 @@ public class Scoreboard {
             }
          }
 
-         @Nullable
-         public Component display() {
+         public @Nullable Component display() {
             return var7.display();
          }
 
@@ -152,8 +150,7 @@ public class Scoreboard {
       };
    }
 
-   @Nullable
-   public ReadOnlyScoreInfo getPlayerScoreInfo(ScoreHolder var1, Objective var2) {
+   public @Nullable ReadOnlyScoreInfo getPlayerScoreInfo(ScoreHolder var1, Objective var2) {
       PlayerScores var3 = (PlayerScores)this.playerScores.get(var1.getScoreboardName());
       return var3 != null ? var3.get(var2) : null;
    }
@@ -236,13 +233,11 @@ public class Scoreboard {
       this.displayObjectives.put(var1, var2);
    }
 
-   @Nullable
-   public Objective getDisplayObjective(DisplaySlot var1) {
+   public @Nullable Objective getDisplayObjective(DisplaySlot var1) {
       return (Objective)this.displayObjectives.get(var1);
    }
 
-   @Nullable
-   public PlayerTeam getPlayerTeam(String var1) {
+   public @Nullable PlayerTeam getPlayerTeam(String var1) {
       return (PlayerTeam)this.teamsByName.get(var1);
    }
 
@@ -305,8 +300,7 @@ public class Scoreboard {
       return this.teamsByName.values();
    }
 
-   @Nullable
-   public PlayerTeam getPlayersTeam(String var1) {
+   public @Nullable PlayerTeam getPlayersTeam(String var1) {
       return (PlayerTeam)this.teamsByPlayer.get(var1);
    }
 
@@ -350,7 +344,7 @@ public class Scoreboard {
    protected List<PackedScore> packPlayerScores() {
       return this.playerScores.entrySet().stream().flatMap((var0) -> {
          String var1 = (String)var0.getKey();
-         return ((PlayerScores)var0.getValue()).listRawScores().entrySet().stream().map((var1x) -> new PackedScore(var1, ((Objective)var1x.getKey()).getName(), (Score)var1x.getValue()));
+         return ((PlayerScores)var0.getValue()).listRawScores().entrySet().stream().map((var1x) -> new PackedScore(var1, ((Objective)var1x.getKey()).getName(), ((Score)var1x.getValue()).pack()));
       }).toList();
    }
 
@@ -359,8 +353,12 @@ public class Scoreboard {
       if (var2 == null) {
          LOGGER.error("Unknown objective {} for name {}, ignoring", var1.objective, var1.owner);
       } else {
-         this.getOrCreatePlayerInfo(var1.owner).setScore(var2, var1.score);
+         this.getOrCreatePlayerInfo(var1.owner).setScore(var2, new Score(var1.score));
       }
+   }
+
+   protected List<PlayerTeam.Packed> packPlayerTeams() {
+      return this.getPlayerTeams().stream().map(PlayerTeam::pack).toList();
    }
 
    protected void loadPlayerTeam(PlayerTeam.Packed var1) {
@@ -385,17 +383,34 @@ public class Scoreboard {
 
    }
 
+   protected List<Objective.Packed> packObjectives() {
+      return this.getObjectives().stream().map(Objective::pack).toList();
+   }
+
    protected void loadObjective(Objective.Packed var1) {
       this.addObjective(var1.name(), var1.criteria(), var1.displayName(), var1.renderType(), var1.displayAutoUpdate(), (NumberFormat)var1.numberFormat().orElse((Object)null));
    }
 
-   public static record PackedScore(String owner, String objective, Score score) {
+   protected Map<DisplaySlot, String> packDisplaySlots() {
+      EnumMap var1 = new EnumMap(DisplaySlot.class);
+
+      for(DisplaySlot var5 : DisplaySlot.values()) {
+         Objective var6 = this.getDisplayObjective(var5);
+         if (var6 != null) {
+            var1.put(var5, var6.getName());
+         }
+      }
+
+      return var1;
+   }
+
+   public static record PackedScore(String owner, String objective, Score.Packed score) {
       final String owner;
       final String objective;
-      final Score score;
-      public static final Codec<PackedScore> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(PackedScore::owner), Codec.STRING.fieldOf("Objective").forGetter(PackedScore::objective), Score.MAP_CODEC.forGetter(PackedScore::score)).apply(var0, PackedScore::new));
+      final Score.Packed score;
+      public static final Codec<PackedScore> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(PackedScore::owner), Codec.STRING.fieldOf("Objective").forGetter(PackedScore::objective), Score.Packed.MAP_CODEC.forGetter(PackedScore::score)).apply(var0, PackedScore::new));
 
-      public PackedScore(String var1, String var2, Score var3) {
+      public PackedScore(String var1, String var2, Score.Packed var3) {
          super();
          this.owner = var1;
          this.objective = var2;

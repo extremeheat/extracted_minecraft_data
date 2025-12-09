@@ -2,7 +2,7 @@ package net.minecraft.client.resources.sounds;
 
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.bee.Bee;
 
 public class BeeFlyingSoundInstance extends BeeSoundInstance {
    public BeeFlyingSoundInstance(Bee var1) {

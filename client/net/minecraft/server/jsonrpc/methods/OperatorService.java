@@ -8,11 +8,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraft.util.Util;
 
 public class OperatorService {
    public OperatorService() {
@@ -50,17 +51,17 @@ public class OperatorService {
 
    public static List<OperatorDto> set(MinecraftApi var0, List<OperatorDto> var1, ClientInfo var2) {
       List var3 = var1.stream().map((var1x) -> var0.playerListService().getUser(var1x.player().id(), var1x.player().name()).thenApply((var1) -> var1.map((var1xx) -> new Op(var1xx, var1x.permissionLevel(), var1x.bypassesPlayerLimit())))).toList();
-      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
-      Set var5 = (Set)var0.operatorListService().getEntries().stream().filter((var0x) -> var0x.getUser() != null).map((var0x) -> new Op((NameAndId)var0x.getUser(), Optional.of(var0x.getLevel()), Optional.of(var0x.getBypassesPlayerLimit()))).collect(Collectors.toSet());
+      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().flatMap(Optional::stream).collect(Collectors.toSet());
+      Set var5 = (Set)var0.operatorListService().getEntries().stream().filter((var0x) -> var0x.getUser() != null).map((var0x) -> new Op((NameAndId)var0x.getUser(), Optional.of(var0x.permissions().level()), Optional.of(var0x.getBypassesPlayerLimit()))).collect(Collectors.toSet());
       var5.stream().filter((var1x) -> !var4.contains(var1x)).forEach((var2x) -> var0.operatorListService().deop(var2x.user(), var2));
       var4.stream().filter((var1x) -> !var5.contains(var1x)).forEach((var2x) -> var0.operatorListService().op(var2x.user(), var2x.permissionLevel(), var2x.bypassesPlayerLimit(), var2));
       return get(var0);
    }
 
-   public static record OperatorDto(PlayerDto player, Optional<Integer> permissionLevel, Optional<Boolean> bypassesPlayerLimit) {
-      public static final MapCodec<OperatorDto> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(OperatorDto::player), Codec.INT.optionalFieldOf("permissionLevel").forGetter(OperatorDto::permissionLevel), Codec.BOOL.optionalFieldOf("bypassesPlayerLimit").forGetter(OperatorDto::bypassesPlayerLimit)).apply(var0, OperatorDto::new));
+   public static record OperatorDto(PlayerDto player, Optional<PermissionLevel> permissionLevel, Optional<Boolean> bypassesPlayerLimit) {
+      public static final MapCodec<OperatorDto> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(OperatorDto::player), PermissionLevel.INT_CODEC.optionalFieldOf("permissionLevel").forGetter(OperatorDto::permissionLevel), Codec.BOOL.optionalFieldOf("bypassesPlayerLimit").forGetter(OperatorDto::bypassesPlayerLimit)).apply(var0, OperatorDto::new));
 
-      public OperatorDto(PlayerDto var1, Optional<Integer> var2, Optional<Boolean> var3) {
+      public OperatorDto(PlayerDto var1, Optional<PermissionLevel> var2, Optional<Boolean> var3) {
          super();
          this.player = var1;
          this.permissionLevel = var2;
@@ -68,12 +69,12 @@ public class OperatorService {
       }
 
       public static OperatorDto from(ServerOpListEntry var0) {
-         return new OperatorDto(PlayerDto.from((NameAndId)Objects.requireNonNull((NameAndId)var0.getUser())), Optional.of(var0.getLevel()), Optional.of(var0.getBypassesPlayerLimit()));
+         return new OperatorDto(PlayerDto.from((NameAndId)Objects.requireNonNull((NameAndId)var0.getUser())), Optional.of(var0.permissions().level()), Optional.of(var0.getBypassesPlayerLimit()));
       }
    }
 
-   static record Op(NameAndId user, Optional<Integer> permissionLevel, Optional<Boolean> bypassesPlayerLimit) {
-      Op(NameAndId var1, Optional<Integer> var2, Optional<Boolean> var3) {
+   static record Op(NameAndId user, Optional<PermissionLevel> permissionLevel, Optional<Boolean> bypassesPlayerLimit) {
+      Op(NameAndId var1, Optional<PermissionLevel> var2, Optional<Boolean> var3) {
          super();
          this.user = var1;
          this.permissionLevel = var2;

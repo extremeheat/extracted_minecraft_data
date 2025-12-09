@@ -1,16 +1,17 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.HappyGhastModel;
+import net.minecraft.client.model.animal.ghast.HappyGhastModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HappyGhastRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 
 public class RopesLayer<M extends HappyGhastModel> extends RenderLayer<HappyGhastRenderState, M> {
@@ -18,9 +19,9 @@ public class RopesLayer<M extends HappyGhastModel> extends RenderLayer<HappyGhas
    private final HappyGhastModel adultModel;
    private final HappyGhastModel babyModel;
 
-   public RopesLayer(RenderLayerParent<HappyGhastRenderState, M> var1, EntityModelSet var2, ResourceLocation var3) {
+   public RopesLayer(RenderLayerParent<HappyGhastRenderState, M> var1, EntityModelSet var2, Identifier var3) {
       super(var1);
-      this.ropes = RenderType.entityCutoutNoCull(var3);
+      this.ropes = RenderTypes.entityCutoutNoCull(var3);
       this.adultModel = new HappyGhastModel(var2.bakeLayer(ModelLayers.HAPPY_GHAST_ROPES));
       this.babyModel = new HappyGhastModel(var2.bakeLayer(ModelLayers.HAPPY_GHAST_BABY_ROPES));
    }

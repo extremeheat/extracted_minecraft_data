@@ -4,8 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,7 +11,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -23,7 +23,6 @@ import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
@@ -34,12 +33,14 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class NetherPortalBlock extends Block implements Portal {
@@ -62,7 +63,7 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.dimensionType().natural() && var2.isSpawningMonsters() && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
+      if (var2.isSpawningMonsters() && (Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS, var3) && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
          while(var2.getBlockState(var3).is(this)) {
             var3 = var3.below();
          }
@@ -97,14 +98,13 @@ public class NetherPortalBlock extends Block implements Portal {
 
    public int getPortalTransitionTime(ServerLevel var1, Entity var2) {
       if (var2 instanceof Player var3) {
-         return Math.max(0, var1.getGameRules().getInt(var3.getAbilities().invulnerable ? GameRules.RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY : GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY));
+         return Math.max(0, (Integer)var1.getGameRules().get(var3.getAbilities().invulnerable ? GameRules.PLAYERS_NETHER_PORTAL_CREATIVE_DELAY : GameRules.PLAYERS_NETHER_PORTAL_DEFAULT_DELAY));
       } else {
          return 0;
       }
    }
 
-   @Nullable
-   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+   public @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
       ServerLevel var5 = var1.getServer().getLevel(var4);
       if (var5 == null) {
@@ -118,8 +118,7 @@ public class NetherPortalBlock extends Block implements Portal {
       }
    }
 
-   @Nullable
-   private TeleportTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
+   private @Nullable TeleportTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
       Optional var7 = var1.getPortalForcer().findClosestPortalPosition(var4, var5, var6);
       BlockUtil.FoundRectangle var8;
       TeleportTransition.PostTeleportTransition var9;

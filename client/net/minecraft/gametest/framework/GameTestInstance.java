@@ -9,8 +9,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Rotation;
 
 public abstract class GameTestInstance {
@@ -23,7 +23,7 @@ public abstract class GameTestInstance {
    }
 
    private static MapCodec<? extends GameTestInstance> register(Registry<MapCodec<? extends GameTestInstance>> var0, String var1, MapCodec<? extends GameTestInstance> var2) {
-      return (MapCodec)Registry.register(var0, (ResourceKey)ResourceKey.create(Registries.TEST_INSTANCE_TYPE, ResourceLocation.withDefaultNamespace(var1)), var2);
+      return (MapCodec)Registry.register(var0, (ResourceKey)ResourceKey.create(Registries.TEST_INSTANCE_TYPE, Identifier.withDefaultNamespace(var1)), var2);
    }
 
    protected GameTestInstance(TestData<Holder<TestEnvironmentDefinition>> var1) {
@@ -39,7 +39,7 @@ public abstract class GameTestInstance {
       return this.info.environment();
    }
 
-   public ResourceLocation structure() {
+   public Identifier structure() {
       return this.info.structure();
    }
 

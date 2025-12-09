@@ -43,15 +43,15 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
       float var25 = 0.0F;
 
       for(int var26 = var17; var26 < var18; ++var26) {
-         double var27 = 1.5 + (double)(Mth.sin((float)var26 * 3.1415927F / (float)var18) * var14);
+         double var27 = 1.5 + (double)(Mth.sin((double)((float)var26 * 3.1415927F / (float)var18)) * var14);
          double var29 = var27 * var19;
          var27 *= (double)var2.shape.horizontalRadiusFactor.sample(var22);
          var29 = this.updateVerticalRadius(var2, var22, var29, (float)var18, (float)var26);
-         float var31 = Mth.cos(var16);
-         float var32 = Mth.sin(var16);
-         var8 += (double)(Mth.cos(var15) * var31);
+         float var31 = Mth.cos((double)var16);
+         float var32 = Mth.sin((double)var16);
+         var8 += (double)(Mth.cos((double)var15) * var31);
          var10 += (double)var32;
-         var12 += (double)(Mth.sin(var15) * var31);
+         var12 += (double)(Mth.sin((double)var15) * var31);
          var16 *= 0.7F;
          var16 += var25 * 0.05F;
          var15 += var24 * 0.05F;

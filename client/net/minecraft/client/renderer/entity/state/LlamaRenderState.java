@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.item.ItemStack;
 
 public class LlamaRenderState extends LivingEntityRenderState {

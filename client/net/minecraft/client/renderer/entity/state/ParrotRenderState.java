@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.client.model.ParrotModel;
-import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.client.model.animal.parrot.ParrotModel;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 
 public class ParrotRenderState extends LivingEntityRenderState {
    public Parrot.Variant variant;

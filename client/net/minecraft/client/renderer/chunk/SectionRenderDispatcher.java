@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.TracingExecutor;
 import net.minecraft.client.Minecraft;
@@ -27,6 +26,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
@@ -168,15 +168,16 @@ public class SectionRenderDispatcher {
       public static final int SIZE = 16;
       public final int index;
       public final AtomicReference<SectionMesh> sectionMesh;
-      @Nullable
       private RebuildTask lastRebuildTask;
-      @Nullable
       private ResortTransparencyTask lastResortTransparencyTask;
       private AABB bb;
       private boolean dirty;
       volatile long sectionNode;
       final BlockPos.MutableBlockPos renderOrigin;
       private boolean playerChanged;
+      private long uploadedTime;
+      private long fadeDuration;
+      private boolean wasPreviouslyEmpty;
 
       public RenderSection(final int var2, final long var3) {
          super();
@@ -186,6 +187,23 @@ public class SectionRenderDispatcher {
          this.renderOrigin = new BlockPos.MutableBlockPos(-1, -1, -1);
          this.index = var2;
          this.setSectionNode(var3);
+      }
+
+      public float getVisibility(long var1) {
+         long var3 = var1 - this.uploadedTime;
+         return var3 >= this.fadeDuration ? 1.0F : (float)var3 / (float)this.fadeDuration;
+      }
+
+      public void setFadeDuration(long var1) {
+         this.fadeDuration = var1;
+      }
+
+      public void setWasPreviouslyEmpty(boolean var1) {
+         this.wasPreviouslyEmpty = var1;
+      }
+
+      public boolean wasPreviouslyEmpty() {
+         return this.wasPreviouslyEmpty;
       }
 
       private boolean doesChunkExistAt(long var1) {
@@ -210,6 +228,10 @@ public class SectionRenderDispatcher {
                   try (Zone var4 = Profiler.get().zone("Upload Section Layer")) {
                      var2.uploadMeshLayer(var2x, var3, this.sectionNode);
                      var3.close();
+                  }
+
+                  if (this.uploadedTime == 0L) {
+                     this.uploadedTime = Util.getMillis();
                   }
 
                }), SectionRenderDispatcher.this.mainThreadUploadExecutor);
@@ -249,6 +271,8 @@ public class SectionRenderDispatcher {
          this.cancelTasks();
          ((SectionMesh)this.sectionMesh.getAndSet(CompiledSectionMesh.UNCOMPILED)).close();
          this.dirty = true;
+         this.uploadedTime = 0L;
+         this.wasPreviouslyEmpty = false;
       }
 
       public BlockPos getRenderOrigin() {

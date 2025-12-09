@@ -3,12 +3,13 @@ package net.minecraft.client.renderer.item.properties.numeric;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.MoonPhase;
 
 public class Time extends NeedleDirectionHelper implements RangeSelectItemModelProperty {
    public static final MapCodec<Time> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), Time.TimeSource.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, Time::new));
@@ -22,7 +23,7 @@ public class Time extends NeedleDirectionHelper implements RangeSelectItemModelP
       this.wobbler = this.newWobbler(0.9F);
    }
 
-   protected float calculate(ItemStack var1, ClientLevel var2, int var3, @Nullable ItemOwner var4) {
+   protected float calculate(ItemStack var1, ClientLevel var2, int var3, ItemOwner var4) {
       float var5 = this.source.get(var2, var1, var4, this.randomSource);
       long var6 = var2.getGameTime();
       if (this.wobbler.shouldUpdate(var6)) {
@@ -38,18 +39,18 @@ public class Time extends NeedleDirectionHelper implements RangeSelectItemModelP
 
    public static enum TimeSource implements StringRepresentable {
       RANDOM("random") {
-         public float get(@Nullable ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3, RandomSource var4) {
+         public float get(ClientLevel var1, ItemStack var2, ItemOwner var3, RandomSource var4) {
             return var4.nextFloat();
          }
       },
       DAYTIME("daytime") {
-         public float get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3, RandomSource var4) {
-            return var1.getTimeOfDay(1.0F);
+         public float get(ClientLevel var1, ItemStack var2, ItemOwner var3, RandomSource var4) {
+            return (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, var3.position()) / 360.0F;
          }
       },
       MOON_PHASE("moon_phase") {
-         public float get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3, RandomSource var4) {
-            return (float)var1.getMoonPhase() / 8.0F;
+         public float get(ClientLevel var1, ItemStack var2, ItemOwner var3, RandomSource var4) {
+            return (float)((MoonPhase)var1.environmentAttributes().getValue(EnvironmentAttributes.MOON_PHASE, var3.position())).index() / (float)MoonPhase.COUNT;
          }
       };
 
@@ -64,7 +65,7 @@ public class Time extends NeedleDirectionHelper implements RangeSelectItemModelP
          return this.name;
       }
 
-      abstract float get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3, RandomSource var4);
+      abstract float get(ClientLevel var1, ItemStack var2, ItemOwner var3, RandomSource var4);
 
       // $FF: synthetic method
       private static TimeSource[] $values() {

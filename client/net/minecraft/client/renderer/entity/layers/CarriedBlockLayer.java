@@ -2,9 +2,8 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.EndermanModel;
+import net.minecraft.client.model.monster.enderman.EndermanModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -12,11 +11,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 
 public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, EndermanModel<EndermanRenderState>> {
-   private final BlockRenderDispatcher blockRenderer;
-
-   public CarriedBlockLayer(RenderLayerParent<EndermanRenderState, EndermanModel<EndermanRenderState>> var1, BlockRenderDispatcher var2) {
+   public CarriedBlockLayer(RenderLayerParent<EndermanRenderState, EndermanModel<EndermanRenderState>> var1) {
       super(var1);
-      this.blockRenderer = var2;
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, EndermanRenderState var4, float var5, float var6) {

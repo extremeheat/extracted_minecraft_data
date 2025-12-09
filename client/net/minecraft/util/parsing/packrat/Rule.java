@@ -1,10 +1,9 @@
 package net.minecraft.util.parsing.packrat;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface Rule<S, T> {
-   @Nullable
-   T parse(ParseState<S> var1);
+   @Nullable T parse(ParseState<S> var1);
 
    static <S, T> Rule<S, T> fromTerm(Term<S> var0, RuleAction<S, T> var1) {
       return new WrappedTerm<S, T>(var1, var0);
@@ -30,8 +29,7 @@ public interface Rule<S, T> {
          this.child = var2;
       }
 
-      @Nullable
-      public T parse(ParseState<S> var1) {
+      public @Nullable T parse(ParseState<S> var1) {
          Scope var2 = var1.scope();
          var2.pushFrame();
 
@@ -53,7 +51,6 @@ public interface Rule<S, T> {
 
    @FunctionalInterface
    public interface RuleAction<S, T> {
-      @Nullable
-      T run(ParseState<S> var1);
+      @Nullable T run(ParseState<S> var1);
    }
 }

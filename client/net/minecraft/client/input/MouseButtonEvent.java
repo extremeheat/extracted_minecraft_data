@@ -12,11 +12,11 @@ public record MouseButtonEvent(double x, double y, MouseButtonInfo buttonInfo) i
       return this.button();
    }
 
-   public int button() {
+   public @MouseButtonInfo.MouseButton int button() {
       return this.buttonInfo().button();
    }
 
-   public int modifiers() {
+   public @InputWithModifiers.Modifiers int modifiers() {
       return this.buttonInfo().modifiers();
    }
 }

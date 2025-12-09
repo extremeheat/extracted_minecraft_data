@@ -1,23 +1,23 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.SnowGolemModel;
+import net.minecraft.client.model.animal.golem.SnowGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SnowGolemHeadLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SnowGolemRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.SnowGolem;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
 
 public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemRenderState, SnowGolemModel> {
-   private static final ResourceLocation SNOW_GOLEM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/snow_golem.png");
+   private static final Identifier SNOW_GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/snow_golem.png");
 
    public SnowGolemRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SnowGolemModel(var1.bakeLayer(ModelLayers.SNOW_GOLEM)), 0.5F);
       this.addLayer(new SnowGolemHeadLayer(this, var1.getBlockRenderDispatcher()));
    }
 
-   public ResourceLocation getTextureLocation(SnowGolemRenderState var1) {
+   public Identifier getTextureLocation(SnowGolemRenderState var1) {
       return SNOW_GOLEM_LOCATION;
    }
 
@@ -31,7 +31,7 @@ public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemRenderSta
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SnowGolemRenderState)var1);
    }
 

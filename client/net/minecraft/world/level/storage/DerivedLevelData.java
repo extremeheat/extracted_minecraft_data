@@ -5,10 +5,10 @@ import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.timers.TimerQueue;
 
 public class DerivedLevelData implements ServerLevelData {

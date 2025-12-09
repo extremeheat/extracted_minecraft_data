@@ -1,13 +1,13 @@
 package net.minecraft.util.parsing.packrat;
 
-import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public abstract class CachedParseState<S> implements ParseState<S> {
-   private PositionCache[] positionCache = new PositionCache[256];
+   private @Nullable CachedParseState.PositionCache[] positionCache = new PositionCache[256];
    private final ErrorCollector<S> errorCollector;
    private final Scope scope = new Scope();
-   private SimpleControl[] controlCache = new SimpleControl[16];
+   private @Nullable CachedParseState.SimpleControl[] controlCache = new SimpleControl[16];
    private int nextControlToReturn;
    private final CachedParseState<S>.Silent silent = new Silent();
 
@@ -24,8 +24,7 @@ public abstract class CachedParseState<S> implements ParseState<S> {
       return this.errorCollector;
    }
 
-   @Nullable
-   public <T> T parse(NamedRule<S, T> var1) {
+   public <T> @Nullable T parse(NamedRule<S, T> var1) {
       int var2 = this.mark();
       PositionCache var3 = this.getCacheForPosition(var2);
       int var4 = var3.findKeyIndex(var1.name());
@@ -139,8 +138,7 @@ public abstract class CachedParseState<S> implements ParseState<S> {
          return var2;
       }
 
-      @Nullable
-      public <T> CacheEntry<T> getValue(int var1) {
+      public <T> @Nullable CacheEntry<T> getValue(int var1) {
          return (CacheEntry)this.atomCache[var1 + 1];
       }
 
@@ -150,8 +148,7 @@ public abstract class CachedParseState<S> implements ParseState<S> {
    }
 
    static record CacheEntry<T>(@Nullable T value, int markAfterParse) {
-      @Nullable
-      final T value;
+      final @Nullable T value;
       final int markAfterParse;
       public static final CacheEntry<?> NEGATIVE = new CacheEntry((Object)null, -1);
 
@@ -181,8 +178,7 @@ public abstract class CachedParseState<S> implements ParseState<S> {
          return CachedParseState.this.scope();
       }
 
-      @Nullable
-      public <T> T parse(NamedRule<S, T> var1) {
+      public <T> @Nullable T parse(NamedRule<S, T> var1) {
          return (T)CachedParseState.this.parse(var1);
       }
 

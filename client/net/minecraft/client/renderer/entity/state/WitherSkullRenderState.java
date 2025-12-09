@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.client.model.SkullModelBase;
+import net.minecraft.client.model.object.skull.SkullModelBase;
 
 public class WitherSkullRenderState extends EntityRenderState {
    public boolean isDangerous;

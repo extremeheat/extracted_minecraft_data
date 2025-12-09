@@ -24,7 +24,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
 import net.minecraft.client.Minecraft;
@@ -44,6 +43,7 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.repository.RepositorySource;
 import net.minecraft.util.HttpUtil;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DownloadedPackSource implements AutoCloseable {
@@ -56,8 +56,7 @@ public class DownloadedPackSource implements AutoCloseable {
    private static final PackLoadFeedback LOG_ONLY_FEEDBACK;
    final Minecraft minecraft;
    private RepositorySource packSource;
-   @Nullable
-   private PackReloadConfig.Callbacks pendingReload;
+   private PackReloadConfig.@Nullable Callbacks pendingReload;
    final ServerPackManager manager;
    private final DownloadQueue downloadQueue;
    private PackSource packType;
@@ -94,8 +93,7 @@ public class DownloadedPackSource implements AutoCloseable {
       return new HttpUtil.DownloadProgressListener() {
          private final SystemToast.SystemToastId toastId = new SystemToast.SystemToastId();
          private Component title = Component.empty();
-         @Nullable
-         private Component message = null;
+         private @Nullable Component message = null;
          private int count;
          private int failCount;
          private OptionalLong totalBytes = OptionalLong.empty();
@@ -199,8 +197,7 @@ public class DownloadedPackSource implements AutoCloseable {
       return this::startReload;
    }
 
-   @Nullable
-   private List<Pack> loadRequestedPacks(List<PackReloadConfig.IdAndPath> var1) {
+   private @Nullable List<Pack> loadRequestedPacks(List<PackReloadConfig.IdAndPath> var1) {
       ArrayList var2 = new ArrayList(var1.size());
 
       for(PackReloadConfig.IdAndPath var4 : Lists.reverse(var1)) {
@@ -283,8 +280,7 @@ public class DownloadedPackSource implements AutoCloseable {
 
    }
 
-   @Nullable
-   private static HashCode tryParseSha1Hash(@Nullable String var0) {
+   private static @Nullable HashCode tryParseSha1Hash(@Nullable String var0) {
       return var0 != null && SHA1.matcher(var0).matches() ? HashCode.fromString(var0.toLowerCase(Locale.ROOT)) : null;
    }
 

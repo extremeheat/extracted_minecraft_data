@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -17,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BaseCommandBlock;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
@@ -27,8 +25,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
@@ -141,13 +141,13 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       return var5 instanceof CommandBlockEntity ? ((CommandBlockEntity)var5).getCommandBlock().getSuccessCount() : 0;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       BlockEntity var6 = var1.getBlockEntity(var2);
       if (var6 instanceof CommandBlockEntity var7) {
          BaseCommandBlock var8 = var7.getCommandBlock();
          if (var1 instanceof ServerLevel var9) {
             if (!var5.has(DataComponents.BLOCK_ENTITY_DATA)) {
-               var8.setTrackOutput(var9.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK));
+               var8.setTrackOutput((Boolean)var9.getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK));
                var7.setAutomatic(this.automatic);
             }
 
@@ -180,7 +180,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
       int var5;
       BlockState var6;
-      for(var5 = var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH); var5-- > 0; var2 = (Direction)var6.getValue(FACING)) {
+      for(var5 = (Integer)var4.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH); var5-- > 0; var2 = (Direction)var6.getValue(FACING)) {
          var3.move(var2);
          var6 = var0.getBlockState(var3);
          Block var7 = var6.getBlock();
@@ -213,7 +213,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       }
 
       if (var5 <= 0) {
-         int var11 = Math.max(var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH), 0);
+         int var11 = Math.max((Integer)var4.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH), 0);
          LOGGER.warn("Command Block chain tried to execute more than {} steps!", var11);
       }
 

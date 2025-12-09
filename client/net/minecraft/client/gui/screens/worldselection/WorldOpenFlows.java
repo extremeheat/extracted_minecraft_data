@@ -10,17 +10,14 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.AlertScreen;
@@ -51,10 +48,13 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.MemoryReserve;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.storage.LevelDataAndDimensions;
@@ -64,6 +64,7 @@ import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.level.validation.ContentValidationException;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class WorldOpenFlows {
@@ -101,8 +102,7 @@ public class WorldOpenFlows {
       }
    }
 
-   @Nullable
-   private LevelStorageSource.LevelStorageAccess createWorldAccess(String var1) {
+   private LevelStorageSource.@Nullable LevelStorageAccess createWorldAccess(String var1) {
       try {
          return this.levelSource.validateAndCreateAccess(var1);
       } catch (IOException var3) {
@@ -156,13 +156,13 @@ public class WorldOpenFlows {
          return new WorldLoader.DataLoadOutput(new 1Data(var3x.worldData().getLevelSettings(), var3x.worldData().worldGenOptions(), var3x.dimensions().dimensions()), var1x.datapackDimensions());
       }, (var0, var1x, var2x, var3x) -> {
          var0.close();
-         InitialWorldCreationOptions var4 = new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, Set.of(), (ResourceKey)null);
+         InitialWorldCreationOptions var4 = new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, GameRuleMap.of(), (ResourceKey)null);
          return Pair.of(var3x.levelSettings, new WorldCreationContext(var3x.options, new WorldDimensions(var3x.existingDimensions), var2x, var1x, var3x.levelSettings.getDataConfiguration(), var4));
       });
    }
 
    private <D, R> R loadWorldDataBlocking(WorldLoader.PackConfig var1, WorldLoader.WorldDataSupplier<D> var2, WorldLoader.ResultFactory<D, R> var3) throws Exception {
-      WorldLoader.InitConfig var4 = new WorldLoader.InitConfig(var1, Commands.CommandSelection.INTEGRATED, 2);
+      WorldLoader.InitConfig var4 = new WorldLoader.InitConfig(var1, Commands.CommandSelection.INTEGRATED, LevelBasedPermissionSet.GAMEMASTER);
       CompletableFuture var5 = WorldLoader.load(var4, var2, var3, Util.backgroundExecutor(), this.minecraft);
       Minecraft var10000 = this.minecraft;
       Objects.requireNonNull(var5);

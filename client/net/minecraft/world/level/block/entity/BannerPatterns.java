@@ -2,8 +2,8 @@ package net.minecraft.world.level.block.entity;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class BannerPatterns {
    public static final ResourceKey<BannerPattern> BASE = create("base");
@@ -55,7 +55,7 @@ public class BannerPatterns {
    }
 
    private static ResourceKey<BannerPattern> create(String var0) {
-      return ResourceKey.create(Registries.BANNER_PATTERN, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.BANNER_PATTERN, Identifier.withDefaultNamespace(var0));
    }
 
    public static void bootstrap(BootstrapContext<BannerPattern> var0) {
@@ -105,6 +105,6 @@ public class BannerPatterns {
    }
 
    public static void register(BootstrapContext<BannerPattern> var0, ResourceKey<BannerPattern> var1) {
-      var0.register(var1, new BannerPattern(var1.location(), "block.minecraft.banner." + var1.location().toShortLanguageKey()));
+      var0.register(var1, new BannerPattern(var1.identifier(), "block.minecraft.banner." + var1.identifier().toShortLanguageKey()));
    }
 }

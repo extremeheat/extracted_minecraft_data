@@ -5,10 +5,11 @@ import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ResultConsumer;
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import javax.annotation.Nullable;
 import net.minecraft.commands.execution.TraceCallbacks;
+import net.minecraft.server.permissions.PermissionSetSupplier;
+import org.jspecify.annotations.Nullable;
 
-public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> extends PermissionSource {
+public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> extends PermissionSetSupplier {
    T withCallback(CommandResultCallback var1);
 
    CommandResultCallback callback();

@@ -4,10 +4,10 @@ import com.mojang.blaze3d.platform.DisplayData;
 import java.io.File;
 import java.net.Proxy;
 import java.nio.file.Path;
-import javax.annotation.Nullable;
 import net.minecraft.client.User;
 import net.minecraft.client.resources.IndexedAssetSource;
 import net.minecraft.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 
 public class GameConfig {
    public final UserData user;
@@ -63,8 +63,7 @@ public class GameConfig {
       public final File gameDirectory;
       public final File resourcePackDirectory;
       public final File assetDirectory;
-      @Nullable
-      public final String assetIndex;
+      public final @Nullable String assetIndex;
 
       public FolderData(File var1, File var2, File var3, @Nullable String var4) {
          super();

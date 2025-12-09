@@ -12,15 +12,15 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import org.slf4j.Logger;
 
 public record PiecesContainer(List<StructurePiece> pieces) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation JIGSAW_RENAME = ResourceLocation.withDefaultNamespace("jigsaw");
-   private static final Map<ResourceLocation, ResourceLocation> RENAMES;
+   private static final Identifier JIGSAW_RENAME = Identifier.withDefaultNamespace("jigsaw");
+   private static final Map<Identifier, Identifier> RENAMES;
 
    public PiecesContainer(final List<StructurePiece> var1) {
       super();
@@ -57,8 +57,8 @@ public record PiecesContainer(List<StructurePiece> pieces) {
       for(int var3 = 0; var3 < var0.size(); ++var3) {
          CompoundTag var4 = var0.getCompoundOrEmpty(var3);
          String var5 = var4.getStringOr("id", "").toLowerCase(Locale.ROOT);
-         ResourceLocation var6 = ResourceLocation.parse(var5);
-         ResourceLocation var7 = (ResourceLocation)RENAMES.getOrDefault(var6, var6);
+         Identifier var6 = Identifier.parse(var5);
+         Identifier var7 = (Identifier)RENAMES.getOrDefault(var6, var6);
          StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.getValue(var7);
          if (var8 == null) {
             LOGGER.error("Unknown structure piece id: {}", var7);
@@ -80,6 +80,6 @@ public record PiecesContainer(List<StructurePiece> pieces) {
    }
 
    static {
-      RENAMES = ImmutableMap.builder().put(ResourceLocation.withDefaultNamespace("nvi"), JIGSAW_RENAME).put(ResourceLocation.withDefaultNamespace("pcp"), JIGSAW_RENAME).put(ResourceLocation.withDefaultNamespace("bastionremnant"), JIGSAW_RENAME).put(ResourceLocation.withDefaultNamespace("runtime"), JIGSAW_RENAME).build();
+      RENAMES = ImmutableMap.builder().put(Identifier.withDefaultNamespace("nvi"), JIGSAW_RENAME).put(Identifier.withDefaultNamespace("pcp"), JIGSAW_RENAME).put(Identifier.withDefaultNamespace("bastionremnant"), JIGSAW_RENAME).put(Identifier.withDefaultNamespace("runtime"), JIGSAW_RENAME).build();
    }
 }

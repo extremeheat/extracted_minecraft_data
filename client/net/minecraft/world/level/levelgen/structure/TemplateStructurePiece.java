@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -33,7 +33,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
    protected StructurePlaceSettings placeSettings;
    protected BlockPos templatePosition;
 
-   public TemplateStructurePiece(StructurePieceType var1, int var2, StructureTemplateManager var3, ResourceLocation var4, String var5, StructurePlaceSettings var6, BlockPos var7) {
+   public TemplateStructurePiece(StructurePieceType var1, int var2, StructureTemplateManager var3, Identifier var4, String var5, StructurePlaceSettings var6, BlockPos var7) {
       super(var1, var2, var3.getOrCreate(var4).getBoundingBox(var6, var7));
       this.setOrientation(Direction.NORTH);
       this.templateName = var5;
@@ -42,19 +42,19 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       this.placeSettings = var6;
    }
 
-   public TemplateStructurePiece(StructurePieceType var1, CompoundTag var2, StructureTemplateManager var3, Function<ResourceLocation, StructurePlaceSettings> var4) {
+   public TemplateStructurePiece(StructurePieceType var1, CompoundTag var2, StructureTemplateManager var3, Function<Identifier, StructurePlaceSettings> var4) {
       super(var1, var2);
       this.setOrientation(Direction.NORTH);
       this.templateName = var2.getStringOr("Template", "");
       this.templatePosition = new BlockPos(var2.getIntOr("TPX", 0), var2.getIntOr("TPY", 0), var2.getIntOr("TPZ", 0));
-      ResourceLocation var5 = this.makeTemplateLocation();
+      Identifier var5 = this.makeTemplateLocation();
       this.template = var3.getOrCreate(var5);
       this.placeSettings = (StructurePlaceSettings)var4.apply(var5);
       this.boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
    }
 
-   protected ResourceLocation makeTemplateLocation() {
-      return ResourceLocation.parse(this.templateName);
+   protected Identifier makeTemplateLocation() {
+      return Identifier.parse(this.templateName);
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

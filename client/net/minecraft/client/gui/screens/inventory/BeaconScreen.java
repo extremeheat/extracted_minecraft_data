@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -17,7 +16,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundSetBeaconPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -26,22 +25,21 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
-   private static final ResourceLocation BEACON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/beacon.png");
-   static final ResourceLocation BUTTON_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/beacon/button_disabled");
-   static final ResourceLocation BUTTON_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("container/beacon/button_selected");
-   static final ResourceLocation BUTTON_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/beacon/button_highlighted");
-   static final ResourceLocation BUTTON_SPRITE = ResourceLocation.withDefaultNamespace("container/beacon/button");
-   static final ResourceLocation CONFIRM_SPRITE = ResourceLocation.withDefaultNamespace("container/beacon/confirm");
-   static final ResourceLocation CANCEL_SPRITE = ResourceLocation.withDefaultNamespace("container/beacon/cancel");
+   private static final Identifier BEACON_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/beacon.png");
+   static final Identifier BUTTON_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/beacon/button_disabled");
+   static final Identifier BUTTON_SELECTED_SPRITE = Identifier.withDefaultNamespace("container/beacon/button_selected");
+   static final Identifier BUTTON_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/beacon/button_highlighted");
+   static final Identifier BUTTON_SPRITE = Identifier.withDefaultNamespace("container/beacon/button");
+   static final Identifier CONFIRM_SPRITE = Identifier.withDefaultNamespace("container/beacon/confirm");
+   static final Identifier CANCEL_SPRITE = Identifier.withDefaultNamespace("container/beacon/cancel");
    private static final Component PRIMARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.primary");
    private static final Component SECONDARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.secondary");
    private final List<BeaconButton> beaconButtons = Lists.newArrayList();
-   @Nullable
-   Holder<MobEffect> primary;
-   @Nullable
-   Holder<MobEffect> secondary;
+   @Nullable Holder<MobEffect> primary;
+   @Nullable Holder<MobEffect> secondary;
 
    public BeaconScreen(final BeaconMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
@@ -140,8 +138,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(var1, var2, 22, 22, var3);
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         ResourceLocation var5;
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+         Identifier var5;
          if (!this.active) {
             var5 = BeaconScreen.BUTTON_DISABLED_SPRITE;
          } else if (this.selected) {
@@ -175,7 +173,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private final boolean isPrimary;
       protected final int tier;
       private Holder<MobEffect> effect;
-      private ResourceLocation sprite;
+      private Identifier sprite;
 
       public BeaconPowerButton(final int var2, final int var3, final Holder<MobEffect> var4, final boolean var5, final int var6) {
          super(var2, var3);
@@ -207,7 +205,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
 
       public void updateStatus(int var1) {
@@ -242,16 +240,16 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    abstract static class BeaconSpriteScreenButton extends BeaconScreenButton {
-      private final ResourceLocation sprite;
+      private final Identifier sprite;
 
-      protected BeaconSpriteScreenButton(int var1, int var2, ResourceLocation var3, Component var4) {
+      protected BeaconSpriteScreenButton(int var1, int var2, Identifier var3, Component var4) {
          super(var1, var2, var4);
          this.setTooltip(Tooltip.create(var4));
          this.sprite = var3;
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
    }
 

@@ -8,7 +8,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameModeArgument;
@@ -17,6 +16,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class PublishCommand {
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.publish.failed"));
@@ -27,7 +27,7 @@ public class PublishCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("publish").requires(Commands.hasPermission(4))).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), false, (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("allowCommands", BoolArgumentType.bool()).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(var0x, "allowCommands"), (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(var0x, "allowCommands"), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("port", IntegerArgumentType.integer(0, 65535)).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "port"), BoolArgumentType.getBool(var0x, "allowCommands"), GameModeArgument.getGameMode(var0x, "gamemode")))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("publish").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), false, (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("allowCommands", BoolArgumentType.bool()).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(var0x, "allowCommands"), (GameType)null))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort(), BoolArgumentType.getBool(var0x, "allowCommands"), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("port", IntegerArgumentType.integer(0, 65535)).executes((var0x) -> publish((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "port"), BoolArgumentType.getBool(var0x, "allowCommands"), GameModeArgument.getGameMode(var0x, "gamemode")))))));
    }
 
    private static int publish(CommandSourceStack var0, int var1, boolean var2, @Nullable GameType var3) throws CommandSyntaxException {

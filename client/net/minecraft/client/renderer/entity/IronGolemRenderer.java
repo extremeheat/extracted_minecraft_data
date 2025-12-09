@@ -2,27 +2,27 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.IronGolemModel;
+import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.IronGolemCrackinessLayer;
 import net.minecraft.client.renderer.entity.layers.IronGolemFlowerLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import org.joml.Quaternionfc;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderState, IronGolemModel> {
-   private static final ResourceLocation GOLEM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
+   private static final Identifier GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
 
    public IronGolemRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IronGolemModel(var1.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);
       this.addLayer(new IronGolemCrackinessLayer(this));
-      this.addLayer(new IronGolemFlowerLayer(this, var1.getBlockRenderDispatcher()));
+      this.addLayer(new IronGolemFlowerLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(IronGolemRenderState var1) {
+   public Identifier getTextureLocation(IronGolemRenderState var1) {
       return GOLEM_LOCATION;
    }
 
@@ -48,7 +48,7 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderSta
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((IronGolemRenderState)var1);
    }
 

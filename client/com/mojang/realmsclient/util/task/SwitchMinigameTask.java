@@ -31,7 +31,7 @@ public class SwitchMinigameTask extends LongRunningTask {
                return;
             }
 
-            if (var1.putIntoMinigameMode(this.realmId, this.worldTemplate.id)) {
+            if (var1.putIntoMinigameMode(this.realmId, this.worldTemplate.id())) {
                setScreen(this.nextScreen);
                break;
             }

@@ -6,11 +6,11 @@ import com.mojang.authlib.yggdrasil.ServicesKeySet;
 import com.mojang.authlib.yggdrasil.ServicesKeyType;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import java.io.File;
-import javax.annotation.Nullable;
 import net.minecraft.server.players.CachedUserNameToIdResolver;
 import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.util.SignatureValidator;
+import org.jspecify.annotations.Nullable;
 
 public record Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, UserNameToIdResolver nameToIdCache, ProfileResolver profileResolver) {
    private static final String USERID_CACHE_FILE = "usercache.json";
@@ -32,8 +32,7 @@ public record Services(MinecraftSessionService sessionService, ServicesKeySet se
       return new Services(var2, var0.getServicesKeySet(), var3, var4, var5);
    }
 
-   @Nullable
-   public SignatureValidator profileKeySignatureValidator() {
+   public @Nullable SignatureValidator profileKeySignatureValidator() {
       return SignatureValidator.from(this.servicesKeySet, ServicesKeyType.PROFILE_KEY);
    }
 

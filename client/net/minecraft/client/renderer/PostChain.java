@@ -19,20 +19,20 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class PostChain implements AutoCloseable {
-   public static final ResourceLocation MAIN_TARGET_ID = ResourceLocation.withDefaultNamespace("main");
+   public static final Identifier MAIN_TARGET_ID = Identifier.withDefaultNamespace("main");
    private final List<PostPass> passes;
-   private final Map<ResourceLocation, PostChainConfig.InternalTarget> internalTargets;
-   private final Set<ResourceLocation> externalTargets;
-   private final Map<ResourceLocation, RenderTarget> persistentTargets = new HashMap();
+   private final Map<Identifier, PostChainConfig.InternalTarget> internalTargets;
+   private final Set<Identifier> externalTargets;
+   private final Map<Identifier, RenderTarget> persistentTargets = new HashMap();
    private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer;
 
-   private PostChain(List<PostPass> var1, Map<ResourceLocation, PostChainConfig.InternalTarget> var2, Set<ResourceLocation> var3, CachedOrthoProjectionMatrixBuffer var4) {
+   private PostChain(List<PostPass> var1, Map<Identifier, PostChainConfig.InternalTarget> var2, Set<Identifier> var3, CachedOrthoProjectionMatrixBuffer var4) {
       super();
       this.passes = var1;
       this.internalTargets = var2;
@@ -40,7 +40,7 @@ public class PostChain implements AutoCloseable {
       this.projectionMatrixBuffer = var4;
    }
 
-   public static PostChain load(PostChainConfig var0, TextureManager var1, Set<ResourceLocation> var2, ResourceLocation var3, CachedOrthoProjectionMatrixBuffer var4) throws ShaderManager.CompilationException {
+   public static PostChain load(PostChainConfig var0, TextureManager var1, Set<Identifier> var2, Identifier var3, CachedOrthoProjectionMatrixBuffer var4) throws ShaderManager.CompilationException {
       Stream var5 = var0.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
       Set var6 = (Set)var5.filter((var1x) -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
       Sets.SetView var7 = Sets.difference(var6, var2);
@@ -58,7 +58,7 @@ public class PostChain implements AutoCloseable {
       }
    }
 
-   private static PostPass createPass(TextureManager var0, PostChainConfig.Pass var1, ResourceLocation var2) throws ShaderManager.CompilationException {
+   private static PostPass createPass(TextureManager var0, PostChainConfig.Pass var1, Identifier var2) throws ShaderManager.CompilationException {
       RenderPipeline.Builder var3 = RenderPipeline.builder(RenderPipelines.POST_PROCESSING_SNIPPET).withFragmentShader(var1.fragmentShaderId()).withVertexShader(var1.vertexShaderId()).withLocation(var2);
 
       for(PostChainConfig.Input var5 : var1.inputs()) {
@@ -101,8 +101,8 @@ public class PostChain implements AutoCloseable {
                   throw new MatchException(var29.toString(), var29);
                }
 
-               ResourceLocation var36 = var54;
-               ResourceLocation var12 = var36;
+               Identifier var36 = var54;
+               Identifier var12 = var36;
                var51 = var10;
 
                try {
@@ -134,8 +134,7 @@ public class PostChain implements AutoCloseable {
                var37 = var60;
                boolean var15 = (boolean)var37;
                AbstractTexture var40 = var0.getTexture(var12.withPath((UnaryOperator)((var0x) -> "textures/effect/" + var0x + ".png")));
-               var40.setFilter(var15, false);
-               var34.add(new PostPass.TextureInput(var11, var40, var13, var14));
+               var34.add(new PostPass.TextureInput(var11, var40, var13, var14, var15));
                break;
             case 1:
                PostChainConfig.TargetInput var16 = (PostChainConfig.TargetInput)var7;
@@ -157,8 +156,8 @@ public class PostChain implements AutoCloseable {
                   throw new MatchException(var24.toString(), var24);
                }
 
-               ResourceLocation var41 = var46;
-               ResourceLocation var18 = var41;
+               Identifier var41 = var46;
+               Identifier var18 = var41;
                var10000 = var16;
 
                try {
@@ -192,12 +191,12 @@ public class PostChain implements AutoCloseable {
       GpuBufferSlice var5 = this.projectionMatrixBuffer.getBuffer((float)var2, (float)var3);
       HashMap var6 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
 
-      for(ResourceLocation var8 : this.externalTargets) {
+      for(Identifier var8 : this.externalTargets) {
          var6.put(var8, var4.getOrThrow(var8));
       }
 
       for(Map.Entry var16 : this.internalTargets.entrySet()) {
-         ResourceLocation var9 = (ResourceLocation)var16.getKey();
+         Identifier var9 = (Identifier)var16.getKey();
          PostChainConfig.InternalTarget var10 = (PostChainConfig.InternalTarget)var16.getValue();
          RenderTargetDescriptor var11 = new RenderTargetDescriptor((Integer)var10.width().orElse(var2), (Integer)var10.height().orElse(var3), true, var10.clearColor());
          if (var10.persistent()) {
@@ -212,7 +211,7 @@ public class PostChain implements AutoCloseable {
          var17.addToFrame(var1, var6, var5);
       }
 
-      for(ResourceLocation var18 : this.externalTargets) {
+      for(Identifier var18 : this.externalTargets) {
          var4.replace(var18, (ResourceHandle)var6.get(var18));
       }
 
@@ -227,7 +226,7 @@ public class PostChain implements AutoCloseable {
       var3.execute(var2);
    }
 
-   private RenderTarget getOrCreatePersistentTarget(ResourceLocation var1, RenderTargetDescriptor var2) {
+   private RenderTarget getOrCreatePersistentTarget(Identifier var1, RenderTargetDescriptor var2) {
       RenderTarget var3 = (RenderTarget)this.persistentTargets.get(var1);
       if (var3 == null || var3.width != var2.width() || var3.height != var2.height()) {
          if (var3 != null) {
@@ -253,11 +252,11 @@ public class PostChain implements AutoCloseable {
    }
 
    public interface TargetBundle {
-      static TargetBundle of(final ResourceLocation var0, final ResourceHandle<RenderTarget> var1) {
+      static TargetBundle of(final Identifier var0, final ResourceHandle<RenderTarget> var1) {
          return new TargetBundle() {
             private ResourceHandle<RenderTarget> handle = var1;
 
-            public void replace(ResourceLocation var1x, ResourceHandle<RenderTarget> var2) {
+            public void replace(Identifier var1x, ResourceHandle<RenderTarget> var2) {
                if (var1x.equals(var0)) {
                   this.handle = var2;
                } else {
@@ -265,19 +264,17 @@ public class PostChain implements AutoCloseable {
                }
             }
 
-            @Nullable
-            public ResourceHandle<RenderTarget> get(ResourceLocation var1x) {
+            public @Nullable ResourceHandle<RenderTarget> get(Identifier var1x) {
                return var1x.equals(var0) ? this.handle : null;
             }
          };
       }
 
-      void replace(ResourceLocation var1, ResourceHandle<RenderTarget> var2);
+      void replace(Identifier var1, ResourceHandle<RenderTarget> var2);
 
-      @Nullable
-      ResourceHandle<RenderTarget> get(ResourceLocation var1);
+      @Nullable ResourceHandle<RenderTarget> get(Identifier var1);
 
-      default ResourceHandle<RenderTarget> getOrThrow(ResourceLocation var1) {
+      default ResourceHandle<RenderTarget> getOrThrow(Identifier var1) {
          ResourceHandle var2 = this.get(var1);
          if (var2 == null) {
             throw new IllegalArgumentException("Missing target with id " + String.valueOf(var1));

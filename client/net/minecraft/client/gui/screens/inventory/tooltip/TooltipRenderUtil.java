@@ -1,14 +1,14 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class TooltipRenderUtil {
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/background");
-   private static final ResourceLocation FRAME_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/frame");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("tooltip/background");
+   private static final Identifier FRAME_SPRITE = Identifier.withDefaultNamespace("tooltip/frame");
    public static final int MOUSE_OFFSET = 12;
    private static final int PADDING = 3;
    public static final int PADDING_LEFT = 3;
@@ -21,7 +21,7 @@ public class TooltipRenderUtil {
       super();
    }
 
-   public static void renderTooltipBackground(GuiGraphics var0, int var1, int var2, int var3, int var4, @Nullable ResourceLocation var5) {
+   public static void renderTooltipBackground(GuiGraphics var0, int var1, int var2, int var3, int var4, @Nullable Identifier var5) {
       int var6 = var1 - 3 - 9;
       int var7 = var2 - 3 - 9;
       int var8 = var3 + 3 + 3 + 18;
@@ -30,11 +30,11 @@ public class TooltipRenderUtil {
       var0.blitSprite(RenderPipelines.GUI_TEXTURED, getFrameSprite(var5), var6, var7, var8, var9);
    }
 
-   private static ResourceLocation getBackgroundSprite(@Nullable ResourceLocation var0) {
+   private static Identifier getBackgroundSprite(@Nullable Identifier var0) {
       return var0 == null ? BACKGROUND_SPRITE : var0.withPath((UnaryOperator)((var0x) -> "tooltip/" + var0x + "_background"));
    }
 
-   private static ResourceLocation getFrameSprite(@Nullable ResourceLocation var0) {
+   private static Identifier getFrameSprite(@Nullable Identifier var0) {
       return var0 == null ? FRAME_SPRITE : var0.withPath((UnaryOperator)((var0x) -> "tooltip/" + var0x + "_frame"));
    }
 }

@@ -1,13 +1,13 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class ServerboundTeleportToEntityPacket implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundTeleportToEntityPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundTeleportToEntityPacket>codec(ServerboundTeleportToEntityPacket::write, ServerboundTeleportToEntityPacket::new);
@@ -35,8 +35,7 @@ public class ServerboundTeleportToEntityPacket implements Packet<ServerGamePacke
       var1.handleTeleportToEntityPacket(this);
    }
 
-   @Nullable
-   public Entity getEntity(ServerLevel var1) {
+   public @Nullable Entity getEntity(ServerLevel var1) {
       return var1.getEntity(this.uuid);
    }
 }

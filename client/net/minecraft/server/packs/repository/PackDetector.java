@@ -7,9 +7,9 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.world.level.validation.ForbiddenSymlinkInfo;
+import org.jspecify.annotations.Nullable;
 
 public abstract class PackDetector<T> {
    private final DirectoryValidator validator;
@@ -19,8 +19,7 @@ public abstract class PackDetector<T> {
       this.validator = var1;
    }
 
-   @Nullable
-   public T detectPackResources(Path var1, List<ForbiddenSymlinkInfo> var2) throws IOException {
+   public @Nullable T detectPackResources(Path var1, List<ForbiddenSymlinkInfo> var2) throws IOException {
       Path var3 = var1;
 
       BasicFileAttributes var4;
@@ -52,9 +51,7 @@ public abstract class PackDetector<T> {
       }
    }
 
-   @Nullable
-   protected abstract T createZipPack(Path var1) throws IOException;
+   protected abstract @Nullable T createZipPack(Path var1) throws IOException;
 
-   @Nullable
-   protected abstract T createDirectoryPack(Path var1) throws IOException;
+   protected abstract @Nullable T createDirectoryPack(Path var1) throws IOException;
 }

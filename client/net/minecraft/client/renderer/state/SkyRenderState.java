@@ -1,17 +1,18 @@
 package net.minecraft.client.renderer.state;
 
-import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.world.level.MoonPhase;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class SkyRenderState {
-   public DimensionSpecialEffects.SkyType skyType;
-   public boolean isSunriseOrSunset;
+   public DimensionType.Skybox skybox;
    public boolean shouldRenderDarkDisc;
    public float sunAngle;
-   public float timeOfDay;
+   public float moonAngle;
+   public float starAngle;
    public float rainBrightness;
    public float starBrightness;
    public int sunriseAndSunsetColor;
-   public int moonPhase;
+   public MoonPhase moonPhase;
    public int skyColor;
    public float endFlashIntensity;
    public float endFlashXAngle;
@@ -19,10 +20,11 @@ public class SkyRenderState {
 
    public SkyRenderState() {
       super();
-      this.skyType = DimensionSpecialEffects.SkyType.NONE;
+      this.skybox = DimensionType.Skybox.NONE;
+      this.moonPhase = MoonPhase.FULL_MOON;
    }
 
    public void reset() {
-      this.skyType = DimensionSpecialEffects.SkyType.NONE;
+      this.skybox = DimensionType.Skybox.NONE;
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,6 +16,7 @@ import net.minecraft.world.level.levelgen.Column;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.LargeDripstoneConfiguration;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> {
    public LargeDripstoneFeature(Codec<LargeDripstoneConfiguration> var1) {
@@ -185,15 +185,14 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
    static final class WindOffsetter {
       private final int originY;
-      @Nullable
-      private final Vec3 windSpeed;
+      private final @Nullable Vec3 windSpeed;
 
       WindOffsetter(int var1, RandomSource var2, FloatProvider var3) {
          super();
          this.originY = var1;
          float var4 = var3.sample(var2);
          float var5 = Mth.randomBetween(var2, 0.0F, 3.1415927F);
-         this.windSpeed = new Vec3((double)(Mth.cos(var5) * var4), 0.0, (double)(Mth.sin(var5) * var4));
+         this.windSpeed = new Vec3((double)(Mth.cos((double)var5) * var4), 0.0, (double)(Mth.sin((double)var5) * var4));
       }
 
       private WindOffsetter() {

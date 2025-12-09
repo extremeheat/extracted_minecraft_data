@@ -3,18 +3,18 @@ package net.minecraft.client.renderer.item;
 import com.google.common.base.Suppliers;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class MissingItemModel implements ItemModel {
    private final List<BakedQuad> quads;
-   private final Supplier<Vector3f[]> extents;
+   private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
 
    public MissingItemModel(List<BakedQuad> var1, ModelRenderProperties var2) {

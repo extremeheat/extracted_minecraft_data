@@ -5,10 +5,11 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class RepeatedNarrator {
    private final float permitsPerSecond;
-   private final AtomicReference<Params> params = new AtomicReference();
+   private final AtomicReference<@Nullable Params> params = new AtomicReference();
 
    public RepeatedNarrator(Duration var1) {
       super();

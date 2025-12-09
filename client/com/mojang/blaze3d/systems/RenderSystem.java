@@ -10,7 +10,7 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -20,19 +20,17 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiFunction;
 import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DynamicUniforms;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TimeSource;
+import net.minecraft.util.Util;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.system.MemoryUtil;
@@ -43,10 +41,8 @@ public class RenderSystem {
    static final Logger LOGGER = LogUtils.getLogger();
    public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    public static final int PROJECTION_MATRIX_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().get();
-   @Nullable
-   private static Thread renderThread;
-   @Nullable
-   private static GpuDevice DEVICE;
+   private static @Nullable Thread renderThread;
+   private static @Nullable GpuDevice DEVICE;
    private static double lastDrawTime = 4.9E-324;
    private static final AutoStorageIndexBuffer sharedSequential = new AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
    private static final AutoStorageIndexBuffer sharedSequentialQuad = new AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
@@ -68,34 +64,27 @@ public class RenderSystem {
    private static ProjectionType projectionType;
    private static ProjectionType savedProjectionType;
    private static final Matrix4fStack modelViewStack;
-   private static Matrix4f textureMatrix;
-   public static final int TEXTURE_COUNT = 12;
-   private static final GpuTextureView[] shaderTextures;
-   @Nullable
-   private static GpuBufferSlice shaderFog;
-   @Nullable
-   private static GpuBufferSlice shaderLightDirections;
-   @Nullable
-   private static GpuBufferSlice projectionMatrixBuffer;
-   @Nullable
-   private static GpuBufferSlice savedProjectionMatrixBuffer;
-   private static float shaderLineWidth;
+   private static @Nullable GpuBufferSlice shaderFog;
+   private static @Nullable GpuBufferSlice shaderLightDirections;
+   private static @Nullable GpuBufferSlice projectionMatrixBuffer;
+   private static @Nullable GpuBufferSlice savedProjectionMatrixBuffer;
    private static String apiDescription;
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
-   @Nullable
-   public static GpuTextureView outputColorTextureOverride;
-   @Nullable
-   public static GpuTextureView outputDepthTextureOverride;
-   @Nullable
-   private static GpuBuffer globalSettingsUniform;
-   @Nullable
-   private static DynamicUniforms dynamicUniforms;
-   private static ScissorState scissorStateForRenderTypeDraws;
+   public static @Nullable GpuTextureView outputColorTextureOverride;
+   public static @Nullable GpuTextureView outputDepthTextureOverride;
+   private static @Nullable GpuBuffer globalSettingsUniform;
+   private static @Nullable DynamicUniforms dynamicUniforms;
+   private static final ScissorState scissorStateForRenderTypeDraws;
+   private static SamplerCache samplerCache;
 
    public RenderSystem() {
       super();
+   }
+
+   public static SamplerCache getSamplerCache() {
+      return samplerCache;
    }
 
    public static void initRenderThread() {
@@ -159,8 +148,7 @@ public class RenderSystem {
       shaderFog = var0;
    }
 
-   @Nullable
-   public static GpuBufferSlice getShaderFog() {
+   public static @Nullable GpuBufferSlice getShaderFog() {
       return shaderFog;
    }
 
@@ -168,19 +156,8 @@ public class RenderSystem {
       shaderLightDirections = var0;
    }
 
-   @Nullable
-   public static GpuBufferSlice getShaderLights() {
+   public static @Nullable GpuBufferSlice getShaderLights() {
       return shaderLightDirections;
-   }
-
-   public static void lineWidth(float var0) {
-      assertOnRenderThread();
-      shaderLineWidth = var0;
-   }
-
-   public static float getShaderLineWidth() {
-      assertOnRenderThread();
-      return shaderLineWidth;
    }
 
    public static void enableScissorForRenderTypeDraws(int var0, int var1, int var2, int var3) {
@@ -209,10 +186,11 @@ public class RenderSystem {
       return var10000::getAsLong;
    }
 
-   public static void initRenderer(long var0, int var2, boolean var3, BiFunction<ResourceLocation, ShaderType, String> var4, boolean var5) {
+   public static void initRenderer(long var0, int var2, boolean var3, ShaderSource var4, boolean var5) {
       DEVICE = new GlDevice(var0, var2, var3, var4, var5);
       apiDescription = getDevice().getImplementationInformation();
       dynamicUniforms = new DynamicUniforms();
+      samplerCache.initialize();
    }
 
    public static void setErrorCallback(GLFWErrorCallbackI var0) {
@@ -221,47 +199,12 @@ public class RenderSystem {
 
    public static void setupDefaultState() {
       modelViewStack.clear();
-      textureMatrix.identity();
-   }
-
-   public static void setupOverlayColor(@Nullable GpuTextureView var0) {
-      assertOnRenderThread();
-      setShaderTexture(1, var0);
-   }
-
-   public static void teardownOverlayColor() {
-      assertOnRenderThread();
-      setShaderTexture(1, (GpuTextureView)null);
-   }
-
-   public static void setShaderTexture(int var0, @Nullable GpuTextureView var1) {
-      assertOnRenderThread();
-      if (var0 >= 0 && var0 < shaderTextures.length) {
-         shaderTextures[var0] = var1;
-      }
-
-   }
-
-   @Nullable
-   public static GpuTextureView getShaderTexture(int var0) {
-      assertOnRenderThread();
-      return var0 >= 0 && var0 < shaderTextures.length ? shaderTextures[var0] : null;
    }
 
    public static void setProjectionMatrix(GpuBufferSlice var0, ProjectionType var1) {
       assertOnRenderThread();
       projectionMatrixBuffer = var0;
       projectionType = var1;
-   }
-
-   public static void setTextureMatrix(Matrix4f var0) {
-      assertOnRenderThread();
-      textureMatrix = new Matrix4f(var0);
-   }
-
-   public static void resetTextureMatrix() {
-      assertOnRenderThread();
-      textureMatrix.identity();
    }
 
    public static void backupProjectionMatrix() {
@@ -276,8 +219,7 @@ public class RenderSystem {
       projectionType = savedProjectionType;
    }
 
-   @Nullable
-   public static GpuBufferSlice getProjectionMatrixBuffer() {
+   public static @Nullable GpuBufferSlice getProjectionMatrixBuffer() {
       assertOnRenderThread();
       return projectionMatrixBuffer;
    }
@@ -290,11 +232,6 @@ public class RenderSystem {
    public static Matrix4fStack getModelViewStack() {
       assertOnRenderThread();
       return modelViewStack;
-   }
-
-   public static Matrix4f getTextureMatrix() {
-      assertOnRenderThread();
-      return textureMatrix;
    }
 
    public static AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0) {
@@ -313,8 +250,7 @@ public class RenderSystem {
       globalSettingsUniform = var0;
    }
 
-   @Nullable
-   public static GpuBuffer getGlobalSettingsUniform() {
+   public static @Nullable GpuBuffer getGlobalSettingsUniform() {
       return globalSettingsUniform;
    }
 
@@ -352,8 +288,7 @@ public class RenderSystem {
       }
    }
 
-   @Nullable
-   public static GpuDevice tryGetDevice() {
+   public static @Nullable GpuDevice tryGetDevice() {
       return DEVICE;
    }
 
@@ -392,23 +327,20 @@ public class RenderSystem {
       projectionType = ProjectionType.PERSPECTIVE;
       savedProjectionType = ProjectionType.PERSPECTIVE;
       modelViewStack = new Matrix4fStack(16);
-      textureMatrix = new Matrix4f();
-      shaderTextures = new GpuTextureView[12];
       shaderFog = null;
-      shaderLineWidth = 1.0F;
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
       scissorStateForRenderTypeDraws = new ScissorState();
+      samplerCache = new SamplerCache();
    }
 
    public static final class AutoStorageIndexBuffer {
       private final int vertexStride;
       private final int indexStride;
       private final IndexGenerator generator;
-      @Nullable
-      private GpuBuffer buffer;
+      private @Nullable GpuBuffer buffer;
       private VertexFormat.IndexType type;
       private int indexCount;
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen;
 
 import java.util.Arrays;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -13,6 +12,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.apache.commons.lang3.mutable.MutableDouble;
+import org.jspecify.annotations.Nullable;
 
 public interface Aquifer {
    static Aquifer create(NoiseChunk var0, ChunkPos var1, NoiseRouter var2, PositionalRandomFactory var3, int var4, int var5, FluidPicker var6) {
@@ -21,8 +21,7 @@ public interface Aquifer {
 
    static Aquifer createDisabled(final FluidPicker var0) {
       return new Aquifer() {
-         @Nullable
-         public BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
+         public @Nullable BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
             return var2 > 0.0 ? null : var0.computeFluid(var1.blockX(), var1.blockY(), var1.blockZ()).at(var1.blockY());
          }
 
@@ -32,8 +31,7 @@ public interface Aquifer {
       };
    }
 
-   @Nullable
-   BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2);
+   @Nullable BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2);
 
    boolean shouldScheduleFluidUpdate();
 
@@ -66,7 +64,7 @@ public interface Aquifer {
       private final DensityFunction fluidLevelSpreadNoise;
       private final DensityFunction lavaNoise;
       private final PositionalRandomFactory positionalRandomFactory;
-      private final FluidStatus[] aquiferCache;
+      private final @Nullable Aquifer.FluidStatus[] aquiferCache;
       private final long[] aquiferLocationCache;
       private final FluidPicker globalFluidPicker;
       private final DensityFunction erosion;
@@ -116,8 +114,7 @@ public interface Aquifer {
          return (var5 * this.gridSizeZ + var6) * this.gridSizeX + var4;
       }
 
-      @Nullable
-      public BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
+      public @Nullable BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
          if (var2 > 0.0) {
             this.shouldScheduleFluidUpdate = false;
             return null;
@@ -302,7 +299,7 @@ public interface Aquifer {
                double var40 = 2.0;
                double var33;
                if (!(var29 < -2.0) && !(var29 > 2.0)) {
-                  double var35 = var2.getValue();
+                  double var35 = var2.doubleValue();
                   if (Double.isNaN(var35)) {
                      double var37 = this.barrierNoise.compute(var1);
                      var2.setValue(var37);

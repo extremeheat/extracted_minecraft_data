@@ -2,12 +2,12 @@ package net.minecraft.world;
 
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.Nullable;
 
 public enum Difficulty implements StringRepresentable {
    PEACEFUL(0, "peaceful"),
@@ -44,8 +44,7 @@ public enum Difficulty implements StringRepresentable {
       return (Difficulty)BY_ID.apply(var0);
    }
 
-   @Nullable
-   public static Difficulty byName(String var0) {
+   public static @Nullable Difficulty byName(String var0) {
       return CODEC.byName(var0);
    }
 

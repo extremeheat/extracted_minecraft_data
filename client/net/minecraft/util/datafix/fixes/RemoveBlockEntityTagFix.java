@@ -10,7 +10,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.List;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class RemoveBlockEntityTagFix extends DataFix {

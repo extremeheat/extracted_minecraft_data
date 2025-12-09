@@ -8,12 +8,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -21,13 +19,15 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StaticCache2D;
+import net.minecraft.util.Util;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -61,6 +61,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.WorldGenTickAccess;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class WorldGenRegion implements WorldGenLevel {
@@ -76,10 +77,9 @@ public class WorldGenRegion implements WorldGenLevel {
    private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess<Fluid>((var1x) -> this.getChunk(var1x).getFluidTicks());
    private final BiomeManager biomeManager;
    private final ChunkStep generatingStep;
-   @Nullable
-   private Supplier<String> currentlyGenerating;
+   private @Nullable Supplier<String> currentlyGenerating;
    private final AtomicLong subTickCount = new AtomicLong();
-   private static final ResourceLocation WORLDGEN_REGION_RANDOM = ResourceLocation.withDefaultNamespace("worldgen_region_random");
+   private static final Identifier WORLDGEN_REGION_RANDOM = Identifier.withDefaultNamespace("worldgen_region_random");
 
    public WorldGenRegion(ServerLevel var1, StaticCache2D<GenerationChunkHolder> var2, ChunkStep var3, ChunkAccess var4) {
       super();
@@ -110,8 +110,7 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY);
    }
 
-   @Nullable
-   public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       int var5 = this.center.getPos().getChessboardDistance(var1, var2);
       ChunkStatus var6 = var5 >= this.generatingStep.directDependencies().size() ? null : this.generatingStep.directDependencies().get(var5);
       GenerationChunkHolder var7;
@@ -158,8 +157,7 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(var1).getFluidState(var1);
    }
 
-   @Nullable
-   public Player getNearestPlayer(double var1, double var3, double var5, double var7, Predicate<Entity> var9) {
+   public @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
       return null;
    }
 
@@ -197,8 +195,7 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       ChunkAccess var2 = this.getChunk(var1);
       BlockEntity var3 = var2.getBlockEntity(var1);
       if (var3 != null) {
@@ -252,7 +249,7 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
       if (!this.ensureCanWrite(var1)) {
          return false;
       } else {
@@ -335,12 +332,11 @@ public class WorldGenRegion implements WorldGenLevel {
       if (!this.hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()))) {
          throw new RuntimeException("We are asking a region for a chunk out of bound");
       } else {
-         return new DifficultyInstance(this.level.getDifficulty(), this.level.getDayTime(), 0L, this.level.getMoonBrightness());
+         return new DifficultyInstance(this.level.getDifficulty(), this.level.getDayTime(), 0L, this.level.getMoonBrightness(var1));
       }
    }
 
-   @Nullable
-   public MinecraftServer getServer() {
+   public @Nullable MinecraftServer getServer() {
       return this.level.getServer();
    }
 
@@ -418,5 +414,9 @@ public class WorldGenRegion implements WorldGenLevel {
 
    public long nextSubTickCount() {
       return this.subTickCount.getAndIncrement();
+   }
+
+   public EnvironmentAttributeReader environmentAttributes() {
+      return EnvironmentAttributeReader.EMPTY;
    }
 }

@@ -49,6 +49,7 @@ public class LevelDebugSynchronizers {
       this.enabledSubscriptions = var1.enabledSubscriptions();
       boolean var2 = this.enabledSubscriptions.isEmpty();
       if (this.sleeping != var2) {
+         this.sleeping = var2;
          if (var2) {
             for(TrackingDebugSynchronizer var4 : this.allSynchronizers) {
                var4.clear();
@@ -56,8 +57,6 @@ public class LevelDebugSynchronizers {
          } else {
             this.wakeUp();
          }
-
-         this.sleeping = var2;
       }
 
       if (!this.sleeping) {

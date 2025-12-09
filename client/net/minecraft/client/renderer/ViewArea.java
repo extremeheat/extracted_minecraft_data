@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
+import org.jspecify.annotations.Nullable;
 
 public class ViewArea {
    protected final LevelRenderer levelRenderer;
@@ -112,21 +112,18 @@ public class ViewArea {
 
    }
 
-   @Nullable
-   protected SectionRenderDispatcher.RenderSection getRenderSectionAt(BlockPos var1) {
+   protected SectionRenderDispatcher.@Nullable RenderSection getRenderSectionAt(BlockPos var1) {
       return this.getRenderSection(SectionPos.asLong(var1));
    }
 
-   @Nullable
-   protected SectionRenderDispatcher.RenderSection getRenderSection(long var1) {
+   protected SectionRenderDispatcher.@Nullable RenderSection getRenderSection(long var1) {
       int var3 = SectionPos.x(var1);
       int var4 = SectionPos.y(var1);
       int var5 = SectionPos.z(var1);
       return this.getRenderSection(var3, var4, var5);
    }
 
-   @Nullable
-   private SectionRenderDispatcher.RenderSection getRenderSection(int var1, int var2, int var3) {
+   private SectionRenderDispatcher.@Nullable RenderSection getRenderSection(int var1, int var2, int var3) {
       if (!this.containsSection(var1, var2, var3)) {
          return null;
       } else {

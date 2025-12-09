@@ -1,43 +1,40 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.dragon.EnderDragonModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.monster.dragon.EnderDragonModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
-   public static final ResourceLocation CRYSTAL_BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_crystal/end_crystal_beam.png");
-   private static final ResourceLocation DRAGON_EXPLODING_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon_exploding.png");
-   private static final ResourceLocation DRAGON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
-   private static final ResourceLocation DRAGON_EYES_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon_eyes.png");
+   public static final Identifier CRYSTAL_BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal_beam.png");
+   private static final Identifier DRAGON_EXPLODING_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_exploding.png");
+   private static final Identifier DRAGON_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
+   private static final Identifier DRAGON_EYES_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_eyes.png");
    private static final RenderType RENDER_TYPE;
    private static final RenderType DECAL;
    private static final RenderType EYES;
@@ -63,7 +60,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       int var7 = OverlayTexture.pack(0.0F, var1.hasRedOverlay);
       if (var1.deathTime > 0.0F) {
          int var8 = ARGB.white(var1.deathTime / 200.0F);
-         var3.order(0).submitModel(this.model, var1, var2, RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var3.order(0).submitModel(this.model, var1, var2, RenderTypes.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          var3.order(1).submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
          var3.order(0).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
@@ -74,8 +71,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          float var9 = var1.deathTime / 200.0F;
          var2.pushPose();
          var2.translate(0.0F, -1.0F, -2.0F);
-         submitRays(var2, var9, var3, RenderType.dragonRays());
-         submitRays(var2, var9, var3, RenderType.dragonRaysDepth());
+         submitRays(var2, var9, var3, RenderTypes.dragonRays());
+         submitRays(var2, var9, var3, RenderTypes.dragonRaysDepth());
          var2.popPose();
       }
 
@@ -138,8 +135,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          float var9x = 0.0F;
 
          for(int var10x = 1; var10x <= 8; ++var10x) {
-            float var11 = Mth.sin((float)var10x * 6.2831855F / 8.0F) * 0.75F;
-            float var12 = Mth.cos((float)var10x * 6.2831855F / 8.0F) * 0.75F;
+            float var11 = Mth.sin((double)((float)var10x * 6.2831855F / 8.0F)) * 0.75F;
+            float var12 = Mth.cos((double)((float)var10x * 6.2831855F / 8.0F)) * 0.75F;
             float var13 = (float)var10x / 8.0F;
             var5x.addVertex(var4x, var7 * 0.2F, var8x * 0.2F, 0.0F).setColor(-16777216).setUv(var9x, var9).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
             var5x.addVertex(var4x, var7, var8x, var8).setColor(-1).setUv(var9x, var10).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
@@ -180,20 +177,6 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var2.flightHistory.copyFrom(var1.flightHistory);
    }
 
-   protected void extractAdditionalHitboxes(EnderDragon var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
-      super.extractAdditionalHitboxes(var1, var2, var3);
-      double var4 = -Mth.lerp((double)var3, var1.xOld, var1.getX());
-      double var6 = -Mth.lerp((double)var3, var1.yOld, var1.getY());
-      double var8 = -Mth.lerp((double)var3, var1.zOld, var1.getZ());
-
-      for(EnderDragonPart var13 : var1.getSubEntities()) {
-         AABB var14 = var13.getBoundingBox();
-         HitboxRenderState var15 = new HitboxRenderState(var14.minX - var13.getX(), var14.minY - var13.getY(), var14.minZ - var13.getZ(), var14.maxX - var13.getX(), var14.maxY - var13.getY(), var14.maxZ - var13.getZ(), (float)(var4 + Mth.lerp((double)var3, var13.xOld, var13.getX())), (float)(var6 + Mth.lerp((double)var3, var13.yOld, var13.getY())), (float)(var8 + Mth.lerp((double)var3, var13.zOld, var13.getZ())), 0.25F, 1.0F, 0.0F);
-         var2.add(var15);
-      }
-
-   }
-
    protected boolean affectedByCulling(EnderDragon var1) {
       return false;
    }
@@ -209,10 +192,10 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
    }
 
    static {
-      RENDER_TYPE = RenderType.entityCutoutNoCull(DRAGON_LOCATION);
-      DECAL = RenderType.entityDecal(DRAGON_LOCATION);
-      EYES = RenderType.eyes(DRAGON_EYES_LOCATION);
-      BEAM = RenderType.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutoutNoCull(DRAGON_LOCATION);
+      DECAL = RenderTypes.entityDecal(DRAGON_LOCATION);
+      EYES = RenderTypes.eyes(DRAGON_EYES_LOCATION);
+      BEAM = RenderTypes.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
       HALF_SQRT_3 = (float)(Math.sqrt(3.0) / 2.0);
    }
 }

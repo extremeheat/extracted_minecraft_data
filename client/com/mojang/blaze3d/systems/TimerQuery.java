@@ -1,10 +1,11 @@
 package com.mojang.blaze3d.systems;
 
-import org.lwjgl.opengl.ARBTimerQuery;
-import org.lwjgl.opengl.GL32C;
+import java.util.OptionalLong;
+import org.jspecify.annotations.Nullable;
 
 public class TimerQuery {
-   private int nextQueryName;
+   private @Nullable CommandEncoder activeEncoder;
+   private @Nullable GpuQuery activeGpuQuery;
 
    public TimerQuery() {
       super();
@@ -15,71 +16,78 @@ public class TimerQuery {
    }
 
    public boolean isRecording() {
-      return this.nextQueryName != 0;
+      return this.activeGpuQuery != null;
    }
 
    public void beginProfile() {
       RenderSystem.assertOnRenderThread();
-      if (this.nextQueryName != 0) {
+      if (this.activeGpuQuery != null) {
          throw new IllegalStateException("Current profile not ended");
       } else {
-         this.nextQueryName = GL32C.glGenQueries();
-         GL32C.glBeginQuery(35007, this.nextQueryName);
+         this.activeEncoder = RenderSystem.getDevice().createCommandEncoder();
+         this.activeGpuQuery = this.activeEncoder.timerQueryBegin();
       }
    }
 
    public FrameProfile endProfile() {
       RenderSystem.assertOnRenderThread();
-      if (this.nextQueryName == 0) {
-         throw new IllegalStateException("endProfile called before beginProfile");
-      } else {
-         GL32C.glEndQuery(35007);
-         FrameProfile var1 = new FrameProfile(this.nextQueryName);
-         this.nextQueryName = 0;
+      if (this.activeGpuQuery != null && this.activeEncoder != null) {
+         this.activeEncoder.timerQueryEnd(this.activeGpuQuery);
+         FrameProfile var1 = new FrameProfile(this.activeGpuQuery);
+         this.activeGpuQuery = null;
+         this.activeEncoder = null;
          return var1;
+      } else {
+         throw new IllegalStateException("endProfile called before beginProfile");
       }
    }
 
    public static class FrameProfile {
       private static final long NO_RESULT = 0L;
       private static final long CANCELLED_RESULT = -1L;
-      private final int queryName;
-      private long result;
+      private final GpuQuery gpuQuery;
+      private long timerResult = 0L;
 
-      FrameProfile(int var1) {
+      FrameProfile(GpuQuery var1) {
          super();
-         this.queryName = var1;
+         this.gpuQuery = var1;
       }
 
       public void cancel() {
          RenderSystem.assertOnRenderThread();
-         if (this.result == 0L) {
-            this.result = -1L;
-            GL32C.glDeleteQueries(this.queryName);
+         if (this.timerResult == 0L) {
+            this.timerResult = -1L;
+            this.gpuQuery.close();
          }
       }
 
       public boolean isDone() {
          RenderSystem.assertOnRenderThread();
-         if (this.result != 0L) {
-            return true;
-         } else if (1 == GL32C.glGetQueryObjecti(this.queryName, 34919)) {
-            this.result = ARBTimerQuery.glGetQueryObjecti64(this.queryName, 34918);
-            GL32C.glDeleteQueries(this.queryName);
+         if (this.timerResult != 0L) {
             return true;
          } else {
-            return false;
+            OptionalLong var1 = this.gpuQuery.getValue();
+            if (var1.isPresent()) {
+               this.timerResult = var1.getAsLong();
+               this.gpuQuery.close();
+               return true;
+            } else {
+               return false;
+            }
          }
       }
 
       public long get() {
          RenderSystem.assertOnRenderThread();
-         if (this.result == 0L) {
-            this.result = ARBTimerQuery.glGetQueryObjecti64(this.queryName, 34918);
-            GL32C.glDeleteQueries(this.queryName);
+         if (this.timerResult == 0L) {
+            OptionalLong var1 = this.gpuQuery.getValue();
+            if (var1.isPresent()) {
+               this.timerResult = var1.getAsLong();
+               this.gpuQuery.close();
+            }
          }
 
-         return this.result;
+         return this.timerResult;
       }
    }
 

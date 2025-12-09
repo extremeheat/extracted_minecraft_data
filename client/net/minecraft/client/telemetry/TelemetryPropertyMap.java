@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TelemetryPropertyMap {
    final Map<TelemetryProperty<?>, Object> entries;
@@ -75,8 +75,7 @@ public class TelemetryPropertyMap {
       };
    }
 
-   @Nullable
-   public <T> T get(TelemetryProperty<T> var1) {
+   public <T> @Nullable T get(TelemetryProperty<T> var1) {
       return (T)this.entries.get(var1);
    }
 

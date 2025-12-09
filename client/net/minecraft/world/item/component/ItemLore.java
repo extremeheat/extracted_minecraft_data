@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -14,6 +13,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -25,7 +25,7 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemLore> STREAM_CODEC;
 
    public ItemLore(List<Component> var1) {
-      this(var1, Lists.transform(var1, (var0) -> ComponentUtils.mergeStyles(var0.copy(), LORE_STYLE)));
+      this(var1, Lists.transform(var1, (var0) -> ComponentUtils.mergeStyles(var0, LORE_STYLE)));
    }
 
    public ItemLore(List<Component> var1, List<Component> var2) {

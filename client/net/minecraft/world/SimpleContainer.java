@@ -3,7 +3,6 @@ package net.minecraft.world;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedItemContents;
@@ -12,12 +11,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class SimpleContainer implements Container, StackedContentsCompatible {
    private final int size;
    private final NonNullList<ItemStack> items;
-   @Nullable
-   private List<ContainerListener> listeners;
+   private @Nullable List<ContainerListener> listeners;
 
    public SimpleContainer(int var1) {
       super();

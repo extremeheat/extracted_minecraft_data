@@ -12,7 +12,6 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
@@ -23,6 +22,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagType;
 import net.minecraft.util.ProblemReporter;
+import org.jspecify.annotations.Nullable;
 
 public class TagValueInput implements ValueInput {
    private final ProblemReporter problemReporter;
@@ -102,8 +102,7 @@ public class TagValueInput implements ValueInput {
       return var7;
    }
 
-   @Nullable
-   private <T extends Tag> T getOptionalTypedTag(String var1, TagType<T> var2) {
+   private <T extends Tag> @Nullable T getOptionalTypedTag(String var1, TagType<T> var2) {
       Tag var3 = this.input.get(var1);
       if (var3 == null) {
          return null;
@@ -118,8 +117,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   @Nullable
-   private NumericTag getNumericTag(String var1) {
+   private @Nullable NumericTag getNumericTag(String var1) {
       Tag var2 = this.input.get(var1);
       if (var2 == null) {
          return null;
@@ -284,8 +282,7 @@ public class TagValueInput implements ValueInput {
          return new AbstractIterator<ValueInput>() {
             private int index;
 
-            @Nullable
-            protected ValueInput computeNext() {
+            protected @Nullable ValueInput computeNext() {
                while(var1.hasNext()) {
                   Tag var1x = (Tag)var1.next();
                   int var2 = this.index++;
@@ -300,8 +297,7 @@ public class TagValueInput implements ValueInput {
             }
 
             // $FF: synthetic method
-            @Nullable
-            protected Object computeNext() {
+            protected @Nullable Object computeNext() {
                return this.computeNext();
             }
          };
@@ -363,8 +359,7 @@ public class TagValueInput implements ValueInput {
       public Iterator<T> iterator() {
          final ListIterator var1 = this.list.listIterator();
          return new AbstractIterator<T>() {
-            @Nullable
-            protected T computeNext() {
+            protected @Nullable T computeNext() {
                while(true) {
                   if (var1.hasNext()) {
                      int var1x = var1.nextIndex();
@@ -427,8 +422,7 @@ public class TagValueInput implements ValueInput {
       public Iterator<ValueInput> iterator() {
          final ListIterator var1 = this.list.listIterator();
          return new AbstractIterator<ValueInput>() {
-            @Nullable
-            protected ValueInput computeNext() {
+            protected @Nullable ValueInput computeNext() {
                if (var1.hasNext()) {
                   int var1x = var1.nextIndex();
                   CompoundTag var2 = (CompoundTag)var1.next();
@@ -439,8 +433,7 @@ public class TagValueInput implements ValueInput {
             }
 
             // $FF: synthetic method
-            @Nullable
-            protected Object computeNext() {
+            protected @Nullable Object computeNext() {
                return this.computeNext();
             }
          };

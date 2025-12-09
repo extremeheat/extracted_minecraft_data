@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.redstone.Orientation;
 
@@ -38,15 +38,15 @@ public class DebugSubscriptions<T> {
    }
 
    private static DebugSubscription<?> registerSimple(String var0) {
-      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new DebugSubscription((StreamCodec)null));
+      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(var0), new DebugSubscription((StreamCodec)null));
    }
 
    private static <T> DebugSubscription<T> registerWithValue(String var0, StreamCodec<? super RegistryFriendlyByteBuf, T> var1) {
-      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new DebugSubscription(var1));
+      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(var0), new DebugSubscription(var1));
    }
 
    private static <T> DebugSubscription<T> registerTemporaryValue(String var0, StreamCodec<? super RegistryFriendlyByteBuf, T> var1, int var2) {
-      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new DebugSubscription(var1, var2));
+      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(var0), new DebugSubscription(var1, var2));
    }
 
    static {

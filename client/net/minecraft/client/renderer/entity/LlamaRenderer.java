@@ -1,27 +1,27 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.LlamaModel;
+import net.minecraft.client.model.animal.llama.LlamaModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.layers.LlamaDecorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LlamaRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.equine.Llama;
 
 public class LlamaRenderer extends AgeableMobRenderer<Llama, LlamaRenderState, LlamaModel> {
-   private static final ResourceLocation CREAMY = ResourceLocation.withDefaultNamespace("textures/entity/llama/creamy.png");
-   private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/entity/llama/white.png");
-   private static final ResourceLocation BROWN = ResourceLocation.withDefaultNamespace("textures/entity/llama/brown.png");
-   private static final ResourceLocation GRAY = ResourceLocation.withDefaultNamespace("textures/entity/llama/gray.png");
+   private static final Identifier CREAMY = Identifier.withDefaultNamespace("textures/entity/llama/creamy.png");
+   private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/entity/llama/white.png");
+   private static final Identifier BROWN = Identifier.withDefaultNamespace("textures/entity/llama/brown.png");
+   private static final Identifier GRAY = Identifier.withDefaultNamespace("textures/entity/llama/gray.png");
 
    public LlamaRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3) {
       super(var1, new LlamaModel(var1.bakeLayer(var2)), new LlamaModel(var1.bakeLayer(var3)), 0.7F);
       this.addLayer(new LlamaDecorLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
    }
 
-   public ResourceLocation getTextureLocation(LlamaRenderState var1) {
-      ResourceLocation var10000;
+   public Identifier getTextureLocation(LlamaRenderState var1) {
+      Identifier var10000;
       switch (var1.variant) {
          case CREAMY -> var10000 = CREAMY;
          case WHITE -> var10000 = WHITE;
@@ -46,7 +46,7 @@ public class LlamaRenderer extends AgeableMobRenderer<Llama, LlamaRenderState, L
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((LlamaRenderState)var1);
    }
 

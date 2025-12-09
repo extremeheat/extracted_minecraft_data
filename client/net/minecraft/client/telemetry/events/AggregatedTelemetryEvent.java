@@ -2,16 +2,15 @@ package net.minecraft.client.telemetry.events;
 
 import java.time.Duration;
 import java.time.Instant;
-import javax.annotation.Nullable;
 import net.minecraft.client.telemetry.TelemetryEventSender;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AggregatedTelemetryEvent {
    private static final int SAMPLE_INTERVAL_MS = 60000;
    private static final int SAMPLES_PER_EVENT = 10;
    private int sampleCount;
    private boolean ticking = false;
-   @Nullable
-   private Instant lastSampleTime;
+   private @Nullable Instant lastSampleTime;
 
    public AggregatedTelemetryEvent() {
       super();

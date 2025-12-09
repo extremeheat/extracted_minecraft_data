@@ -1,37 +1,44 @@
 package net.minecraft.world.entity;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.OptionEnum;
 import net.minecraft.util.StringRepresentable;
 
-public enum HumanoidArm implements OptionEnum, StringRepresentable {
+public enum HumanoidArm implements StringRepresentable {
    LEFT(0, "left", "options.mainHand.left"),
    RIGHT(1, "right", "options.mainHand.right");
 
    public static final Codec<HumanoidArm> CODEC = StringRepresentable.<HumanoidArm>fromEnum(HumanoidArm::values);
-   public static final IntFunction<HumanoidArm> BY_ID = ByIdMap.<HumanoidArm>continuous(HumanoidArm::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   private static final IntFunction<HumanoidArm> BY_ID = ByIdMap.<HumanoidArm>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StreamCodec<ByteBuf, HumanoidArm> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
    private final int id;
    private final String name;
-   private final String translationKey;
+   private final Component caption;
 
    private HumanoidArm(final int var3, final String var4, final String var5) {
       this.id = var3;
       this.name = var4;
-      this.translationKey = var5;
+      this.caption = Component.translatable(var5);
    }
 
    public HumanoidArm getOpposite() {
-      return this == LEFT ? RIGHT : LEFT;
+      HumanoidArm var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = RIGHT;
+         case 1 -> var10000 = LEFT;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
-   public int getId() {
-      return this.id;
-   }
-
-   public String getKey() {
-      return this.translationKey;
+   public Component caption() {
+      return this.caption;
    }
 
    public String getSerializedName() {

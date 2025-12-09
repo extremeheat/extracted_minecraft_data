@@ -21,9 +21,9 @@ public class DirectionalSoundInstance extends AbstractTickableSoundInstance {
 
    private void setPosition() {
       Vec3 var1 = Vec3.directionFromRotation(this.xAngle, this.yAngle).scale(10.0);
-      this.x = this.camera.getPosition().x + var1.x;
-      this.y = this.camera.getPosition().y + var1.y;
-      this.z = this.camera.getPosition().z + var1.z;
+      this.x = this.camera.position().x + var1.x;
+      this.y = this.camera.position().y + var1.y;
+      this.z = this.camera.position().z + var1.z;
       this.attenuation = SoundInstance.Attenuation.NONE;
    }
 

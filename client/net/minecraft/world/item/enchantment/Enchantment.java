@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -30,13 +29,14 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFixedCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -153,9 +153,9 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    public static Component getFullname(Holder<Enchantment> var0, int var1) {
       MutableComponent var2 = ((Enchantment)var0.value()).description.copy();
       if (var0.is(EnchantmentTags.CURSE)) {
-         ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.RED));
+         var2 = ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.RED));
       } else {
-         ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.GRAY));
+         var2 = ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.GRAY));
       }
 
       if (var1 != 1 || ((Enchantment)var0.value()).getMaxLevel() != 1) {
@@ -279,6 +279,10 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
 
    }
 
+   public void doLunge(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4) {
+      applyEffects(this.getEffects(EnchantmentEffectComponents.POST_PIERCING_ATTACK), entityContext(var1, var2, var4, var4.position()), (var4x) -> var4x.apply(var1, var2, var3, var4, var4.position()));
+   }
+
    public void modifyProjectileCount(ServerLevel var1, int var2, ItemStack var3, Entity var4, MutableFloat var5) {
       this.modifyEntityFilteredValue(EnchantmentEffectComponents.PROJECTILE_COUNT, var1, var2, var3, var4, var5);
    }
@@ -312,7 +316,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    }
 
    private void modifyItemFilteredCount(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, MutableFloat var5) {
-      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), (var3x) -> var5.setValue(var3x.process(var3, var2.getRandom(), var5.getValue())));
+      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), (var3x) -> var5.setValue(var3x.process(var3, var2.getRandom(), var5.floatValue())));
    }
 
    private void modifyEntityFilteredValue(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, Entity var5, MutableFloat var6) {
@@ -510,7 +514,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
          });
       }
 
-      public Enchantment build(ResourceLocation var1) {
+      public Enchantment build(Identifier var1) {
          return new Enchantment(Component.translatable(Util.makeDescriptionId("enchantment", var1)), this.definition, this.exclusiveSet, this.effectMapBuilder.build());
       }
    }

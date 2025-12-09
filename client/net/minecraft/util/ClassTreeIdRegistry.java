@@ -2,7 +2,6 @@ package net.minecraft.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.Util;
 
 public class ClassTreeIdRegistry {
    public static final int NO_ID_VALUE = -1;

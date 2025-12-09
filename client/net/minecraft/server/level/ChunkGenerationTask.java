@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
@@ -13,12 +12,12 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkDependencies;
 import net.minecraft.world.level.chunk.status.ChunkPyramid;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkGenerationTask {
    private final GeneratingChunkMap chunkMap;
    private final ChunkPos pos;
-   @Nullable
-   private ChunkStatus scheduledStatus = null;
+   private @Nullable ChunkStatus scheduledStatus = null;
    public final ChunkStatus targetStatus;
    private volatile boolean markedForCancellation;
    private final List<CompletableFuture<ChunkResult<ChunkAccess>>> scheduledLayer = new ArrayList();
@@ -39,8 +38,7 @@ public class ChunkGenerationTask {
       return new ChunkGenerationTask(var0, var1, var2, var4);
    }
 
-   @Nullable
-   public CompletableFuture<?> runUntilWait() {
+   public @Nullable CompletableFuture<?> runUntilWait() {
       while(true) {
          CompletableFuture var1 = this.waitForScheduledLayer();
          if (var1 != null) {
@@ -159,8 +157,7 @@ public class ChunkGenerationTask {
       }
    }
 
-   @Nullable
-   private CompletableFuture<?> waitForScheduledLayer() {
+   private @Nullable CompletableFuture<?> waitForScheduledLayer() {
       while(!this.scheduledLayer.isEmpty()) {
          CompletableFuture var1 = (CompletableFuture)this.scheduledLayer.getLast();
          ChunkResult var2 = (ChunkResult)var1.getNow((Object)null);

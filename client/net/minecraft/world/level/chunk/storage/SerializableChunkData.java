@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -31,7 +30,7 @@ import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
@@ -70,9 +69,10 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import net.minecraft.world.ticks.SavedTick;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkPos chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, @Nullable BlendingData.Packed blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, UpgradeData upgradeData, @Nullable long[] carvingMask, Map<Heightmap.Types, long[]> heightmaps, ChunkAccess.PackedTicks packedTicks, ShortList[] postProcessingSections, boolean lightCorrect, List<SectionData> sectionData, List<CompoundTag> entities, List<CompoundTag> blockEntities, CompoundTag structureData) {
+public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkPos chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, BlendingData.@Nullable Packed blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, UpgradeData upgradeData, long @Nullable [] carvingMask, Map<Heightmap.Types, long[]> heightmaps, ChunkAccess.PackedTicks packedTicks, @Nullable ShortList[] postProcessingSections, boolean lightCorrect, List<SectionData> sectionData, List<CompoundTag> entities, List<CompoundTag> blockEntities, CompoundTag structureData) {
    private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC;
    private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC;
    private static final Logger LOGGER;
@@ -87,7 +87,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
    public static final String BLOCK_LIGHT_TAG = "BlockLight";
    public static final String SKY_LIGHT_TAG = "SkyLight";
 
-   public SerializableChunkData(PalettedContainerFactory var1, ChunkPos var2, int var3, long var4, long var6, ChunkStatus var8, @Nullable BlendingData.Packed var9, @Nullable BelowZeroRetrogen var10, UpgradeData var11, @Nullable long[] var12, Map<Heightmap.Types, long[]> var13, ChunkAccess.PackedTicks var14, ShortList[] var15, boolean var16, List<SectionData> var17, List<CompoundTag> var18, List<CompoundTag> var19, CompoundTag var20) {
+   public SerializableChunkData(PalettedContainerFactory var1, ChunkPos var2, int var3, long var4, long var6, ChunkStatus var8, BlendingData.@Nullable Packed var9, @Nullable BelowZeroRetrogen var10, UpgradeData var11, long @Nullable [] var12, Map<Heightmap.Types, long[]> var13, ChunkAccess.PackedTicks var14, @Nullable ShortList[] var15, boolean var16, List<SectionData> var17, List<CompoundTag> var18, List<CompoundTag> var19, CompoundTag var20) {
       super();
       this.containerFactory = var1;
       this.chunkPos = var2;
@@ -109,7 +109,6 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       this.structureData = var20;
    }
 
-   @Nullable
    public static SerializableChunkData parse(LevelHeightAccessor var0, PalettedContainerFactory var1, CompoundTag var2) {
       if (var2.getString("Status").isEmpty()) {
          return null;
@@ -137,14 +136,16 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          ShortList[] var19 = new ShortList[var18.size()];
 
          for(int var20 = 0; var20 < var18.size(); ++var20) {
-            ListTag var21 = var18.getListOrEmpty(var20);
-            ShortArrayList var22 = new ShortArrayList(var21.size());
+            ListTag var21 = (ListTag)var18.getList(var20).orElse((Object)null);
+            if (var21 != null && !var21.isEmpty()) {
+               ShortArrayList var22 = new ShortArrayList(var21.size());
 
-            for(int var23 = 0; var23 < var21.size(); ++var23) {
-               var22.add(var21.getShortOr(var23, (short)0));
+               for(int var23 = 0; var23 < var21.size(); ++var23) {
+                  var22.add(var21.getShortOr(var23, (short)0));
+               }
+
+               var19[var20] = var22;
             }
-
-            var19[var20] = var22;
          }
 
          List var34 = var2.getList("entities").stream().flatMap(ListTag::compoundStream).toList();
@@ -261,7 +262,10 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       ((ChunkAccess)var19).setAllReferences(unpackStructureReferences(var1.registryAccess(), var4, this.structureData));
 
       for(int var26 = 0; var26 < this.postProcessingSections.length; ++var26) {
-         ((ChunkAccess)var19).addPackedPostProcess(this.postProcessingSections[var26], var26);
+         ShortList var30 = this.postProcessingSections[var26];
+         if (var30 != null) {
+            ((ChunkAccess)var19).addPackedPostProcess(var30, var26);
+         }
       }
 
       if (var18 == ChunkType.LEVELCHUNK) {
@@ -269,12 +273,12 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       } else {
          ProtoChunk var27 = (ProtoChunk)var19;
 
-         for(CompoundTag var32 : this.entities) {
-            var27.addEntity(var32);
+         for(CompoundTag var33 : this.entities) {
+            var27.addEntity(var33);
          }
 
-         for(CompoundTag var33 : this.blockEntities) {
-            var27.setBlockEntityNbt(var33);
+         for(CompoundTag var34 : this.blockEntities) {
+            var27.setBlockEntityNbt(var34);
          }
 
          if (this.carvingMask != null) {
@@ -341,7 +345,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          }
 
          ChunkAccess.PackedTicks var24 = var1.getTicksForSerialization(var0.getGameTime());
-         ShortList[] var26 = (ShortList[])Arrays.stream(var1.getPostProcessing()).map((var0x) -> var0x != null ? new ShortArrayList(var0x) : null).toArray((var0x) -> new ShortList[var0x]);
+         ShortList[] var26 = (ShortList[])Arrays.stream(var1.getPostProcessing()).map((var0x) -> var0x != null && !var0x.isEmpty() ? new ShortArrayList(var0x) : null).toArray((var0x) -> new ShortList[var0x]);
          CompoundTag var28 = packStructureData(StructurePieceSerializationContext.fromLevel(var0), var2, var1.getAllStarts(), var1.getAllReferences());
          return new SerializableChunkData(var0.palettedContainerFactory(), var2, var1.getMinSectionY(), var0.getGameTime(), var1.getInhabitedTime(), var1.getPersistedStatus(), (BlendingData.Packed)Optionull.map(var1.getBlendingData(), BlendingData::pack), var1.getBelowZeroRetrogen(), var1.getUpgradeData().copy(), var18, var21, var24, var26, var1.isLightCorrect(), var3, var16, var14, var28);
       }
@@ -422,8 +426,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       return var0 != null ? (ChunkStatus)var0.read("Status", ChunkStatus.CODEC).orElse(ChunkStatus.EMPTY) : ChunkStatus.EMPTY;
    }
 
-   @Nullable
-   private static LevelChunk.PostLoadProcessor postLoadChunk(ServerLevel var0, List<CompoundTag> var1, List<CompoundTag> var2) {
+   private static LevelChunk.@Nullable PostLoadProcessor postLoadChunk(ServerLevel var0, List<CompoundTag> var1, List<CompoundTag> var2) {
       return var1.isEmpty() && var2.isEmpty() ? null : (var3) -> {
          if (!var1.isEmpty()) {
             try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(var3.problemPath(), LOGGER)) {
@@ -453,7 +456,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       Registry var6 = var0.registryAccess().lookupOrThrow(Registries.STRUCTURE);
 
       for(Map.Entry var8 : var2.entrySet()) {
-         ResourceLocation var9 = var6.getKey((Structure)var8.getKey());
+         Identifier var9 = var6.getKey((Structure)var8.getKey());
          var5.put(var9.toString(), ((StructureStart)var8.getValue()).createTag(var0, var1));
       }
 
@@ -462,7 +465,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
 
       for(Map.Entry var13 : var3.entrySet()) {
          if (!((LongSet)var13.getValue()).isEmpty()) {
-            ResourceLocation var10 = var6.getKey((Structure)var13.getKey());
+            Identifier var10 = var6.getKey((Structure)var13.getKey());
             var11.putLongArray(var10.toString(), ((LongSet)var13.getValue()).toLongArray());
          }
       }
@@ -477,7 +480,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       CompoundTag var6 = var1.getCompoundOrEmpty("starts");
 
       for(String var8 : var6.keySet()) {
-         ResourceLocation var9 = ResourceLocation.tryParse(var8);
+         Identifier var9 = Identifier.tryParse(var8);
          Structure var10 = (Structure)var5.getValue(var9);
          if (var10 == null) {
             LOGGER.error("Unknown structure start: {}", var9);
@@ -497,7 +500,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       Registry var4 = var0.lookupOrThrow(Registries.STRUCTURE);
       CompoundTag var5 = var2.getCompoundOrEmpty("References");
       var5.forEach((var3x, var4x) -> {
-         ResourceLocation var5 = ResourceLocation.tryParse(var3x);
+         Identifier var5 = Identifier.tryParse(var3x);
          Structure var6 = (Structure)var4.getValue(var5);
          if (var6 == null) {
             LOGGER.warn("Found reference to unknown structure '{}' in chunk {}, discarding", var5, var1);
@@ -519,7 +522,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       return var3;
    }
 
-   private static ListTag packOffsets(ShortList[] var0) {
+   private static ListTag packOffsets(@Nullable ShortList[] var0) {
       ListTag var1 = new ListTag();
 
       for(ShortList var5 : var0) {
@@ -544,12 +547,9 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
 
    public static record SectionData(int y, @Nullable LevelChunkSection chunkSection, @Nullable DataLayer blockLight, @Nullable DataLayer skyLight) {
       final int y;
-      @Nullable
-      final LevelChunkSection chunkSection;
-      @Nullable
-      final DataLayer blockLight;
-      @Nullable
-      final DataLayer skyLight;
+      final @Nullable LevelChunkSection chunkSection;
+      final @Nullable DataLayer blockLight;
+      final @Nullable DataLayer skyLight;
 
       public SectionData(int var1, @Nullable LevelChunkSection var2, @Nullable DataLayer var3, @Nullable DataLayer var4) {
          super();

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -19,15 +18,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Raids extends SavedData {
    private static final String RAID_FILE_ID = "raids";
@@ -58,8 +59,7 @@ public class Raids extends SavedData {
       this.tick = var3;
    }
 
-   @Nullable
-   public Raid get(int var1) {
+   public @Nullable Raid get(int var1) {
       return (Raid)this.raidMap.get(var1);
    }
 
@@ -82,7 +82,7 @@ public class Raids extends SavedData {
 
       while(var2.hasNext()) {
          Raid var3 = (Raid)var2.next();
-         if (var1.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
+         if (!(Boolean)var1.getGameRules().get(GameRules.RAIDS)) {
             var3.stop();
          }
 
@@ -104,49 +104,45 @@ public class Raids extends SavedData {
       return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400;
    }
 
-   @Nullable
-   public Raid createOrExtendRaid(ServerPlayer var1, BlockPos var2) {
+   public @Nullable Raid createOrExtendRaid(ServerPlayer var1, BlockPos var2) {
       if (var1.isSpectator()) {
          return null;
       } else {
          ServerLevel var3 = var1.level();
-         if (var3.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
+         if (!(Boolean)var3.getGameRules().get(GameRules.RAIDS)) {
+            return null;
+         } else if (!(Boolean)var3.environmentAttributes().getValue(EnvironmentAttributes.CAN_START_RAID, var2)) {
             return null;
          } else {
-            DimensionType var4 = var3.dimensionType();
-            if (!var4.hasRaids()) {
-               return null;
-            } else {
-               List var5 = var3.getPoiManager().getInRange((var0) -> var0.is(PoiTypeTags.VILLAGE), var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
-               int var6 = 0;
-               Vec3 var7 = Vec3.ZERO;
+            List var4 = var3.getPoiManager().getInRange((var0) -> var0.is(PoiTypeTags.VILLAGE), var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
+            int var5 = 0;
+            Vec3 var6 = Vec3.ZERO;
 
-               for(PoiRecord var9 : var5) {
-                  BlockPos var10 = var9.getPos();
-                  var7 = var7.add((double)var10.getX(), (double)var10.getY(), (double)var10.getZ());
-                  ++var6;
-               }
-
-               BlockPos var12;
-               if (var6 > 0) {
-                  var7 = var7.scale(1.0 / (double)var6);
-                  var12 = BlockPos.containing(var7);
-               } else {
-                  var12 = var2;
-               }
-
-               Raid var13 = this.getOrCreateRaid(var3, var12);
-               if (!var13.isStarted() && !this.raidMap.containsValue(var13)) {
-                  this.raidMap.put(this.getUniqueId(), var13);
-               }
-
-               if (!var13.isStarted() || var13.getRaidOmenLevel() < var13.getMaxRaidOmenLevel()) {
-                  var13.absorbRaidOmen(var1);
-               }
-
-               this.setDirty();
-               return var13;
+            for(PoiRecord var8 : var4) {
+               BlockPos var9 = var8.getPos();
+               var6 = var6.add((double)var9.getX(), (double)var9.getY(), (double)var9.getZ());
+               ++var5;
             }
+
+            BlockPos var11;
+            if (var5 > 0) {
+               var6 = var6.scale(1.0 / (double)var5);
+               var11 = BlockPos.containing(var6);
+            } else {
+               var11 = var2;
+            }
+
+            Raid var12 = this.getOrCreateRaid(var3, var11);
+            if (!var12.isStarted() && !this.raidMap.containsValue(var12)) {
+               this.raidMap.put(this.getUniqueId(), var12);
+            }
+
+            if (!var12.isStarted() || var12.getRaidOmenLevel() < var12.getMaxRaidOmenLevel()) {
+               var12.absorbRaidOmen(var1);
+            }
+
+            this.setDirty();
+            return var12;
          }
       }
    }
@@ -164,8 +160,7 @@ public class Raids extends SavedData {
       return ++this.nextId;
    }
 
-   @Nullable
-   public Raid getNearbyRaid(BlockPos var1, int var2) {
+   public @Nullable Raid getNearbyRaid(BlockPos var1, int var2) {
       Raid var3 = null;
       double var4 = (double)var2;
       ObjectIterator var6 = this.raidMap.values().iterator();

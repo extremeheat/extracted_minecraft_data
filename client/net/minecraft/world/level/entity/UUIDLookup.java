@@ -1,9 +1,8 @@
 package net.minecraft.world.level.entity;
 
 import java.util.UUID;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface UUIDLookup<IdentifiedType extends UniquelyIdentifyable> {
-   @Nullable
-   IdentifiedType lookup(UUID var1);
+   @Nullable IdentifiedType lookup(UUID var1);
 }

@@ -3,13 +3,13 @@ package net.minecraft.client.multiplayer.chat;
 import com.mojang.serialization.Codec;
 import java.time.Instant;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.Nullable;
 
 public enum ChatTrustLevel implements StringRepresentable {
    SECURE("secure"),
@@ -52,8 +52,7 @@ public enum ChatTrustLevel implements StringRepresentable {
       return this == NOT_SECURE;
    }
 
-   @Nullable
-   public GuiMessageTag createTag(PlayerChatMessage var1) {
+   public @Nullable GuiMessageTag createTag(PlayerChatMessage var1) {
       GuiMessageTag var10000;
       switch (this.ordinal()) {
          case 1 -> var10000 = GuiMessageTag.chatModified(var1.signedContent());

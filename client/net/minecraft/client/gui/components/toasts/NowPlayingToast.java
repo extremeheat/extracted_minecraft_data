@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.color.ColorLerper;
@@ -10,12 +9,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
+import org.jspecify.annotations.Nullable;
 
 public class NowPlayingToast implements Toast {
-   private static final ResourceLocation NOW_PLAYING_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/now_playing");
-   private static final ResourceLocation MUSIC_NOTES_SPRITE = ResourceLocation.parse("icon/music_notes");
+   private static final Identifier NOW_PLAYING_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("toast/now_playing");
+   private static final Identifier MUSIC_NOTES_SPRITE = Identifier.parse("icon/music_notes");
    private static final int PADDING = 7;
    private static final int MUSIC_NOTES_SIZE = 16;
    private static final int HEIGHT = 30;
@@ -28,8 +28,6 @@ public class NowPlayingToast implements Toast {
    private static int musicNoteColor;
    private boolean updateToast;
    private double notificationDisplayTimeMultiplier;
-   @Nullable
-   private static String currentSong;
    private final Minecraft minecraft;
    private Toast.Visibility wantedVisibility;
 
@@ -40,20 +38,24 @@ public class NowPlayingToast implements Toast {
    }
 
    public static void renderToast(GuiGraphics var0, Font var1) {
-      if (currentSong != null) {
-         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, var1), 30);
-         boolean var2 = true;
-         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
-         Component var10002 = getNowPlayingString(currentSong);
+      String var2 = getCurrentSongName();
+      if (var2 != null) {
+         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(var2, var1), 30);
+         boolean var3 = true;
+         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
+         Component var10002 = getNowPlayingString(var2);
          Objects.requireNonNull(var1);
          var0.drawString(var1, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);
       }
 
    }
 
+   private static @Nullable String getCurrentSongName() {
+      return Minecraft.getInstance().getMusicManager().getCurrentMusicTranslationKey();
+   }
+
    public static void tickMusicNotes() {
-      currentSong = Minecraft.getInstance().getMusicManager().getCurrentMusicTranslationKey();
-      if (currentSong != null) {
+      if (getCurrentSongName() != null) {
          long var0 = System.currentTimeMillis();
          if (var0 > lastMusicNoteColorChange + 25L) {
             ++musicNoteColorTick;
@@ -91,7 +93,7 @@ public class NowPlayingToast implements Toast {
    }
 
    public int width() {
-      return getWidth(currentSong, this.minecraft.font);
+      return getWidth(getCurrentSongName(), this.minecraft.font);
    }
 
    private static int getWidth(@Nullable String var0, Font var1) {

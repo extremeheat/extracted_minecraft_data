@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.Sheets;
@@ -13,10 +13,10 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
    private final MaterialSet materials;
@@ -34,21 +34,21 @@ public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
       HangingSignRenderer.submitSpecial(this.materials, var2, var3, var4, var5, this.model, this.material);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       HangingSignRenderer.translateBase(var2, 0.0F);
       var2.scale(1.0F, -1.0F, -1.0F);
       this.model.root().getExtentsForGui(var2, var1);
    }
 
-   public static record Unbaked(WoodType woodType, Optional<ResourceLocation> texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(Unbaked::woodType), ResourceLocation.CODEC.optionalFieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+   public static record Unbaked(WoodType woodType, Optional<Identifier> texture) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(Unbaked::woodType), Identifier.CODEC.optionalFieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
 
       public Unbaked(WoodType var1) {
          this(var1, Optional.empty());
       }
 
-      public Unbaked(WoodType var1, Optional<ResourceLocation> var2) {
+      public Unbaked(WoodType var1, Optional<Identifier> var2) {
          super();
          this.woodType = var1;
          this.texture = var2;

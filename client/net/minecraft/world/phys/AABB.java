@@ -2,13 +2,13 @@ package net.minecraft.world.phys;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class AABB {
    private static final double EPSILON = 1.0E-7;
@@ -299,8 +299,7 @@ public class AABB {
       }
    }
 
-   @Nullable
-   public static BlockHitResult clip(Iterable<AABB> var0, Vec3 var1, Vec3 var2, BlockPos var3) {
+   public static @Nullable BlockHitResult clip(Iterable<AABB> var0, Vec3 var1, Vec3 var2, BlockPos var3) {
       double[] var4 = new double[]{1.0};
       Direction var5 = null;
       double var6 = var2.x - var1.x;
@@ -319,13 +318,11 @@ public class AABB {
       }
    }
 
-   @Nullable
-   private static Direction getDirection(AABB var0, Vec3 var1, double[] var2, @Nullable Direction var3, double var4, double var6, double var8) {
+   private static @Nullable Direction getDirection(AABB var0, Vec3 var1, double[] var2, @Nullable Direction var3, double var4, double var6, double var8) {
       return getDirection(var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ, var1, var2, var3, var4, var6, var8);
    }
 
-   @Nullable
-   private static Direction getDirection(double var0, double var2, double var4, double var6, double var8, double var10, Vec3 var12, double[] var13, @Nullable Direction var14, double var15, double var17, double var19) {
+   private static @Nullable Direction getDirection(double var0, double var2, double var4, double var6, double var8, double var10, Vec3 var12, double[] var13, @Nullable Direction var14, double var15, double var17, double var19) {
       if (var15 > 1.0E-7) {
          var14 = clipPoint(var13, var14, var15, var17, var19, var0, var2, var8, var4, var10, Direction.WEST, var12.x, var12.y, var12.z);
       } else if (var15 < -1.0E-7) {
@@ -347,8 +344,7 @@ public class AABB {
       return var14;
    }
 
-   @Nullable
-   private static Direction clipPoint(double[] var0, @Nullable Direction var1, double var2, double var4, double var6, double var8, double var10, double var12, double var14, double var16, Direction var18, double var19, double var21, double var23) {
+   private static @Nullable Direction clipPoint(double[] var0, @Nullable Direction var1, double var2, double var4, double var6, double var8, double var10, double var12, double var14, double var16, Direction var18, double var19, double var21, double var23) {
       double var25 = (var8 - var19) / var2;
       double var27 = var21 + var25 * var4;
       double var29 = var23 + var25 * var6;

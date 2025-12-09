@@ -11,7 +11,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
 public class DropInvalidSignDataFix extends DataFix {

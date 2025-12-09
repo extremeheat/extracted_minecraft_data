@@ -1,0 +1,220 @@
+package net.minecraft.world.entity.monster.zombie;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.TimeUtil;
+import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.SpearUseGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
+
+public class ZombifiedPiglin extends Zombie implements NeutralMob {
+   private static final EntityDimensions BABY_DIMENSIONS;
+   private static final Identifier SPEED_MODIFIER_ATTACKING_ID;
+   private static final AttributeModifier SPEED_MODIFIER_ATTACKING;
+   private static final UniformInt FIRST_ANGER_SOUND_DELAY;
+   private int playFirstAngerSoundIn;
+   private static final UniformInt PERSISTENT_ANGER_TIME;
+   private long persistentAngerEndTime;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
+   private static final int ALERT_RANGE_Y = 10;
+   private static final UniformInt ALERT_INTERVAL;
+   private int ticksUntilNextAlert;
+
+   public ZombifiedPiglin(EntityType<? extends ZombifiedPiglin> var1, Level var2) {
+      super(var1, var2);
+      this.setPathfindingMalus(PathType.LAVA, 8.0F);
+   }
+
+   protected void addBehaviourGoals() {
+      this.goalSelector.addGoal(1, new SpearUseGoal(this, 1.0, 1.0, 10.0F, 2.0F));
+      this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
+      this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
+      this.targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal(this, true));
+   }
+
+   public static AttributeSupplier.Builder createAttributes() {
+      return Zombie.createAttributes().add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0).add(Attributes.MOVEMENT_SPEED, 0.23000000417232513).add(Attributes.ATTACK_DAMAGE, 5.0);
+   }
+
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   }
+
+   protected boolean convertsInWater() {
+      return false;
+   }
+
+   protected void customServerAiStep(ServerLevel var1) {
+      AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
+      if (this.isAngry()) {
+         if (!this.isBaby() && !var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
+            var2.addTransientModifier(SPEED_MODIFIER_ATTACKING);
+         }
+
+         this.maybePlayFirstAngerSound();
+      } else if (var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
+         var2.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
+      }
+
+      this.updatePersistentAnger(var1, true);
+      if (this.getTarget() != null) {
+         this.maybeAlertOthers();
+      }
+
+      super.customServerAiStep(var1);
+   }
+
+   private void maybePlayFirstAngerSound() {
+      if (this.playFirstAngerSoundIn > 0) {
+         --this.playFirstAngerSoundIn;
+         if (this.playFirstAngerSoundIn == 0) {
+            this.playAngerSound();
+         }
+      }
+
+   }
+
+   private void maybeAlertOthers() {
+      if (this.ticksUntilNextAlert > 0) {
+         --this.ticksUntilNextAlert;
+      } else {
+         if (this.getSensing().hasLineOfSight(this.getTarget())) {
+            this.alertOthers();
+         }
+
+         this.ticksUntilNextAlert = ALERT_INTERVAL.sample(this.random);
+      }
+   }
+
+   private void alertOthers() {
+      double var1 = this.getAttributeValue(Attributes.FOLLOW_RANGE);
+      AABB var3 = AABB.unitCubeFromLowerCorner(this.position()).inflate(var1, 10.0, var1);
+      this.level().getEntitiesOfClass(ZombifiedPiglin.class, var3, EntitySelector.NO_SPECTATORS).stream().filter((var1x) -> var1x != this).filter((var0) -> var0.getTarget() == null).filter((var1x) -> !var1x.isAlliedTo(this.getTarget())).forEach((var1x) -> var1x.setTarget(this.getTarget()));
+   }
+
+   private void playAngerSound() {
+      this.playSound(SoundEvents.ZOMBIFIED_PIGLIN_ANGRY, this.getSoundVolume() * 2.0F, this.getVoicePitch() * 1.8F);
+   }
+
+   public void setTarget(@Nullable LivingEntity var1) {
+      if (this.getTarget() == null && var1 != null) {
+         this.playFirstAngerSoundIn = FIRST_ANGER_SOUND_DELAY.sample(this.random);
+         this.ticksUntilNextAlert = ALERT_INTERVAL.sample(this.random);
+      }
+
+      super.setTarget(var1);
+   }
+
+   public void startPersistentAngerTimer() {
+      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
+   }
+
+   public static boolean checkZombifiedPiglinSpawnRules(EntityType<ZombifiedPiglin> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      return var1.getDifficulty() != Difficulty.PEACEFUL && !var1.getBlockState(var3.below()).is(Blocks.NETHER_WART_BLOCK);
+   }
+
+   public boolean checkSpawnObstruction(LevelReader var1) {
+      return var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox());
+   }
+
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      super.addAdditionalSaveData(var1);
+      this.addPersistentAngerSaveData(var1);
+   }
+
+   protected void readAdditionalSaveData(ValueInput var1) {
+      super.readAdditionalSaveData(var1);
+      this.readPersistentAngerSaveData(this.level(), var1);
+   }
+
+   public void setPersistentAngerEndTime(long var1) {
+      this.persistentAngerEndTime = var1;
+   }
+
+   public long getPersistentAngerEndTime() {
+      return this.persistentAngerEndTime;
+   }
+
+   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
+      this.persistentAngerTarget = var1;
+   }
+
+   protected SoundEvent getAmbientSound() {
+      return this.isAngry() ? SoundEvents.ZOMBIFIED_PIGLIN_ANGRY : SoundEvents.ZOMBIFIED_PIGLIN_AMBIENT;
+   }
+
+   protected SoundEvent getHurtSound(DamageSource var1) {
+      return SoundEvents.ZOMBIFIED_PIGLIN_HURT;
+   }
+
+   protected SoundEvent getDeathSound() {
+      return SoundEvents.ZOMBIFIED_PIGLIN_DEATH;
+   }
+
+   public void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
+      this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(var1.nextInt(20) == 0 ? Items.GOLDEN_SPEAR : Items.GOLDEN_SWORD));
+   }
+
+   protected void randomizeReinforcementsChance() {
+      this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(0.0);
+   }
+
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
+      return this.persistentAngerTarget;
+   }
+
+   public boolean isPreventingPlayerRest(ServerLevel var1, Player var2) {
+      return this.isAngryAt(var2, var1);
+   }
+
+   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
+      return this.canHoldItem(var2);
+   }
+
+   static {
+      BABY_DIMENSIONS = EntityType.ZOMBIFIED_PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);
+      SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
+      SPEED_MODIFIER_ATTACKING = new AttributeModifier(SPEED_MODIFIER_ATTACKING_ID, 0.05, AttributeModifier.Operation.ADD_VALUE);
+      FIRST_ANGER_SOUND_DELAY = TimeUtil.rangeOfSeconds(0, 1);
+      PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
+      ALERT_INTERVAL = TimeUtil.rangeOfSeconds(4, 6);
+   }
+}

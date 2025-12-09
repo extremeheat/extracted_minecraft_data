@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -12,16 +11,17 @@ import net.minecraft.advancements.AdvancementTree;
 import net.minecraft.advancements.TreeNodePosition;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<Advancement> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private Map<ResourceLocation, AdvancementHolder> advancements = Map.of();
+   private Map<Identifier, AdvancementHolder> advancements = Map.of();
    private AdvancementTree tree = new AdvancementTree();
    private final HolderLookup.Provider registries;
 
@@ -30,7 +30,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
       this.registries = var1;
    }
 
-   protected void apply(Map<ResourceLocation, Advancement> var1, ResourceManager var2, ProfilerFiller var3) {
+   protected void apply(Map<Identifier, Advancement> var1, ResourceManager var2, ProfilerFiller var3) {
       ImmutableMap.Builder var4 = ImmutableMap.builder();
       var1.forEach((var2x, var3x) -> {
          this.validate(var2x, var3x);
@@ -49,7 +49,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
       this.tree = var5;
    }
 
-   private void validate(ResourceLocation var1, Advancement var2) {
+   private void validate(Identifier var1, Advancement var2) {
       ProblemReporter.Collector var3 = new ProblemReporter.Collector();
       var2.validate(var3, this.registries);
       if (!var3.isEmpty()) {
@@ -58,8 +58,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
 
    }
 
-   @Nullable
-   public AdvancementHolder get(ResourceLocation var1) {
+   public @Nullable AdvancementHolder get(Identifier var1) {
       return (AdvancementHolder)this.advancements.get(var1);
    }
 

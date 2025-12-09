@@ -13,7 +13,7 @@ public class SuspendedParticle extends SingleQuadParticle {
       super(var1, var2, var4 - 0.125, var6, var8);
       this.setSize(0.01F, 0.01F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
-      this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+      this.lifetime = (int)(16.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
       this.hasPhysics = false;
       this.friction = 1.0F;
       this.gravity = 0.0F;
@@ -23,7 +23,7 @@ public class SuspendedParticle extends SingleQuadParticle {
       super(var1, var2, var4 - 0.125, var6, var8, var10, var12, var14);
       this.setSize(0.01F, 0.01F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.6F;
-      this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+      this.lifetime = (int)(16.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
       this.hasPhysics = false;
       this.friction = 1.0F;
       this.gravity = 0.0F;

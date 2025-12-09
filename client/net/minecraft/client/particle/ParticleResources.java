@@ -17,8 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.AtlasManager;
@@ -28,23 +26,24 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ParticleResources implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particles");
-   private final Map<ResourceLocation, MutableSpriteSet> spriteSets = Maps.newHashMap();
+   private final Map<Identifier, MutableSpriteSet> spriteSets = Maps.newHashMap();
    private final Int2ObjectMap<ParticleProvider<?>> providers = new Int2ObjectOpenHashMap();
-   @Nullable
-   private Runnable onReload;
+   private @Nullable Runnable onReload;
 
    public ParticleResources() {
       super();
@@ -188,10 +187,10 @@ public class ParticleResources implements PreparableReloadListener {
       CompletableFuture var6 = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
          ArrayList var3 = new ArrayList(var2x.size());
          var2x.forEach((var3x, var4) -> {
-            ResourceLocation var5 = PARTICLE_LISTER.fileToId(var3x);
+            Identifier var5 = PARTICLE_LISTER.fileToId(var3x);
             var3.add(CompletableFuture.supplyAsync(() -> {
-               record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
-                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
+               record 1ParticleDefinition(Identifier id, Optional<List<Identifier>> sprites) {
+                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(Identifier var1, Optional<List<Identifier>> var2) {
                      super();
                      this.id = var1;
                      this.sprites = var2;
@@ -222,7 +221,7 @@ public class ParticleResources implements PreparableReloadListener {
             if (!var5x.isEmpty()) {
                ArrayList var6 = new ArrayList();
 
-               for(ResourceLocation var8 : (List)var5x.get()) {
+               for(Identifier var8 : (List)var5x.get()) {
                   TextureAtlasSprite var9 = var5.getSprite(var8);
                   if (var9 == null) {
                      var6x.add(var8);
@@ -240,14 +239,14 @@ public class ParticleResources implements PreparableReloadListener {
             }
          });
          if (!var6x.isEmpty()) {
-            LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
+            LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(Identifier::toString).collect(Collectors.joining(",")));
          }
 
          var4.pop();
       }, var4);
    }
 
-   private Optional<List<ResourceLocation>> loadParticleDescription(ResourceLocation var1, Resource var2) {
+   private Optional<List<Identifier>> loadParticleDescription(Identifier var1, Resource var2) {
       if (!this.spriteSets.containsKey(var1)) {
          LOGGER.debug("Redundant texture list for particle: {}", var1);
          return Optional.empty();

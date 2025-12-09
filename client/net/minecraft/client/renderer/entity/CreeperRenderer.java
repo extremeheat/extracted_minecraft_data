@@ -1,18 +1,18 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.CreeperModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.creeper.CreeperModel;
 import net.minecraft.client.renderer.entity.layers.CreeperPowerLayer;
 import net.minecraft.client.renderer.entity.state.CreeperRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Creeper;
 
 public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, CreeperModel> {
-   private static final ResourceLocation CREEPER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/creeper/creeper.png");
+   private static final Identifier CREEPER_LOCATION = Identifier.withDefaultNamespace("textures/entity/creeper/creeper.png");
 
    public CreeperRenderer(EntityRendererProvider.Context var1) {
       super(var1, new CreeperModel(var1.bakeLayer(ModelLayers.CREEPER)), 0.5F);
@@ -21,7 +21,7 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, Cr
 
    protected void scale(CreeperRenderState var1, PoseStack var2) {
       float var3 = var1.swelling;
-      float var4 = 1.0F + Mth.sin(var3 * 100.0F) * var3 * 0.01F;
+      float var4 = 1.0F + Mth.sin((double)(var3 * 100.0F)) * var3 * 0.01F;
       var3 = Mth.clamp(var3, 0.0F, 1.0F);
       var3 *= var3;
       var3 *= var3;
@@ -35,7 +35,7 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, Cr
       return (int)(var2 * 10.0F) % 2 == 0 ? 0.0F : Mth.clamp(var2, 0.5F, 1.0F);
    }
 
-   public ResourceLocation getTextureLocation(CreeperRenderState var1) {
+   public Identifier getTextureLocation(CreeperRenderState var1) {
       return CREEPER_LOCATION;
    }
 

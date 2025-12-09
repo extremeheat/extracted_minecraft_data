@@ -17,13 +17,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.debug.DebugPoiInfo;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PoiSection {
@@ -54,8 +54,7 @@ public class PoiSection {
       return this.byType.entrySet().stream().filter((var1x) -> var1.test((Holder)var1x.getKey())).flatMap((var0) -> ((Set)var0.getValue()).stream()).filter(var2.getTest());
    }
 
-   @Nullable
-   public PoiRecord add(BlockPos var1, Holder<PoiType> var2) {
+   public @Nullable PoiRecord add(BlockPos var1, Holder<PoiType> var2) {
       PoiRecord var3 = new PoiRecord(var1, var2, this.setDirty);
       if (this.add(var3)) {
          LOGGER.debug("Added POI of type {} @ {}", var2.getRegisteredName(), var1);

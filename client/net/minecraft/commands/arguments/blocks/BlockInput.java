@@ -3,7 +3,6 @@ package net.minecraft.commands.arguments.blocks;
 import com.mojang.logging.LogUtils;
 import java.util.Set;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -19,14 +18,14 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BlockInput implements Predicate<BlockInWorld> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final BlockState state;
    private final Set<Property<?>> properties;
-   @Nullable
-   private final CompoundTag tag;
+   private final @Nullable CompoundTag tag;
 
    public BlockInput(BlockState var1, Set<Property<?>> var2, @Nullable CompoundTag var3) {
       super();
@@ -67,7 +66,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
       return this.test(new BlockInWorld(var1, var2, false));
    }
 
-   public boolean place(ServerLevel var1, BlockPos var2, int var3) {
+   public boolean place(ServerLevel var1, BlockPos var2, @Block.UpdateFlags int var3) {
       BlockState var4 = (var3 & 16) != 0 ? this.state : Block.updateFromNeighbourShapes(this.state, var1, var2);
       if (var4.isAir()) {
          var4 = this.state;

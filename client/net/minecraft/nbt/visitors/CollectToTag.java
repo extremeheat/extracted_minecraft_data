@@ -2,7 +2,6 @@ package net.minecraft.nbt.visitors;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
@@ -19,6 +18,7 @@ import net.minecraft.nbt.StreamTagVisitor;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagType;
+import org.jspecify.annotations.Nullable;
 
 public class CollectToTag implements StreamTagVisitor {
    private final Deque<ContainerBuilder> containerStack = new ArrayDeque();
@@ -28,8 +28,7 @@ public class CollectToTag implements StreamTagVisitor {
       this.containerStack.addLast(new RootBuilder());
    }
 
-   @Nullable
-   public Tag getResult() {
+   public @Nullable Tag getResult() {
       return ((ContainerBuilder)this.containerStack.getFirst()).build();
    }
 
@@ -145,13 +144,11 @@ public class CollectToTag implements StreamTagVisitor {
 
       void acceptValue(Tag var1);
 
-      @Nullable
-      Tag build();
+      @Nullable Tag build();
    }
 
    static class RootBuilder implements ContainerBuilder {
-      @Nullable
-      private Tag result;
+      private @Nullable Tag result;
 
       RootBuilder() {
          super();
@@ -161,8 +158,7 @@ public class CollectToTag implements StreamTagVisitor {
          this.result = var1;
       }
 
-      @Nullable
-      public Tag build() {
+      public @Nullable Tag build() {
          return this.result;
       }
    }

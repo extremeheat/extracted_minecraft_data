@@ -13,18 +13,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -32,10 +33,11 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
-import net.minecraft.world.level.chunk.storage.ChunkStorage;
+import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class StructureCheck {
@@ -99,8 +101,7 @@ public class StructureCheck {
       return var2.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, var1, var10010, var10011::contains)).isPresent();
    }
 
-   @Nullable
-   private StructureCheckResult tryLoadFromStorage(ChunkPos var1, Structure var2, boolean var3, long var4) {
+   private @Nullable StructureCheckResult tryLoadFromStorage(ChunkPos var1, Structure var2, boolean var3, long var4) {
       CollectFields var6 = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts")});
 
       try {
@@ -114,11 +115,11 @@ public class StructureCheck {
       if (!(var7 instanceof CompoundTag var8)) {
          return null;
       } else {
-         int var9 = ChunkStorage.getVersion(var8);
+         int var9 = NbtUtils.getDataVersion(var8);
          if (var9 <= 1493) {
             return StructureCheckResult.CHUNK_LOAD_NEEDED;
          } else {
-            ChunkStorage.injectDatafixingContext(var8, this.dimension, this.chunkGenerator.getTypeNameForDataFixer());
+            SimpleRegionStorage.injectDatafixingContext(var8, ChunkMap.getChunkDataFixContextTag(this.dimension, this.chunkGenerator.getTypeNameForDataFixer()));
 
             CompoundTag var10;
             try {
@@ -139,8 +140,7 @@ public class StructureCheck {
       }
    }
 
-   @Nullable
-   private Object2IntMap<Structure> loadStructures(CompoundTag var1) {
+   private @Nullable Object2IntMap<Structure> loadStructures(CompoundTag var1) {
       Optional var2 = var1.getCompound("structures").flatMap((var0) -> var0.getCompound("starts"));
       if (var2.isEmpty()) {
          return null;
@@ -152,7 +152,7 @@ public class StructureCheck {
             Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
             Registry var5 = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
             var3.forEach((var2x, var3x) -> {
-               ResourceLocation var4x = ResourceLocation.tryParse(var2x);
+               Identifier var4x = Identifier.tryParse(var2x);
                if (var4x != null) {
                   Structure var5x = (Structure)var5.getValue(var4x);
                   if (var5x != null) {

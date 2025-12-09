@@ -5,10 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.Hash;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priority) {
    public static final Hash.Strategy<SavedTick<?>> UNIQUE_TICK_HASH = new Hash.Strategy<SavedTick<?>>() {
@@ -27,7 +27,7 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
       }
 
       // $FF: synthetic method
-      public boolean equals(@Nullable final Object var1, @Nullable final Object var2) {
+      public boolean equals(final @Nullable Object var1, final @Nullable Object var2) {
          return this.equals((SavedTick)var1, (SavedTick)var2);
       }
 

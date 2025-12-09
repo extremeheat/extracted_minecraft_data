@@ -7,8 +7,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -32,11 +32,11 @@ public class VariantUtils {
    }
 
    public static <T> void writeVariant(ValueOutput var0, Holder<T> var1) {
-      var1.unwrapKey().ifPresent((var1x) -> var0.store("variant", ResourceLocation.CODEC, var1x.location()));
+      var1.unwrapKey().ifPresent((var1x) -> var0.store("variant", Identifier.CODEC, var1x.identifier()));
    }
 
    public static <T> Optional<Holder<T>> readVariant(ValueInput var0, ResourceKey<? extends Registry<T>> var1) {
-      Optional var10000 = var0.read("variant", ResourceLocation.CODEC).map((var1x) -> ResourceKey.create(var1, var1x));
+      Optional var10000 = var0.read("variant", Identifier.CODEC).map((var1x) -> ResourceKey.create(var1, var1x));
       HolderLookup.Provider var10001 = var0.lookup();
       Objects.requireNonNull(var10001);
       return var10000.flatMap(var10001::get);

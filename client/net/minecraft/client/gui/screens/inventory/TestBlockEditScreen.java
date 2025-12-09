@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -14,6 +13,7 @@ import net.minecraft.network.protocol.game.ServerboundSetTestBlockPacket;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
+import org.jspecify.annotations.Nullable;
 
 public class TestBlockEditScreen extends Screen {
    private static final List<TestBlockMode> MODES = List.of(TestBlockMode.values());
@@ -22,8 +22,7 @@ public class TestBlockEditScreen extends Screen {
    private final BlockPos position;
    private TestBlockMode mode;
    private String message;
-   @Nullable
-   private EditBox messageEdit;
+   private @Nullable EditBox messageEdit;
 
    public TestBlockEditScreen(TestBlockEntity var1) {
       super(TITLE);
@@ -37,11 +36,19 @@ public class TestBlockEditScreen extends Screen {
       this.messageEdit.setMaxLength(128);
       this.messageEdit.setValue(this.message);
       this.addRenderableWidget(this.messageEdit);
-      this.setInitialFocus(this.messageEdit);
       this.updateMode(this.mode);
-      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName).withValues(MODES).displayOnlyValue().withInitialValue(this.mode).create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (var1, var2) -> this.updateMode(var2)));
+      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName, this.mode).withValues(MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (var1, var2) -> this.updateMode(var2)));
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
+   }
+
+   protected void setInitialFocus() {
+      if (this.messageEdit != null) {
+         this.setInitialFocus(this.messageEdit);
+      } else {
+         super.setInitialFocus();
+      }
+
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

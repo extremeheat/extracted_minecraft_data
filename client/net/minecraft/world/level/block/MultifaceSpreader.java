@@ -3,13 +3,13 @@ package net.minecraft.world.level.block;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class MultifaceSpreader {
    public static final SpreadType[] DEFAULT_SPREAD_ORDER;
@@ -90,8 +90,7 @@ public class MultifaceSpreader {
    }
 
    public interface SpreadConfig {
-      @Nullable
-      BlockState getStateForPlacement(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4);
+      @Nullable BlockState getStateForPlacement(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4);
 
       boolean canSpreadInto(BlockGetter var1, BlockPos var2, SpreadPos var3);
 
@@ -133,8 +132,7 @@ public class MultifaceSpreader {
          this.block = var1;
       }
 
-      @Nullable
-      public BlockState getStateForPlacement(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+      public @Nullable BlockState getStateForPlacement(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
          return this.block.getStateForPlacement(var1, var2, var3, var4);
       }
 

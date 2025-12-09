@@ -12,8 +12,8 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 
 class OozingMobEffect extends MobEffect {
    private static final int RADIUS_TO_CHECK_SLIMES = 2;
@@ -33,7 +33,7 @@ class OozingMobEffect extends MobEffect {
    public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
       if (var4 == Entity.RemovalReason.KILLED) {
          int var5 = this.spawnedCount.applyAsInt(var2.getRandom());
-         int var6 = var1.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+         int var6 = (Integer)var1.getGameRules().get(GameRules.MAX_ENTITY_CRAMMING);
          int var7 = numberOfSlimesToSpawn(var6, OozingMobEffect.NearbySlimes.closeTo(var2), var5);
 
          for(int var8 = 0; var8 < var7; ++var8) {

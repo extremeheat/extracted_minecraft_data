@@ -5,7 +5,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class InvalidLockComponentFix extends DataComponentRemainderFix {
    private static final Optional<String> INVALID_LOCK_CUSTOM_NAME = Optional.of("\"\"");
@@ -14,13 +14,11 @@ public class InvalidLockComponentFix extends DataComponentRemainderFix {
       super(var1, "InvalidLockComponentPredicateFix", "minecraft:lock");
    }
 
-   @Nullable
-   protected <T> Dynamic<T> fixComponent(Dynamic<T> var1) {
+   protected <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> var1) {
       return fixLock(var1);
    }
 
-   @Nullable
-   public static <T> Dynamic<T> fixLock(Dynamic<T> var0) {
+   public static <T> @Nullable Dynamic<T> fixLock(Dynamic<T> var0) {
       return isBrokenLock(var0) ? null : var0;
    }
 

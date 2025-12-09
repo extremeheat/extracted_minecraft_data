@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -40,7 +39,7 @@ public class ManageServerScreen extends Screen {
       this.ipEdit.setValue(this.serverData.ip);
       this.ipEdit.setResponder((var1) -> this.updateAddButtonStatus());
       this.addWidget(this.ipEdit);
-      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues(ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("manageServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
+      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName, this.serverData.getResourcePackStatus()).withValues(ServerData.ServerPackStatus.values()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("manageServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
       this.addButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
       this.updateAddButtonStatus();
@@ -50,12 +49,12 @@ public class ManageServerScreen extends Screen {
       this.setInitialFocus(this.nameEdit);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.ipEdit.getValue();
-      String var5 = this.nameEdit.getValue();
-      this.init(var1, var2, var3);
-      this.ipEdit.setValue(var4);
-      this.nameEdit.setValue(var5);
+   public void resize(int var1, int var2) {
+      String var3 = this.ipEdit.getValue();
+      String var4 = this.nameEdit.getValue();
+      this.init(var1, var2);
+      this.ipEdit.setValue(var3);
+      this.nameEdit.setValue(var4);
    }
 
    private void onAdd() {

@@ -4,9 +4,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import java.time.Duration;
-import javax.annotation.Nullable;
 import net.minecraft.commands.BrigadierExceptions;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 @SuppressForbidden(
    a = "System.out needed before bootstrap"
@@ -17,37 +17,37 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4556;
+   public static final int WORLD_VERSION = 4671;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 773;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 774;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 274;
-   public static final int SNBT_NAG_VERSION = 4531;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 286;
+   public static final int SNBT_NAG_VERSION = 4650;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = false;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 69;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 75;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 88;
+   public static final int DATA_PACK_FORMAT_MAJOR = 94;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 0;
+   public static final int DATA_PACK_FORMAT_MINOR = 1;
+   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "2.0.0";
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
    public static final String DATA_VERSION_TAG = "DataVersion";
-   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "1.0.0";
    public static final String DEBUG_FLAG_PREFIX = "MC_DEBUG_";
    public static final boolean DEBUG_ENABLED = booleanProperty(prefixDebugFlagName("ENABLED"));
    private static final boolean DEBUG_PRINT_PROPERTIES = booleanProperty(prefixDebugFlagName("PRINT_PROPERTIES"));
@@ -61,19 +61,11 @@ public class SharedConstants {
    public static final boolean DEBUG_SHUFFLE_MODELS = debugFlag("SHUFFLE_MODELS");
    public static final boolean DEBUG_RENDER_UI_LAYERING_RECTANGLES = debugFlag("RENDER_UI_LAYERING_RECTANGLES");
    public static final boolean DEBUG_PATHFINDING = debugFlag("PATHFINDING");
-   public static final boolean DEBUG_WATER = debugFlag("WATER");
-   public static final boolean DEBUG_HEIGHTMAP = debugFlag("HEIGHTMAP");
-   public static final boolean DEBUG_COLLISION = debugFlag("COLLISION");
    public static final boolean DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES = debugFlag("SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES");
-   public static final boolean DEBUG_SUPPORT_BLOCKS = debugFlag("SUPPORT_BLOCKS");
    public static final boolean DEBUG_SHAPES = debugFlag("SHAPES");
    public static final boolean DEBUG_NEIGHBORSUPDATE = debugFlag("NEIGHBORSUPDATE");
    public static final boolean DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER = debugFlag("EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER");
    public static final boolean DEBUG_STRUCTURES = debugFlag("STRUCTURES");
-   public static final boolean DEBUG_LIGHT = debugFlag("LIGHT");
-   public static final boolean DEBUG_SKY_LIGHT_SECTIONS = debugFlag("SKY_LIGHT_SECTIONS");
-   public static final boolean DEBUG_SOLID_FACE = debugFlag("SOLID_FACE");
-   public static final boolean DEBUG_CHUNKS = debugFlag("CHUNKS");
    public static final boolean DEBUG_GAME_EVENT_LISTENERS = debugFlag("GAME_EVENT_LISTENERS");
    public static final boolean DEBUG_DUMP_TEXTURE_ATLAS = debugFlag("DUMP_TEXTURE_ATLAS");
    public static final boolean DEBUG_DUMP_INTERPOLATED_TEXTURE_FRAMES = debugFlag("DUMP_INTERPOLATED_TEXTURE_FRAMES");
@@ -110,6 +102,7 @@ public class SharedConstants {
    public static final boolean DEBUG_CHASE_COMMAND = debugFlag("CHASE_COMMAND");
    public static final boolean DEBUG_VERBOSE_COMMAND_ERRORS = debugFlag("VERBOSE_COMMAND_ERRORS");
    public static final boolean DEBUG_DEV_COMMANDS = debugFlag("DEV_COMMANDS");
+   public static final boolean DEBUG_ACTIVE_TEXT_AREAS = debugFlag("ACTIVE_TEXT_AREAS");
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = debugFlag("IGNORE_LOCAL_MOB_CAP");
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = debugFlag("DISABLE_LIQUID_SPREADING");
    public static final boolean DEBUG_AQUIFERS = debugFlag("AQUIFERS");
@@ -150,17 +143,18 @@ public class SharedConstants {
    public static final int MAX_PLAYER_NAME_LENGTH = 16;
    public static final int MAX_CHAINED_NEIGHBOR_UPDATES = 1000000;
    public static final int MAX_RENDER_DISTANCE = 32;
+   public static final int MAX_CLOUD_DISTANCE = 128;
    public static final char[] ILLEGAL_FILE_CHARACTERS;
    public static final int TICKS_PER_SECOND = 20;
    public static final int MILLIS_PER_TICK = 50;
    public static final int TICKS_PER_MINUTE = 1200;
    public static final int TICKS_PER_GAME_DAY = 24000;
+   public static final int DEFAULT_RANDOM_TICK_SPEED = 3;
    public static final float AVERAGE_GAME_TICKS_PER_RANDOM_TICK_PER_BLOCK = 1365.3334F;
    public static final float AVERAGE_RANDOM_TICKS_PER_BLOCK_PER_MINUTE = 0.87890625F;
    public static final float AVERAGE_RANDOM_TICKS_PER_BLOCK_PER_GAME_DAY = 17.578125F;
    public static final int WORLD_ICON_SIZE = 64;
-   @Nullable
-   private static WorldVersion CURRENT_VERSION;
+   private static @Nullable WorldVersion CURRENT_VERSION;
 
    public SharedConstants() {
       super();
@@ -226,7 +220,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 773;
+      return 774;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

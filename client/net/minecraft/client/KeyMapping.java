@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class KeyMapping implements Comparable<KeyMapping> {
    private static final Map<String, KeyMapping> ALL = Maps.newHashMap();
@@ -26,6 +26,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    protected InputConstants.Key key;
    private boolean isDown;
    private int clickCount;
+   private final int order;
 
    public static void click(InputConstants.Key var0) {
       forAllKeyMappings(var0, (var0x) -> ++var0x.clickCount);
@@ -97,11 +98,16 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4) {
+      this(var1, var2, var3, var4, 0);
+   }
+
+   public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4, int var5) {
       super();
       this.name = var1;
       this.key = var2.getOrCreate(var3);
       this.defaultKey = this.key;
       this.category = var4;
+      this.order = var5;
       ALL.put(var1, this);
       this.registerMapping(this.key);
    }
@@ -145,7 +151,11 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public int compareTo(KeyMapping var1) {
-      return this.category == var1.category ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(var1.category));
+      if (this.category == var1.category) {
+         return this.order == var1.order ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(this.order, var1.order);
+      } else {
+         return Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(var1.category));
+      }
    }
 
    public static Supplier<Component> createNameSupplier(String var0) {
@@ -198,8 +208,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       ((List)MAP.computeIfAbsent(var1, (var0) -> new ArrayList())).add(this);
    }
 
-   @Nullable
-   public static KeyMapping get(String var0) {
+   public static @Nullable KeyMapping get(String var0) {
       return (KeyMapping)ALL.get(var0);
    }
 
@@ -208,7 +217,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.compareTo((KeyMapping)var1);
    }
 
-   public static record Category(ResourceLocation id) {
+   public static record Category(Identifier id) {
       static final List<Category> SORT_ORDER = new ArrayList();
       public static final Category MOVEMENT = register("movement");
       public static final Category MISC = register("misc");
@@ -217,17 +226,18 @@ public class KeyMapping implements Comparable<KeyMapping> {
       public static final Category INVENTORY = register("inventory");
       public static final Category CREATIVE = register("creative");
       public static final Category SPECTATOR = register("spectator");
+      public static final Category DEBUG = register("debug");
 
-      public Category(ResourceLocation var1) {
+      public Category(Identifier var1) {
          super();
          this.id = var1;
       }
 
       private static Category register(String var0) {
-         return register(ResourceLocation.withDefaultNamespace(var0));
+         return register(Identifier.withDefaultNamespace(var0));
       }
 
-      public static Category register(ResourceLocation var0) {
+      public static Category register(Identifier var0) {
          Category var1 = new Category(var0);
          if (SORT_ORDER.contains(var1)) {
             throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", var0));

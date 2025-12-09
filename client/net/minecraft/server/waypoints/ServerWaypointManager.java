@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.waypoints.Waypoint;
 import net.minecraft.world.waypoints.WaypointManager;
 import net.minecraft.world.waypoints.WaypointTransmitter;
@@ -118,7 +118,7 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
    }
 
    private static boolean isLocatorBarEnabledFor(ServerPlayer var0) {
-      return var0.level().getServer().getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
+      return (Boolean)var0.level().getGameRules().get(GameRules.LOCATOR_BAR);
    }
 
    private void createConnection(ServerPlayer var1, WaypointTransmitter var2) {

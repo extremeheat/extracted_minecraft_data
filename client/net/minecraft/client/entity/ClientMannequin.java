@@ -3,24 +3,23 @@ package net.minecraft.client.entity;
 import com.mojang.logging.LogUtils;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final PlayerSkin DEFAULT_SKIN;
    private final ClientAvatarState avatarState = new ClientAvatarState();
-   @Nullable
-   private CompletableFuture<Optional<PlayerSkin>> skinLookup;
+   private @Nullable CompletableFuture<Optional<PlayerSkin>> skinLookup;
    private PlayerSkin skin;
    private final PlayerSkinRenderCache skinRenderCache;
 
@@ -78,13 +77,11 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
       this.skin = var1;
    }
 
-   @Nullable
-   public Component belowNameDisplay() {
+   public @Nullable Component belowNameDisplay() {
       return this.getDescription();
    }
 
-   @Nullable
-   public Parrot.Variant getParrotVariantOnShoulder(boolean var1) {
+   public Parrot.@Nullable Variant getParrotVariantOnShoulder(boolean var1) {
       return null;
    }
 

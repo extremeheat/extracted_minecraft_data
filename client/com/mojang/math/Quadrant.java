@@ -6,10 +6,10 @@ import com.mojang.serialization.DataResult;
 import net.minecraft.util.Mth;
 
 public enum Quadrant {
-   R0(0),
-   R90(1),
-   R180(2),
-   R270(3);
+   R0(0, OctahedralGroup.IDENTITY, OctahedralGroup.IDENTITY, OctahedralGroup.IDENTITY),
+   R90(1, OctahedralGroup.BLOCK_ROT_X_90, OctahedralGroup.BLOCK_ROT_Y_90, OctahedralGroup.BLOCK_ROT_Z_90),
+   R180(2, OctahedralGroup.BLOCK_ROT_X_180, OctahedralGroup.BLOCK_ROT_Y_180, OctahedralGroup.BLOCK_ROT_Z_180),
+   R270(3, OctahedralGroup.BLOCK_ROT_X_270, OctahedralGroup.BLOCK_ROT_Y_270, OctahedralGroup.BLOCK_ROT_Z_270);
 
    public static final Codec<Quadrant> CODEC = Codec.INT.comapFlatMap((var0) -> {
       DataResult var10000;
@@ -35,9 +35,15 @@ public enum Quadrant {
       return var10000;
    });
    public final int shift;
+   public final OctahedralGroup rotationX;
+   public final OctahedralGroup rotationY;
+   public final OctahedralGroup rotationZ;
 
-   private Quadrant(final int var3) {
+   private Quadrant(final int var3, final OctahedralGroup var4, final OctahedralGroup var5, final OctahedralGroup var6) {
       this.shift = var3;
+      this.rotationX = var4;
+      this.rotationY = var5;
+      this.rotationZ = var6;
    }
 
    /** @deprecated */
@@ -53,6 +59,14 @@ public enum Quadrant {
       }
 
       return var10000;
+   }
+
+   public static OctahedralGroup fromXYAngles(Quadrant var0, Quadrant var1) {
+      return var1.rotationY.compose(var0.rotationX);
+   }
+
+   public static OctahedralGroup fromXYZAngles(Quadrant var0, Quadrant var1, Quadrant var2) {
+      return var2.rotationZ.compose(var1.rotationY.compose(var0.rotationX));
    }
 
    public int rotateVertexIndex(int var1) {

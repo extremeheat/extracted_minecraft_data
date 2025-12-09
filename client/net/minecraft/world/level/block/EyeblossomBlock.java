@@ -11,13 +11,15 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.TriState;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
-import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -71,15 +73,14 @@ public class EyeblossomBlock extends FlowerBlock {
    }
 
    private boolean tryChangingState(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!var2.dimensionType().natural()) {
-         return false;
-      } else if (CreakingHeartBlock.isNaturalNight(var2) == this.type.open) {
+      boolean var5 = ((TriState)var2.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, var3)).toBoolean(this.type.open);
+      if (var5 == this.type.open) {
          return false;
       } else {
-         Type var5 = this.type.transform();
-         var2.setBlock(var3, var5.state(), 3);
+         Type var6 = this.type.transform();
+         var2.setBlock(var3, var6.state(), 3);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
-         var5.spawnTransformParticle(var2, var3, var4);
+         var6.spawnTransformParticle(var2, var3, var4);
          BlockPos.betweenClosed(var3.offset(-3, -2, -3), var3.offset(3, 2, 3)).forEach((var4x) -> {
             BlockState var5 = var2.getBlockState(var4x);
             if (var5 == var1) {

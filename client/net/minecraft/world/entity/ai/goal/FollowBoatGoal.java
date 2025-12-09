@@ -1,22 +1,19 @@
 package net.minecraft.world.entity.ai.goal;
 
-import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class FollowBoatGoal extends Goal {
    private int timeToRecalcPath;
    private final PathfinderMob mob;
-   @Nullable
-   private Player following;
+   private @Nullable Player following;
    private BoatGoals currentGoal;
 
    public FollowBoatGoal(PathfinderMob var1) {
@@ -25,20 +22,21 @@ public class FollowBoatGoal extends Goal {
    }
 
    public boolean canUse() {
-      List var1 = this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0));
-      boolean var2 = false;
-
-      for(AbstractBoat var4 : var1) {
-         LivingEntity var5 = var4.getControllingPassenger();
-         if (var5 instanceof Player var6) {
-            if (Mth.abs(var6.xxa) > 0.0F || Mth.abs(var6.zza) > 0.0F) {
-               var2 = true;
-               break;
+      if (this.following != null && this.following.hasMovedHorizontallyRecently()) {
+         return true;
+      } else {
+         for(AbstractBoat var3 : this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0))) {
+            LivingEntity var5 = var3.getControllingPassenger();
+            if (var5 instanceof Player) {
+               Player var4 = (Player)var5;
+               if (var4.hasMovedHorizontallyRecently()) {
+                  return true;
+               }
             }
          }
-      }
 
-      return this.following != null && (Mth.abs(this.following.xxa) > 0.0F || Mth.abs(this.following.zza) > 0.0F) || var2;
+         return false;
+      }
    }
 
    public boolean isInterruptable() {
@@ -46,7 +44,7 @@ public class FollowBoatGoal extends Goal {
    }
 
    public boolean canContinueToUse() {
-      return this.following != null && this.following.isPassenger() && (Mth.abs(this.following.xxa) > 0.0F || Mth.abs(this.following.zza) > 0.0F);
+      return this.following != null && this.following.isPassenger() && this.following.hasMovedHorizontallyRecently();
    }
 
    public void start() {
@@ -67,24 +65,23 @@ public class FollowBoatGoal extends Goal {
    }
 
    public void tick() {
-      boolean var1 = Mth.abs(this.following.xxa) > 0.0F || Mth.abs(this.following.zza) > 0.0F;
-      float var2 = this.currentGoal == BoatGoals.GO_IN_BOAT_DIRECTION ? (var1 ? 0.01F : 0.0F) : 0.015F;
-      this.mob.moveRelative(var2, new Vec3((double)this.mob.xxa, (double)this.mob.yya, (double)this.mob.zza));
+      float var1 = this.currentGoal == BoatGoals.GO_IN_BOAT_DIRECTION ? 0.01F : 0.015F;
+      this.mob.moveRelative(var1, new Vec3((double)this.mob.xxa, (double)this.mob.yya, (double)this.mob.zza));
       this.mob.move(MoverType.SELF, this.mob.getDeltaMovement());
       if (--this.timeToRecalcPath <= 0) {
          this.timeToRecalcPath = this.adjustedTickDelay(10);
          if (this.currentGoal == BoatGoals.GO_TO_BOAT) {
-            BlockPos var3 = this.following.blockPosition().relative(this.following.getDirection().getOpposite());
-            var3 = var3.offset(0, -1, 0);
-            this.mob.getNavigation().moveTo((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), 1.0);
+            BlockPos var2 = this.following.blockPosition().relative(this.following.getDirection().getOpposite());
+            var2 = var2.offset(0, -1, 0);
+            this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), 1.0);
             if (this.mob.distanceTo(this.following) < 4.0F) {
                this.timeToRecalcPath = 0;
                this.currentGoal = BoatGoals.GO_IN_BOAT_DIRECTION;
             }
          } else if (this.currentGoal == BoatGoals.GO_IN_BOAT_DIRECTION) {
-            Direction var6 = this.following.getMotionDirection();
-            BlockPos var4 = this.following.blockPosition().relative((Direction)var6, 10);
-            this.mob.getNavigation().moveTo((double)var4.getX(), (double)(var4.getY() - 1), (double)var4.getZ(), 1.0);
+            Direction var5 = this.following.getMotionDirection();
+            BlockPos var3 = this.following.blockPosition().relative((Direction)var5, 10);
+            this.mob.getNavigation().moveTo((double)var3.getX(), (double)(var3.getY() - 1), (double)var3.getZ(), 1.0);
             if (this.mob.distanceTo(this.following) > 12.0F) {
                this.timeToRecalcPath = 0;
                this.currentGoal = BoatGoals.GO_TO_BOAT;

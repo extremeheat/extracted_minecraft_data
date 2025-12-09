@@ -3,9 +3,8 @@ package com.mojang.math;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -14,20 +13,17 @@ import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public final class Transformation {
    private final Matrix4fc matrix;
    public static final Codec<Transformation> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter((var0x) -> var0x.translation), ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter((var0x) -> var0x.leftRotation), ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter((var0x) -> var0x.scale), ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter((var0x) -> var0x.rightRotation)).apply(var0, Transformation::new));
    public static final Codec<Transformation> EXTENDED_CODEC;
    private boolean decomposed;
-   @Nullable
-   private Vector3f translation;
-   @Nullable
-   private Quaternionf leftRotation;
-   @Nullable
-   private Vector3f scale;
-   @Nullable
-   private Quaternionf rightRotation;
+   private @Nullable Vector3fc translation;
+   private @Nullable Quaternionfc leftRotation;
+   private @Nullable Vector3fc scale;
+   private @Nullable Quaternionfc rightRotation;
    private static final Transformation IDENTITY;
 
    public Transformation(@Nullable Matrix4fc var1) {
@@ -40,13 +36,13 @@ public final class Transformation {
 
    }
 
-   public Transformation(@Nullable Vector3f var1, @Nullable Quaternionf var2, @Nullable Vector3f var3, @Nullable Quaternionf var4) {
+   public Transformation(@Nullable Vector3fc var1, @Nullable Quaternionfc var2, @Nullable Vector3fc var3, @Nullable Quaternionfc var4) {
       super();
       this.matrix = compose(var1, var2, var3, var4);
-      this.translation = var1 != null ? var1 : new Vector3f();
-      this.leftRotation = var2 != null ? var2 : new Quaternionf();
-      this.scale = var3 != null ? var3 : new Vector3f(1.0F, 1.0F, 1.0F);
-      this.rightRotation = var4 != null ? var4 : new Quaternionf();
+      this.translation = (Vector3fc)(var1 != null ? var1 : new Vector3f());
+      this.leftRotation = (Quaternionfc)(var2 != null ? var2 : new Quaternionf());
+      this.scale = (Vector3fc)(var3 != null ? var3 : new Vector3f(1.0F, 1.0F, 1.0F));
+      this.rightRotation = (Quaternionfc)(var4 != null ? var4 : new Quaternionf());
       this.decomposed = true;
    }
 
@@ -60,8 +56,7 @@ public final class Transformation {
       return new Transformation(var2);
    }
 
-   @Nullable
-   public Transformation inverse() {
+   public @Nullable Transformation inverse() {
       if (this == IDENTITY) {
          return this;
       } else {
@@ -83,7 +78,7 @@ public final class Transformation {
 
    }
 
-   private static Matrix4f compose(@Nullable Vector3f var0, @Nullable Quaternionf var1, @Nullable Vector3f var2, @Nullable Quaternionf var3) {
+   private static Matrix4f compose(@Nullable Vector3fc var0, @Nullable Quaternionfc var1, @Nullable Vector3fc var2, @Nullable Quaternionfc var3) {
       Matrix4f var4 = new Matrix4f();
       if (var0 != null) {
          var4.translation(var0);
@@ -112,24 +107,24 @@ public final class Transformation {
       return new Matrix4f(this.matrix);
    }
 
-   public Vector3f getTranslation() {
+   public Vector3fc getTranslation() {
       this.ensureDecomposed();
-      return new Vector3f(this.translation);
+      return this.translation;
    }
 
-   public Quaternionf getLeftRotation() {
+   public Quaternionfc getLeftRotation() {
       this.ensureDecomposed();
-      return new Quaternionf(this.leftRotation);
+      return this.leftRotation;
    }
 
-   public Vector3f getScale() {
+   public Vector3fc getScale() {
       this.ensureDecomposed();
-      return new Vector3f(this.scale);
+      return this.scale;
    }
 
-   public Quaternionf getRightRotation() {
+   public Quaternionfc getRightRotation() {
       this.ensureDecomposed();
-      return new Quaternionf(this.rightRotation);
+      return this.rightRotation;
    }
 
    public boolean equals(Object var1) {
@@ -148,15 +143,7 @@ public final class Transformation {
    }
 
    public Transformation slerp(Transformation var1, float var2) {
-      Vector3f var3 = this.getTranslation();
-      Quaternionf var4 = this.getLeftRotation();
-      Vector3f var5 = this.getScale();
-      Quaternionf var6 = this.getRightRotation();
-      var3.lerp(var1.getTranslation(), var2);
-      var4.slerp(var1.getLeftRotation(), var2);
-      var5.lerp(var1.getScale(), var2);
-      var6.slerp(var1.getRightRotation(), var2);
-      return new Transformation(var3, var4, var5, var6);
+      return new Transformation(this.getTranslation().lerp(var1.getTranslation(), var2, new Vector3f()), this.getLeftRotation().slerp(var1.getLeftRotation(), var2, new Quaternionf()), this.getScale().lerp(var1.getScale(), var2, new Vector3f()), this.getRightRotation().slerp(var1.getRightRotation(), var2, new Quaternionf()));
    }
 
    static {

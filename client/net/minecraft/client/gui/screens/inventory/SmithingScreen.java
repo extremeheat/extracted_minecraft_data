@@ -2,31 +2,36 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
+import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SmithingMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.level.Level;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
-   private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/smithing/error");
-   private static final ResourceLocation EMPTY_SLOT_SMITHING_TEMPLATE_ARMOR_TRIM = ResourceLocation.withDefaultNamespace("container/slot/smithing_template_armor_trim");
-   private static final ResourceLocation EMPTY_SLOT_SMITHING_TEMPLATE_NETHERITE_UPGRADE = ResourceLocation.withDefaultNamespace("container/slot/smithing_template_netherite_upgrade");
+   private static final Identifier ERROR_SPRITE = Identifier.withDefaultNamespace("container/smithing/error");
+   private static final Identifier EMPTY_SLOT_SMITHING_TEMPLATE_ARMOR_TRIM = Identifier.withDefaultNamespace("container/slot/smithing_template_armor_trim");
+   private static final Identifier EMPTY_SLOT_SMITHING_TEMPLATE_NETHERITE_UPGRADE = Identifier.withDefaultNamespace("container/slot/smithing_template_netherite_upgrade");
    private static final Component MISSING_TEMPLATE_TOOLTIP = Component.translatable("container.upgrade.missing_template_tooltip");
    private static final Component ERROR_TOOLTIP = Component.translatable("container.upgrade.error_tooltip");
-   private static final List<ResourceLocation> EMPTY_SLOT_SMITHING_TEMPLATES;
+   private static final List<Identifier> EMPTY_SLOT_SMITHING_TEMPLATES;
    private static final int TITLE_LABEL_X = 44;
    private static final int TITLE_LABEL_Y = 15;
    private static final int ERROR_ICON_WIDTH = 28;
@@ -46,23 +51,20 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    private final CyclingSlotBackground templateIcon = new CyclingSlotBackground(0);
    private final CyclingSlotBackground baseIcon = new CyclingSlotBackground(1);
    private final CyclingSlotBackground additionalIcon = new CyclingSlotBackground(2);
-   @Nullable
-   private ArmorStand armorStandPreview;
+   private final ArmorStandRenderState armorStandPreview = new ArmorStandRenderState();
 
    public SmithingScreen(SmithingMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, ResourceLocation.withDefaultNamespace("textures/gui/container/smithing.png"));
+      super(var1, var2, var3, Identifier.withDefaultNamespace("textures/gui/container/smithing.png"));
       this.titleLabelX = 44;
       this.titleLabelY = 15;
+      this.armorStandPreview.entityType = EntityType.ARMOR_STAND;
+      this.armorStandPreview.showBasePlate = false;
+      this.armorStandPreview.showArms = true;
+      this.armorStandPreview.xRot = 25.0F;
+      this.armorStandPreview.bodyRot = 210.0F;
    }
 
    protected void subInit() {
-      this.armorStandPreview = new ArmorStand(this.minecraft.level, 0.0, 0.0, 0.0);
-      this.armorStandPreview.setNoBasePlate(true);
-      this.armorStandPreview.setShowArms(true);
-      this.armorStandPreview.yBodyRot = 210.0F;
-      this.armorStandPreview.setXRot(25.0F);
-      this.armorStandPreview.yHeadRot = this.armorStandPreview.getYRot();
-      this.armorStandPreview.yHeadRotO = this.armorStandPreview.getYRot();
       this.updateArmorStandPreview(((SmithingMenu)this.menu).getSlot(3).getItem());
    }
 
@@ -101,7 +103,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       int var6 = this.topPos + 20;
       int var7 = this.leftPos + 161;
       int var8 = this.topPos + 80;
-      InventoryScreen.renderEntityInInventory(var1, var5, var6, var7, var8, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, this.armorStandPreview);
+      var1.submitEntityRenderState(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, var5, var6, var7, var8);
    }
 
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
@@ -112,23 +114,52 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    }
 
    private void updateArmorStandPreview(ItemStack var1) {
-      if (this.armorStandPreview != null) {
-         for(EquipmentSlot var3 : EquipmentSlot.VALUES) {
-            this.armorStandPreview.setItemSlot(var3, ItemStack.EMPTY);
+      this.armorStandPreview.leftHandItemStack = ItemStack.EMPTY;
+      this.armorStandPreview.leftHandItemState.clear();
+      this.armorStandPreview.headEquipment = ItemStack.EMPTY;
+      this.armorStandPreview.headItem.clear();
+      this.armorStandPreview.chestEquipment = ItemStack.EMPTY;
+      this.armorStandPreview.legsEquipment = ItemStack.EMPTY;
+      this.armorStandPreview.feetEquipment = ItemStack.EMPTY;
+      if (!var1.isEmpty()) {
+         Equippable var2 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
+         EquipmentSlot var3 = var2 != null ? var2.slot() : null;
+         ItemModelResolver var4 = this.minecraft.getItemModelResolver();
+         byte var6 = 0;
+         //$FF: var6->value
+         //0->HEAD
+         //1->CHEST
+         //2->LEGS
+         //3->FEET
+         switch (var3.enumSwitch<invokedynamic>(var3, var6)) {
+            case -1:
+            default:
+               this.armorStandPreview.leftHandItemStack = var1.copy();
+               var4.updateForTopItem(this.armorStandPreview.leftHandItemState, var1, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, (Level)null, (ItemOwner)null, 0);
+               break;
+            case 0:
+               if (HumanoidArmorLayer.shouldRender(var1, EquipmentSlot.HEAD)) {
+                  this.armorStandPreview.headEquipment = var1.copy();
+               } else {
+                  var4.updateForTopItem(this.armorStandPreview.headItem, var1, ItemDisplayContext.HEAD, (Level)null, (ItemOwner)null, 0);
+               }
+               break;
+            case 1:
+               this.armorStandPreview.chestEquipment = var1.copy();
+               break;
+            case 2:
+               this.armorStandPreview.legsEquipment = var1.copy();
+               break;
+            case 3:
+               this.armorStandPreview.feetEquipment = var1.copy();
          }
-
-         if (!var1.isEmpty()) {
-            Equippable var4 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
-            EquipmentSlot var5 = var4 != null ? var4.slot() : EquipmentSlot.OFFHAND;
-            this.armorStandPreview.setItemSlot(var5, var1.copy());
-         }
-
       }
+
    }
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if (this.hasRecipeError()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
       }
 
    }

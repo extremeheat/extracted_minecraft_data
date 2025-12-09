@@ -2,7 +2,6 @@ package net.minecraft.world.inventory;
 
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -19,6 +18,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class AnvilMenu extends ItemCombinerMenu {
@@ -29,8 +29,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    private static final boolean DEBUG_COST = false;
    public static final int MAX_NAME_LENGTH = 50;
    private int repairItemCountCost;
-   @Nullable
-   private String itemName;
+   private @Nullable String itemName;
    private final DataSlot cost;
    private boolean onlyRenaming;
    private static final int COST_FAIL = 0;
@@ -293,8 +292,7 @@ public class AnvilMenu extends ItemCombinerMenu {
       }
    }
 
-   @Nullable
-   private static String validateName(String var0) {
+   private static @Nullable String validateName(String var0) {
       String var1 = StringUtil.filterText(var0);
       return var1.length() <= 50 ? var1 : null;
    }

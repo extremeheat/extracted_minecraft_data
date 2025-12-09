@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -24,13 +23,14 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public class BlockStateParser {
    public static final SimpleCommandExceptionType ERROR_NO_TAGS_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.block.tag.disallowed"));
@@ -54,15 +54,11 @@ public class BlockStateParser {
    private final boolean allowNbt;
    private final Map<Property<?>, Comparable<?>> properties = Maps.newHashMap();
    private final Map<String, String> vagueProperties = Maps.newHashMap();
-   private ResourceLocation id = ResourceLocation.withDefaultNamespace("");
-   @Nullable
-   private StateDefinition<Block, BlockState> definition;
-   @Nullable
-   private BlockState state;
-   @Nullable
-   private CompoundTag nbt;
-   @Nullable
-   private HolderSet<Block> tag;
+   private Identifier id = Identifier.withDefaultNamespace("");
+   private @Nullable StateDefinition<Block, BlockState> definition;
+   private @Nullable BlockState state;
+   private @Nullable CompoundTag nbt;
+   private @Nullable HolderSet<Block> tag;
    private Function<SuggestionsBuilder, CompletableFuture<Suggestions>> suggestions;
 
    private BlockStateParser(HolderLookup<Block> var1, StringReader var2, boolean var3, boolean var4) {
@@ -324,7 +320,7 @@ public class BlockStateParser {
    }
 
    private CompletableFuture<Suggestions> suggestItem(SuggestionsBuilder var1) {
-      return SharedSuggestionProvider.suggestResource(this.blocks.listElementIds().map(ResourceKey::location), var1);
+      return SharedSuggestionProvider.suggestResource(this.blocks.listElementIds().map(ResourceKey::identifier), var1);
    }
 
    private CompletableFuture<Suggestions> suggestBlockIdOrTag(SuggestionsBuilder var1) {
@@ -335,7 +331,7 @@ public class BlockStateParser {
 
    private void readBlock() throws CommandSyntaxException {
       int var1 = this.reader.getCursor();
-      this.id = ResourceLocation.read(this.reader);
+      this.id = Identifier.read(this.reader);
       Block var2 = (Block)((Holder.Reference)this.blocks.get(ResourceKey.create(Registries.BLOCK, this.id)).orElseThrow(() -> {
          this.reader.setCursor(var1);
          return ERROR_UNKNOWN_BLOCK.createWithContext(this.reader, this.id.toString());
@@ -351,7 +347,7 @@ public class BlockStateParser {
          int var1 = this.reader.getCursor();
          this.reader.expect('#');
          this.suggestions = this::suggestTag;
-         ResourceLocation var2 = ResourceLocation.read(this.reader);
+         Identifier var2 = Identifier.read(this.reader);
          this.tag = (HolderSet)this.blocks.get(TagKey.create(Registries.BLOCK, var2)).orElseThrow(() -> {
             this.reader.setCursor(var1);
             return ERROR_UNKNOWN_TAG.createWithContext(this.reader, var2.toString());
@@ -491,7 +487,7 @@ public class BlockStateParser {
    }
 
    public static String serialize(BlockState var0) {
-      StringBuilder var1 = new StringBuilder((String)var0.getBlockHolder().unwrapKey().map((var0x) -> var0x.location().toString()).orElse("air"));
+      StringBuilder var1 = new StringBuilder((String)var0.getBlockHolder().unwrapKey().map((var0x) -> var0x.identifier().toString()).orElse("air"));
       if (!var0.getProperties().isEmpty()) {
          var1.append('[');
          boolean var2 = false;

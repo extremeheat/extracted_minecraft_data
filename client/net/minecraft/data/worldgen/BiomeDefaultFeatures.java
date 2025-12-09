@@ -446,7 +446,19 @@ public class BiomeDefaultFeatures {
 
    public static void commonSpawns(MobSpawnSettings.Builder var0, int var1) {
       caveSpawns(var0);
-      monsters(var0, 95, 5, var1, false);
+      monsters(var0, 95, 5, 0, var1, false);
+   }
+
+   public static void commonSpawnWithZombieHorse(MobSpawnSettings.Builder var0) {
+      caveSpawns(var0);
+      monsters(var0, 90, 5, 5, 100, false);
+   }
+
+   public static void swampSpawns(MobSpawnSettings.Builder var0, int var1) {
+      commonSpawns(var0, var1);
+      var0.addSpawn(MobCategory.MONSTER, 1, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1));
+      var0.addSpawn(MobCategory.MONSTER, 30, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.FROG, 2, 5));
    }
 
    public static void oceanSpawns(MobSpawnSettings.Builder var0, int var1, int var2, int var3) {
@@ -468,14 +480,14 @@ public class BiomeDefaultFeatures {
       farmAnimals(var0);
       var0.addSpawn(MobCategory.CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 2, 6));
       var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 3));
-      commonSpawns(var0);
+      commonSpawnWithZombieHorse(var0);
    }
 
-   public static void snowySpawns(MobSpawnSettings.Builder var0) {
+   public static void snowySpawns(MobSpawnSettings.Builder var0, boolean var1) {
       var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 3));
       var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.POLAR_BEAR, 1, 2));
       caveSpawns(var0);
-      monsters(var0, 95, 5, 20, false);
+      monsters(var0, var1 ? 90 : 95, 5, var1 ? 5 : 0, 20, false);
       var0.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityType.STRAY, 4, 4));
    }
 
@@ -483,22 +495,27 @@ public class BiomeDefaultFeatures {
       var0.addSpawn(MobCategory.CREATURE, 12, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 3));
       var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.CAMEL, 1, 1));
       caveSpawns(var0);
-      monsters(var0, 19, 1, 100, false);
+      monsters(var0, 19, 1, 0, 50, false);
       var0.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityType.HUSK, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 50, new MobSpawnSettings.SpawnerData(EntityType.PARCHED, 4, 4));
    }
 
    public static void dripstoneCavesSpawns(MobSpawnSettings.Builder var0) {
       caveSpawns(var0);
       boolean var1 = true;
-      monsters(var0, 95, 5, 100, false);
+      monsters(var0, 95, 5, 0, 100, false);
       var0.addSpawn(MobCategory.MONSTER, 95, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 4, 4));
    }
 
-   public static void monsters(MobSpawnSettings.Builder var0, int var1, int var2, int var3, boolean var4) {
+   public static void monsters(MobSpawnSettings.Builder var0, int var1, int var2, int var3, int var4, boolean var5) {
       var0.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.SPIDER, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, var1, new MobSpawnSettings.SpawnerData(var4 ? EntityType.DROWNED : EntityType.ZOMBIE, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, var1, new MobSpawnSettings.SpawnerData(var5 ? EntityType.DROWNED : EntityType.ZOMBIE, 4, 4));
       var0.addSpawn(MobCategory.MONSTER, var2, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE_VILLAGER, 1, 1));
-      var0.addSpawn(MobCategory.MONSTER, var3, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 4, 4));
+      if (var3 > 0) {
+         var0.addSpawn(MobCategory.MONSTER, var3, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE_HORSE, 1, 1));
+      }
+
+      var0.addSpawn(MobCategory.MONSTER, var4, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 4, 4));
       var0.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.CREEPER, 4, 4));
       var0.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 4, 4));
       var0.addSpawn(MobCategory.MONSTER, 10, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 1, 4));

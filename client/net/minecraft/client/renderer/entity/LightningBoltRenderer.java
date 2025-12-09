@@ -2,15 +2,16 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LightningBoltRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public class LightningBoltRenderer extends EntityRenderer<LightningBolt, LightningBoltRenderState> {
    public LightningBoltRenderer(EntityRendererProvider.Context var1) {
@@ -31,7 +32,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
          var8 += (float)(var9.nextInt(11) - 5);
       }
 
-      var3.submitCustomGeometry(var2, RenderType.lightning(), (var5x, var6x) -> {
+      var3.submitCustomGeometry(var2, RenderTypes.lightning(), (var5x, var6x) -> {
          Matrix4f var7x = var5x.pose();
 
          for(int var8x = 0; var8x < 4; ++var8x) {
@@ -88,10 +89,10 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
    }
 
    private static void quad(Matrix4f var0, VertexConsumer var1, float var2, float var3, int var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, boolean var12, boolean var13, boolean var14, boolean var15) {
-      var1.addVertex(var0, var2 + (var12 ? var11 : -var11), (float)(var4 * 16), var3 + (var13 ? var11 : -var11)).setColor(var7, var8, var9, 0.3F);
-      var1.addVertex(var0, var5 + (var12 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var13 ? var10 : -var10)).setColor(var7, var8, var9, 0.3F);
-      var1.addVertex(var0, var5 + (var14 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var15 ? var10 : -var10)).setColor(var7, var8, var9, 0.3F);
-      var1.addVertex(var0, var2 + (var14 ? var11 : -var11), (float)(var4 * 16), var3 + (var15 ? var11 : -var11)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex((Matrix4fc)var0, var2 + (var12 ? var11 : -var11), (float)(var4 * 16), var3 + (var13 ? var11 : -var11)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex((Matrix4fc)var0, var5 + (var12 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var13 ? var10 : -var10)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex((Matrix4fc)var0, var5 + (var14 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var15 ? var10 : -var10)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex((Matrix4fc)var0, var2 + (var14 ? var11 : -var11), (float)(var4 * 16), var3 + (var15 ? var11 : -var11)).setColor(var7, var8, var9, 0.3F);
    }
 
    public LightningBoltRenderState createRenderState() {

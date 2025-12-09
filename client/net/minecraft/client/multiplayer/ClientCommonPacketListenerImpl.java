@@ -17,13 +17,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
@@ -70,9 +68,11 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
 import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class ClientCommonPacketListenerImpl implements ClientCommonPacketListener {
@@ -80,16 +80,13 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    private static final Logger LOGGER = LogUtils.getLogger();
    protected final Minecraft minecraft;
    protected final Connection connection;
-   @Nullable
-   protected final ServerData serverData;
-   @Nullable
-   protected String serverBrand;
+   protected final @Nullable ServerData serverData;
+   protected @Nullable String serverBrand;
    protected final WorldSessionTelemetryManager telemetryManager;
-   @Nullable
-   protected final Screen postDisconnectScreen;
+   protected final @Nullable Screen postDisconnectScreen;
    protected boolean isTransferring;
    private final List<DeferredPacket> deferredPackets = new ArrayList();
-   protected final Map<ResourceLocation, byte[]> serverCookies;
+   protected final Map<Identifier, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
    private ServerLinks serverLinks;
    protected final Map<UUID, PlayerInfo> seenPlayers;
@@ -199,8 +196,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       return (Component)(var1 == null ? var0 : Component.translatable("multiplayer.texturePrompt.serverPrompt", var0, var1));
    }
 
-   @Nullable
-   private static URL parseResourcePackUrl(String var0) {
+   private static @Nullable URL parseResourcePackUrl(String var0) {
       try {
          URL var1 = new URL(var0);
          String var2 = var1.getProtocol();
@@ -373,8 +369,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       return this.serverData != null && this.serverData.isRealm() ? new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1, CommonComponents.GUI_BACK) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1);
    }
 
-   @Nullable
-   public String serverBrand() {
+   public @Nullable String serverBrand() {
       return this.serverBrand;
    }
 
@@ -409,10 +404,9 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    class PackConfirmScreen extends ConfirmScreen {
       private final List<PendingRequest> requests;
-      @Nullable
-      private final Screen parentScreen;
+      private final @Nullable Screen parentScreen;
 
-      PackConfirmScreen(final Minecraft var2, @Nullable final Screen var3, final List<PendingRequest> var4, final boolean var5, @Nullable final Component var6) {
+      PackConfirmScreen(final @Nullable Minecraft var2, final Screen var3, final List<PendingRequest> var4, final @Nullable boolean var5, final Component var6) {
          super((var5x) -> {
             var2.setScreen(var3);
             DownloadedPackSource var6 = var2.getDownloadedPackSource();
@@ -477,7 +471,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          ClientCommonPacketListenerImpl.this.showDialog(var1, this, var2);
       }
 
-      public void sendCustomAction(ResourceLocation var1, Optional<Tag> var2) {
+      public void sendCustomAction(Identifier var1, Optional<Tag> var2) {
          ClientCommonPacketListenerImpl.this.send(new ServerboundCustomClickActionPacket(var1, var2));
       }
 

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.reporting;
 
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.chat.ChatLog;
 import net.minecraft.client.multiplayer.chat.LoggedChatEvent;
@@ -11,17 +10,16 @@ import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.chat.SignedMessageLink;
+import org.jspecify.annotations.Nullable;
 
 public class ChatSelectionLogFiller {
    private final ChatLog log;
    private final ChatReportContextBuilder contextBuilder;
    private final Predicate<LoggedChatMessage.Player> canReport;
-   @Nullable
-   private SignedMessageLink previousLink = null;
+   private @Nullable SignedMessageLink previousLink = null;
    private int eventId;
    private int missedCount;
-   @Nullable
-   private PlayerChatMessage lastMessage;
+   private @Nullable PlayerChatMessage lastMessage;
 
    public ChatSelectionLogFiller(ReportingContext var1, Predicate<LoggedChatMessage.Player> var2) {
       super();

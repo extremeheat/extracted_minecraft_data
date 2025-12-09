@@ -5,13 +5,13 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RandomPos {
    private static final int RANDOM_POS_ATTEMPTS = 10;
@@ -27,16 +27,15 @@ public class RandomPos {
       return new BlockPos(var3, var4, var5);
    }
 
-   @Nullable
-   public static BlockPos generateRandomDirectionWithinRadians(RandomSource var0, int var1, int var2, int var3, double var4, double var6, double var8) {
-      double var10 = Mth.atan2(var6, var4) - 1.5707963705062866;
-      double var12 = var10 + (double)(2.0F * var0.nextFloat() - 1.0F) * var8;
-      double var14 = Math.sqrt(var0.nextDouble()) * (double)Mth.SQRT_OF_TWO * (double)var1;
-      double var16 = -var14 * Math.sin(var12);
-      double var18 = var14 * Math.cos(var12);
-      if (!(Math.abs(var16) > (double)var1) && !(Math.abs(var18) > (double)var1)) {
-         int var20 = var0.nextInt(2 * var2 + 1) - var2 + var3;
-         return BlockPos.containing(var16, (double)var20, var18);
+   public static @Nullable BlockPos generateRandomDirectionWithinRadians(RandomSource var0, double var1, double var3, int var5, int var6, double var7, double var9, double var11) {
+      double var13 = Mth.atan2(var9, var7) - 1.5707963705062866;
+      double var15 = var13 + (double)(2.0F * var0.nextFloat() - 1.0F) * var11;
+      double var17 = Mth.lerp(Math.sqrt(var0.nextDouble()), var1, var3) * (double)Mth.SQRT_OF_TWO;
+      double var19 = -var17 * Math.sin(var15);
+      double var21 = var17 * Math.cos(var15);
+      if (!(Math.abs(var19) > var3) && !(Math.abs(var21) > var3)) {
+         int var23 = var0.nextInt(2 * var5 + 1) - var5 + var6;
+         return BlockPos.containing(var19, (double)var23, var21);
       } else {
          return null;
       }
@@ -84,14 +83,12 @@ public class RandomPos {
       }
    }
 
-   @Nullable
-   public static Vec3 generateRandomPos(PathfinderMob var0, Supplier<BlockPos> var1) {
+   public static @Nullable Vec3 generateRandomPos(PathfinderMob var0, Supplier<@Nullable BlockPos> var1) {
       Objects.requireNonNull(var0);
       return generateRandomPos(var1, var0::getWalkTargetValue);
    }
 
-   @Nullable
-   public static Vec3 generateRandomPos(Supplier<BlockPos> var0, ToDoubleFunction<BlockPos> var1) {
+   public static @Nullable Vec3 generateRandomPos(Supplier<@Nullable BlockPos> var0, ToDoubleFunction<BlockPos> var1) {
       double var2 = -1.0 / 0.0;
       BlockPos var4 = null;
 
@@ -109,24 +106,24 @@ public class RandomPos {
       return var4 != null ? Vec3.atBottomCenterOf(var4) : null;
    }
 
-   public static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, RandomSource var2, BlockPos var3) {
-      int var4 = var3.getX();
-      int var5 = var3.getZ();
-      if (var0.hasHome() && var1 > 1) {
-         BlockPos var6 = var0.getHomePosition();
-         if (var0.getX() > (double)var6.getX()) {
-            var4 -= var2.nextInt(var1 / 2);
+   public static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, double var1, RandomSource var3, BlockPos var4) {
+      double var5 = (double)var4.getX();
+      double var7 = (double)var4.getZ();
+      if (var0.hasHome() && var1 > 1.0) {
+         BlockPos var9 = var0.getHomePosition();
+         if (var0.getX() > (double)var9.getX()) {
+            var5 -= var3.nextDouble() * var1 / 2.0;
          } else {
-            var4 += var2.nextInt(var1 / 2);
+            var5 += var3.nextDouble() * var1 / 2.0;
          }
 
-         if (var0.getZ() > (double)var6.getZ()) {
-            var5 -= var2.nextInt(var1 / 2);
+         if (var0.getZ() > (double)var9.getZ()) {
+            var7 -= var3.nextDouble() * var1 / 2.0;
          } else {
-            var5 += var2.nextInt(var1 / 2);
+            var7 += var3.nextDouble() * var1 / 2.0;
          }
       }
 
-      return BlockPos.containing((double)var4 + var0.getX(), (double)var3.getY() + var0.getY(), (double)var5 + var0.getZ());
+      return BlockPos.containing(var5 + var0.getX(), (double)var4.getY() + var0.getY(), var7 + var0.getZ());
    }
 }

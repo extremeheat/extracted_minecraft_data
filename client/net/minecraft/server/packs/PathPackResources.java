@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.util.FileUtil;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PathPackResources extends AbstractPackResources {
@@ -40,8 +40,7 @@ public class PathPackResources extends AbstractPackResources {
       this.root = var2;
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getRootResource(String... var1) {
+   public @Nullable IoSupplier<InputStream> getRootResource(String... var1) {
       FileUtil.validatePath(var1);
       Path var2 = FileUtil.resolvePath(this.root, List.of(var1));
       return Files.exists(var2, new LinkOption[0]) ? IoSupplier.create(var2) : null;
@@ -62,14 +61,12 @@ public class PathPackResources extends AbstractPackResources {
       }
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public @Nullable IoSupplier<InputStream> getResource(PackType var1, Identifier var2) {
       Path var3 = this.root.resolve(var1.getDirectory()).resolve(var2.getNamespace());
       return getResource(var2, var3);
    }
 
-   @Nullable
-   public static IoSupplier<InputStream> getResource(ResourceLocation var0, Path var1) {
+   public static @Nullable IoSupplier<InputStream> getResource(Identifier var0, Path var1) {
       return (IoSupplier)FileUtil.decomposePath(var0.getPath()).mapOrElse((var1x) -> {
          Path var2 = FileUtil.resolvePath(var1, var1x);
          return returnFileIfExists(var2);
@@ -79,8 +76,7 @@ public class PathPackResources extends AbstractPackResources {
       });
    }
 
-   @Nullable
-   private static IoSupplier<InputStream> returnFileIfExists(Path var0) {
+   private static @Nullable IoSupplier<InputStream> returnFileIfExists(Path var0) {
       return Files.exists(var0, new LinkOption[0]) && validatePath(var0) ? IoSupplier.create(var0) : null;
    }
 
@@ -100,7 +96,7 @@ public class PathPackResources extends AbstractPackResources {
          try {
             var5.forEach((var3x) -> {
                String var4 = PATH_JOINER.join(var1.relativize(var3x));
-               ResourceLocation var5 = ResourceLocation.tryBuild(var0, var4);
+               Identifier var5 = Identifier.tryBuild(var0, var4);
                if (var5 == null) {
                   Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", var0, var4));
                } else {
@@ -148,7 +144,7 @@ public class PathPackResources extends AbstractPackResources {
          try {
             for(Path var6 : var4) {
                String var7 = var6.getFileName().toString();
-               if (ResourceLocation.isValidNamespace(var7)) {
+               if (Identifier.isValidNamespace(var7)) {
                   var2.add(var7);
                } else {
                   LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", var7, this.root);

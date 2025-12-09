@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -32,26 +30,26 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.FastBufferedInputStream;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DimensionDataStorage implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final SavedData.Context context;
    private final Map<SavedDataType<?>, Optional<SavedData>> cache = new HashMap();
    private final DataFixer fixerUpper;
    private final HolderLookup.Provider registries;
    private final Path dataFolder;
    private CompletableFuture<?> pendingWriteFuture = CompletableFuture.completedFuture((Object)null);
 
-   public DimensionDataStorage(SavedData.Context var1, Path var2, DataFixer var3, HolderLookup.Provider var4) {
+   public DimensionDataStorage(Path var1, DataFixer var2, HolderLookup.Provider var3) {
       super();
-      this.context = var1;
-      this.fixerUpper = var3;
-      this.dataFolder = var2;
-      this.registries = var4;
+      this.fixerUpper = var2;
+      this.dataFolder = var1;
+      this.registries = var3;
    }
 
    private Path getDataFile(String var1) {
@@ -63,14 +61,13 @@ public class DimensionDataStorage implements AutoCloseable {
       if (var2 != null) {
          return (T)var2;
       } else {
-         SavedData var3 = (SavedData)var1.constructor().apply(this.context);
+         SavedData var3 = (SavedData)var1.constructor().get();
          this.set(var1, var3);
          return (T)var3;
       }
    }
 
-   @Nullable
-   public <T extends SavedData> T get(SavedDataType<T> var1) {
+   public <T extends SavedData> @Nullable T get(SavedDataType<T> var1) {
       Optional var2 = (Optional)this.cache.get(var1);
       if (var2 == null) {
          var2 = Optional.ofNullable(this.readSavedData(var1));
@@ -80,14 +77,13 @@ public class DimensionDataStorage implements AutoCloseable {
       return (T)(var2.orElse((Object)null));
    }
 
-   @Nullable
-   private <T extends SavedData> T readSavedData(SavedDataType<T> var1) {
+   private <T extends SavedData> @Nullable T readSavedData(SavedDataType<T> var1) {
       try {
          Path var2 = this.getDataFile(var1.id());
          if (Files.exists(var2, new LinkOption[0])) {
             CompoundTag var3 = this.readTagFromDisk(var1.id(), var1.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
             RegistryOps var4 = this.registries.createSerializationContext(NbtOps.INSTANCE);
-            return (T)(((Codec)var1.codec().apply(this.context)).parse(var4, var3.get("data")).resultOrPartial((var1x) -> LOGGER.error("Failed to parse saved data for '{}': {}", var1, var1x)).orElse((Object)null));
+            return (T)(var1.codec().parse(var4, var3.get("data")).resultOrPartial((var1x) -> LOGGER.error("Failed to parse saved data for '{}': {}", var1, var1x)).orElse((Object)null));
          }
       } catch (Exception var5) {
          LOGGER.error("Error loading saved data: {}", var1, var5);
@@ -222,7 +218,7 @@ public class DimensionDataStorage implements AutoCloseable {
    }
 
    private <T extends SavedData> CompoundTag encodeUnchecked(SavedDataType<T> var1, SavedData var2, RegistryOps<Tag> var3) {
-      Codec var4 = (Codec)var1.codec().apply(this.context);
+      Codec var4 = var1.codec();
       CompoundTag var5 = new CompoundTag();
       var5.put("data", (Tag)var4.encodeStart(var3, var2).getOrThrow());
       NbtUtils.addCurrentDataVersion(var5);

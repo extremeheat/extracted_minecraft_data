@@ -34,9 +34,10 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkHeightAndBiomeFix extends DataFix {
    public static final String DATAFIXER_CONTEXT_TAG = "__context";
@@ -129,7 +130,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                   var6x = this.predictChunkStatusBeforeSurface(var6x, var14);
                }
 
-               return updateChunkTag(var6x, var9, var10.booleanValue(), "minecraft:noise".equals(var8), (Supplier)var15.getValue());
+               return updateChunkTag(var6x, var9, var10.booleanValue(), "minecraft:noise".equals(var8), (Supplier)var15.get());
             });
          }));
    }
@@ -193,7 +194,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
       return var0[var1] & 255;
    }
 
-   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, boolean var1, boolean var2, boolean var3, Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer> var4) {
+   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, boolean var1, boolean var2, boolean var3, Supplier<@Nullable ChunkProtoTickListFix.PoorMansPalettedContainer> var4) {
       var0 = var0.remove("Biomes");
       if (!var1) {
          return updateCarvingMasks(var0, 16, 0);

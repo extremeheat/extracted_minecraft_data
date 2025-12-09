@@ -1,43 +1,21 @@
 package net.minecraft.client.renderer.texture;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractTexture implements AutoCloseable {
-   @Nullable
-   protected GpuTexture texture;
-   @Nullable
-   protected GpuTextureView textureView;
+   protected @Nullable GpuTexture texture;
+   protected @Nullable GpuTextureView textureView;
+   protected GpuSampler sampler;
 
    public AbstractTexture() {
       super();
-   }
-
-   public void setClamp(boolean var1) {
-      if (this.texture == null) {
-         throw new IllegalStateException("Texture does not exist, can't change its clamp before something initializes it");
-      } else {
-         this.texture.setAddressMode(var1 ? AddressMode.CLAMP_TO_EDGE : AddressMode.REPEAT);
-      }
-   }
-
-   public void setFilter(boolean var1, boolean var2) {
-      if (this.texture == null) {
-         throw new IllegalStateException("Texture does not exist, can't get change its filter before something initializes it");
-      } else {
-         this.texture.setTextureFilter(var1 ? FilterMode.LINEAR : FilterMode.NEAREST, var2);
-      }
-   }
-
-   public void setUseMipmaps(boolean var1) {
-      if (this.texture == null) {
-         throw new IllegalStateException("Texture does not exist, can't get change its filter before something initializes it");
-      } else {
-         this.texture.setUseMipmaps(var1);
-      }
+      this.sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR, false);
    }
 
    public void close() {
@@ -67,5 +45,9 @@ public abstract class AbstractTexture implements AutoCloseable {
       } else {
          return this.textureView;
       }
+   }
+
+   public GpuSampler getSampler() {
+      return this.sampler;
    }
 }

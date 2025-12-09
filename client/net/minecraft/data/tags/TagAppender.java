@@ -34,12 +34,12 @@ public interface TagAppender<E, T> {
    static <T> TagAppender<ResourceKey<T>, T> forBuilder(final TagBuilder var0) {
       return new TagAppender<ResourceKey<T>, T>() {
          public TagAppender<ResourceKey<T>, T> add(ResourceKey<T> var1) {
-            var0.addElement(var1.location());
+            var0.addElement(var1.identifier());
             return this;
          }
 
          public TagAppender<ResourceKey<T>, T> addOptional(ResourceKey<T> var1) {
-            var0.addOptionalElement(var1.location());
+            var0.addOptionalElement(var1.identifier());
             return this;
          }
 

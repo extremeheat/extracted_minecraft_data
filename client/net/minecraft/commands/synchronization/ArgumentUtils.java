@@ -1,6 +1,7 @@
 package net.minecraft.commands.synchronization;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -9,6 +10,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,7 +18,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.server.commands.PermissionCheck;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.PermissionProviderCheck;
 import org.slf4j.Logger;
 
 public class ArgumentUtils {
@@ -95,8 +98,8 @@ public class ArgumentUtils {
       if (!var3.isEmpty()) {
          JsonObject var8 = new JsonObject();
 
-         for(CommandNode var14 : var3) {
-            var8.add(var14.getName(), serializeNodeToJson(var0, var14));
+         for(CommandNode var15 : var3) {
+            var8.add(var15.getName(), serializeNodeToJson(var0, var15));
          }
 
          var2.add("children", var8);
@@ -107,20 +110,21 @@ public class ArgumentUtils {
       }
 
       Predicate var12 = var1.getRequirement();
-      if (var12 instanceof PermissionCheck var9) {
-         var2.addProperty("required_level", var9.requiredLevel());
+      if (var12 instanceof PermissionProviderCheck var9) {
+         JsonElement var13 = (JsonElement)PermissionCheck.CODEC.encodeStart(JsonOps.INSTANCE, var9.test()).getOrThrow((var0x) -> new IllegalStateException("Failed to serialize requirement: " + var0x));
+         var2.add("permissions", var13);
       }
 
       if (var1.getRedirect() != null) {
          Collection var10 = var0.getPath(var1.getRedirect());
          if (!var10.isEmpty()) {
-            JsonArray var13 = new JsonArray();
+            JsonArray var14 = new JsonArray();
 
-            for(String var16 : var10) {
-               var13.add(var16);
+            for(String var17 : var10) {
+               var14.add(var17);
             }
 
-            var2.add("redirect", var13);
+            var2.add("redirect", var14);
          }
       }
 

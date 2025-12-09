@@ -7,16 +7,18 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MusicToastDisplayState;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 
 public class ToastManager {
    private static final int SLOT_COUNT = 5;
@@ -26,16 +28,12 @@ public class ToastManager {
    private final BitSet occupiedSlots = new BitSet(5);
    private final Deque<Toast> queued = Queues.newArrayDeque();
    private final Set<SoundEvent> playedToastSounds = new HashSet();
-   @Nullable
-   private ToastInstance<NowPlayingToast> nowPlayingToast;
+   private @Nullable ToastInstance<NowPlayingToast> nowPlayingToast;
 
    public ToastManager(Minecraft var1, Options var2) {
       super();
       this.minecraft = var1;
-      if ((Boolean)var2.showNowPlayingToast().get()) {
-         this.createNowPlayingToast();
-      }
-
+      this.initializeMusicToast((MusicToastDisplayState)var2.musicToast().get());
    }
 
    public void update() {
@@ -92,7 +90,7 @@ public class ToastManager {
             var4.render(var1, var2);
          }
 
-         if ((Boolean)this.minecraft.options.showNowPlayingToast().get() && this.nowPlayingToast != null && (this.minecraft.screen == null || !(this.minecraft.screen instanceof PauseScreen))) {
+         if (((MusicToastDisplayState)this.minecraft.options.musicToast().get()).renderToast() && this.nowPlayingToast != null && (this.minecraft.screen == null || !(this.minecraft.screen instanceof PauseScreen))) {
             this.nowPlayingToast.render(var1, var2);
          }
 
@@ -122,10 +120,9 @@ public class ToastManager {
       return 5 - this.occupiedSlots.cardinality();
    }
 
-   @Nullable
-   public <T extends Toast> T getToast(Class<? extends T> var1, Object var2) {
+   public <T extends Toast> @Nullable T getToast(Class<? extends T> var1, Object var2) {
       for(ToastInstance var4 : this.visibleToasts) {
-         if (var4 != null && var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
+         if (var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
             return (T)var4.getToast();
          }
       }
@@ -164,20 +161,38 @@ public class ToastManager {
 
    }
 
-   public void createNowPlayingToast() {
-      this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
-   }
-
-   public void removeNowPlayingToast() {
-      this.nowPlayingToast = null;
-   }
-
    public Minecraft getMinecraft() {
       return this.minecraft;
    }
 
    public double getNotificationDisplayTimeMultiplier() {
       return (Double)this.minecraft.options.notificationDisplayTime().get();
+   }
+
+   private void initializeMusicToast(MusicToastDisplayState var1) {
+      switch (var1) {
+         case PAUSE:
+         case PAUSE_AND_TOAST:
+            this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
+         default:
+      }
+   }
+
+   public void setMusicToastDisplayState(MusicToastDisplayState var1) {
+      switch (var1) {
+         case PAUSE:
+            this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
+            break;
+         case PAUSE_AND_TOAST:
+            this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
+            if (this.minecraft.options.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
+               ((NowPlayingToast)this.nowPlayingToast.getToast()).showToast(this.minecraft.options);
+            }
+            break;
+         case NEVER:
+            this.nowPlayingToast = null;
+      }
+
    }
 
    class ToastInstance<T extends Toast> {

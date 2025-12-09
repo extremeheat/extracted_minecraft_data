@@ -17,7 +17,7 @@ public class SaveAllCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-all").requires(Commands.hasPermission(4))).executes((var0x) -> saveAll((CommandSourceStack)var0x.getSource(), false))).then(Commands.literal("flush").executes((var0x) -> saveAll((CommandSourceStack)var0x.getSource(), true))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-all").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> saveAll((CommandSourceStack)var0x.getSource(), false))).then(Commands.literal("flush").executes((var0x) -> saveAll((CommandSourceStack)var0x.getSource(), true))));
    }
 
    private static int saveAll(CommandSourceStack var0, boolean var1) throws CommandSyntaxException {

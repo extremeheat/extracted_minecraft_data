@@ -1,9 +1,15 @@
 package net.minecraft.world.level;
 
+import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import java.util.Objects;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.slf4j.Logger;
 
 public final class LevelSettings {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private final String levelName;
    private final GameType gameType;
    private final boolean hardcore;
@@ -25,7 +31,14 @@ public final class LevelSettings {
 
    public static LevelSettings parse(Dynamic<?> var0, WorldDataConfiguration var1) {
       GameType var2 = GameType.byId(var0.get("GameType").asInt(0));
-      return new LevelSettings(var0.get("LevelName").asString(""), var2, var0.get("hardcore").asBoolean(false), (Difficulty)var0.get("Difficulty").asNumber().map((var0x) -> Difficulty.byId(var0x.byteValue())).result().orElse(Difficulty.NORMAL), var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE), new GameRules(var1.enabledFeatures(), var0.get("GameRules")), var1);
+      String var10002 = var0.get("LevelName").asString("");
+      boolean var10004 = var0.get("hardcore").asBoolean(false);
+      Difficulty var10005 = (Difficulty)var0.get("Difficulty").asNumber().map((var0x) -> Difficulty.byId(var0x.byteValue())).result().orElse(Difficulty.NORMAL);
+      boolean var10006 = var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE);
+      DataResult var10007 = GameRules.codec(var1.enabledFeatures()).parse(var0.get("game_rules").orElseEmptyMap());
+      Logger var10008 = LOGGER;
+      Objects.requireNonNull(var10008);
+      return new LevelSettings(var10002, var2, var10004, var10005, var10006, (GameRules)var10007.resultOrPartial(var10008::warn).orElseThrow(), var1);
    }
 
    public String levelName() {

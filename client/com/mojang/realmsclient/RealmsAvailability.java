@@ -8,18 +8,17 @@ import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
 import com.mojang.realmsclient.gui.screens.RealmsParentalConsentScreen;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsAvailability {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private static CompletableFuture<Result> future;
+   private static @Nullable CompletableFuture<Result> future;
 
    public RealmsAvailability() {
       super();
@@ -74,8 +73,7 @@ public class RealmsAvailability {
          this.exception = var2;
       }
 
-      @Nullable
-      public Screen createErrorScreen(Screen var1) {
+      public @Nullable Screen createErrorScreen(Screen var1) {
          Object var10000;
          switch (this.type.ordinal()) {
             case 0 -> var10000 = null;

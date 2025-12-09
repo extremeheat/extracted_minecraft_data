@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import org.jspecify.annotations.Nullable;
 
 public final class TextColor {
    private static final String CUSTOM_COLOR_PREFIX = "#";
@@ -18,8 +18,7 @@ public final class TextColor {
    private static final Map<ChatFormatting, TextColor> LEGACY_FORMAT_TO_COLOR;
    private static final Map<String, TextColor> NAMED_COLORS;
    private final int value;
-   @Nullable
-   private final String name;
+   private final @Nullable String name;
 
    private TextColor(int var1, String var2) {
       super();
@@ -64,8 +63,7 @@ public final class TextColor {
       return this.serialize();
    }
 
-   @Nullable
-   public static TextColor fromLegacyFormat(ChatFormatting var0) {
+   public static @Nullable TextColor fromLegacyFormat(ChatFormatting var0) {
       return (TextColor)LEGACY_FORMAT_TO_COLOR.get(var0);
    }
 

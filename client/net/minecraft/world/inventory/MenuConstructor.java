@@ -1,11 +1,10 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface MenuConstructor {
-   @Nullable
-   AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3);
+   @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3);
 }

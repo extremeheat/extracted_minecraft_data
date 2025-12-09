@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
@@ -18,9 +17,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.RandomSequence;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -51,11 +51,11 @@ public class LootTableProvider implements DataProvider {
       MappedRegistry var3 = new MappedRegistry(Registries.LOOT_TABLE, Lifecycle.experimental());
       Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
       this.subProviders.forEach((var3x) -> ((LootTableSubProvider)var3x.provider().apply(var2)).generate((var3xx, var4x) -> {
-            ResourceLocation var5 = sequenceIdForLootTable(var3xx);
-            ResourceLocation var6 = (ResourceLocation)var4.put(RandomSequence.seedForKey(var5), var5);
+            Identifier var5 = sequenceIdForLootTable(var3xx);
+            Identifier var6 = (Identifier)var4.put(RandomSequence.seedForKey(var5), var5);
             if (var6 != null) {
                String var10000 = String.valueOf(var6);
-               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var10000 + " and " + String.valueOf(var3xx.location()));
+               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var10000 + " and " + String.valueOf(var3xx.identifier()));
             }
 
             var4x.setRandomSequence(var5);
@@ -79,14 +79,14 @@ public class LootTableProvider implements DataProvider {
          return CompletableFuture.allOf((CompletableFuture[])var3.entrySet().stream().map((var3x) -> {
             ResourceKey var4 = (ResourceKey)var3x.getKey();
             LootTable var5 = (LootTable)var3x.getValue();
-            Path var6 = this.pathProvider.json(var4.location());
+            Path var6 = this.pathProvider.json(var4.identifier());
             return DataProvider.saveStable(var1, var2, LootTable.DIRECT_CODEC, var5, var6);
          }).toArray((var0) -> new CompletableFuture[var0]));
       }
    }
 
-   private static ResourceLocation sequenceIdForLootTable(ResourceKey<LootTable> var0) {
-      return var0.location();
+   private static Identifier sequenceIdForLootTable(ResourceKey<LootTable> var0) {
+      return var0.identifier();
    }
 
    public final String getName() {
@@ -110,7 +110,7 @@ public class LootTableProvider implements DataProvider {
       }
 
       public String description() {
-         return "Missing built-in table: " + String.valueOf(this.id.location());
+         return "Missing built-in table: " + String.valueOf(this.id.identifier());
       }
    }
 }

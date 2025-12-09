@@ -5,13 +5,13 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -36,6 +36,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class SpawnEggItem extends Item {
    private static final Map<EntityType<?>, SpawnEggItem> BY_ID = Maps.newIdentityHashMap();
@@ -63,7 +64,7 @@ public class SpawnEggItem extends Item {
             EntityType var13 = this.getType(var4);
             if (var13 == null) {
                return InteractionResult.FAIL;
-            } else if (!var3.getServer().isSpawnerBlockEnabled()) {
+            } else if (!var3.isSpawnerBlockEnabled()) {
                Player var11 = var1.getPlayer();
                if (var11 instanceof ServerPlayer) {
                   ServerPlayer var10 = (ServerPlayer)var11;
@@ -136,8 +137,7 @@ public class SpawnEggItem extends Item {
       return Objects.equals(this.getType(var1), var2);
    }
 
-   @Nullable
-   public static SpawnEggItem byId(@Nullable EntityType<?> var0) {
+   public static @Nullable SpawnEggItem byId(@Nullable EntityType<?> var0) {
       return (SpawnEggItem)BY_ID.get(var0);
    }
 
@@ -145,8 +145,7 @@ public class SpawnEggItem extends Item {
       return Iterables.unmodifiableIterable(BY_ID.values());
    }
 
-   @Nullable
-   public EntityType<?> getType(ItemStack var1) {
+   public @Nullable EntityType<?> getType(ItemStack var1) {
       TypedEntityData var2 = (TypedEntityData)var1.get(DataComponents.ENTITY_DATA);
       return var2 != null ? (EntityType)var2.type() : null;
    }
@@ -184,7 +183,7 @@ public class SpawnEggItem extends Item {
    }
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
-      if (var2 != null && var2.getPermissionLevel() >= 2) {
+      if (var2 != null && var2.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.ENTITY_DATA);
          if (var3 != null) {
             return ((EntityType)var3.type()).onlyOpCanSetNbt();

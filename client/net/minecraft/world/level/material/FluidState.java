@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public final class FluidState extends StateHolder<Fluid, FluidState> {
    public static final Codec<FluidState> CODEC;
@@ -100,8 +100,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return this.getType().createLegacyBlock(this);
    }
 
-   @Nullable
-   public ParticleOptions getDripParticle() {
+   public @Nullable ParticleOptions getDripParticle() {
       return this.getType().getDripParticle();
    }
 
@@ -129,8 +128,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return this.getType().getShape(this, var1, var2);
    }
 
-   @Nullable
-   public AABB getAABB(BlockGetter var1, BlockPos var2) {
+   public @Nullable AABB getAABB(BlockGetter var1, BlockPos var2) {
       return this.getType().getAABB(this, var1, var2);
    }
 

@@ -4,8 +4,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.UUID;
@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 
 public interface LoggedChatMessage extends LoggedChatEvent {
    static Player player(GameProfile var0, PlayerChatMessage var1, ChatTrustLevel var2) {
@@ -64,7 +65,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       }
 
       private Component getTimeComponent() {
-         LocalDateTime var1 = LocalDateTime.ofInstant(this.message.timeStamp(), ZoneOffset.systemDefault());
+         ZonedDateTime var1 = ZonedDateTime.ofInstant(this.message.timeStamp(), ZoneId.systemDefault());
          return Component.literal(var1.format(TIME_FORMATTER)).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
       }
 
@@ -81,7 +82,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       }
 
       static {
-         TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
+         TIME_FORMATTER = Util.localizedDateFormatter(FormatStyle.SHORT);
       }
    }
 

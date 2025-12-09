@@ -1,8 +1,6 @@
 package net.minecraft.network;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Queues;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -18,16 +16,9 @@ import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultEventLoopGroup;
-import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.flow.FlowControlHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
@@ -38,11 +29,8 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.BundlerInfo;
@@ -59,8 +47,11 @@ import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.status.ClientStatusPacketListener;
 import net.minecraft.network.protocol.status.StatusProtocols;
 import net.minecraft.server.RunningOnDifferentThreadException;
+import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.debugchart.LocalSampleLogger;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -72,21 +63,15 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static final Marker PACKET_MARKER = (Marker)Util.make(MarkerFactory.getMarker("NETWORK_PACKETS"), (var0) -> var0.add(ROOT_MARKER));
    public static final Marker PACKET_RECEIVED_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_RECEIVED"), (var0) -> var0.add(PACKET_MARKER));
    public static final Marker PACKET_SENT_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_SENT"), (var0) -> var0.add(PACKET_MARKER));
-   public static final Supplier<NioEventLoopGroup> NETWORK_WORKER_GROUP = Suppliers.memoize(() -> new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Client IO #%d").setDaemon(true).build()));
-   public static final Supplier<EpollEventLoopGroup> NETWORK_EPOLL_WORKER_GROUP = Suppliers.memoize(() -> new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Client IO #%d").setDaemon(true).build()));
-   public static final Supplier<DefaultEventLoopGroup> LOCAL_WORKER_GROUP = Suppliers.memoize(() -> new DefaultEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build()));
    private static final ProtocolInfo<ServerHandshakePacketListener> INITIAL_PROTOCOL;
    private final PacketFlow receiving;
    private volatile boolean sendLoginDisconnect = true;
    private final Queue<Consumer<Connection>> pendingActions = Queues.newConcurrentLinkedQueue();
    private Channel channel;
    private SocketAddress address;
-   @Nullable
-   private volatile PacketListener disconnectListener;
-   @Nullable
-   private volatile PacketListener packetListener;
-   @Nullable
-   private DisconnectionDetails disconnectionDetails;
+   private volatile @Nullable PacketListener disconnectListener;
+   private volatile @Nullable PacketListener packetListener;
+   private @Nullable DisconnectionDetails disconnectionDetails;
    private boolean encrypted;
    private boolean disconnectionHandled;
    private int receivedPackets;
@@ -95,10 +80,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private float averageSentPackets;
    private int tickCount;
    private boolean handlingFault;
-   @Nullable
-   private volatile DisconnectionDetails delayedDisconnect;
-   @Nullable
-   BandwidthDebugMonitor bandwidthDebugMonitor;
+   private volatile @Nullable DisconnectionDetails delayedDisconnect;
+   @Nullable BandwidthDebugMonitor bandwidthDebugMonitor;
 
    public Connection(PacketFlow var1) {
       super();
@@ -435,7 +418,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       return this.receiving.getOpposite();
    }
 
-   public static Connection connectToServer(InetSocketAddress var0, boolean var1, @Nullable LocalSampleLogger var2) {
+   public static Connection connectToServer(InetSocketAddress var0, EventLoopGroupHolder var1, @Nullable LocalSampleLogger var2) {
       Connection var3 = new Connection(PacketFlow.CLIENTBOUND);
       if (var2 != null) {
          var3.setBandwidthLogger(var2);
@@ -446,18 +429,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       return var3;
    }
 
-   public static ChannelFuture connect(InetSocketAddress var0, boolean var1, final Connection var2) {
-      Class var3;
-      EventLoopGroup var4;
-      if (Epoll.isAvailable() && var1) {
-         var3 = EpollSocketChannel.class;
-         var4 = (EventLoopGroup)NETWORK_EPOLL_WORKER_GROUP.get();
-      } else {
-         var3 = NioSocketChannel.class;
-         var4 = (EventLoopGroup)NETWORK_WORKER_GROUP.get();
-      }
-
-      return ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group(var4)).handler(new ChannelInitializer<Channel>() {
+   public static ChannelFuture connect(InetSocketAddress var0, EventLoopGroupHolder var1, final Connection var2) {
+      return ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group(var1.eventLoopGroup())).handler(new ChannelInitializer<Channel>() {
          protected void initChannel(Channel var1) {
             try {
                var1.config().setOption(ChannelOption.TCP_NODELAY, true);
@@ -468,7 +441,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             Connection.configureSerialization(var2x, PacketFlow.CLIENTBOUND, false, var2.bandwidthDebugMonitor);
             var2.configurePacketHandler(var2x);
          }
-      })).channel(var3)).connect(var0.getAddress(), var0.getPort());
+      })).channel(var1.channelCls())).connect(var0.getAddress(), var0.getPort());
    }
 
    private static String outboundHandlerName(boolean var0) {
@@ -512,13 +485,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public static Connection connectToLocalServer(SocketAddress var0) {
       final Connection var1 = new Connection(PacketFlow.CLIENTBOUND);
-      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)LOCAL_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>() {
+      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group(EventLoopGroupHolder.local().eventLoopGroup())).handler(new ChannelInitializer<Channel>() {
          protected void initChannel(Channel var1x) {
             ChannelPipeline var2 = var1x.pipeline();
             Connection.configureInMemoryPipeline(var2, PacketFlow.CLIENTBOUND);
             var1.configurePacketHandler(var2);
          }
-      })).channel(LocalChannel.class)).connect(var0).syncUninterruptibly();
+      })).channel(EventLoopGroupHolder.local().channelCls())).connect(var0).syncUninterruptibly();
       return var1;
    }
 
@@ -540,13 +513,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       return this.channel == null;
    }
 
-   @Nullable
-   public PacketListener getPacketListener() {
+   public @Nullable PacketListener getPacketListener() {
       return this.packetListener;
    }
 
-   @Nullable
-   public DisconnectionDetails getDisconnectionDetails() {
+   public @Nullable DisconnectionDetails getDisconnectionDetails() {
       return this.disconnectionDetails;
    }
 

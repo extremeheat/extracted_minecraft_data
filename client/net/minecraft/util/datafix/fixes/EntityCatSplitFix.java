@@ -16,7 +16,7 @@ public class EntityCatSplitFix extends SimpleEntityRenameFix {
          if (var3 == 0) {
             String var4 = var2.get("Owner").asString("");
             String var5 = var2.get("OwnerUUID").asString("");
-            if (var4.length() > 0 || var5.length() > 0) {
+            if (!var4.isEmpty() || !var5.isEmpty()) {
                var2.set("Trusting", var2.createBoolean(true));
             }
          } else if (var3 > 0 && var3 < 4) {

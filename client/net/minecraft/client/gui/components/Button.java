@@ -1,13 +1,14 @@
 package net.minecraft.client.gui.components;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 
-public class Button extends AbstractButton {
+public abstract class Button extends AbstractButton {
    public static final int SMALL_WIDTH = 120;
    public static final int DEFAULT_WIDTH = 150;
    public static final int BIG_WIDTH = 200;
@@ -39,11 +40,21 @@ public class Button extends AbstractButton {
       this.defaultButtonNarrationText(var1);
    }
 
+   public static class Plain extends Button {
+      protected Plain(int var1, int var2, int var3, int var4, Component var5, OnPress var6, CreateNarration var7) {
+         super(var1, var2, var3, var4, var5, var6, var7);
+      }
+
+      protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+         this.renderDefaultSprite(var1);
+         this.renderDefaultLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+      }
+   }
+
    public static class Builder {
       private final Component message;
       private final OnPress onPress;
-      @Nullable
-      private Tooltip tooltip;
+      private @Nullable Tooltip tooltip;
       private int x;
       private int y;
       private int width = 150;
@@ -89,8 +100,8 @@ public class Button extends AbstractButton {
       }
 
       public Button build() {
-         Button var1 = new Button(this.x, this.y, this.width, this.height, this.message, this.onPress, this.createNarration);
-         var1.setTooltip(this.tooltip);
+         Plain var1 = new Plain(this.x, this.y, this.width, this.height, this.message, this.onPress, this.createNarration);
+         ((Button)var1).setTooltip(this.tooltip);
          return var1;
       }
    }

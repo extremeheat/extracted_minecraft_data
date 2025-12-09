@@ -1,6 +1,10 @@
 package com.mojang.blaze3d.textures;
 
 import com.mojang.blaze3d.DontObfuscate;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @DontObfuscate
 public abstract class GpuTexture implements AutoCloseable {
@@ -14,21 +18,11 @@ public abstract class GpuTexture implements AutoCloseable {
    private final int height;
    private final int depthOrLayers;
    private final int mipLevels;
-   private final int usage;
+   private final @GpuTexture.Usage int usage;
    private final String label;
-   protected AddressMode addressModeU;
-   protected AddressMode addressModeV;
-   protected FilterMode minFilter;
-   protected FilterMode magFilter;
-   protected boolean useMipmaps;
 
-   public GpuTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+   public GpuTexture(@GpuTexture.Usage int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
       super();
-      this.addressModeU = AddressMode.REPEAT;
-      this.addressModeV = AddressMode.REPEAT;
-      this.minFilter = FilterMode.NEAREST;
-      this.magFilter = FilterMode.LINEAR;
-      this.useMipmaps = true;
       this.usage = var1;
       this.label = var2;
       this.format = var3;
@@ -58,31 +52,8 @@ public abstract class GpuTexture implements AutoCloseable {
       return this.format;
    }
 
-   public int usage() {
+   public @GpuTexture.Usage int usage() {
       return this.usage;
-   }
-
-   public void setAddressMode(AddressMode var1) {
-      this.setAddressMode(var1, var1);
-   }
-
-   public void setAddressMode(AddressMode var1, AddressMode var2) {
-      this.addressModeU = var1;
-      this.addressModeV = var2;
-   }
-
-   public void setTextureFilter(FilterMode var1, boolean var2) {
-      this.setTextureFilter(var1, var1, var2);
-   }
-
-   public void setTextureFilter(FilterMode var1, FilterMode var2, boolean var3) {
-      this.minFilter = var1;
-      this.magFilter = var2;
-      this.setUseMipmaps(var3);
-   }
-
-   public void setUseMipmaps(boolean var1) {
-      this.useMipmaps = var1;
    }
 
    public String getLabel() {
@@ -92,4 +63,9 @@ public abstract class GpuTexture implements AutoCloseable {
    public abstract void close();
 
    public abstract boolean isClosed();
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Usage {
+   }
 }

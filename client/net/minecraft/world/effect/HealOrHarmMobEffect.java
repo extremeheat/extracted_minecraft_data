@@ -1,9 +1,9 @@
 package net.minecraft.world.effect;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.jspecify.annotations.Nullable;
 
 class HealOrHarmMobEffect extends InstantenousMobEffect {
    private final boolean isHarm;

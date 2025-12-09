@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.RandomSource;
@@ -20,14 +19,14 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class ItemStackRenderState {
    ItemDisplayContext displayContext;
    private int activeLayerCount;
    private boolean animated;
    private boolean oversizedInGui;
-   @Nullable
-   private AABB cachedModelBoundingBox;
+   private @Nullable AABB cachedModelBoundingBox;
    private LayerRenderState[] layers;
 
    public ItemStackRenderState() {
@@ -90,8 +89,7 @@ public class ItemStackRenderState {
       return this.firstLayer().usesBlockLight;
    }
 
-   @Nullable
-   public TextureAtlasSprite pickParticleIcon(RandomSource var1) {
+   public @Nullable TextureAtlasSprite pickParticleIcon(RandomSource var1) {
       return this.activeLayerCount == 0 ? null : this.layers[var1.nextInt(this.activeLayerCount)].particleIcon;
    }
 
@@ -103,9 +101,9 @@ public class ItemStackRenderState {
          LayerRenderState var5 = this.layers[var4];
          var5.transform.apply(this.displayContext.leftHand(), var3);
          Matrix4f var6 = var3.pose();
-         Vector3f[] var7 = (Vector3f[])var5.extents.get();
+         Vector3fc[] var7 = (Vector3fc[])var5.extents.get();
 
-         for(Vector3f var11 : var7) {
+         for(Vector3fc var11 : var7) {
             var1.accept(var2.set(var11).mulPosition(var6));
          }
 
@@ -157,22 +155,18 @@ public class ItemStackRenderState {
    }
 
    public class LayerRenderState {
-      private static final Vector3f[] NO_EXTENTS = new Vector3f[0];
-      public static final Supplier<Vector3f[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
+      private static final Vector3fc[] NO_EXTENTS = new Vector3fc[0];
+      public static final Supplier<Vector3fc[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
       private final List<BakedQuad> quads = new ArrayList();
       boolean usesBlockLight;
-      @Nullable
-      TextureAtlasSprite particleIcon;
+      @Nullable TextureAtlasSprite particleIcon;
       ItemTransform transform;
-      @Nullable
-      private RenderType renderType;
+      private @Nullable RenderType renderType;
       private FoilType foilType;
       private int[] tintLayers;
-      @Nullable
-      private SpecialModelRenderer<Object> specialRenderer;
-      @Nullable
-      private Object argumentForSpecialRendering;
-      Supplier<Vector3f[]> extents;
+      private @Nullable SpecialModelRenderer<Object> specialRenderer;
+      private @Nullable Object argumentForSpecialRendering;
+      Supplier<Vector3fc[]> extents;
 
       public LayerRenderState() {
          super();
@@ -207,7 +201,7 @@ public class ItemStackRenderState {
          this.usesBlockLight = var1;
       }
 
-      public void setExtents(Supplier<Vector3f[]> var1) {
+      public void setExtents(Supplier<Vector3fc[]> var1) {
          this.extents = var1;
       }
 

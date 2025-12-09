@@ -1,13 +1,13 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -31,8 +31,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public class ShipwreckPieces {
    private static final int NUMBER_OF_BLOCKS_ALLOWED_IN_WORLD_GEN_REGION = 32;
    static final BlockPos PIVOT = new BlockPos(4, 0, 15);
-   private static final ResourceLocation[] STRUCTURE_LOCATION_BEACHED = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("shipwreck/with_mast"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_full"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_fronthalf"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_backhalf"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_full"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_fronthalf"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_backhalf"), ResourceLocation.withDefaultNamespace("shipwreck/with_mast_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_full_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_fronthalf_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_backhalf_degraded")};
-   private static final ResourceLocation[] STRUCTURE_LOCATION_OCEAN = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("shipwreck/with_mast"), ResourceLocation.withDefaultNamespace("shipwreck/upsidedown_full"), ResourceLocation.withDefaultNamespace("shipwreck/upsidedown_fronthalf"), ResourceLocation.withDefaultNamespace("shipwreck/upsidedown_backhalf"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_full"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_fronthalf"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_backhalf"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_full"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_fronthalf"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_backhalf"), ResourceLocation.withDefaultNamespace("shipwreck/with_mast_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/upsidedown_full_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/upsidedown_fronthalf_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/upsidedown_backhalf_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_full_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_fronthalf_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/sideways_backhalf_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_full_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_fronthalf_degraded"), ResourceLocation.withDefaultNamespace("shipwreck/rightsideup_backhalf_degraded")};
+   private static final Identifier[] STRUCTURE_LOCATION_BEACHED = new Identifier[]{Identifier.withDefaultNamespace("shipwreck/with_mast"), Identifier.withDefaultNamespace("shipwreck/sideways_full"), Identifier.withDefaultNamespace("shipwreck/sideways_fronthalf"), Identifier.withDefaultNamespace("shipwreck/sideways_backhalf"), Identifier.withDefaultNamespace("shipwreck/rightsideup_full"), Identifier.withDefaultNamespace("shipwreck/rightsideup_fronthalf"), Identifier.withDefaultNamespace("shipwreck/rightsideup_backhalf"), Identifier.withDefaultNamespace("shipwreck/with_mast_degraded"), Identifier.withDefaultNamespace("shipwreck/rightsideup_full_degraded"), Identifier.withDefaultNamespace("shipwreck/rightsideup_fronthalf_degraded"), Identifier.withDefaultNamespace("shipwreck/rightsideup_backhalf_degraded")};
+   private static final Identifier[] STRUCTURE_LOCATION_OCEAN = new Identifier[]{Identifier.withDefaultNamespace("shipwreck/with_mast"), Identifier.withDefaultNamespace("shipwreck/upsidedown_full"), Identifier.withDefaultNamespace("shipwreck/upsidedown_fronthalf"), Identifier.withDefaultNamespace("shipwreck/upsidedown_backhalf"), Identifier.withDefaultNamespace("shipwreck/sideways_full"), Identifier.withDefaultNamespace("shipwreck/sideways_fronthalf"), Identifier.withDefaultNamespace("shipwreck/sideways_backhalf"), Identifier.withDefaultNamespace("shipwreck/rightsideup_full"), Identifier.withDefaultNamespace("shipwreck/rightsideup_fronthalf"), Identifier.withDefaultNamespace("shipwreck/rightsideup_backhalf"), Identifier.withDefaultNamespace("shipwreck/with_mast_degraded"), Identifier.withDefaultNamespace("shipwreck/upsidedown_full_degraded"), Identifier.withDefaultNamespace("shipwreck/upsidedown_fronthalf_degraded"), Identifier.withDefaultNamespace("shipwreck/upsidedown_backhalf_degraded"), Identifier.withDefaultNamespace("shipwreck/sideways_full_degraded"), Identifier.withDefaultNamespace("shipwreck/sideways_fronthalf_degraded"), Identifier.withDefaultNamespace("shipwreck/sideways_backhalf_degraded"), Identifier.withDefaultNamespace("shipwreck/rightsideup_full_degraded"), Identifier.withDefaultNamespace("shipwreck/rightsideup_fronthalf_degraded"), Identifier.withDefaultNamespace("shipwreck/rightsideup_backhalf_degraded")};
    static final Map<String, ResourceKey<LootTable>> MARKERS_TO_LOOT;
 
    public ShipwreckPieces() {
@@ -40,7 +40,7 @@ public class ShipwreckPieces {
    }
 
    public static ShipwreckPiece addRandomPiece(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, boolean var5) {
-      ResourceLocation var6 = (ResourceLocation)Util.getRandom(var5 ? STRUCTURE_LOCATION_BEACHED : STRUCTURE_LOCATION_OCEAN, var4);
+      Identifier var6 = (Identifier)Util.getRandom(var5 ? STRUCTURE_LOCATION_BEACHED : STRUCTURE_LOCATION_OCEAN, var4);
       ShipwreckPiece var7 = new ShipwreckPiece(var0, var6, var1, var2, var5);
       var3.addPiece(var7);
       return var7;
@@ -53,7 +53,7 @@ public class ShipwreckPieces {
    public static class ShipwreckPiece extends TemplateStructurePiece {
       private final boolean isBeached;
 
-      public ShipwreckPiece(StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4, boolean var5) {
+      public ShipwreckPiece(StructureTemplateManager var1, Identifier var2, BlockPos var3, Rotation var4, boolean var5) {
          super(StructurePieceType.SHIPWRECK_PIECE, 0, var1, var2, var2.toString(), makeSettings(var4), var3);
          this.isBeached = var5;
       }

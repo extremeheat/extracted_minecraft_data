@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -11,9 +10,9 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -24,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeStorage implements SubmitNodeCollector {
    private final Int2ObjectAVLTreeMap<SubmitNodeCollection> submitsPerOrder = new Int2ObjectAVLTreeMap();
@@ -34,10 +34,6 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
    public SubmitNodeCollection order(int var1) {
       return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(var1, (var1x) -> new SubmitNodeCollection(this));
-   }
-
-   public void submitHitbox(PoseStack var1, EntityRenderState var2, HitboxesRenderState var3) {
-      this.order(0).submitHitbox(var1, var2, var3);
    }
 
    public void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3) {
@@ -60,11 +56,11 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitLeash(var1, var2);
    }
 
-   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
+   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10) {
       this.order(0).submitModel(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.CrumblingOverlay var10, int var11) {
+   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10, int var11) {
       this.order(0).submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
    }
 
@@ -158,15 +154,6 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record HitboxSubmit(Matrix4f pose, EntityRenderState entityRenderState, HitboxesRenderState hitboxesRenderState) {
-      public HitboxSubmit(Matrix4f var1, EntityRenderState var2, HitboxesRenderState var3) {
-         super();
-         this.pose = var1;
-         this.entityRenderState = var2;
-         this.hitboxesRenderState = var3;
-      }
-   }
-
    public static record LeashSubmit(Matrix4f pose, EntityRenderState.LeashState leashState) {
       public LeashSubmit(Matrix4f var1, EntityRenderState.LeashState var2) {
          super();
@@ -175,8 +162,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record ModelSubmit<S>(PoseStack.Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
-      public ModelSubmit(PoseStack.Pose var1, Model<? super S> var2, S var3, int var4, int var5, int var6, @Nullable TextureAtlasSprite var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
+   public static record ModelSubmit<S>(PoseStack.Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      public ModelSubmit(PoseStack.Pose var1, Model<? super S> var2, S var3, int var4, int var5, int var6, @Nullable TextureAtlasSprite var7, int var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9) {
          super();
          this.pose = var1;
          this.model = var2;
@@ -190,8 +177,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record ModelPartSubmit(PoseStack.Pose pose, ModelPart modelPart, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int outlineColor) {
-      public ModelPartSubmit(PoseStack.Pose var1, ModelPart var2, int var3, int var4, @Nullable TextureAtlasSprite var5, boolean var6, boolean var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9, int var10) {
+   public static record ModelPartSubmit(PoseStack.Pose pose, ModelPart modelPart, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, int outlineColor) {
+      public ModelPartSubmit(PoseStack.Pose var1, ModelPart var2, int var3, int var4, @Nullable TextureAtlasSprite var5, boolean var6, boolean var7, int var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9, int var10) {
          super();
          this.pose = var1;
          this.modelPart = var2;

@@ -5,7 +5,7 @@ import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.server.players.UserBanListEntry;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
 
 public class EmptyNotificationService implements NotificationService {
    public EmptyNotificationService() {
@@ -28,6 +28,9 @@ public class EmptyNotificationService implements NotificationService {
    }
 
    public void serverSaveCompleted() {
+   }
+
+   public void serverActivityOccured() {
    }
 
    public void playerOped(ServerOpListEntry var1) {
@@ -54,7 +57,7 @@ public class EmptyNotificationService implements NotificationService {
    public void playerUnbanned(NameAndId var1) {
    }
 
-   public void onGameRuleChanged(String var1, GameRules.Value<?> var2) {
+   public <T> void onGameRuleChanged(GameRule<T> var1, T var2) {
    }
 
    public void statusHeartbeat() {

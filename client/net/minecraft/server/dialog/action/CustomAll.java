@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record CustomAll(ResourceLocation id, Optional<CompoundTag> additions) implements Action {
-   public static final MapCodec<CustomAll> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(CustomAll::id), CompoundTag.CODEC.optionalFieldOf("additions").forGetter(CustomAll::additions)).apply(var0, CustomAll::new));
+public record CustomAll(Identifier id, Optional<CompoundTag> additions) implements Action {
+   public static final MapCodec<CustomAll> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(CustomAll::id), CompoundTag.CODEC.optionalFieldOf("additions").forGetter(CustomAll::additions)).apply(var0, CustomAll::new));
 
-   public CustomAll(ResourceLocation var1, Optional<CompoundTag> var2) {
+   public CustomAll(Identifier var1, Optional<CompoundTag> var2) {
       super();
       this.id = var1;
       this.additions = var2;

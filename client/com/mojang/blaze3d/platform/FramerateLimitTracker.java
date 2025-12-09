@@ -1,9 +1,9 @@
 package com.mojang.blaze3d.platform;
 
-import net.minecraft.Util;
 import net.minecraft.client.InactivityFpsLimit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.util.Util;
 
 public class FramerateLimitTracker {
    private static final int OUT_OF_LEVEL_MENU_LIMIT = 60;

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +13,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public interface EntityGetter {
    List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3);
@@ -77,8 +77,7 @@ public interface EntityGetter {
       }
    }
 
-   @Nullable
-   default Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
+   default @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
       double var10 = -1.0;
       Player var12 = null;
 
@@ -95,13 +94,11 @@ public interface EntityGetter {
       return var12;
    }
 
-   @Nullable
-   default Player getNearestPlayer(Entity var1, double var2) {
+   default @Nullable Player getNearestPlayer(Entity var1, double var2) {
       return this.getNearestPlayer(var1.getX(), var1.getY(), var1.getZ(), var2, false);
    }
 
-   @Nullable
-   default Player getNearestPlayer(double var1, double var3, double var5, double var7, boolean var9) {
+   default @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, boolean var9) {
       Predicate var10 = var9 ? EntitySelector.NO_CREATIVE_OR_SPECTATOR : EntitySelector.NO_SPECTATORS;
       return this.getNearestPlayer(var1, var3, var5, var7, var10);
    }
@@ -119,8 +116,7 @@ public interface EntityGetter {
       return false;
    }
 
-   @Nullable
-   default Player getPlayerByUUID(UUID var1) {
+   default @Nullable Player getPlayerByUUID(UUID var1) {
       for(int var2 = 0; var2 < this.players().size(); ++var2) {
          Player var3 = (Player)this.players().get(var2);
          if (var1.equals(var3.getUUID())) {

@@ -8,12 +8,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -65,7 +65,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       return var2;
    }
 
-   public static ModifierBuilder modifier(ResourceLocation var0, Holder<Attribute> var1, AttributeModifier.Operation var2, NumberProvider var3) {
+   public static ModifierBuilder modifier(Identifier var0, Holder<Attribute> var1, AttributeModifier.Operation var2, NumberProvider var3) {
       return new ModifierBuilder(var0, var1, var2, var3);
    }
 
@@ -74,13 +74,13 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
    }
 
    public static class ModifierBuilder {
-      private final ResourceLocation id;
+      private final Identifier id;
       private final Holder<Attribute> attribute;
       private final AttributeModifier.Operation operation;
       private final NumberProvider amount;
       private final Set<EquipmentSlotGroup> slots = EnumSet.noneOf(EquipmentSlotGroup.class);
 
-      public ModifierBuilder(ResourceLocation var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4) {
+      public ModifierBuilder(Identifier var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4) {
          super();
          this.id = var1;
          this.attribute = var2;
@@ -131,8 +131,8 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       }
    }
 
-   static record Modifier(ResourceLocation id, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots) {
-      final ResourceLocation id;
+   static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots) {
+      final Identifier id;
       final Holder<Attribute> attribute;
       final AttributeModifier.Operation operation;
       final NumberProvider amount;
@@ -140,7 +140,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC;
       public static final Codec<Modifier> CODEC;
 
-      Modifier(ResourceLocation var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4, List<EquipmentSlotGroup> var5) {
+      Modifier(Identifier var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4, List<EquipmentSlotGroup> var5) {
          super();
          this.id = var1;
          this.attribute = var2;
@@ -151,7 +151,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
       static {
          SLOTS_CODEC = ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(EquipmentSlotGroup.CODEC));
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(var0, Modifier::new));
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(var0, Modifier::new));
       }
    }
 }

@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.goal;
 import com.mojang.datafixers.DataFixUtils;
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.world.entity.animal.AbstractSchoolingFish;
+import net.minecraft.world.entity.animal.fish.AbstractSchoolingFish;
 
 public class FollowFlockLeaderGoal extends Goal {
    private static final int INTERVAL_TICKS = 200;

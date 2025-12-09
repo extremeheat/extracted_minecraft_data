@@ -5,7 +5,6 @@ import com.mojang.realmsclient.dto.RealmsServer;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,14 +19,15 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
+import net.minecraft.server.network.EventLoopGroupHolder;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsConnect {
    static final Logger LOGGER = LogUtils.getLogger();
    final Screen onlineScreen;
    volatile boolean aborted;
-   @Nullable
-   Connection connection;
+   @Nullable Connection connection;
 
    public RealmsConnect(Screen var1) {
       super();
@@ -50,7 +50,7 @@ public class RealmsConnect {
                   return;
                }
 
-               RealmsConnect.this.connection = Connection.connectToServer(var6, var3.options.useNativeTransport(), var3.getDebugOverlay().getBandwidthLogger());
+               RealmsConnect.this.connection = Connection.connectToServer(var6, EventLoopGroupHolder.remote(var3.options.useNativeTransport()), var3.getDebugOverlay().getBandwidthLogger());
                if (RealmsConnect.this.aborted) {
                   return;
                }

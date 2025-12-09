@@ -16,9 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -28,11 +26,13 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class SculkSpreader {
    public static final int MAX_GROWTH_RATE_RADIUS = 24;
@@ -194,8 +194,7 @@ public class SculkSpreader {
       int charge;
       private int updateDelay;
       private int decayDelay;
-      @Nullable
-      private Set<Direction> facings;
+      private @Nullable Set<Direction> facings;
       private static final Codec<Set<Direction>> DIRECTION_SET;
       public static final Codec<ChargeCursor> CODEC;
 
@@ -228,8 +227,7 @@ public class SculkSpreader {
          return this.decayDelay;
       }
 
-      @Nullable
-      public Set<Direction> getFacingData() {
+      public @Nullable Set<Direction> getFacingData() {
          return this.facings;
       }
 
@@ -311,8 +309,7 @@ public class SculkSpreader {
          return Util.shuffledCopy(NON_CORNER_NEIGHBOURS, var0);
       }
 
-      @Nullable
-      private static BlockPos getValidMovementPos(LevelAccessor var0, BlockPos var1, RandomSource var2) {
+      private static @Nullable BlockPos getValidMovementPos(LevelAccessor var0, BlockPos var1, RandomSource var2) {
          BlockPos.MutableBlockPos var3 = var1.mutable();
          BlockPos.MutableBlockPos var4 = var1.mutable();
 

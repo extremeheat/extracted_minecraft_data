@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
@@ -25,7 +26,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -44,6 +44,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
+import org.jspecify.annotations.Nullable;
 
 public class CommandSuggestions {
    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("(\\s+)");
@@ -63,12 +64,9 @@ public class CommandSuggestions {
    private final List<FormattedCharSequence> commandUsage = Lists.newArrayList();
    private int commandUsagePosition;
    private int commandUsageWidth;
-   @Nullable
-   private ParseResults<ClientSuggestionProvider> currentParse;
-   @Nullable
-   private CompletableFuture<Suggestions> pendingSuggestions;
-   @Nullable
-   private SuggestionsList suggestions;
+   private @Nullable ParseResults<ClientSuggestionProvider> currentParse;
+   private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
+   private @Nullable SuggestionsList suggestions;
    private boolean allowSuggestions;
    boolean keepSuggestions;
    private boolean allowHiding = true;
@@ -297,13 +295,11 @@ public class CommandSuggestions {
       }
    }
 
-   @Nullable
-   private FormattedCharSequence formatChat(String var1, int var2) {
+   private @Nullable FormattedCharSequence formatChat(String var1, int var2) {
       return this.currentParse != null ? formatText(this.currentParse, var1, var2) : null;
    }
 
-   @Nullable
-   static String calculateSuggestionSuffix(String var0, String var1) {
+   static @Nullable String calculateSuggestionSuffix(String var0, String var1) {
       return var1.startsWith(var0) ? var1.substring(var0.length()) : null;
    }
 
@@ -461,6 +457,10 @@ public class CommandSuggestions {
             if (var15 != null) {
                var1.setTooltipForNextFrame(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
             }
+         }
+
+         if (this.rect.contains(var2, var3)) {
+            var1.requestCursor(CursorTypes.POINTING_HAND);
          }
 
       }

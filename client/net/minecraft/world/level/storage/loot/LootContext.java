@@ -5,9 +5,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.jspecify.annotations.Nullable;
 
 public class LootContext {
    private final LootParams params;
@@ -41,12 +41,11 @@ public class LootContext {
       return (T)this.params.contextMap().getOrThrow(var1);
    }
 
-   @Nullable
-   public <T> T getOptionalParameter(ContextKey<T> var1) {
+   public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
       return (T)this.params.contextMap().getOptional(var1);
    }
 
-   public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
+   public void addDynamicDrops(Identifier var1, Consumer<ItemStack> var2) {
       this.params.addDynamicDrops(var1, var2);
    }
 
@@ -92,8 +91,7 @@ public class LootContext {
 
    public static class Builder {
       private final LootParams params;
-      @Nullable
-      private RandomSource random;
+      private @Nullable RandomSource random;
 
       public Builder(LootParams var1) {
          super();
@@ -117,7 +115,7 @@ public class LootContext {
          return this.params.getLevel();
       }
 
-      public LootContext create(Optional<ResourceLocation> var1) {
+      public LootContext create(Optional<Identifier> var1) {
          ServerLevel var2 = this.getLevel();
          MinecraftServer var3 = var2.getServer();
          Optional var10000 = Optional.ofNullable(this.random).or(() -> {
@@ -130,7 +128,7 @@ public class LootContext {
       }
    }
 
-   public static enum EntityTarget implements StringRepresentable {
+   public static enum EntityTarget implements StringRepresentable, LootContextArg.SimpleGetter<Entity> {
       THIS("this", LootContextParams.THIS_ENTITY),
       ATTACKER("attacker", LootContextParams.ATTACKING_ENTITY),
       DIRECT_ATTACKER("direct_attacker", LootContextParams.DIRECT_ATTACKING_ENTITY),
@@ -147,7 +145,7 @@ public class LootContext {
          this.param = var4;
       }
 
-      public ContextKey<? extends Entity> getParam() {
+      public ContextKey<? extends Entity> contextParam() {
          return this.param;
       }
 
@@ -170,7 +168,7 @@ public class LootContext {
       }
    }
 
-   public static enum BlockEntityTarget implements StringRepresentable {
+   public static enum BlockEntityTarget implements StringRepresentable, LootContextArg.SimpleGetter<BlockEntity> {
       BLOCK_ENTITY("block_entity", LootContextParams.BLOCK_ENTITY);
 
       private final String name;
@@ -181,7 +179,7 @@ public class LootContext {
          this.param = var4;
       }
 
-      public ContextKey<? extends BlockEntity> getParam() {
+      public ContextKey<? extends BlockEntity> contextParam() {
          return this.param;
       }
 
@@ -195,7 +193,7 @@ public class LootContext {
       }
    }
 
-   public static enum ItemStackTarget implements StringRepresentable {
+   public static enum ItemStackTarget implements StringRepresentable, LootContextArg.SimpleGetter<ItemStack> {
       TOOL("tool", LootContextParams.TOOL);
 
       private final String name;
@@ -206,7 +204,7 @@ public class LootContext {
          this.param = var4;
       }
 
-      public ContextKey<? extends ItemStack> getParam() {
+      public ContextKey<? extends ItemStack> contextParam() {
          return this.param;
       }
 

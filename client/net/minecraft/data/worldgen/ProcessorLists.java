@@ -5,8 +5,8 @@ import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.Blocks;
@@ -79,7 +79,7 @@ public class ProcessorLists {
    }
 
    private static ResourceKey<StructureProcessorList> createKey(String var0) {
-      return ResourceKey.create(Registries.PROCESSOR_LIST, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.PROCESSOR_LIST, Identifier.withDefaultNamespace(var0));
    }
 
    private static void register(BootstrapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {

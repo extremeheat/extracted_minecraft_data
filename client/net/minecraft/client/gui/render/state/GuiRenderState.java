@@ -7,13 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix3x2f;
+import org.jspecify.annotations.Nullable;
 
 public class GuiRenderState {
    private static final int DEBUG_RECTANGLE_COLOR = 2000962815;
@@ -21,8 +21,7 @@ public class GuiRenderState {
    private int firstStratumAfterBlur = 2147483647;
    private Node current;
    private final Set<Object> itemModelIdentities = new HashSet();
-   @Nullable
-   private ScreenRectangle lastElementBounds;
+   private @Nullable ScreenRectangle lastElementBounds;
 
    public GuiRenderState() {
       super();
@@ -260,20 +259,13 @@ public class GuiRenderState {
    }
 
    static class Node {
-      @Nullable
-      public final Node parent;
-      @Nullable
-      public Node up;
-      @Nullable
-      public List<GuiElementRenderState> elementStates;
-      @Nullable
-      public List<GuiElementRenderState> glyphStates;
-      @Nullable
-      public List<GuiItemRenderState> itemStates;
-      @Nullable
-      public List<GuiTextRenderState> textStates;
-      @Nullable
-      public List<PictureInPictureRenderState> picturesInPictureStates;
+      public final @Nullable Node parent;
+      public @Nullable Node up;
+      public @Nullable List<GuiElementRenderState> elementStates;
+      public @Nullable List<GuiElementRenderState> glyphStates;
+      public @Nullable List<GuiItemRenderState> itemStates;
+      public @Nullable List<GuiTextRenderState> textStates;
+      public @Nullable List<PictureInPictureRenderState> picturesInPictureStates;
 
       Node(@Nullable Node var1) {
          super();

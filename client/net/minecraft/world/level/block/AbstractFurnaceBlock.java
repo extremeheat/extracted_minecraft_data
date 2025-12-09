@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
    public static final EnumProperty<Direction> FACING;
@@ -72,8 +72,7 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
       var1.add(FACING, LIT);
    }
 
-   @Nullable
-   protected static <T extends BlockEntity> BlockEntityTicker<T> createFurnaceTicker(Level var0, BlockEntityType<T> var1, BlockEntityType<? extends AbstractFurnaceBlockEntity> var2) {
+   protected static <T extends BlockEntity> @Nullable BlockEntityTicker<T> createFurnaceTicker(Level var0, BlockEntityType<T> var1, BlockEntityType<? extends AbstractFurnaceBlockEntity> var2) {
       BlockEntityTicker var10000;
       if (var0 instanceof ServerLevel var3) {
          var10000 = createTickerHelper(var1, var2, (var1x, var2x, var3x, var4) -> AbstractFurnaceBlockEntity.serverTick(var3, var2x, var3x, var4));

@@ -1,10 +1,10 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import org.jspecify.annotations.Nullable;
 
 public record ClientboundResetScorePacket(String owner, @Nullable String objectiveName) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundResetScorePacket>codec(ClientboundResetScorePacket::write, ClientboundResetScorePacket::new);

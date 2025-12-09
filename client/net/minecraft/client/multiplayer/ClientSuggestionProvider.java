@@ -14,38 +14,37 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.PermissionSource;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
-public class ClientSuggestionProvider implements PermissionSource, SharedSuggestionProvider {
+public class ClientSuggestionProvider implements SharedSuggestionProvider {
    private final ClientPacketListener connection;
    private final Minecraft minecraft;
    private int pendingSuggestionsId = -1;
-   @Nullable
-   private CompletableFuture<Suggestions> pendingSuggestionsFuture;
+   private @Nullable CompletableFuture<Suggestions> pendingSuggestionsFuture;
    private final Set<String> customCompletionSuggestions = new HashSet();
-   private final boolean allowsRestrictedCommands;
+   private final PermissionSet permissions;
 
-   public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2, boolean var3) {
+   public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2, PermissionSet var3) {
       super();
       this.connection = var1;
       this.minecraft = var2;
-      this.allowsRestrictedCommands = var3;
+      this.permissions = var3;
    }
 
    public Collection<String> getOnlinePlayerNames() {
@@ -76,16 +75,12 @@ public class ClientSuggestionProvider implements PermissionSource, SharedSuggest
       return this.connection.scoreboard().getTeamNames();
    }
 
-   public Stream<ResourceLocation> getAvailableSounds() {
+   public Stream<Identifier> getAvailableSounds() {
       return this.minecraft.getSoundManager().getAvailableSounds().stream();
    }
 
-   public boolean hasPermission(int var1) {
-      return this.allowsRestrictedCommands || var1 == 0;
-   }
-
-   public boolean allowsSelectors() {
-      return this.allowsRestrictedCommands;
+   public PermissionSet permissions() {
+      return this.permissions;
    }
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
@@ -170,9 +165,5 @@ public class ClientSuggestionProvider implements PermissionSource, SharedSuggest
             this.customCompletionSuggestions.addAll(var2);
       }
 
-   }
-
-   public boolean allowsRestrictedCommands() {
-      return this.allowsRestrictedCommands;
    }
 }

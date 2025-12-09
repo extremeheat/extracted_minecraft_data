@@ -7,11 +7,12 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -31,22 +32,21 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 
 public class ChatSelectionScreen extends Screen {
-   static final ResourceLocation CHECKMARK_SPRITE = ResourceLocation.withDefaultNamespace("icon/checkmark");
+   static final Identifier CHECKMARK_SPRITE = Identifier.withDefaultNamespace("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
    private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context");
-   @Nullable
-   private final Screen lastScreen;
+   private final @Nullable Screen lastScreen;
    private final ReportingContext reportingContext;
    private Button confirmSelectedButton;
    private MultiLineLabel contextInfoLabel;
-   @Nullable
-   private ChatSelectionList chatSelectionList;
+   private @Nullable ChatSelectionList chatSelectionList;
    final ChatReport.Builder report;
    private final Consumer<ChatReport.Builder> onSelected;
    private ChatSelectionLogFiller chatLogFiller;
@@ -95,18 +95,19 @@ public class ChatSelectionScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      ActiveTextCollector var5 = var1.textRenderer();
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
-      AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
-      int var6 = this.report.reportedMessages().size();
-      int var7 = var5.maxReportedMessageCount();
-      MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
-      var1.drawCenteredString(this.font, (Component)var8, this.width / 2, 26, -1);
-      int var9 = this.chatSelectionList.getFooterTop();
+      AbuseReportLimits var6 = this.reportingContext.sender().reportLimits();
+      int var7 = this.report.reportedMessages().size();
+      int var8 = var6.maxReportedMessageCount();
+      MutableComponent var9 = Component.translatable("gui.chatSelection.selected", var7, var8);
+      var1.drawCenteredString(this.font, (Component)var9, this.width / 2, 26, -1);
+      int var10 = this.chatSelectionList.getFooterTop();
       MultiLineLabel var10000 = this.contextInfoLabel;
-      MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
-      int var10003 = this.width / 2;
+      TextAlignment var10001 = TextAlignment.CENTER;
+      int var10002 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var10000.render(var1, var10002, var10003, var9, 9, true, -1);
+      var10000.visitLines(var10001, var10002, var10, 9, var5);
    }
 
    public void onClose() {
@@ -119,8 +120,7 @@ public class ChatSelectionScreen extends Screen {
 
    public class ChatSelectionList extends ObjectSelectionList<Entry> implements ChatSelectionLogFiller.Output {
       public static final int ITEM_HEIGHT = 16;
-      @Nullable
-      private Heading previousHeading;
+      private @Nullable Heading previousHeading;
 
       public ChatSelectionList(final Minecraft var2, final int var3) {
          super(var2, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - var3 - 80, 40, 16);
@@ -191,8 +191,7 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      @Nullable
-      protected Entry nextEntry(ScreenDirection var1) {
+      protected @Nullable Entry nextEntry(ScreenDirection var1) {
          return (Entry)this.nextEntry(var1, Entry::canSelect);
       }
 
@@ -217,8 +216,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       // $FF: synthetic method
-      @Nullable
-      protected AbstractSelectionList.Entry nextEntry(final ScreenDirection var1) {
+      protected AbstractSelectionList.@Nullable Entry nextEntry(final ScreenDirection var1) {
          return this.nextEntry(var1);
       }
 
@@ -268,16 +266,13 @@ public class ChatSelectionScreen extends Screen {
          private final int chatId;
          private final FormattedText text;
          private final Component narration;
-         @Nullable
-         private final List<FormattedCharSequence> hoverText;
-         @Nullable
-         private final GuiMessageTag.Icon tagIcon;
-         @Nullable
-         private final List<FormattedCharSequence> tagHoverText;
+         private final @Nullable List<FormattedCharSequence> hoverText;
+         private final GuiMessageTag.@Nullable Icon tagIcon;
+         private final @Nullable List<FormattedCharSequence> tagHoverText;
          private final boolean canReport;
          private final boolean playerMessage;
 
-         public MessageEntry(final int var2, final Component var3, final Component var4, @Nullable final GuiMessageTag var5, final boolean var6, final boolean var7) {
+         public MessageEntry(final int var2, final Component var3, final @Nullable Component var4, final GuiMessageTag var5, final boolean var6, final boolean var7) {
             super();
             this.chatId = var2;
             this.tagIcon = (GuiMessageTag.Icon)Optionull.map(var5, GuiMessageTag::icon);
@@ -328,7 +323,7 @@ public class ChatSelectionScreen extends Screen {
 
          private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
          }
 
          private int getMaximumTextWidth() {

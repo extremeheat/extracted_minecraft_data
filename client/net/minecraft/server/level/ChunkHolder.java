@@ -8,14 +8,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkHolder extends GenerationChunkHolder {
    public static final ChunkResult<LevelChunk> UNLOADED_LEVEL_CHUNK = ChunkResult.error("Unloaded level chunk");
@@ -39,7 +39,7 @@ public class ChunkHolder extends GenerationChunkHolder {
    private int ticketLevel;
    private int queueLevel;
    private boolean hasChangedSections;
-   private final ShortSet[] changedBlocksPerSection;
+   private final @Nullable ShortSet[] changedBlocksPerSection;
    private final BitSet blockChangedLightSectionFilter;
    private final BitSet skyChangedLightSectionFilter;
    private final LevelLightEngine lightEngine;
@@ -83,13 +83,11 @@ public class ChunkHolder extends GenerationChunkHolder {
       return this.fullChunkFuture;
    }
 
-   @Nullable
-   public LevelChunk getTickingChunk() {
+   public @Nullable LevelChunk getTickingChunk() {
       return (LevelChunk)((ChunkResult)this.getTickingChunkFuture().getNow(UNLOADED_LEVEL_CHUNK)).orElse((Object)null);
    }
 
-   @Nullable
-   public LevelChunk getChunkToSend() {
+   public @Nullable LevelChunk getChunkToSend() {
       return !this.sendSync.isDone() ? null : this.getTickingChunk();
    }
 
@@ -130,12 +128,14 @@ public class ChunkHolder extends GenerationChunkHolder {
       } else {
          boolean var3 = this.hasChangedSections;
          int var4 = this.levelHeightAccessor.getSectionIndex(var1.getY());
-         if (this.changedBlocksPerSection[var4] == null) {
+         Object var5 = this.changedBlocksPerSection[var4];
+         if (var5 == null) {
             this.hasChangedSections = true;
-            this.changedBlocksPerSection[var4] = new ShortOpenHashSet();
+            var5 = new ShortOpenHashSet();
+            this.changedBlocksPerSection[var4] = (ShortSet)var5;
          }
 
-         this.changedBlocksPerSection[var4].add(SectionPos.sectionRelativePos(var1));
+         ((ShortSet)var5).add(SectionPos.sectionRelativePos(var1));
          return !var3;
       }
    }

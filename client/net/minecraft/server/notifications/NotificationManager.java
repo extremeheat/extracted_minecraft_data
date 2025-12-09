@@ -7,7 +7,7 @@ import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.server.players.UserBanListEntry;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
 
 public class NotificationManager implements NotificationService {
    private final List<NotificationService> notificationServices = Lists.newArrayList();
@@ -44,6 +44,10 @@ public class NotificationManager implements NotificationService {
       this.notificationServices.forEach(NotificationService::serverSaveCompleted);
    }
 
+   public void serverActivityOccured() {
+      this.notificationServices.forEach(NotificationService::serverActivityOccured);
+   }
+
    public void playerOped(ServerOpListEntry var1) {
       this.notificationServices.forEach((var1x) -> var1x.playerOped(var1));
    }
@@ -76,7 +80,7 @@ public class NotificationManager implements NotificationService {
       this.notificationServices.forEach((var1x) -> var1x.playerUnbanned(var1));
    }
 
-   public void onGameRuleChanged(String var1, GameRules.Value<?> var2) {
+   public <T> void onGameRuleChanged(GameRule<T> var1, T var2) {
       this.notificationServices.forEach((var2x) -> var2x.onGameRuleChanged(var1, var2));
    }
 

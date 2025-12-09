@@ -9,14 +9,13 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DynamicTexture extends AbstractTexture implements Dumpable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private NativeImage pixels;
+   private @Nullable NativeImage pixels;
 
    public DynamicTexture(Supplier<String> var1, NativeImage var2) {
       super();
@@ -40,14 +39,14 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
    private void createTexture(Supplier<String> var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.texture = var2.createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
-      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = var2.createTextureView(this.texture);
    }
 
    private void createTexture(String var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.texture = var2.createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
-      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = var2.createTextureView(this.texture);
    }
 
@@ -60,8 +59,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
 
    }
 
-   @Nullable
-   public NativeImage getPixels() {
+   public @Nullable NativeImage getPixels() {
       return this.pixels;
    }
 
@@ -82,7 +80,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
       super.close();
    }
 
-   public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
+   public void dumpContents(Identifier var1, Path var2) throws IOException {
       if (this.pixels != null) {
          String var3 = var1.toDebugFileName() + ".png";
          Path var4 = var2.resolve(var3);

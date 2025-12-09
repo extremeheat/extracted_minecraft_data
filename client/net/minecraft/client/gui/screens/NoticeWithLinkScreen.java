@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import java.net.URI;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -11,6 +10,7 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 
 public class NoticeWithLinkScreen extends Screen {
    private static final Component SYMLINK_WORLD_TITLE;

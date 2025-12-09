@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 
 public class ZombieAttackGoal extends MeleeAttackGoal {
    private final Zombie zombie;

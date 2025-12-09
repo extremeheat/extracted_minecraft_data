@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class ChannelAccess {
    private final Set<ChannelHandle> channels = Sets.newIdentityHashSet();
@@ -65,8 +65,7 @@ public class ChannelAccess {
    }
 
    public class ChannelHandle {
-      @Nullable
-      Channel channel;
+      @Nullable Channel channel;
       private boolean stopped;
 
       public boolean isStopped() {

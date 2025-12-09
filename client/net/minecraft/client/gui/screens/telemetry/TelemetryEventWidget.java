@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -21,6 +20,7 @@ import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 
 public class TelemetryEventWidget extends AbstractTextAreaWidget {
    private static final int HEADER_HORIZONTAL_PADDING = 32;
@@ -30,8 +30,7 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
    private static final Component PROPERTY_TITLE;
    private final Font font;
    private Content content;
-   @Nullable
-   private DoubleConsumer onScrolledListener;
+   private @Nullable DoubleConsumer onScrolledListener;
 
    public TelemetryEventWidget(int var1, int var2, int var3, int var4, Font var5) {
       super(var1, var2, var3, var4, Component.empty());

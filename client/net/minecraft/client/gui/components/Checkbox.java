@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.Font;
@@ -12,15 +11,15 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 
 public class Checkbox extends AbstractButton {
-   private static final ResourceLocation CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_selected_highlighted");
-   private static final ResourceLocation CHECKBOX_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_selected");
-   private static final ResourceLocation CHECKBOX_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_highlighted");
-   private static final ResourceLocation CHECKBOX_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox");
-   private static final int TEXT_COLOR = -2039584;
+   private static final Identifier CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_selected_highlighted");
+   private static final Identifier CHECKBOX_SELECTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_selected");
+   private static final Identifier CHECKBOX_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_highlighted");
+   private static final Identifier CHECKBOX_SPRITE = Identifier.withDefaultNamespace("widget/checkbox");
    private static final int SPACING = 4;
    private static final int BOX_PADDING = 8;
    private boolean selected;
@@ -29,11 +28,18 @@ public class Checkbox extends AbstractButton {
 
    Checkbox(int var1, int var2, int var3, Component var4, Font var5, boolean var6, OnValueChange var7) {
       super(var1, var2, 0, 0, var4);
-      this.width = this.getAdjustedWidth(var3, var4, var5);
-      this.textWidget = (new MultiLineTextWidget(var4, var5)).setMaxWidth(this.width).setColor(-2039584);
+      this.textWidget = new MultiLineTextWidget(var4, var5);
+      this.textWidget.setMaxRows(2);
+      this.width = this.adjustWidth(var3, var5);
       this.height = this.getAdjustedHeight(var5);
       this.selected = var6;
       this.onValueChange = var7;
+   }
+
+   public int adjustWidth(int var1, Font var2) {
+      this.width = this.getAdjustedWidth(var1, this.getMessage(), var2);
+      this.textWidget.setMaxWidth(this.width);
+      return this.width;
    }
 
    private int getAdjustedWidth(int var1, Component var2, Font var3) {
@@ -70,18 +76,18 @@ public class Checkbox extends AbstractButton {
       var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.checkbox.usage.focused"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.focused.uncheck" : "narration.checkbox.usage.focused.check"));
          } else {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.checkbox.usage.hovered"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.hovered.uncheck" : "narration.checkbox.usage.hovered.check"));
          }
       }
 
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
       Font var6 = var5.font;
-      ResourceLocation var7;
+      Identifier var7;
       if (this.selected) {
          var7 = this.isFocused() ? CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE : CHECKBOX_SELECTED_SPRITE;
       } else {
@@ -93,7 +99,7 @@ public class Checkbox extends AbstractButton {
       int var9 = this.getX() + var8 + 4;
       int var10 = this.getY() + var8 / 2 - this.textWidget.getHeight() / 2;
       this.textWidget.setPosition(var9, var10);
-      this.textWidget.renderWidget(var1, var2, var3, var4);
+      this.textWidget.visitLines(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.notClickable(this.isHovered())));
    }
 
    public interface OnValueChange {
@@ -111,10 +117,8 @@ public class Checkbox extends AbstractButton {
       private int y = 0;
       private OnValueChange onValueChange;
       private boolean selected;
-      @Nullable
-      private OptionInstance<Boolean> option;
-      @Nullable
-      private Tooltip tooltip;
+      private @Nullable OptionInstance<Boolean> option;
+      private @Nullable Tooltip tooltip;
 
       Builder(Component var1, Font var2) {
          super();

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
@@ -9,22 +8,20 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.projectile.DragonFireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int FIREBALL_CHARGE_AMOUNT = 5;
    private int fireballCharge;
-   @Nullable
-   private Path currentPath;
-   @Nullable
-   private Vec3 targetLocation;
-   @Nullable
-   private LivingEntity attackTarget;
+   private @Nullable Path currentPath;
+   private @Nullable Vec3 targetLocation;
+   private @Nullable LivingEntity attackTarget;
    private boolean holdingPatternClockwise;
 
    public DragonStrafePlayerPhase(EnderDragon var1) {
@@ -56,7 +53,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
             if (this.dragon.hasLineOfSight(this.attackTarget)) {
                ++this.fireballCharge;
                Vec3 var29 = (new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ())).normalize();
-               Vec3 var7 = (new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))).normalize();
+               Vec3 var7 = (new Vec3((double)Mth.sin((double)(this.dragon.getYRot() * 0.017453292F)), 0.0, (double)(-Mth.cos((double)(this.dragon.getYRot() * 0.017453292F))))).normalize();
                float var30 = (float)var7.dot(var29);
                float var9 = (float)(Math.acos((double)var30) * 57.2957763671875);
                var9 += 0.5F;
@@ -175,8 +172,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
 
    }
 
-   @Nullable
-   public Vec3 getFlyTargetLocation() {
+   public @Nullable Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 

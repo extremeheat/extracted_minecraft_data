@@ -12,7 +12,6 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -33,10 +32,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import org.jspecify.annotations.Nullable;
 
 public class FunctionCommand {
    private static final DynamicCommandExceptionType ERROR_ARGUMENT_NOT_COMPOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.function.error.argument_not_compound", var0));
@@ -49,7 +50,7 @@ public class FunctionCommand {
       return SharedSuggestionProvider.suggestResource(var2.getFunctionNames(), var1);
    };
    static final Callbacks<CommandSourceStack> FULL_CONTEXT_CALLBACKS = new Callbacks<CommandSourceStack>() {
-      public void signalResult(CommandSourceStack var1, ResourceLocation var2, int var3) {
+      public void signalResult(CommandSourceStack var1, Identifier var2, int var3) {
          var1.sendSuccess(() -> Component.translatable("commands.function.result", Component.translationArg(var2), var3), true);
       }
    };
@@ -73,9 +74,8 @@ public class FunctionCommand {
             })));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
-         @Nullable
-         protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
+         protected @Nullable CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
             return null;
          }
       })).then(Commands.argument("arguments", CompoundTagArgument.compoundTag()).executes(new FunctionCustomExecutor() {
@@ -95,7 +95,7 @@ public class FunctionCommand {
    }
 
    public static CommandSourceStack modifySenderForExecution(CommandSourceStack var0) {
-      return var0.withSuppressedOutput().withMaximumPermission(2);
+      return var0.withSuppressedOutput().withMaximumPermission(LevelBasedPermissionSet.GAMEMASTER);
    }
 
    public static <T extends ExecutionCommandSource<T>> void queueFunctions(Collection<CommandFunction<T>> var0, @Nullable CompoundTag var1, T var2, T var3, ExecutionControl<T> var4, Callbacks<T> var5, ChainModifiers var6) throws CommandSyntaxException {
@@ -107,7 +107,7 @@ public class FunctionCommand {
 
    }
 
-   private static <T extends ExecutionCommandSource<T>> void instantiateAndQueueFunctions(@Nullable CompoundTag var0, ExecutionControl<T> var1, CommandDispatcher<T> var2, T var3, CommandFunction<T> var4, ResourceLocation var5, CommandResultCallback var6, boolean var7) throws CommandSyntaxException {
+   private static <T extends ExecutionCommandSource<T>> void instantiateAndQueueFunctions(@Nullable CompoundTag var0, ExecutionControl<T> var1, CommandDispatcher<T> var2, T var3, CommandFunction<T> var4, Identifier var5, CommandResultCallback var6, boolean var7) throws CommandSyntaxException {
       try {
          InstantiatedFunction var8 = var4.instantiate(var0, var2);
          var1.queueNext((new CallFunction(var8, var6, var7)).bind(var3));
@@ -116,7 +116,7 @@ public class FunctionCommand {
       }
    }
 
-   private static <T extends ExecutionCommandSource<T>> CommandResultCallback decorateOutputIfNeeded(T var0, Callbacks<T> var1, ResourceLocation var2, CommandResultCallback var3) {
+   private static <T extends ExecutionCommandSource<T>> CommandResultCallback decorateOutputIfNeeded(T var0, Callbacks<T> var1, Identifier var2, CommandResultCallback var3) {
       return var0.isSilent() ? var3 : (var4, var5) -> {
          var1.signalResult(var0, var2, var5);
          var3.onResult(var4, var5);
@@ -129,7 +129,7 @@ public class FunctionCommand {
       CommandResultCallback var8 = CommandResultCallback.chain(var2.callback(), var4.currentFrame().returnValueConsumer());
 
       for(CommandFunction var10 : var0) {
-         ResourceLocation var11 = var10.id();
+         Identifier var11 = var10.id();
          CommandResultCallback var12 = decorateOutputIfNeeded(var2, var5, var11, var8);
          instantiateAndQueueFunctions(var1, var4, var6, var7, var10, var11, var12, true);
       }
@@ -144,12 +144,12 @@ public class FunctionCommand {
       if (!var0.isEmpty()) {
          if (var0.size() == 1) {
             CommandFunction var9 = (CommandFunction)var0.iterator().next();
-            ResourceLocation var10 = var9.id();
+            Identifier var10 = var9.id();
             CommandResultCallback var11 = decorateOutputIfNeeded(var2, var5, var10, var8);
             instantiateAndQueueFunctions(var1, var4, var6, var7, var9, var10, var11, false);
          } else if (var8 == CommandResultCallback.EMPTY) {
             for(CommandFunction var17 : var0) {
-               ResourceLocation var19 = var17.id();
+               Identifier var19 = var17.id();
                CommandResultCallback var12 = decorateOutputIfNeeded(var2, var5, var19, var8);
                instantiateAndQueueFunctions(var1, var4, var6, var7, var17, var19, var12, false);
             }
@@ -172,7 +172,7 @@ public class FunctionCommand {
             CommandResultCallback var18 = (var1x, var2x) -> var16.add(var2x);
 
             for(CommandFunction var21 : var0) {
-               ResourceLocation var13 = var21.id();
+               Identifier var13 = var21.id();
                CommandResultCallback var14 = decorateOutputIfNeeded(var2, var5, var13, var18);
                instantiateAndQueueFunctions(var1, var4, var6, var7, var21, var13, var14, false);
             }
@@ -193,15 +193,14 @@ public class FunctionCommand {
          super();
       }
 
-      @Nullable
-      protected abstract CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+      protected abstract @Nullable CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
 
       public void runGuarded(CommandSourceStack var1, ContextChain<CommandSourceStack> var2, ChainModifiers var3, ExecutionControl<CommandSourceStack> var4) throws CommandSyntaxException {
          CommandContext var5 = var2.getTopContext().copyFor(var1);
          Pair var6 = FunctionArgument.getFunctionCollection(var5, "name");
          Collection var7 = (Collection)var6.getSecond();
          if (var7.isEmpty()) {
-            throw FunctionCommand.ERROR_NO_FUNCTIONS.create(Component.translationArg((ResourceLocation)var6.getFirst()));
+            throw FunctionCommand.ERROR_NO_FUNCTIONS.create(Component.translationArg((Identifier)var6.getFirst()));
          } else {
             CompoundTag var8 = this.arguments(var5);
             CommandSourceStack var9 = FunctionCommand.modifySenderForExecution(var1);
@@ -222,6 +221,6 @@ public class FunctionCommand {
    }
 
    public interface Callbacks<T> {
-      void signalResult(T var1, ResourceLocation var2, int var3);
+      void signalResult(T var1, Identifier var2, int var3);
    }
 }

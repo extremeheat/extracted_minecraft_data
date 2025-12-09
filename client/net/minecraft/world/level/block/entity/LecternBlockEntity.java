@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -8,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
@@ -29,6 +29,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class LecternBlockEntity extends BlockEntity implements Clearable, MenuProvider {
    public static final int DATA_PAGE = 0;
@@ -184,7 +185,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       }
 
       Vec3 var5 = Vec3.atCenterOf(this.worldPosition);
-      return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, 2, var3, (Component)var4, var2.getServer(), var1);
+      return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, LevelBasedPermissionSet.GAMEMASTER, var3, (Component)var4, var2.getServer(), var1);
    }
 
    protected void loadAdditional(ValueInput var1) {

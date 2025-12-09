@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class AttributeMap {
    private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap();
@@ -44,8 +44,7 @@ public class AttributeMap {
       return (Collection)this.attributes.values().stream().filter((var0) -> ((Attribute)var0.getAttribute().value()).isClientSyncable()).collect(Collectors.toList());
    }
 
-   @Nullable
-   public AttributeInstance getInstance(Holder<Attribute> var1) {
+   public @Nullable AttributeInstance getInstance(Holder<Attribute> var1) {
       return (AttributeInstance)this.attributes.computeIfAbsent(var1, (var1x) -> this.supplier.createInstance(this::onAttributeModified, var1x));
    }
 
@@ -53,7 +52,7 @@ public class AttributeMap {
       return this.attributes.get(var1) != null || this.supplier.hasAttribute(var1);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, ResourceLocation var2) {
+   public boolean hasModifier(Holder<Attribute> var1, Identifier var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
    }
@@ -68,7 +67,7 @@ public class AttributeMap {
       return var2 != null ? var2.getBaseValue() : this.supplier.getBaseValue(var1);
    }
 
-   public double getModifierValue(Holder<Attribute> var1, ResourceLocation var2) {
+   public double getModifierValue(Holder<Attribute> var1, Identifier var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
    }

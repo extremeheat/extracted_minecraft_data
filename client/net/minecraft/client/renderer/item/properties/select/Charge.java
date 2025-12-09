@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.item.properties.select;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,6 +10,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import org.jspecify.annotations.Nullable;
 
 public record Charge() implements SelectItemModelProperty<CrossbowItem.ChargeType> {
    public static final Codec<CrossbowItem.ChargeType> VALUE_CODEC;
@@ -38,7 +38,7 @@ public record Charge() implements SelectItemModelProperty<CrossbowItem.ChargeTyp
    }
 
    // $FF: synthetic method
-   public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
+   public Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
       return this.get(var1, var2, var3, var4, var5);
    }
 

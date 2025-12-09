@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -172,7 +173,7 @@ public class SystemReport {
       this.putSpaceForPath(var1, () -> System.getProperty(var1));
    }
 
-   private void putSpaceForPath(String var1, Supplier<String> var2) {
+   private void putSpaceForPath(String var1, Supplier<@Nullable String> var2) {
       String var3 = "Space in storage for " + var1 + " (MiB)";
 
       try {

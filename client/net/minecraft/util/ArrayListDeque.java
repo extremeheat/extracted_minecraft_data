@@ -11,11 +11,11 @@ import java.util.SequencedCollection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T> {
    private static final int MIN_GROWTH = 1;
-   private Object[] contents;
+   private @Nullable Object[] contents;
    private int head;
    private int size;
 
@@ -208,13 +208,11 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       return new ReversedView(this);
    }
 
-   @Nullable
-   public T pollFirst() {
+   public @Nullable T pollFirst() {
       return (T)(this.size == 0 ? null : this.removeFirst());
    }
 
-   @Nullable
-   public T pollLast() {
+   public @Nullable T pollLast() {
       return (T)(this.size == 0 ? null : this.removeLast());
    }
 
@@ -234,13 +232,11 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       }
    }
 
-   @Nullable
-   public T peekFirst() {
+   public @Nullable T peekFirst() {
       return (T)(this.size == 0 ? null : this.getFirst());
    }
 
-   @Nullable
-   public T peekLast() {
+   public @Nullable T peekLast() {
       return (T)(this.size == 0 ? null : this.getLast());
    }
 
@@ -343,19 +339,19 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
          return this.source.offerFirst(var1);
       }
 
-      public T pollFirst() {
+      public @Nullable T pollFirst() {
          return this.source.pollLast();
       }
 
-      public T pollLast() {
+      public @Nullable T pollLast() {
          return this.source.pollFirst();
       }
 
-      public T peekFirst() {
+      public @Nullable T peekFirst() {
          return this.source.peekLast();
       }
 
-      public T peekLast() {
+      public @Nullable T peekLast() {
          return this.source.peekFirst();
       }
 

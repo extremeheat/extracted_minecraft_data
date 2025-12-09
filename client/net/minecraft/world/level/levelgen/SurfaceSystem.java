@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -54,7 +54,7 @@ public class SurfaceSystem {
       this.seaLevel = var3;
       this.noiseRandom = var4;
       this.clayBandsOffsetNoise = var1.getOrCreateNoise(Noises.CLAY_BANDS_OFFSET);
-      this.clayBands = generateBands(var4.fromHashOf(ResourceLocation.withDefaultNamespace("clay_bands")));
+      this.clayBands = generateBands(var4.fromHashOf(Identifier.withDefaultNamespace("clay_bands")));
       this.surfaceNoise = var1.getOrCreateNoise(Noises.SURFACE);
       this.surfaceSecondaryNoise = var1.getOrCreateNoise(Noises.SURFACE_SECONDARY);
       this.badlandsPillarNoise = var1.getOrCreateNoise(Noises.BADLANDS_PILLAR);

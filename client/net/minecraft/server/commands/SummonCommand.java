@@ -38,7 +38,7 @@ public class SummonCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("summon").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)Commands.argument("entity", ResourceArgument.resource(var1, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES)).executes((var0x) -> spawnEntity((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity"), ((CommandSourceStack)var0x.getSource()).getPosition(), new CompoundTag(), true))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((var0x) -> spawnEntity((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity"), Vec3Argument.getVec3(var0x, "pos"), new CompoundTag(), true))).then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((var0x) -> spawnEntity((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity"), Vec3Argument.getVec3(var0x, "pos"), CompoundTagArgument.getCompoundTag(var0x, "nbt"), false))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("summon").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("entity", ResourceArgument.resource(var1, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES)).executes((var0x) -> spawnEntity((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity"), ((CommandSourceStack)var0x.getSource()).getPosition(), new CompoundTag(), true))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((var0x) -> spawnEntity((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity"), Vec3Argument.getVec3(var0x, "pos"), new CompoundTag(), true))).then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((var0x) -> spawnEntity((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity"), Vec3Argument.getVec3(var0x, "pos"), CompoundTagArgument.getCompoundTag(var0x, "nbt"), false))))));
    }
 
    public static Entity createEntity(CommandSourceStack var0, Holder.Reference<EntityType<?>> var1, Vec3 var2, CompoundTag var3, boolean var4) throws CommandSyntaxException {
@@ -49,7 +49,7 @@ public class SummonCommand {
          throw ERROR_FAILED_PEACEFUL.create();
       } else {
          CompoundTag var6 = var3.copy();
-         var6.putString("id", var1.key().location().toString());
+         var6.putString("id", var1.key().identifier().toString());
          ServerLevel var7 = var0.getLevel();
          Entity var8 = EntityType.loadEntityRecursive((CompoundTag)var6, var7, EntitySpawnReason.COMMAND, (var1x) -> {
             var1x.snapTo(var2.x, var2.y, var2.z, var1x.getYRot(), var1x.getXRot());

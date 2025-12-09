@@ -1,20 +1,13 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
-import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
-import net.minecraft.client.renderer.entity.state.ServerHitboxesRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -25,9 +18,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.Leashable;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartBehavior;
-import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,6 +29,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class EntityRenderer<T extends Entity, S extends EntityRenderState> {
    private static final float SHADOW_POWER_FALLOFF_Y = 0.5F;
@@ -130,8 +124,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
    }
 
-   @Nullable
-   protected Component getNameTag(T var1) {
+   protected @Nullable Component getNameTag(T var1) {
       return var1.getDisplayName();
    }
 
@@ -153,7 +146,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    }
 
    public void extractRenderState(T var1, S var2, float var3) {
-      label97: {
+      label86: {
          var2.entityType = var1.getType();
          var2.x = Mth.lerp((double)var3, var1.xOld, var1.getX());
          var2.y = Mth.lerp((double)var3, var1.yOld, var1.getY());
@@ -175,7 +168,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
                      double var8 = Mth.lerp((double)var3, var4.yOld, var4.getY());
                      double var10 = Mth.lerp((double)var3, var4.zOld, var4.getZ());
                      var2.passengerOffset = var5.getCartLerpPosition(var3).subtract(new Vec3(var28, var8, var10));
-                     break label97;
+                     break label86;
                   }
                }
             }
@@ -195,7 +188,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          }
       }
 
-      label83: {
+      label72: {
          var2.isDiscrete = var1.isDiscrete();
          Level var24 = var1.level();
          if (var1 instanceof Leashable var25) {
@@ -228,7 +221,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
                   while(true) {
                      if (var21 >= var16) {
-                        break label83;
+                        break label72;
                      }
 
                      EntityRenderState.LeashState var22 = (EntityRenderState.LeashState)var2.leashStates.get(var21);
@@ -252,7 +245,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
                   var36.endBlockLight = var12;
                   var36.startSkyLight = var13;
                   var36.endSkyLight = var14;
-                  break label83;
+                  break label72;
                }
             }
          }
@@ -264,13 +257,6 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       Minecraft var26 = Minecraft.getInstance();
       boolean var30 = var26.shouldEntityAppearGlowing(var1);
       var2.outlineColor = var30 ? ARGB.opaque(var1.getTeamColor()) : 0;
-      if (var26.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES) && !var2.isInvisible && !var26.showOnlyReducedInfo()) {
-         this.extractHitboxes(var1, var2, var3);
-      } else {
-         var2.hitboxesRenderState = null;
-         var2.serverHitboxesRenderState = null;
-      }
-
       var2.lightCoords = this.getPackedLightCoords(var1, var3);
    }
 
@@ -338,52 +324,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       }
    }
 
-   private void extractHitboxes(T var1, S var2, float var3) {
-      var2.hitboxesRenderState = this.extractHitboxes(var1, var3, false);
-      if (SharedConstants.DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES) {
-         Entity var4 = getServerSideEntity(var1);
-         if (var4 != null) {
-            Vec3 var5 = var4.getDeltaMovement();
-            var2.serverHitboxesRenderState = new ServerHitboxesRenderState(false, var4.getX(), var4.getY(), var4.getZ(), var5.x, var5.y, var5.z, var4.getEyeHeight(), this.extractHitboxes(var4, 1.0F, true));
-         } else {
-            var2.serverHitboxesRenderState = new ServerHitboxesRenderState(true);
-         }
-      } else {
-         var2.serverHitboxesRenderState = null;
-      }
-
-   }
-
-   private HitboxesRenderState extractHitboxes(T var1, float var2, boolean var3) {
-      ImmutableList.Builder var4 = new ImmutableList.Builder();
-      AABB var5 = var1.getBoundingBox();
-      HitboxRenderState var6;
-      if (var3) {
-         var6 = new HitboxRenderState(var5.minX - var1.getX(), var5.minY - var1.getY(), var5.minZ - var1.getZ(), var5.maxX - var1.getX(), var5.maxY - var1.getY(), var5.maxZ - var1.getZ(), 0.0F, 1.0F, 0.0F);
-      } else {
-         var6 = new HitboxRenderState(var5.minX - var1.getX(), var5.minY - var1.getY(), var5.minZ - var1.getZ(), var5.maxX - var1.getX(), var5.maxY - var1.getY(), var5.maxZ - var1.getZ(), 1.0F, 1.0F, 1.0F);
-      }
-
-      var4.add(var6);
-      Entity var7 = var1.getVehicle();
-      if (var7 != null) {
-         float var8 = Math.min(var7.getBbWidth(), var1.getBbWidth()) / 2.0F;
-         float var9 = 0.0625F;
-         Vec3 var10 = var7.getPassengerRidingPosition(var1).subtract(var1.position());
-         HitboxRenderState var11 = new HitboxRenderState(var10.x - (double)var8, var10.y, var10.z - (double)var8, var10.x + (double)var8, var10.y + 0.0625, var10.z + (double)var8, 1.0F, 1.0F, 0.0F);
-         var4.add(var11);
-      }
-
-      this.extractAdditionalHitboxes(var1, var4, var2);
-      Vec3 var12 = var1.getViewVector(var2);
-      return new HitboxesRenderState(var12.x, var12.y, var12.z, var4.build());
-   }
-
-   protected void extractAdditionalHitboxes(T var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
-   }
-
-   @Nullable
-   private static Entity getServerSideEntity(Entity var0) {
+   private static @Nullable Entity getServerSideEntity(Entity var0) {
       IntegratedServer var1 = Minecraft.getInstance().getSingleplayerServer();
       if (var1 != null) {
          ServerLevel var2 = var1.getLevel(var0.level().dimension());

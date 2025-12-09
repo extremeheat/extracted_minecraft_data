@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -26,20 +25,19 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerWidget {
-   private static final ResourceLocation MENU_LIST_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_list_background.png");
-   private static final ResourceLocation INWORLD_MENU_LIST_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
+   private static final Identifier MENU_LIST_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/menu_list_background.png");
+   private static final Identifier INWORLD_MENU_LIST_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
    private static final int SEPARATOR_HEIGHT = 2;
    protected final Minecraft minecraft;
    protected final int defaultEntryHeight;
    private final List<E> children = new TrackedList();
    protected boolean centerListVertically = true;
-   @Nullable
-   private E selected;
-   @Nullable
-   private E hovered;
+   private @Nullable E selected;
+   private @Nullable E hovered;
 
    public AbstractSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
       super(0, var4, var2, var3, CommonComponents.EMPTY);
@@ -47,8 +45,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.defaultEntryHeight = var5;
    }
 
-   @Nullable
-   public E getSelected() {
+   public @Nullable E getSelected() {
       return this.selected;
    }
 
@@ -64,8 +61,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    }
 
-   @Nullable
-   public E getFocused() {
+   public @Nullable E getFocused() {
       return (E)(super.getFocused());
    }
 
@@ -171,8 +167,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return true;
    }
 
-   @Nullable
-   protected final E getEntryAtPosition(double var1, double var3) {
+   protected final @Nullable E getEntryAtPosition(double var1, double var3) {
       for(Entry var6 : this.children) {
          if (var6.isMouseOver(var1, var3)) {
             return (E)var6;
@@ -222,14 +217,14 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    protected void renderListSeparators(GuiGraphics var1) {
-      ResourceLocation var2 = this.minecraft.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-      ResourceLocation var3 = this.minecraft.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
+      Identifier var2 = this.minecraft.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
+      Identifier var3 = this.minecraft.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
       var1.blit(RenderPipelines.GUI_TEXTURED, var2, this.getX(), this.getY() - 2, 0.0F, 0.0F, this.getWidth(), 2, 32, 2);
       var1.blit(RenderPipelines.GUI_TEXTURED, var3, this.getX(), this.getBottom(), 0.0F, 0.0F, this.getWidth(), 2, 32, 2);
    }
 
    protected void renderListBackground(GuiGraphics var1) {
-      ResourceLocation var2 = this.minecraft.level == null ? MENU_LIST_BACKGROUND : INWORLD_MENU_LIST_BACKGROUND;
+      Identifier var2 = this.minecraft.level == null ? MENU_LIST_BACKGROUND : INWORLD_MENU_LIST_BACKGROUND;
       var1.blit(RenderPipelines.GUI_TEXTURED, var2, this.getX(), this.getY(), (float)this.getRight(), (float)(this.getBottom() + (int)this.scrollAmount()), this.getWidth(), this.getHeight(), 32, 32);
    }
 
@@ -309,18 +304,15 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    }
 
-   @Nullable
-   protected E nextEntry(ScreenDirection var1) {
+   protected @Nullable E nextEntry(ScreenDirection var1) {
       return (E)this.nextEntry(var1, (var0) -> true);
    }
 
-   @Nullable
-   protected E nextEntry(ScreenDirection var1, Predicate<E> var2) {
+   protected @Nullable E nextEntry(ScreenDirection var1, Predicate<E> var2) {
       return (E)this.nextEntry(var1, var2, this.getSelected());
    }
 
-   @Nullable
-   protected E nextEntry(ScreenDirection var1, Predicate<E> var2, @Nullable E var3) {
+   protected @Nullable E nextEntry(ScreenDirection var1, Predicate<E> var2, @Nullable E var3) {
       byte var10000;
       switch (var1) {
          case RIGHT:
@@ -428,8 +420,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    }
 
-   @Nullable
-   protected E getHovered() {
+   protected @Nullable E getHovered() {
       return this.hovered;
    }
 
@@ -449,8 +440,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    // $FF: synthetic method
-   @Nullable
-   public GuiEventListener getFocused() {
+   public @Nullable GuiEventListener getFocused() {
       return this.getFocused();
    }
 

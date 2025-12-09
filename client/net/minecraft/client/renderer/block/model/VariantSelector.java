@@ -6,10 +6,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public class VariantSelector {
    private static final Splitter COMMA_SPLITTER = Splitter.on(',');
@@ -52,8 +52,7 @@ public class VariantSelector {
       };
    }
 
-   @Nullable
-   private static <T extends Comparable<T>> T getValueHelper(Property<T> var0, String var1) {
+   private static <T extends Comparable<T>> @Nullable T getValueHelper(Property<T> var0, String var1) {
       return (T)(var0.getValue(var1).orElse((Object)null));
    }
 }

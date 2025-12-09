@@ -2,7 +2,8 @@ package net.minecraft.util.parsing.packrat;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public interface ErrorCollector<S> {
    void store(int var1, SuggestionSupplier<S> var2, Object var3);
@@ -26,7 +27,7 @@ public interface ErrorCollector<S> {
    }
 
    public static class LongestOnly<S> implements ErrorCollector<S> {
-      private MutableErrorEntry<S>[] entries = new MutableErrorEntry[16];
+      private @Nullable ErrorCollector.MutableErrorEntry<S>[] entries = new MutableErrorEntry[16];
       private int nextErrorEntry;
       private int lastCursor = -1;
 

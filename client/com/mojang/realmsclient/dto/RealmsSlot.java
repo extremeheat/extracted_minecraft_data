@@ -29,17 +29,12 @@ public final class RealmsSlot implements ReflectionBasedSerialization {
       return new RealmsSlot(var0, RealmsWorldOptions.createEmptyDefaults(), List.of(RealmsSetting.hardcoreSetting(false)));
    }
 
-   public RealmsSlot clone() {
-      return new RealmsSlot(this.slotId, this.options.clone(), new ArrayList(this.settings));
+   public RealmsSlot copy() {
+      return new RealmsSlot(this.slotId, this.options.copy(), new ArrayList(this.settings));
    }
 
    public boolean isHardcore() {
       return RealmsSetting.isHardcore(this.settings);
-   }
-
-   // $FF: synthetic method
-   public Object clone() throws CloneNotSupportedException {
-      return this.clone();
    }
 
    static class RealmsWorldOptionsJsonAdapter extends TypeAdapter<RealmsWorldOptions> {

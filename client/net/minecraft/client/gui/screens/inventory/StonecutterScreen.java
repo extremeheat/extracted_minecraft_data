@@ -1,12 +1,13 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextMap;
@@ -17,12 +18,12 @@ import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> {
-   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller");
-   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller_disabled");
-   private static final ResourceLocation RECIPE_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe_selected");
-   private static final ResourceLocation RECIPE_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe_highlighted");
-   private static final ResourceLocation RECIPE_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe");
-   private static final ResourceLocation BG_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/stonecutter.png");
+   private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/scroller");
+   private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/scroller_disabled");
+   private static final Identifier RECIPE_SELECTED_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/recipe_selected");
+   private static final Identifier RECIPE_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/recipe_highlighted");
+   private static final Identifier RECIPE_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/recipe");
+   private static final Identifier BG_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/stonecutter.png");
    private static final int SCROLLER_WIDTH = 12;
    private static final int SCROLLER_HEIGHT = 15;
    private static final int RECIPES_COLUMNS = 4;
@@ -53,13 +54,19 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       int var6 = this.topPos;
       var1.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int var7 = (int)(41.0F * this.scrollOffs);
-      ResourceLocation var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var5 + 119, var6 + 15 + var7, 12, 15);
-      int var9 = this.leftPos + 52;
-      int var10 = this.topPos + 14;
-      int var11 = this.startIndex + 12;
-      this.renderButtons(var1, var3, var4, var9, var10, var11);
-      this.renderRecipes(var1, var9, var10, var11);
+      Identifier var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      int var9 = var5 + 119;
+      int var10 = var6 + 15 + var7;
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8, var9, var10, 12, 15);
+      if (var3 >= var9 && var3 < var9 + 12 && var4 >= var10 && var4 < var10 + 15) {
+         var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      }
+
+      int var11 = this.leftPos + 52;
+      int var12 = this.topPos + 14;
+      int var13 = this.startIndex + 12;
+      this.renderButtons(var1, var3, var4, var11, var12, var13);
+      this.renderRecipes(var1, var11, var12, var13);
    }
 
    protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
@@ -90,7 +97,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var9 = var4 + var8 % 4 * 16;
          int var10 = var8 / 4;
          int var11 = var5 + var10 * 18 + 2;
-         ResourceLocation var12;
+         Identifier var12;
          if (var7 == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
             var12 = RECIPE_SELECTED_SPRITE;
          } else if (var2 >= var9 && var3 >= var11 && var2 < var9 + 16 && var3 < var11 + 18) {
@@ -99,7 +106,11 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             var12 = RECIPE_SPRITE;
          }
 
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var9, var11 - 1, 16, 18);
+         int var13 = var11 - 1;
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, var9, var13, 16, 18);
+         if (var2 >= var9 && var3 >= var13 && var2 < var9 + 16 && var3 < var13 + 18) {
+            var1.requestCursor(CursorTypes.POINTING_HAND);
+         }
       }
 
    }
@@ -120,7 +131,6 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      this.scrolling = false;
       if (this.displayRecipes) {
          int var3 = this.leftPos + 52;
          int var4 = this.topPos + 14;
@@ -158,6 +168,11 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       } else {
          return super.mouseDragged(var1, var2, var4);
       }
+   }
+
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      this.scrolling = false;
+      return super.mouseReleased(var1);
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {

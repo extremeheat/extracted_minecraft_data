@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class Armadillo extends Animal {
    public static final float BABY_SCALE = 0.6F;
@@ -71,8 +71,7 @@ public class Armadillo extends Animal {
       this.scuteTime = this.pickNextScuteDropTime();
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.ARMADILLO.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -129,7 +128,7 @@ public class Armadillo extends Animal {
       var2.push("armadilloActivityUpdate");
       ArmadilloAi.updateActivity(this);
       var2.pop();
-      if (this.isAlive() && !this.isBaby() && --this.scuteTime <= 0) {
+      if (this.isAlive() && --this.scuteTime <= 0 && this.shouldDropLoot(var1)) {
          if (this.dropFromGiftLootTable(var1, BuiltInLootTables.ARMADILLO_SHED, this::spawnAtLocation)) {
             this.playSound(SoundEvents.ARMADILLO_SCUTE_DROP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             this.gameEvent(GameEvent.ENTITY_PLACE);

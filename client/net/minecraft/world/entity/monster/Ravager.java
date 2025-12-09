@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -24,23 +23,25 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.monster.illager.AbstractIllager;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raider;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Ravager extends Raider {
    private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (var0) -> !(var0 instanceof Ravager) && var0.isAlive();
@@ -129,7 +130,7 @@ public class Ravager extends Raider {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var8 = (ServerLevel)var2;
-            if (this.horizontalCollision && var8.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (this.horizontalCollision && (Boolean)var8.getGameRules().get(GameRules.MOB_GRIEFING)) {
                boolean var9 = false;
                AABB var10 = this.getBoundingBox().inflate(0.2);
 
@@ -209,7 +210,7 @@ public class Ravager extends Raider {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var1 = (ServerLevel)var2;
-            Predicate var6 = var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
+            Predicate var6 = (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
 
             for(LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), var6)) {
                if (!(var5 instanceof AbstractIllager)) {
@@ -287,8 +288,7 @@ public class Ravager extends Raider {
       return super.doHurtTarget(var1, var2);
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return SoundEvents.RAVAGER_AMBIENT;
    }
 
@@ -315,8 +315,8 @@ public class Ravager extends Raider {
       return false;
    }
 
-   protected AABB getAttackBoundingBox() {
-      AABB var1 = super.getAttackBoundingBox();
-      return var1.deflate(0.05, 0.0, 0.05);
+   protected AABB getAttackBoundingBox(double var1) {
+      AABB var3 = super.getAttackBoundingBox(var1);
+      return var3.deflate(0.05, 0.0, 0.05);
    }
 }

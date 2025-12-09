@@ -3,9 +3,10 @@ package net.minecraft.client.gui.screens.worldselection;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Collection;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -73,7 +74,6 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    class DetailsScreen extends Screen {
       private static final Component TITLE = Component.translatable("selectWorld.experimental.details.title");
       final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-      @Nullable
       private PackList list;
 
       DetailsScreen() {
@@ -113,7 +113,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
             for(Pack var5 : var3) {
                String var6 = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, var5.getRequestedFeatures());
                if (!var6.isEmpty()) {
-                  MutableComponent var7 = ComponentUtils.mergeStyles(var5.getTitle().copy(), Style.EMPTY.withBold(true));
+                  Component var7 = ComponentUtils.mergeStyles(var5.getTitle(), Style.EMPTY.withBold(true));
                   MutableComponent var8 = Component.translatable("selectWorld.experimental.details.entry", var6);
                   this.addEntry(DetailsScreen.this.new PackListEntry(var7, var8, MultiLineLabel.create(DetailsScreen.this.font, var8, this.getRowWidth())));
                }
@@ -139,13 +139,14 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          }
 
          public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            ActiveTextCollector var6 = var1.textRenderer();
             var1.drawString(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
             MultiLineLabel var10000 = this.splitMessage;
-            MultiLineLabel.Align var10002 = MultiLineLabel.Align.LEFT;
-            int var10003 = this.getContentX();
-            int var10004 = this.getContentY() + 12;
+            TextAlignment var10001 = TextAlignment.LEFT;
+            int var10002 = this.getContentX();
+            int var10003 = this.getContentY() + 12;
             Objects.requireNonNull(DetailsScreen.this.font);
-            var10000.render(var1, var10002, var10003, var10004, 9, true, -1);
+            var10000.visitLines(var10001, var10002, var10003, 9, var6);
          }
 
          public Component getNarration() {

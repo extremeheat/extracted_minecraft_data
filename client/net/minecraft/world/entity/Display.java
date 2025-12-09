@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -17,6 +16,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.ByIdMap;
@@ -34,7 +34,10 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class Display extends Entity {
@@ -43,10 +46,10 @@ public abstract class Display extends Entity {
    private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID;
    private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID;
    private static final EntityDataAccessor<Integer> DATA_POS_ROT_INTERPOLATION_DURATION_ID;
-   private static final EntityDataAccessor<Vector3f> DATA_TRANSLATION_ID;
-   private static final EntityDataAccessor<Vector3f> DATA_SCALE_ID;
-   private static final EntityDataAccessor<Quaternionf> DATA_LEFT_ROTATION_ID;
-   private static final EntityDataAccessor<Quaternionf> DATA_RIGHT_ROTATION_ID;
+   private static final EntityDataAccessor<Vector3fc> DATA_TRANSLATION_ID;
+   private static final EntityDataAccessor<Vector3fc> DATA_SCALE_ID;
+   private static final EntityDataAccessor<Quaternionfc> DATA_LEFT_ROTATION_ID;
+   private static final EntityDataAccessor<Quaternionfc> DATA_RIGHT_ROTATION_ID;
    private static final EntityDataAccessor<Byte> DATA_BILLBOARD_RENDER_CONSTRAINTS_ID;
    private static final EntityDataAccessor<Integer> DATA_BRIGHTNESS_OVERRIDE_ID;
    private static final EntityDataAccessor<Float> DATA_VIEW_RANGE_ID;
@@ -85,8 +88,7 @@ public abstract class Display extends Entity {
    protected boolean updateRenderState;
    private boolean updateStartTick;
    private boolean updateInterpolationDuration;
-   @Nullable
-   private RenderState renderState;
+   private @Nullable RenderState renderState;
    private final InterpolationHandler interpolation = new InterpolationHandler(this, 0);
 
    public Display(EntityType<?> var1, Level var2) {
@@ -124,10 +126,10 @@ public abstract class Display extends Entity {
    }
 
    private static Transformation createTransformation(SynchedEntityData var0) {
-      Vector3f var1 = (Vector3f)var0.get(DATA_TRANSLATION_ID);
-      Quaternionf var2 = (Quaternionf)var0.get(DATA_LEFT_ROTATION_ID);
-      Vector3f var3 = (Vector3f)var0.get(DATA_SCALE_ID);
-      Quaternionf var4 = (Quaternionf)var0.get(DATA_RIGHT_ROTATION_ID);
+      Vector3fc var1 = (Vector3fc)var0.get(DATA_TRANSLATION_ID);
+      Quaternionfc var2 = (Quaternionfc)var0.get(DATA_LEFT_ROTATION_ID);
+      Vector3fc var3 = (Vector3fc)var0.get(DATA_SCALE_ID);
+      Quaternionfc var4 = (Quaternionfc)var0.get(DATA_RIGHT_ROTATION_ID);
       return new Transformation(var1, var2, var3, var4);
    }
 
@@ -243,8 +245,7 @@ public abstract class Display extends Entity {
       return true;
    }
 
-   @Nullable
-   public RenderState renderState() {
+   public @Nullable RenderState renderState() {
       return this.renderState;
    }
 
@@ -284,8 +285,7 @@ public abstract class Display extends Entity {
       this.entityData.set(DATA_BRIGHTNESS_OVERRIDE_ID, var1 != null ? var1.pack() : -1);
    }
 
-   @Nullable
-   private Brightness getBrightnessOverride() {
+   private @Nullable Brightness getBrightnessOverride() {
       int var1 = (Integer)this.entityData.get(DATA_BRIGHTNESS_OVERRIDE_ID);
       return var1 != -1 ? Brightness.unpack(var1) : null;
    }
@@ -395,10 +395,10 @@ public abstract class Display extends Entity {
       DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
       DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
       DATA_POS_ROT_INTERPOLATION_DURATION_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
-      DATA_TRANSLATION_ID = SynchedEntityData.<Vector3f>defineId(Display.class, EntityDataSerializers.VECTOR3);
-      DATA_SCALE_ID = SynchedEntityData.<Vector3f>defineId(Display.class, EntityDataSerializers.VECTOR3);
-      DATA_LEFT_ROTATION_ID = SynchedEntityData.<Quaternionf>defineId(Display.class, EntityDataSerializers.QUATERNION);
-      DATA_RIGHT_ROTATION_ID = SynchedEntityData.<Quaternionf>defineId(Display.class, EntityDataSerializers.QUATERNION);
+      DATA_TRANSLATION_ID = SynchedEntityData.<Vector3fc>defineId(Display.class, EntityDataSerializers.VECTOR3);
+      DATA_SCALE_ID = SynchedEntityData.<Vector3fc>defineId(Display.class, EntityDataSerializers.VECTOR3);
+      DATA_LEFT_ROTATION_ID = SynchedEntityData.<Quaternionfc>defineId(Display.class, EntityDataSerializers.QUATERNION);
+      DATA_RIGHT_ROTATION_ID = SynchedEntityData.<Quaternionfc>defineId(Display.class, EntityDataSerializers.QUATERNION);
       DATA_BILLBOARD_RENDER_CONSTRAINTS_ID = SynchedEntityData.<Byte>defineId(Display.class, EntityDataSerializers.BYTE);
       DATA_BRIGHTNESS_OVERRIDE_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
       DATA_VIEW_RANGE_ID = SynchedEntityData.<Float>defineId(Display.class, EntityDataSerializers.FLOAT);
@@ -462,8 +462,7 @@ public abstract class Display extends Entity {
       private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK_ID;
       private static final EntityDataAccessor<Byte> DATA_ITEM_DISPLAY_ID;
       private final SlotAccess slot = SlotAccess.of(this::getItemStack, this::setItemStack);
-      @Nullable
-      private ItemRenderState itemRenderState;
+      private @Nullable ItemRenderState itemRenderState;
 
       public ItemDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
@@ -515,12 +514,11 @@ public abstract class Display extends Entity {
          var1.store("item_display", ItemDisplayContext.CODEC, this.getItemTransform());
       }
 
-      public SlotAccess getSlot(int var1) {
-         return var1 == 0 ? this.slot : SlotAccess.NULL;
+      public @Nullable SlotAccess getSlot(int var1) {
+         return var1 == 0 ? this.slot : null;
       }
 
-      @Nullable
-      public ItemRenderState itemRenderState() {
+      public @Nullable ItemRenderState itemRenderState() {
          return this.itemRenderState;
       }
 
@@ -547,8 +545,7 @@ public abstract class Display extends Entity {
    public static class BlockDisplay extends Display {
       public static final String TAG_BLOCK_STATE = "block_state";
       private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
-      @Nullable
-      private BlockRenderState blockRenderState;
+      private @Nullable BlockRenderState blockRenderState;
 
       public BlockDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
@@ -585,8 +582,7 @@ public abstract class Display extends Entity {
          var1.store("block_state", BlockState.CODEC, this.getBlockState());
       }
 
-      @Nullable
-      public BlockRenderState blockRenderState() {
+      public @Nullable BlockRenderState blockRenderState() {
          return this.blockRenderState;
       }
 
@@ -629,10 +625,8 @@ public abstract class Display extends Entity {
       private static final EntityDataAccessor<Byte> DATA_TEXT_OPACITY_ID;
       private static final EntityDataAccessor<Byte> DATA_STYLE_FLAGS_ID;
       private static final IntSet TEXT_RENDER_STATE_IDS;
-      @Nullable
-      private CachedInfo clientDisplayCache;
-      @Nullable
-      private TextRenderState textRenderState;
+      private @Nullable CachedInfo clientDisplayCache;
+      private @Nullable TextRenderState textRenderState;
 
       public TextDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
@@ -727,7 +721,7 @@ public abstract class Display extends Entity {
                Level var6 = this.level();
                if (var6 instanceof ServerLevel) {
                   ServerLevel var5 = (ServerLevel)var6;
-                  CommandSourceStack var11 = this.createCommandSourceStackForNameResolution(var5).withPermission(2);
+                  CommandSourceStack var11 = this.createCommandSourceStackForNameResolution(var5).withPermission(LevelBasedPermissionSet.GAMEMASTER);
                   MutableComponent var7 = ComponentUtils.updateForEntity(var11, (Component)var4.get(), this, 0);
                   this.setText(var7);
                } else {
@@ -767,8 +761,7 @@ public abstract class Display extends Entity {
          this.clientDisplayCache = null;
       }
 
-      @Nullable
-      public TextRenderState textRenderState() {
+      public @Nullable TextRenderState textRenderState() {
          return this.textRenderState;
       }
 
@@ -924,7 +917,7 @@ public abstract class Display extends Entity {
       }
 
       public int get(float var1) {
-         return ARGB.lerp(var1, this.previous, this.current);
+         return ARGB.srgbLerp(var1, this.previous, this.current);
       }
    }
 

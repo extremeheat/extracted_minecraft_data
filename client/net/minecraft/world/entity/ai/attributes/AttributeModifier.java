@@ -7,29 +7,29 @@ import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
-public record AttributeModifier(ResourceLocation id, double amount, Operation operation) {
-   public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(var0, AttributeModifier::new));
+public record AttributeModifier(Identifier id, double amount, Operation operation) {
+   public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(var0, AttributeModifier::new));
    public static final Codec<AttributeModifier> CODEC;
    public static final StreamCodec<ByteBuf, AttributeModifier> STREAM_CODEC;
 
-   public AttributeModifier(ResourceLocation var1, double var2, Operation var4) {
+   public AttributeModifier(Identifier var1, double var2, Operation var4) {
       super();
       this.id = var1;
       this.amount = var2;
       this.operation = var4;
    }
 
-   public boolean is(ResourceLocation var1) {
+   public boolean is(Identifier var1) {
       return var1.equals(this.id);
    }
 
    static {
       CODEC = MAP_CODEC.codec();
-      STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, AttributeModifier::id, ByteBufCodecs.DOUBLE, AttributeModifier::amount, AttributeModifier.Operation.STREAM_CODEC, AttributeModifier::operation, AttributeModifier::new);
+      STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, AttributeModifier::id, ByteBufCodecs.DOUBLE, AttributeModifier::amount, AttributeModifier.Operation.STREAM_CODEC, AttributeModifier::operation, AttributeModifier::new);
    }
 
    public static enum Operation implements StringRepresentable {

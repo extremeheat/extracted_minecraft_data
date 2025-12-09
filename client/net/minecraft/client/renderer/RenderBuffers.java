@@ -3,9 +3,11 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.SequencedMap;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.util.Util;
 
 public class RenderBuffers {
    private final SectionBufferBuilderPack fixedBufferPack = new SectionBufferBuilderPack();
@@ -20,19 +22,19 @@ public class RenderBuffers {
       SequencedMap var2 = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var1x) -> {
          var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.SOLID));
          var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT));
-         var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT_MIPPED));
          var1x.put(Sheets.translucentItemSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.TRANSLUCENT));
+         put(var1x, Sheets.translucentBlockItemSheet());
          put(var1x, Sheets.shieldSheet());
          put(var1x, Sheets.bedSheet());
          put(var1x, Sheets.shulkerBoxSheet());
          put(var1x, Sheets.signSheet());
          put(var1x, Sheets.hangingSignSheet());
          var1x.put(Sheets.chestSheet(), new ByteBufferBuilder(786432));
-         put(var1x, RenderType.armorEntityGlint());
-         put(var1x, RenderType.glint());
-         put(var1x, RenderType.glintTranslucent());
-         put(var1x, RenderType.entityGlint());
-         put(var1x, RenderType.waterMask());
+         put(var1x, RenderTypes.armorEntityGlint());
+         put(var1x, RenderTypes.glint());
+         put(var1x, RenderTypes.glintTranslucent());
+         put(var1x, RenderTypes.entityGlint());
+         put(var1x, RenderTypes.waterMask());
       });
       this.bufferSource = MultiBufferSource.immediateWithBuffers(var2, new ByteBufferBuilder(786432));
       this.outlineBufferSource = new OutlineBufferSource();

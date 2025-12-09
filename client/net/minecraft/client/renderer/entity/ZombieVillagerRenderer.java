@@ -1,17 +1,17 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.ZombieVillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.VillagerProfessionLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.monster.ZombieVillager;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 
 public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, ZombieVillagerRenderState, ZombieVillagerModel<ZombieVillagerRenderState>> {
-   private static final ResourceLocation ZOMBIE_VILLAGER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie_villager/zombie_villager.png");
+   private static final Identifier ZOMBIE_VILLAGER_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie_villager/zombie_villager.png");
 
    public ZombieVillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY)), 0.5F, VillagerRenderer.CUSTOM_HEAD_TRANSFORMS);
@@ -19,7 +19,7 @@ public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, 
       this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "zombie_villager", new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_NO_HAT)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_NO_HAT))));
    }
 
-   public ResourceLocation getTextureLocation(ZombieVillagerRenderState var1) {
+   public Identifier getTextureLocation(ZombieVillagerRenderState var1) {
       return ZOMBIE_VILLAGER_LOCATION;
    }
 
@@ -44,7 +44,7 @@ public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, 
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ZombieVillagerRenderState)var1);
    }
 

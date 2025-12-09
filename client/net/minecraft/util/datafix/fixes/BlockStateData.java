@@ -7,10 +7,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
 import net.minecraft.nbt.NbtOps;
+import org.jspecify.annotations.Nullable;
 
 public class BlockStateData {
-   private static final Dynamic<?>[] MAP = new Dynamic[4096];
-   private static final Dynamic<?>[] BLOCK_DEFAULTS = new Dynamic[256];
+   private static final @Nullable Dynamic<?>[] MAP = new Dynamic[4096];
+   private static final @Nullable Dynamic<?>[] BLOCK_DEFAULTS = new Dynamic[256];
    private static final Object2IntMap<Dynamic<?>> ID_BY_OLD = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
    private static final Object2IntMap<String> ID_BY_OLD_NAME = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
    static final String FILTER_ME = "%%FILTER_ME%%";

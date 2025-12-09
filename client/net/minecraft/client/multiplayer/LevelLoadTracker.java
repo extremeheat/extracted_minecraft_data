@@ -2,8 +2,6 @@ package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -11,8 +9,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.progress.ChunkLoadStatusView;
 import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.level.progress.LevelLoadProgressTracker;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LevelLoadTracker implements LevelLoadListener {
@@ -20,12 +20,9 @@ public class LevelLoadTracker implements LevelLoadListener {
    private static final long CLIENT_WAIT_TIMEOUT_MS;
    public static final long LEVEL_LOAD_CLOSE_DELAY_MS = 500L;
    private final LevelLoadProgressTracker serverProgressTracker;
-   @Nullable
-   private ChunkLoadStatusView serverChunkStatusView;
-   @Nullable
-   private volatile LevelLoadListener.Stage serverStage;
-   @Nullable
-   private ClientState clientState;
+   private @Nullable ChunkLoadStatusView serverChunkStatusView;
+   private volatile LevelLoadListener.@Nullable Stage serverStage;
+   private @Nullable ClientState clientState;
    private final long closeDelayMs;
 
    public LevelLoadTracker() {
@@ -103,8 +100,7 @@ public class LevelLoadTracker implements LevelLoadListener {
 
    }
 
-   @Nullable
-   public ChunkLoadStatusView statusView() {
+   public @Nullable ChunkLoadStatusView statusView() {
       return this.serverChunkStatusView;
    }
 
@@ -163,7 +159,7 @@ public class LevelLoadTracker implements LevelLoadListener {
             return true;
          } else {
             BlockPos var1 = this.player.blockPosition();
-            return !this.level.isOutsideBuildHeight(var1.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.levelRenderer.isSectionCompiled(var1) : true;
+            return !this.level.isOutsideBuildHeight(var1.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.levelRenderer.isSectionCompiledAndVisible(var1) : true;
          }
       }
    }

@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.layouts;
 
 import java.util.function.Consumer;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class LinearLayout implements Layout {
    private final GridLayout wrapped;

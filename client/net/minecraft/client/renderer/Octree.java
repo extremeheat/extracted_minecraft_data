@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -8,6 +7,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class Octree {
    private final Branch root;
@@ -45,7 +45,7 @@ public class Octree {
    }
 
    class Branch implements Node {
-      private final Node[] nodes = new Node[8];
+      private final @Nullable Octree.Node[] nodes = new Node[8];
       private final BoundingBox boundingBox;
       private final int bbCenterX;
       private final int bbCenterY;
@@ -170,7 +170,6 @@ public class Octree {
 
       }
 
-      @Nullable
       public SectionRenderDispatcher.RenderSection getSection() {
          return null;
       }
@@ -243,7 +242,6 @@ public class Octree {
    public interface Node {
       void visitNodes(OctreeVisitor var1, boolean var2, Frustum var3, int var4, int var5, boolean var6);
 
-      @Nullable
       SectionRenderDispatcher.RenderSection getSection();
 
       AABB getAABB();

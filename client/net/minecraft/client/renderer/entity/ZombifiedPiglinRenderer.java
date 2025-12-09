@@ -1,23 +1,23 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.ZombifiedPiglinModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.monster.piglin.ZombifiedPiglinModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombifiedPiglinRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 
 public class ZombifiedPiglinRenderer extends HumanoidMobRenderer<ZombifiedPiglin, ZombifiedPiglinRenderState, ZombifiedPiglinModel> {
-   private static final ResourceLocation ZOMBIFIED_PIGLIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/piglin/zombified_piglin.png");
+   private static final Identifier ZOMBIFIED_PIGLIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/piglin/zombified_piglin.png");
 
    public ZombifiedPiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ArmorModelSet<ModelLayerLocation> var4, ArmorModelSet<ModelLayerLocation> var5) {
       super(var1, new ZombifiedPiglinModel(var1.bakeLayer(var2)), new ZombifiedPiglinModel(var1.bakeLayer(var3)), 0.5F, PiglinRenderer.PIGLIN_CUSTOM_HEAD_TRANSFORMS);
       this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(var4, var1.getModelSet(), ZombifiedPiglinModel::new), ArmorModelSet.bake(var5, var1.getModelSet(), ZombifiedPiglinModel::new), var1.getEquipmentRenderer()));
    }
 
-   public ResourceLocation getTextureLocation(ZombifiedPiglinRenderState var1) {
+   public Identifier getTextureLocation(ZombifiedPiglinRenderState var1) {
       return ZOMBIFIED_PIGLIN_LOCATION;
    }
 
@@ -31,7 +31,7 @@ public class ZombifiedPiglinRenderer extends HumanoidMobRenderer<ZombifiedPiglin
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ZombifiedPiglinRenderState)var1);
    }
 

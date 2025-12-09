@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.FileUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -20,8 +18,10 @@ import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.linkfs.LinkFileSystem;
+import net.minecraft.util.FileUtil;
 import net.minecraft.world.level.validation.ContentValidationException;
 import net.minecraft.world.level.validation.DirectoryValidator;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FolderRepositorySource implements RepositorySource {
@@ -113,8 +113,7 @@ public class FolderRepositorySource implements RepositorySource {
          super(var1);
       }
 
-      @Nullable
-      protected Pack.ResourcesSupplier createZipPack(Path var1) {
+      protected Pack.@Nullable ResourcesSupplier createZipPack(Path var1) {
          FileSystem var2 = var1.getFileSystem();
          if (var2 != FileSystems.getDefault() && !(var2 instanceof LinkFileSystem)) {
             FolderRepositorySource.LOGGER.info("Can't open pack archive at {}", var1);
@@ -134,8 +133,7 @@ public class FolderRepositorySource implements RepositorySource {
       }
 
       // $FF: synthetic method
-      @Nullable
-      protected Object createZipPack(final Path var1) throws IOException {
+      protected @Nullable Object createZipPack(final Path var1) throws IOException {
          return this.createZipPack(var1);
       }
    }

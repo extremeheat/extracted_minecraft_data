@@ -1,17 +1,16 @@
 package net.minecraft.client.tutorial;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class OpenInventoryTutorialStep implements TutorialStepInstance {
    private static final int HINT_DELAY = 600;
    private static final Component TITLE = Component.translatable("tutorial.open_inventory.title");
    private static final Component DESCRIPTION = Component.translatable("tutorial.open_inventory.description", Tutorial.key("inventory"));
    private final Tutorial tutorial;
-   @Nullable
-   private TutorialToast toast;
+   private @Nullable TutorialToast toast;
    private int timeWaiting;
 
    public OpenInventoryTutorialStep(Tutorial var1) {

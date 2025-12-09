@@ -6,10 +6,10 @@ import com.mojang.authlib.minecraft.report.ReportedEntity;
 import com.mojang.datafixers.util.Either;
 import java.time.Instant;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.reporting.NameReportScreen;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class NameReport extends Report {
    private final String reportedName;
@@ -52,8 +52,7 @@ public class NameReport extends Report {
          return StringUtils.isNotEmpty(this.comments());
       }
 
-      @Nullable
-      public Report.CannotBuildReason checkBuildable() {
+      public Report.@Nullable CannotBuildReason checkBuildable() {
          return (this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
       }
 

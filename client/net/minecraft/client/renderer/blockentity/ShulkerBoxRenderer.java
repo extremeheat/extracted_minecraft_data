@@ -2,18 +2,17 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
-import java.util.Set;
-import javax.annotation.Nullable;
+import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.ShulkerBoxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -25,7 +24,8 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderState> {
    private final MaterialSet materials;
@@ -49,7 +49,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       return new ShulkerBoxRenderState();
    }
 
-   public void extractRenderState(ShulkerBoxBlockEntity var1, ShulkerBoxRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(ShulkerBoxBlockEntity var1, ShulkerBoxRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.direction = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
       var2.color = var1.getColor();
@@ -68,7 +68,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var6, 0);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8, int var9) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, ModelFeatureRenderer.@Nullable CrumblingOverlay var7, Material var8, int var9) {
       var1.pushPose();
       this.prepareModel(var1, var5, var6);
       ShulkerBoxModel var10001 = this.model;
@@ -89,7 +89,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.model.setupAnim(var3);
    }
 
-   public void getExtents(Direction var1, float var2, Set<Vector3f> var3) {
+   public void getExtents(Direction var1, float var2, Consumer<Vector3fc> var3) {
       PoseStack var4 = new PoseStack();
       this.prepareModel(var4, var1, var2);
       this.model.root().getExtentsForGui(var4, var3);
@@ -104,7 +104,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       private final ModelPart lid;
 
       public ShulkerBoxModel(ModelPart var1) {
-         super(var1, RenderType::entityCutoutNoCull);
+         super(var1, RenderTypes::entityCutoutNoCull);
          this.lid = var1.getChild("lid");
       }
 

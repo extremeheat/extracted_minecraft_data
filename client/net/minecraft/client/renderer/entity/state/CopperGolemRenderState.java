@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.state;
 
 import java.util.Optional;
 import net.minecraft.world.entity.AnimationState;
-import net.minecraft.world.entity.animal.coppergolem.CopperGolemState;
+import net.minecraft.world.entity.animal.golem.CopperGolemState;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 

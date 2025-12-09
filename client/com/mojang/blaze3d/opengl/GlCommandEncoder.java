@@ -9,6 +9,7 @@ import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuQuery;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -25,12 +26,14 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL32C;
+import org.lwjgl.opengl.GL33C;
 import org.slf4j.Logger;
 
 public class GlCommandEncoder implements CommandEncoder {
@@ -38,11 +41,10 @@ public class GlCommandEncoder implements CommandEncoder {
    private final GlDevice device;
    private final int readFbo;
    private final int drawFbo;
-   @Nullable
-   private RenderPipeline lastPipeline;
+   private @Nullable RenderPipeline lastPipeline;
    private boolean inRenderPass;
-   @Nullable
-   private GlProgram lastProgram;
+   private @Nullable GlProgram lastProgram;
+   private @Nullable GlTimerQuery activeTimerQuery;
 
    protected GlCommandEncoder(GlDevice var1) {
       super();
@@ -86,7 +88,7 @@ public class GlCommandEncoder implements CommandEncoder {
 
             this.inRenderPass = true;
             this.device.debugLabels().pushDebugGroup(var1);
-            int var6 = ((GlTexture)var2.texture()).getFbo(this.device.directStateAccess(), var4 == null ? null : var4.texture());
+            int var6 = ((GlTextureView)var2).getFbo(this.device.directStateAccess(), var4 == null ? null : var4.texture());
             GlStateManager._glBindFramebuffer(36160, var6);
             int var7 = 0;
             if (var3.isPresent()) {
@@ -239,7 +241,7 @@ public class GlCommandEncoder implements CommandEncoder {
             throw new IllegalStateException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
          } else {
             int var4 = var2.remaining();
-            if (var4 > var1.length()) {
+            if ((long)var4 > var1.length()) {
                throw new IllegalArgumentException("Cannot write more data than the slice allows (attempting to write " + var4 + " bytes into a slice of length " + var1.length() + ")");
             } else if (var1.length() + var1.offset() > var3.size()) {
                throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + var4 + " bytes at offset " + var1.offset() + " to " + var3.size() + " size buffer)");
@@ -268,7 +270,7 @@ public class GlCommandEncoder implements CommandEncoder {
          } else if (var3 && (var4.usage() & 2) == 0) {
             throw new IllegalStateException("Buffer is not writable");
          } else if (var1.offset() + var1.length() > var4.size()) {
-            int var10002 = var1.length();
+            long var10002 = var1.length();
             throw new IllegalArgumentException("Cannot map more data than this buffer can hold (attempting to map " + var10002 + " bytes at offset " + var1.offset() + " from " + var4.size() + " size buffer)");
          } else {
             int var5 = 0;
@@ -301,13 +303,13 @@ public class GlCommandEncoder implements CommandEncoder {
             } else if ((var4.usage() & 8) == 0) {
                throw new IllegalStateException("Target buffer needs USAGE_COPY_DST to be a destination for a copy");
             } else if (var1.length() != var2.length()) {
-               int var6 = var1.length();
+               long var6 = var1.length();
                throw new IllegalArgumentException("Cannot copy from slice of size " + var6 + " to slice of size " + var2.length() + ", they must be equal");
             } else if (var1.offset() + var1.length() > var3.size()) {
-               int var5 = var1.length();
+               long var5 = var1.length();
                throw new IllegalArgumentException("Cannot copy more data than the source buffer holds (attempting to copy " + var5 + " bytes at offset " + var1.offset() + " from " + var3.size() + " size buffer)");
             } else if (var2.offset() + var2.length() > var4.size()) {
-               int var10002 = var2.length();
+               long var10002 = var2.length();
                throw new IllegalArgumentException("Cannot copy more data than the target buffer can hold (attempting to copy " + var10002 + " bytes at offset " + var2.offset() + " to " + var4.size() + " size buffer)");
             } else {
                this.device.directStateAccess().copyBufferSubData(var3.handle, var4.handle, var1.offset(), var2.offset(), var1.length());
@@ -409,26 +411,26 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, int var3, Runnable var4, int var5) {
+   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, long var3, Runnable var5, int var6) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
-         this.copyTextureToBuffer(var1, var2, var3, var4, var5, 0, 0, var1.getWidth(var5), var1.getHeight(var5));
+         this.copyTextureToBuffer(var1, var2, var3, var5, var6, 0, 0, var1.getWidth(var6), var1.getHeight(var6));
       }
    }
 
-   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, int var3, Runnable var4, int var5, int var6, int var7, int var8, int var9) {
+   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, long var3, Runnable var5, int var6, int var7, int var8, int var9, int var10) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
-      } else if (var5 >= 0 && var5 < var1.getMipLevels()) {
-         if (var1.getWidth(var5) * var1.getHeight(var5) * var1.getFormat().pixelSize() + var3 > var2.size()) {
-            int var11 = var2.size();
-            throw new IllegalArgumentException("Buffer of size " + var11 + " is not large enough to hold " + var8 + "x" + var9 + " pixels (" + var1.getFormat().pixelSize() + " bytes each) starting from offset " + var3);
+      } else if (var6 >= 0 && var6 < var1.getMipLevels()) {
+         if ((long)(var1.getWidth(var6) * var1.getHeight(var6) * var1.getFormat().pixelSize()) + var3 > var2.size()) {
+            long var12 = var2.size();
+            throw new IllegalArgumentException("Buffer of size " + var12 + " is not large enough to hold " + var9 + "x" + var10 + " pixels (" + var1.getFormat().pixelSize() + " bytes each) starting from offset " + var3);
          } else if ((var1.usage() & 2) == 0) {
             throw new IllegalArgumentException("Texture needs USAGE_COPY_SRC to be a source for a copy");
          } else if ((var2.usage() & 8) == 0) {
             throw new IllegalArgumentException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
-         } else if (var6 + var8 <= var1.getWidth(var5) && var7 + var9 <= var1.getHeight(var5)) {
+         } else if (var7 + var9 <= var1.getWidth(var6) && var8 + var10 <= var1.getHeight(var6)) {
             if (var1.isClosed()) {
                throw new IllegalStateException("Source texture is closed");
             } else if (var2.isClosed()) {
@@ -437,25 +439,25 @@ public class GlCommandEncoder implements CommandEncoder {
                throw new UnsupportedOperationException("Textures with multiple depths or layers are not yet supported for copying");
             } else {
                GlStateManager.clearGlErrors();
-               this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, ((GlTexture)var1).glId(), 0, var5, 36008);
+               this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, ((GlTexture)var1).glId(), 0, var6, 36008);
                GlStateManager._glBindBuffer(35051, ((GlBuffer)var2).handle);
-               GlStateManager._pixelStore(3330, var8);
-               GlStateManager._readPixels(var6, var7, var8, var9, GlConst.toGlExternalId(var1.getFormat()), GlConst.toGlType(var1.getFormat()), (long)var3);
-               RenderSystem.queueFencedTask(var4);
-               GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, 0, var5);
+               GlStateManager._pixelStore(3330, var9);
+               GlStateManager._readPixels(var7, var8, var9, var10, GlConst.toGlExternalId(var1.getFormat()), GlConst.toGlType(var1.getFormat()), var3);
+               RenderSystem.queueFencedTask(var5);
+               GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, 0, var6);
                GlStateManager._glBindFramebuffer(36008, 0);
                GlStateManager._glBindBuffer(35051, 0);
-               int var10 = GlStateManager._getError();
-               if (var10 != 0) {
+               int var11 = GlStateManager._getError();
+               if (var11 != 0) {
                   String var10002 = var1.getLabel();
-                  throw new IllegalStateException("Couldn't perform copyTobuffer for texture " + var10002 + ": GL error " + var10);
+                  throw new IllegalStateException("Couldn't perform copyTobuffer for texture " + var10002 + ": GL error " + var11);
                }
             }
          } else {
-            throw new IllegalArgumentException("Copy source texture (" + var1.getWidth(var5) + "x" + var1.getHeight(var5) + ") is not large enough to read a rectangle of " + var8 + "x" + var9 + " from " + var6 + "," + var7);
+            throw new IllegalArgumentException("Copy source texture (" + var1.getWidth(var6) + "x" + var1.getHeight(var6) + ") is not large enough to read a rectangle of " + var9 + "x" + var10 + " from " + var7 + "," + var8);
          }
       } else {
-         throw new IllegalArgumentException("Invalid mipLevel " + var5 + ", must be >= 0 and < " + var1.getMipLevels());
+         throw new IllegalArgumentException("Invalid mipLevel " + var6 + ", must be >= 0 and < " + var1.getMipLevels());
       }
    }
 
@@ -530,7 +532,7 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   protected <T> void executeDrawMultiple(GlRenderPass var1, Collection<RenderPass.Draw<T>> var2, @Nullable GpuBuffer var3, @Nullable VertexFormat.IndexType var4, Collection<String> var5, T var6) {
+   protected <T> void executeDrawMultiple(GlRenderPass var1, Collection<RenderPass.Draw<T>> var2, @Nullable GpuBuffer var3, VertexFormat.@Nullable IndexType var4, Collection<String> var5, T var6) {
       if (this.trySetup(var1, var5)) {
          if (var4 == null) {
             var4 = VertexFormat.IndexType.SHORT;
@@ -572,7 +574,7 @@ public class GlCommandEncoder implements CommandEncoder {
                      }
 
                      int var6 = var8;
-                     GL32.glBindBufferRange(35345, var6, ((GlBuffer)var2x.buffer()).handle, (long)var2x.offset(), (long)var2x.length());
+                     GL32.glBindBufferRange(35345, var6, ((GlBuffer)var2x.buffer()).handle, var2x.offset(), var2x.length());
                   }
 
                });
@@ -584,7 +586,7 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   protected void executeDraw(GlRenderPass var1, int var2, int var3, int var4, @Nullable VertexFormat.IndexType var5, int var6) {
+   protected void executeDraw(GlRenderPass var1, int var2, int var3, int var4, VertexFormat.@Nullable IndexType var5, int var6) {
       if (this.trySetup(var1, Collections.emptyList())) {
          if (GlRenderPass.VALIDATION) {
             if (var5 != null) {
@@ -619,7 +621,7 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   private void drawFromBuffers(GlRenderPass var1, int var2, int var3, int var4, @Nullable VertexFormat.IndexType var5, GlRenderPipeline var6, int var7) {
+   private void drawFromBuffers(GlRenderPass var1, int var2, int var3, int var4, VertexFormat.@Nullable IndexType var5, GlRenderPipeline var6, int var7) {
       this.device.vertexArrayCache().bindVertexArray(var6.info().getVertexFormat(), (GlBuffer)var1.vertexBuffers[0]);
       if (var5 != null) {
          GlStateManager._glBindBuffer(34963, ((GlBuffer)var1.indexBuffer).handle);
@@ -675,7 +677,7 @@ public class GlCommandEncoder implements CommandEncoder {
                }
 
                if (var4.type() == UniformType.TEXEL_BUFFER) {
-                  if (var5.offset() != 0 || var5.length() != var5.buffer().size()) {
+                  if (var5.offset() != 0L || var5.length() != var5.buffer().size()) {
                      throw new IllegalStateException("Uniform texel buffers do not support a slice of a buffer, must be entire buffer");
                   }
 
@@ -686,20 +688,25 @@ public class GlCommandEncoder implements CommandEncoder {
             }
          }
 
-         for(Map.Entry var34 : var1.pipeline.program().getUniforms().entrySet()) {
-            if (var34.getValue() instanceof Uniform.Sampler) {
-               String var36 = (String)var34.getKey();
-               GlTextureView var6 = (GlTextureView)var1.samplers.get(var36);
+         for(Map.Entry var35 : var1.pipeline.program().getUniforms().entrySet()) {
+            if (var35.getValue() instanceof Uniform.Sampler) {
+               String var37 = (String)var35.getKey();
+               GlRenderPass.TextureViewAndSampler var6 = (GlRenderPass.TextureViewAndSampler)var1.samplers.get(var37);
                if (var6 == null) {
-                  throw new IllegalStateException("Missing sampler " + var36);
+                  throw new IllegalStateException("Missing sampler " + var37);
                }
 
-               if (var6.isClosed()) {
-                  throw new IllegalStateException("Sampler " + var36 + " (" + var6.texture().getLabel() + ") has been closed!");
+               GlTextureView var7 = var6.view();
+               if (var7.isClosed()) {
+                  throw new IllegalStateException("Texture view " + var37 + " (" + var7.texture().getLabel() + ") has been closed!");
                }
 
-               if ((var6.texture().usage() & 4) == 0) {
-                  throw new IllegalStateException("Sampler " + var36 + " (" + var6.texture().getLabel() + ") must have USAGE_TEXTURE_BINDING!");
+               if ((var7.texture().usage() & 4) == 0) {
+                  throw new IllegalStateException("Texture view " + var37 + " (" + var7.texture().getLabel() + ") must have USAGE_TEXTURE_BINDING!");
+               }
+
+               if (var6.sampler().isClosed()) {
+                  throw new IllegalStateException("Sampler for " + var37 + " (" + var7.texture().getLabel() + ") has been closed!");
                }
             }
          }
@@ -709,19 +716,19 @@ public class GlCommandEncoder implements CommandEncoder {
          }
       }
 
-      RenderPipeline var33 = var1.pipeline.info();
-      GlProgram var35 = var1.pipeline.program();
-      this.applyPipelineState(var33);
-      boolean var37 = this.lastProgram != var35;
-      if (var37) {
-         GlStateManager._glUseProgram(var35.getProgramId());
-         this.lastProgram = var35;
+      RenderPipeline var34 = var1.pipeline.info();
+      GlProgram var36 = var1.pipeline.program();
+      this.applyPipelineState(var34);
+      boolean var38 = this.lastProgram != var36;
+      if (var38) {
+         GlStateManager._glUseProgram(var36.getProgramId());
+         this.lastProgram = var36;
       }
 
-      for(Map.Entry var7 : var35.getUniforms().entrySet()) {
-         String var8 = (String)var7.getKey();
+      for(Map.Entry var40 : var36.getUniforms().entrySet()) {
+         String var8 = (String)var40.getKey();
          boolean var9 = var1.dirtyUniforms.contains(var8);
-         Uniform.Ubo var10000 = (Uniform)var7.getValue();
+         Uniform.Ubo var10000 = (Uniform)var40.getValue();
          Objects.requireNonNull(var10000);
          Uniform var10 = var10000;
          byte var11 = 0;
@@ -735,115 +742,116 @@ public class GlCommandEncoder implements CommandEncoder {
                var10000 = var12;
 
                try {
-                  var61 = var10000.blockBinding();
-               } catch (Throwable var31) {
-                  throw new MatchException(var31.toString(), var31);
+                  var63 = var10000.blockBinding();
+               } catch (Throwable var32) {
+                  throw new MatchException(var32.toString(), var32);
                }
 
-               int var39 = var61;
-               int var13 = var39;
+               int var41 = var63;
+               int var13 = var41;
                if (var9) {
-                  GpuBufferSlice var40 = (GpuBufferSlice)var1.uniforms.get(var8);
-                  GL32.glBindBufferRange(35345, var13, ((GlBuffer)var40.buffer()).handle, (long)var40.offset(), (long)var40.length());
+                  GpuBufferSlice var42 = (GpuBufferSlice)var1.uniforms.get(var8);
+                  GL32.glBindBufferRange(35345, var13, ((GlBuffer)var42.buffer()).handle, var42.offset(), var42.length());
                }
                break;
             case 1:
                Uniform.Utb var14 = (Uniform.Utb)var10;
-               Uniform.Utb var52 = var14;
+               Uniform.Utb var54 = var14;
 
                try {
-                  var53 = var52.location();
+                  var55 = var54.location();
+               } catch (Throwable var31) {
+                  throw new MatchException(var31.toString(), var31);
+               }
+
+               int var43 = var55;
+               int var15 = var43;
+               var54 = var14;
+
+               try {
+                  var57 = var54.samplerIndex();
                } catch (Throwable var30) {
                   throw new MatchException(var30.toString(), var30);
                }
 
-               int var41 = var53;
-               int var15 = var41;
-               var52 = var14;
+               var43 = var57;
+               int var16 = var43;
+               var54 = var14;
 
                try {
-                  var55 = var52.samplerIndex();
+                  var59 = var54.format();
                } catch (Throwable var29) {
                   throw new MatchException(var29.toString(), var29);
                }
 
-               var41 = var55;
-               int var16 = var41;
-               var52 = var14;
+               TextureFormat var45 = var59;
+               TextureFormat var17 = var45;
+               var54 = var14;
 
                try {
-                  var57 = var52.format();
+                  var61 = var54.texture();
                } catch (Throwable var28) {
                   throw new MatchException(var28.toString(), var28);
                }
 
-               TextureFormat var43 = var57;
-               TextureFormat var17 = var43;
-               var52 = var14;
-
-               try {
-                  var59 = var52.texture();
-               } catch (Throwable var27) {
-                  throw new MatchException(var27.toString(), var27);
-               }
-
-               int var44 = var59;
-               if (var37 || var9) {
+               int var46 = var61;
+               if (var38 || var9) {
                   GlStateManager._glUniform1i(var15, var16);
                }
 
                GlStateManager._activeTexture('\u84c0' + var16);
-               GL11C.glBindTexture(35882, var44);
+               GL11C.glBindTexture(35882, var46);
                if (var9) {
-                  GpuBufferSlice var45 = (GpuBufferSlice)var1.uniforms.get(var8);
-                  GL31.glTexBuffer(35882, GlConst.toGlInternalId(var17), ((GlBuffer)var45.buffer()).handle);
+                  GpuBufferSlice var47 = (GpuBufferSlice)var1.uniforms.get(var8);
+                  GL31.glTexBuffer(35882, GlConst.toGlInternalId(var17), ((GlBuffer)var47.buffer()).handle);
                }
                break;
             case 2:
                Uniform.Sampler var19 = (Uniform.Sampler)var10;
-               Uniform.Sampler var48 = var19;
+               Uniform.Sampler var50 = var19;
 
                try {
-                  var49 = var48.location();
+                  var51 = var50.location();
+               } catch (Throwable var27) {
+                  throw new MatchException(var27.toString(), var27);
+               }
+
+               int var22 = var51;
+               int var20 = var22;
+               var50 = var19;
+
+               try {
+                  var53 = var50.samplerIndex();
                } catch (Throwable var26) {
                   throw new MatchException(var26.toString(), var26);
                }
 
-               int var22 = var49;
-               int var20 = var22;
-               var48 = var19;
-
-               try {
-                  var51 = var48.samplerIndex();
-               } catch (Throwable var25) {
-                  throw new MatchException(var25.toString(), var25);
-               }
-
-               var22 = var51;
+               var22 = var53;
                int var21 = var22;
-               GlTextureView var47 = (GlTextureView)var1.samplers.get(var8);
-               if (var47 == null) {
+               GlRenderPass.TextureViewAndSampler var49 = (GlRenderPass.TextureViewAndSampler)var1.samplers.get(var8);
+               if (var49 == null) {
                   break;
                }
 
-               if (var37 || var9) {
+               GlTextureView var23 = var49.view();
+               if (var38 || var9) {
                   GlStateManager._glUniform1i(var20, var21);
                }
 
                GlStateManager._activeTexture('\u84c0' + var21);
-               GlTexture var23 = var47.texture();
-               char var24;
-               if ((var23.usage() & 16) != 0) {
-                  var24 = '\u8513';
-                  GL11.glBindTexture(34067, var23.id);
+               GlTexture var24 = var23.texture();
+               char var25;
+               if ((var24.usage() & 16) != 0) {
+                  var25 = '\u8513';
+                  GL11.glBindTexture(34067, var24.id);
                } else {
-                  var24 = 3553;
-                  GlStateManager._bindTexture(var23.id);
+                  var25 = 3553;
+                  GlStateManager._bindTexture(var24.id);
                }
 
-               GlStateManager._texParameter(var24, 33084, var47.baseMipLevel());
-               GlStateManager._texParameter(var24, 33085, var47.baseMipLevel() + var47.mipLevels() - 1);
-               var23.flushModeChanges(var24);
+               GL33C.glBindSampler(var21, var49.sampler().getId());
+               GlStateManager._texParameter(var25, 33084, var23.baseMipLevel());
+               GlStateManager._texParameter(var25, 33085, var23.baseMipLevel() + var23.mipLevels() - 1);
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
@@ -915,5 +923,27 @@ public class GlCommandEncoder implements CommandEncoder {
 
    protected GlDevice getDevice() {
       return this.device;
+   }
+
+   public GpuQuery timerQueryBegin() {
+      RenderSystem.assertOnRenderThread();
+      if (this.activeTimerQuery != null) {
+         throw new IllegalStateException("A GL_TIME_ELAPSED query is already active");
+      } else {
+         int var1 = GL32C.glGenQueries();
+         GL32C.glBeginQuery(35007, var1);
+         this.activeTimerQuery = new GlTimerQuery(var1);
+         return this.activeTimerQuery;
+      }
+   }
+
+   public void timerQueryEnd(GpuQuery var1) {
+      RenderSystem.assertOnRenderThread();
+      if (var1 != this.activeTimerQuery) {
+         throw new IllegalStateException("Mismatched or duplicate GpuQuery when ending timerQuery");
+      } else {
+         GL32C.glEndQuery(35007);
+         this.activeTimerQuery = null;
+      }
    }
 }

@@ -1,22 +1,22 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class GlTexture extends GpuTexture {
+   private static final int EMPTY = -1;
    protected final int id;
-   private final Int2IntMap fboCache = new Int2IntOpenHashMap();
+   private int firstFboId = -1;
+   private int firstFboDepthId = -1;
+   private @Nullable Int2IntMap fboCache;
    protected boolean closed;
-   protected boolean modesDirty = true;
    private int views;
 
-   protected GlTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7, int var8) {
+   protected GlTexture(@GpuTexture.Usage int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7, int var8) {
       super(var1, var2, var3, var4, var5, var6, var7);
       this.id = var8;
    }
@@ -33,11 +33,17 @@ public class GlTexture extends GpuTexture {
 
    private void destroyImmediately() {
       GlStateManager._deleteTexture(this.id);
-      IntIterator var1 = this.fboCache.values().iterator();
+      if (this.firstFboId != -1) {
+         GlStateManager._glDeleteFramebuffers(this.firstFboId);
+      }
 
-      while(var1.hasNext()) {
-         int var2 = (Integer)var1.next();
-         GlStateManager._glDeleteFramebuffers(var2);
+      if (this.fboCache != null) {
+         IntIterator var1 = this.fboCache.values().iterator();
+
+         while(var1.hasNext()) {
+            int var2 = (Integer)var1.next();
+            GlStateManager._glDeleteFramebuffers(var2);
+         }
       }
 
    }
@@ -48,49 +54,29 @@ public class GlTexture extends GpuTexture {
 
    public int getFbo(DirectStateAccess var1, @Nullable GpuTexture var2) {
       int var3 = var2 == null ? 0 : ((GlTexture)var2).id;
-      return this.fboCache.computeIfAbsent(var3, (var3x) -> {
-         int var4 = var1.createFrameBufferObject();
-         var1.bindFrameBufferTextures(var4, this.id, var3, 0, 0);
-         return var4;
-      });
+      if (this.firstFboDepthId == var3) {
+         return this.firstFboId;
+      } else if (this.firstFboId == -1) {
+         this.firstFboId = this.createFbo(var1, var3);
+         this.firstFboDepthId = var3;
+         return this.firstFboId;
+      } else {
+         if (this.fboCache == null) {
+            this.fboCache = new Int2IntArrayMap();
+         }
+
+         return this.fboCache.computeIfAbsent(var3, (var2x) -> this.createFbo(var1, var2x));
+      }
    }
 
-   public void flushModeChanges(int var1) {
-      if (this.modesDirty) {
-         GlStateManager._texParameter(var1, 10242, GlConst.toGl(this.addressModeU));
-         GlStateManager._texParameter(var1, 10243, GlConst.toGl(this.addressModeV));
-         switch (this.minFilter) {
-            case NEAREST -> GlStateManager._texParameter(var1, 10241, this.useMipmaps ? 9986 : 9728);
-            case LINEAR -> GlStateManager._texParameter(var1, 10241, this.useMipmaps ? 9987 : 9729);
-         }
-
-         switch (this.magFilter) {
-            case NEAREST -> GlStateManager._texParameter(var1, 10240, 9728);
-            case LINEAR -> GlStateManager._texParameter(var1, 10240, 9729);
-         }
-
-         this.modesDirty = false;
-      }
-
+   private int createFbo(DirectStateAccess var1, int var2) {
+      int var3 = var1.createFrameBufferObject();
+      var1.bindFrameBufferTextures(var3, this.id, var2, 0, 0);
+      return var3;
    }
 
    public int glId() {
       return this.id;
-   }
-
-   public void setAddressMode(AddressMode var1, AddressMode var2) {
-      super.setAddressMode(var1, var2);
-      this.modesDirty = true;
-   }
-
-   public void setTextureFilter(FilterMode var1, FilterMode var2, boolean var3) {
-      super.setTextureFilter(var1, var2, var3);
-      this.modesDirty = true;
-   }
-
-   public void setUseMipmaps(boolean var1) {
-      super.setUseMipmaps(var1);
-      this.modesDirty = true;
    }
 
    public void addViews() {

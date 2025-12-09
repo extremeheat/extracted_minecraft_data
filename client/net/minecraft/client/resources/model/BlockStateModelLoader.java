@@ -13,14 +13,14 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.StrictJsonParser;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -41,7 +41,7 @@ public class BlockStateModelLoader {
 
          for(Map.Entry var5 : var2x.entrySet()) {
             var3.add(CompletableFuture.supplyAsync(() -> {
-               ResourceLocation var2x = BLOCKSTATE_LISTER.fileToId((ResourceLocation)var5.getKey());
+               Identifier var2x = BLOCKSTATE_LISTER.fileToId((Identifier)var5.getKey());
                StateDefinition var3 = (StateDefinition)var2.apply(var2x);
                if (var3 == null) {
                   LOGGER.debug("Discovered unknown block state definition {}, ignoring", var2x);
@@ -102,7 +102,7 @@ public class BlockStateModelLoader {
       });
    }
 
-   private static LoadedModels loadBlockStateDefinitionStack(ResourceLocation var0, StateDefinition<Block, BlockState> var1, List<LoadedBlockModelDefinition> var2) {
+   private static LoadedModels loadBlockStateDefinitionStack(Identifier var0, StateDefinition<Block, BlockState> var1, List<LoadedBlockModelDefinition> var2) {
       IdentityHashMap var3 = new IdentityHashMap();
 
       for(LoadedBlockModelDefinition var5 : var2) {

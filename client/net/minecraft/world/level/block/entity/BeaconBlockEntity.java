@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -51,6 +50,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Nameable, BeaconBeamOwner {
    private static final int MAX_LEVELS = 4;
@@ -68,17 +68,13 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    private List<BeaconBeamOwner.Section> checkingBeamSections = new ArrayList();
    int levels;
    private int lastCheckY;
-   @Nullable
-   Holder<MobEffect> primaryPower;
-   @Nullable
-   Holder<MobEffect> secondaryPower;
-   @Nullable
-   private Component name;
+   @Nullable Holder<MobEffect> primaryPower;
+   @Nullable Holder<MobEffect> secondaryPower;
+   private @Nullable Component name;
    private LockCode lockKey;
    private final ContainerData dataAccess;
 
-   @Nullable
-   static Holder<MobEffect> filterEffect(@Nullable Holder<MobEffect> var0) {
+   static @Nullable Holder<MobEffect> filterEffect(@Nullable Holder<MobEffect> var0) {
       return VALID_EFFECTS.contains(var0) ? var0 : null;
    }
 
@@ -276,13 +272,12 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    private static void storeEffect(ValueOutput var0, String var1, @Nullable Holder<MobEffect> var2) {
       if (var2 != null) {
-         var2.unwrapKey().ifPresent((var2x) -> var0.putString(var1, var2x.location().toString()));
+         var2.unwrapKey().ifPresent((var2x) -> var0.putString(var1, var2x.identifier().toString()));
       }
 
    }
 
-   @Nullable
-   private static Holder<MobEffect> loadEffect(ValueInput var0, String var1) {
+   private static @Nullable Holder<MobEffect> loadEffect(ValueInput var0, String var1) {
       Optional var10000 = var0.read(var1, BuiltInRegistries.MOB_EFFECT.holderByNameCodec());
       Set var10001 = VALID_EFFECTS;
       Objects.requireNonNull(var10001);
@@ -310,14 +305,17 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       this.name = var1;
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return this.name;
    }
 
-   @Nullable
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      return BaseContainerBlockEntity.canUnlock(var3, this.lockKey, this.getDisplayName()) ? new BeaconMenu(var1, var2, this.dataAccess, ContainerLevelAccess.create(this.level, this.getBlockPos())) : null;
+   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
+      if (this.lockKey.canUnlock(var3)) {
+         return new BeaconMenu(var1, var2, this.dataAccess, ContainerLevelAccess.create(this.level, this.getBlockPos()));
+      } else {
+         BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), var3, this.getDisplayName());
+         return null;
+      }
    }
 
    public Component getDisplayName() {

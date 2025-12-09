@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LockIconButton extends Button {
    private boolean locked;
@@ -26,7 +26,7 @@ public class LockIconButton extends Button {
       this.locked = var1;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       Icon var5;
       if (!this.active) {
          var5 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
@@ -40,16 +40,16 @@ public class LockIconButton extends Button {
    }
 
    static enum Icon {
-      LOCKED(ResourceLocation.withDefaultNamespace("widget/locked_button")),
-      LOCKED_HOVER(ResourceLocation.withDefaultNamespace("widget/locked_button_highlighted")),
-      LOCKED_DISABLED(ResourceLocation.withDefaultNamespace("widget/locked_button_disabled")),
-      UNLOCKED(ResourceLocation.withDefaultNamespace("widget/unlocked_button")),
-      UNLOCKED_HOVER(ResourceLocation.withDefaultNamespace("widget/unlocked_button_highlighted")),
-      UNLOCKED_DISABLED(ResourceLocation.withDefaultNamespace("widget/unlocked_button_disabled"));
+      LOCKED(Identifier.withDefaultNamespace("widget/locked_button")),
+      LOCKED_HOVER(Identifier.withDefaultNamespace("widget/locked_button_highlighted")),
+      LOCKED_DISABLED(Identifier.withDefaultNamespace("widget/locked_button_disabled")),
+      UNLOCKED(Identifier.withDefaultNamespace("widget/unlocked_button")),
+      UNLOCKED_HOVER(Identifier.withDefaultNamespace("widget/unlocked_button_highlighted")),
+      UNLOCKED_DISABLED(Identifier.withDefaultNamespace("widget/unlocked_button_disabled"));
 
-      final ResourceLocation sprite;
+      final Identifier sprite;
 
-      private Icon(final ResourceLocation var3) {
+      private Icon(final Identifier var3) {
          this.sprite = var3;
       }
 

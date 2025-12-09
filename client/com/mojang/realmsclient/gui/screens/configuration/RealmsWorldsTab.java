@@ -14,13 +14,13 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.SwitchMinigameTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    static final Component TITLE = Component.translatable("mco.configure.worlds.title");
@@ -47,8 +47,8 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
 
       var4.addChild(var5.getGrid());
       GridLayout.RowHelper var7 = (new GridLayout()).spacing(8).createRowHelper(1);
-      this.optionsButton = (Button)var7.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.options"), (var3x) -> var2.setScreen(new RealmsSlotOptionsScreen(var1, ((RealmsSlot)var3.slots.get(var3.activeSlot)).clone(), var3.worldType, var3.activeSlot))).bounds(0, 0, 150, 20).build());
-      this.backupButton = (Button)var7.addChild(Button.builder(Component.translatable("mco.configure.world.backup"), (var3x) -> var2.setScreen(new RealmsBackupScreen(var1, var3.clone(), var3.activeSlot))).bounds(0, 0, 150, 20).build());
+      this.optionsButton = (Button)var7.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.options"), (var3x) -> var2.setScreen(new RealmsSlotOptionsScreen(var1, ((RealmsSlot)var3.slots.get(var3.activeSlot)).copy(), var3.worldType, var3.activeSlot))).bounds(0, 0, 150, 20).build());
+      this.backupButton = (Button)var7.addChild(Button.builder(Component.translatable("mco.configure.world.backup"), (var3x) -> var2.setScreen(new RealmsBackupScreen(var1, var3.copy(), var3.activeSlot))).bounds(0, 0, 150, 20).build());
       this.resetWorldButton = (Button)var7.addChild(Button.builder(Component.empty(), (var1x) -> this.resetButtonPressed()).bounds(0, 0, 150, 20).build());
       var4.addChild(var7.getGrid(), LayoutSettings.defaults().alignHorizontallyCenter());
       this.backupButton.active = true;
@@ -59,13 +59,13 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
       if (this.isMinigame()) {
          this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null));
       } else {
-         this.minecraft.setScreen(RealmsResetWorldScreen.forResetSlot(this.configurationScreen, this.serverData.clone(), () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreen()))));
+         this.minecraft.setScreen(RealmsResetWorldScreen.forResetSlot(this.configurationScreen, this.serverData.copy(), () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreen()))));
       }
 
    }
 
    private void templateSelectionCallback(@Nullable WorldTemplate var1) {
-      if (var1 != null && WorldTemplate.WorldTemplateType.MINIGAME == var1.type) {
+      if (var1 != null && WorldTemplate.WorldTemplateType.MINIGAME == var1.type()) {
          this.configurationScreen.stateChanged();
          RealmsConfigureWorldScreen var2 = this.configurationScreen.getNewScreen();
          this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var2, new LongRunningTask[]{new SwitchMinigameTask(this.serverData.id, var1, var2)}));
@@ -132,7 +132,7 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    }
 
    private void switchToMinigame() {
-      RealmsSelectWorldTemplateScreen var1 = new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null, List.of(Component.translatable("mco.minigame.world.info.line1"), Component.translatable("mco.minigame.world.info.line2")));
+      RealmsSelectWorldTemplateScreen var1 = new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null, List.of(Component.translatable("mco.minigame.world.info.line1").withColor(-4539718), Component.translatable("mco.minigame.world.info.line2").withColor(-4539718)));
       this.minecraft.setScreen(var1);
    }
 

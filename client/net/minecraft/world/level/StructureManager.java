@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.levelgen.structure.StructureCheckResult;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
+import org.jspecify.annotations.Nullable;
 
 public class StructureManager {
    private final LevelAccessor level;
@@ -88,8 +88,7 @@ public class StructureManager {
 
    }
 
-   @Nullable
-   public StructureStart getStartForStructure(SectionPos var1, Structure var2, StructureAccess var3) {
+   public @Nullable StructureStart getStartForStructure(SectionPos var1, Structure var2, StructureAccess var3) {
       return var3.getStartForStructure(var2);
    }
 

@@ -12,13 +12,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.Nullable;
 
 public class IpBanlistService {
    private static final String BAN_SOURCE = "Management server";
@@ -92,8 +92,7 @@ public class IpBanlistService {
          return new IpBan(var1.getIpAddress(), (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires());
       }
 
-      @Nullable
-      IpBan toIpBan() {
+      @Nullable IpBan toIpBan() {
          return !this.ip().isEmpty() && InetAddresses.isInetAddress((String)this.ip().get()) ? new IpBan((String)this.ip().get(), (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires()) : null;
       }
    }

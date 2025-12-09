@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import net.minecraft.FileUtil;
+import net.minecraft.util.FileUtil;
 
 public interface CachedOutput {
    CachedOutput NO_CACHE = (var0, var1, var2) -> {

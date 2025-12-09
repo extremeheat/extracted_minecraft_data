@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
-import javax.annotation.Nullable;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -10,12 +10,12 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public abstract class OptionsSubScreen extends Screen {
    protected final Screen lastScreen;
    protected final Options options;
-   @Nullable
-   protected OptionsList list;
+   protected @Nullable OptionsList list;
    public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
    public OptionsSubScreen(Screen var1, Options var2, Component var3) {
@@ -73,5 +73,12 @@ public abstract class OptionsSubScreen extends Screen {
       }
 
       this.minecraft.setScreen(this.lastScreen);
+   }
+
+   public void resetOption(OptionInstance<?> var1) {
+      if (this.list != null) {
+         this.list.resetOption(var1);
+      }
+
    }
 }

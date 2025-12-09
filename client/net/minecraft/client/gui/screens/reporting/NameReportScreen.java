@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.reporting;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.StringWidget;
@@ -14,12 +13,12 @@ import net.minecraft.client.multiplayer.chat.report.NameReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 
 public class NameReportScreen extends AbstractReportScreen<NameReport.Builder> {
    private static final Component TITLE = Component.translatable("gui.abuseReport.name.title");
    private static final Component COMMENT_BOX_LABEL = Component.translatable("gui.abuseReport.name.comment_box_label");
-   @Nullable
-   private MultiLineEditBox commentBox;
+   private @Nullable MultiLineEditBox commentBox;
 
    private NameReportScreen(Screen var1, ReportingContext var2, NameReport.Builder var3) {
       super(TITLE, var1, var2, var3);

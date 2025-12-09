@@ -1,16 +1,18 @@
 package net.minecraft.client.gui.render.state;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.Nullable;
 
-public record GlyphRenderState(Matrix3x2f pose, TextRenderable renderable, @Nullable ScreenRectangle scissorArea) implements GuiElementRenderState {
-   public GlyphRenderState(Matrix3x2f var1, TextRenderable var2, @Nullable ScreenRectangle var3) {
+public record GlyphRenderState(Matrix3x2fc pose, TextRenderable renderable, @Nullable ScreenRectangle scissorArea) implements GuiElementRenderState {
+   public GlyphRenderState(Matrix3x2fc var1, TextRenderable var2, @Nullable ScreenRectangle var3) {
       super();
       this.pose = var1;
       this.renderable = var2;
@@ -26,11 +28,10 @@ public record GlyphRenderState(Matrix3x2f pose, TextRenderable renderable, @Null
    }
 
    public TextureSetup textureSetup() {
-      return TextureSetup.singleTextureWithLightmap(this.renderable.textureView());
+      return TextureSetup.singleTextureWithLightmap(this.renderable.textureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
    }
 
-   @Nullable
-   public ScreenRectangle bounds() {
+   public @Nullable ScreenRectangle bounds() {
       return null;
    }
 }

@@ -167,8 +167,10 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.SAVED_DATA_RAIDS, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RANDOM_SEQUENCES, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_SCOREBOARD, () -> DSL.optionalFields("data", DSL.optionalFields("Objectives", DSL.list(References.OBJECTIVE.in(var1)), "Teams", DSL.list(References.TEAM.in(var1)), "PlayerScores", DSL.list(DSL.optionalFields("display", References.TEXT_COMPONENT.in(var1))))));
+      var1.registerType(false, References.SAVED_DATA_STOPWATCHES, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_STRUCTURE_FEATURE_INDICES, () -> DSL.optionalFields("data", DSL.optionalFields("Features", DSL.compoundList(References.STRUCTURE_FEATURE.in(var1)))));
       var1.registerType(false, References.SAVED_DATA_WORLD_BORDER, DSL::remainder);
+      var1.registerType(false, References.DEBUG_PROFILE, DSL::remainder);
       var1.registerType(false, References.STRUCTURE_FEATURE, DSL::remainder);
       Map var5 = V1451_6.createCriterionTypes(var1);
       var1.registerType(false, References.OBJECTIVE, () -> DSL.hook(DSL.optionalFields("CriteriaType", DSL.taggedChoiceLazy("type", DSL.string(), var5), "DisplayName", References.TEXT_COMPONENT.in(var1)), V1451_6.UNPACK_OBJECTIVE_ID, V1451_6.REPACK_OBJECTIVE_ID));

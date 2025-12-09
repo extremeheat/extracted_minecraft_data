@@ -2,8 +2,8 @@ package net.minecraft.server.players;
 
 import com.google.gson.JsonObject;
 import java.util.Date;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class IpBanListEntry extends BanListEntry<String> {
    public IpBanListEntry(String var1) {

@@ -2,9 +2,10 @@ package net.minecraft.world.level.material;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 
 public class MapColor {
-   private static final MapColor[] MATERIAL_COLORS = new MapColor[64];
+   private static final @Nullable MapColor[] MATERIAL_COLORS = new MapColor[64];
    public static final MapColor NONE = new MapColor(0, 0);
    public static final MapColor GRASS = new MapColor(1, 8368696);
    public static final MapColor SAND = new MapColor(2, 16247203);

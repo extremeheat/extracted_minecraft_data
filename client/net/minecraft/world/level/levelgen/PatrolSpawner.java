@@ -1,19 +1,18 @@
 package net.minecraft.world.level.levelgen;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class PatrolSpawner implements CustomSpawner {
    private int nextTick;
@@ -24,40 +23,38 @@ public class PatrolSpawner implements CustomSpawner {
 
    public void tick(ServerLevel var1, boolean var2) {
       if (var2) {
-         if (var1.getGameRules().getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+         if ((Boolean)var1.getGameRules().get(GameRules.SPAWN_PATROLS)) {
             RandomSource var3 = var1.random;
             --this.nextTick;
             if (this.nextTick <= 0) {
                this.nextTick += 12000 + var3.nextInt(1200);
-               long var4 = var1.getDayTime() / 24000L;
-               if (var4 >= 5L && var1.isBrightOutside()) {
+               if (var1.isBrightOutside()) {
                   if (var3.nextInt(5) == 0) {
-                     int var6 = var1.players().size();
-                     if (var6 >= 1) {
-                        Player var7 = (Player)var1.players().get(var3.nextInt(var6));
-                        if (!var7.isSpectator()) {
-                           if (!var1.isCloseToVillage(var7.blockPosition(), 2)) {
-                              int var8 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
-                              int var9 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
-                              BlockPos.MutableBlockPos var10 = var7.blockPosition().mutable().move(var8, 0, var9);
-                              boolean var11 = true;
-                              if (var1.hasChunksAt(var10.getX() - 10, var10.getZ() - 10, var10.getX() + 10, var10.getZ() + 10)) {
-                                 Holder var12 = var1.getBiome(var10);
-                                 if (!var12.is(BiomeTags.WITHOUT_PATROL_SPAWNS)) {
-                                    int var13 = (int)Math.ceil((double)var1.getCurrentDifficultyAt(var10).getEffectiveDifficulty()) + 1;
+                     int var4 = var1.players().size();
+                     if (var4 >= 1) {
+                        Player var5 = (Player)var1.players().get(var3.nextInt(var4));
+                        if (!var5.isSpectator()) {
+                           if (!var1.isCloseToVillage(var5.blockPosition(), 2)) {
+                              int var6 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
+                              int var7 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
+                              BlockPos.MutableBlockPos var8 = var5.blockPosition().mutable().move(var6, 0, var7);
+                              boolean var9 = true;
+                              if (var1.hasChunksAt(var8.getX() - 10, var8.getZ() - 10, var8.getX() + 10, var8.getZ() + 10)) {
+                                 if ((Boolean)var1.environmentAttributes().getValue(EnvironmentAttributes.CAN_PILLAGER_PATROL_SPAWN, var8)) {
+                                    int var10 = (int)Math.ceil((double)var1.getCurrentDifficultyAt(var8).getEffectiveDifficulty()) + 1;
 
-                                    for(int var14 = 0; var14 < var13; ++var14) {
-                                       var10.setY(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var10).getY());
-                                       if (var14 == 0) {
-                                          if (!this.spawnPatrolMember(var1, var10, var3, true)) {
+                                    for(int var11 = 0; var11 < var10; ++var11) {
+                                       var8.setY(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var8).getY());
+                                       if (var11 == 0) {
+                                          if (!this.spawnPatrolMember(var1, var8, var3, true)) {
                                              break;
                                           }
                                        } else {
-                                          this.spawnPatrolMember(var1, var10, var3, false);
+                                          this.spawnPatrolMember(var1, var8, var3, false);
                                        }
 
-                                       var10.setX(var10.getX() + var3.nextInt(5) - var3.nextInt(5));
-                                       var10.setZ(var10.getZ() + var3.nextInt(5) - var3.nextInt(5));
+                                       var8.setX(var8.getX() + var3.nextInt(5) - var3.nextInt(5));
+                                       var8.setZ(var8.getZ() + var3.nextInt(5) - var3.nextInt(5));
                                     }
 
                                  }

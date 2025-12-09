@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -13,11 +12,11 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Difficulty;
+import org.jspecify.annotations.Nullable;
 
 public class OnlineOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.online.title");
-   @Nullable
-   private OptionInstance<Unit> difficultyDisplay;
+   private @Nullable OptionInstance<Unit> difficultyDisplay;
 
    public OnlineOptionsScreen(Screen var1, Options var2) {
       super(var1, var2, TITLE);

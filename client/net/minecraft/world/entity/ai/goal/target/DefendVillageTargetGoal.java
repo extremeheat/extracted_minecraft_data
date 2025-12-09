@@ -2,20 +2,19 @@ package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class DefendVillageTargetGoal extends TargetGoal {
    private final IronGolem golem;
-   @Nullable
-   private LivingEntity potentialTarget;
+   private @Nullable LivingEntity potentialTarget;
    private final TargetingConditions attackTargeting = TargetingConditions.forCombat().range(64.0);
 
    public DefendVillageTargetGoal(IronGolem var1) {

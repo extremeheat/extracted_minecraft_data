@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -22,13 +20,15 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class EditBox extends AbstractWidget {
-   private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
+   private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/text_field"), Identifier.withDefaultNamespace("widget/text_field_highlighted"));
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
    private static final int CURSOR_INSERT_WIDTH = 1;
@@ -45,19 +45,17 @@ public class EditBox extends AbstractWidget {
    private boolean isEditable;
    private boolean centered;
    private boolean textShadow;
+   private boolean invertHighlightedTextColor;
    private int displayPos;
    private int cursorPos;
    private int highlightPos;
    private int textColor;
    private int textColorUneditable;
-   @Nullable
-   private String suggestion;
-   @Nullable
-   private Consumer<String> responder;
+   private @Nullable String suggestion;
+   private @Nullable Consumer<String> responder;
    private Predicate<String> filter;
    private final List<TextFormatter> formatters;
-   @Nullable
-   private Component hint;
+   private @Nullable Component hint;
    private long focusedTime;
    private int textX;
    private int textY;
@@ -79,6 +77,7 @@ public class EditBox extends AbstractWidget {
       this.isEditable = true;
       this.centered = false;
       this.textShadow = true;
+      this.invertHighlightedTextColor = true;
       this.textColor = -2039584;
       this.textColorUneditable = -9408400;
       this.filter = Objects::nonNull;
@@ -291,7 +290,7 @@ public class EditBox extends AbstractWidget {
          switch (var1.key()) {
             case 259:
                if (this.isEditable) {
-                  this.deleteText(-1, var1.hasControlDown());
+                  this.deleteText(-1, var1.hasControlDownWithQuirk());
                }
 
                return true;
@@ -328,12 +327,12 @@ public class EditBox extends AbstractWidget {
                }
             case 261:
                if (this.isEditable) {
-                  this.deleteText(1, var1.hasControlDown());
+                  this.deleteText(1, var1.hasControlDownWithQuirk());
                }
 
                return true;
             case 262:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   this.moveCursorTo(this.getWordPosition(1), var1.hasShiftDown());
                } else {
                   this.moveCursor(1, var1.hasShiftDown());
@@ -341,7 +340,7 @@ public class EditBox extends AbstractWidget {
 
                return true;
             case 263:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   this.moveCursorTo(this.getWordPosition(-1), var1.hasShiftDown());
                } else {
                   this.moveCursor(-1, var1.hasShiftDown());
@@ -411,7 +410,7 @@ public class EditBox extends AbstractWidget {
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
          if (this.isBordered()) {
-            ResourceLocation var5 = SPRITES.get(this.isActive(), this.isFocused());
+            Identifier var5 = SPRITES.get(this.isActive(), this.isFocused());
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
@@ -457,7 +456,7 @@ public class EditBox extends AbstractWidget {
             int var10003 = Math.min(var14 - 1, this.getX() + this.width);
             int var10004 = this.textY + 1;
             Objects.requireNonNull(this.font);
-            var1.textHighlight(var10001, var10002, var10003, var10004 + 9);
+            var1.textHighlight(var10001, var10002, var10003, var10004 + 9, this.invertHighlightedTextColor);
          }
 
          if (var9) {
@@ -563,6 +562,10 @@ public class EditBox extends AbstractWidget {
       this.textShadow = var1;
    }
 
+   public void setInvertHighlightedTextColor(boolean var1) {
+      this.invertHighlightedTextColor = var1;
+   }
+
    public int getInnerWidth() {
       return this.isBordered() ? this.width - 8 : this.width;
    }
@@ -628,7 +631,6 @@ public class EditBox extends AbstractWidget {
 
    @FunctionalInterface
    public interface TextFormatter {
-      @Nullable
-      FormattedCharSequence format(String var1, int var2);
+      @Nullable FormattedCharSequence format(String var1, int var2);
    }
 }

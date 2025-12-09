@@ -1,6 +1,5 @@
 package net.minecraft.client.particle;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -10,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class FallingDustParticle extends SingleQuadParticle {
    private final float rotSpeed;
@@ -23,11 +23,11 @@ public class FallingDustParticle extends SingleQuadParticle {
       this.bCol = var10;
       float var12 = 0.9F;
       this.quadSize *= 0.67499995F;
-      int var13 = (int)(32.0 / (Math.random() * 0.8 + 0.2));
+      int var13 = (int)(32.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
       this.lifetime = (int)Math.max((float)var13 * 0.9F, 1.0F);
       this.setSpriteFromAge(var11);
-      this.rotSpeed = ((float)Math.random() - 0.5F) * 0.1F;
-      this.roll = (float)Math.random() * 6.2831855F;
+      this.rotSpeed = (this.random.nextFloat() - 0.5F) * 0.1F;
+      this.roll = this.random.nextFloat() * 6.2831855F;
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -66,8 +66,7 @@ public class FallingDustParticle extends SingleQuadParticle {
          this.sprite = var1;
       }
 
-      @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+      public @Nullable Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          BlockState var16 = var1.getState();
          if (!var16.isAir() && var16.getRenderShape() == RenderShape.INVISIBLE) {
             return null;

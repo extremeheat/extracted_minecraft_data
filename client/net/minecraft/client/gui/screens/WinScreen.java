@@ -20,11 +20,12 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
 import net.minecraft.util.FormattedCharSequence;
@@ -34,16 +35,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class WinScreen extends Screen {
-   private static final ResourceLocation VIGNETTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/credits_vignette.png");
+   private static final Identifier VIGNETTE_LOCATION = Identifier.withDefaultNamespace("textures/misc/credits_vignette.png");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component SECTION_HEADING;
    private static final String NAME_PREFIX = "           ";
    private static final String OBFUSCATE_TOKEN;
    private static final float SPEEDUP_FACTOR = 5.0F;
    private static final float SPEEDUP_FACTOR_FAST = 15.0F;
-   private static final ResourceLocation END_POEM_LOCATION;
-   private static final ResourceLocation CREDITS_LOCATION;
-   private static final ResourceLocation POSTCREDITS_LOCATION;
+   private static final Identifier END_POEM_LOCATION;
+   private static final Identifier CREDITS_LOCATION;
+   private static final Identifier POSTCREDITS_LOCATION;
    private final boolean poem;
    private final Runnable onFinished;
    private float scroll;
@@ -146,7 +147,7 @@ public class WinScreen extends Screen {
       return CommonComponents.joinForNarration((Component[])this.narratorComponents.toArray((var0) -> new Component[var0]));
    }
 
-   private void wrapCreditsIO(ResourceLocation var1, CreditsReader var2) {
+   private void wrapCreditsIO(Identifier var1, CreditsReader var2) {
       try {
          BufferedReader var3 = this.minecraft.getResourceManager().openAsReader(var1);
 
@@ -301,8 +302,10 @@ public class WinScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.poem) {
          TextureManager var5 = Minecraft.getInstance().getTextureManager();
-         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
-         var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
+         AbstractTexture var6 = var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+         AbstractTexture var7 = var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+         TextureSetup var8 = TextureSetup.doubleTexture(var6.getTextureView(), var6.getSampler(), var7.getTextureView(), var7.getSampler());
+         var1.fill(RenderPipelines.END_PORTAL, var8, 0, 0, this.width, this.height);
       } else {
          super.renderBackground(var1, var2, var3, var4);
       }
@@ -334,9 +337,9 @@ public class WinScreen extends Screen {
       SECTION_HEADING = Component.literal("============").withStyle(ChatFormatting.WHITE);
       String var10000 = String.valueOf(ChatFormatting.WHITE);
       OBFUSCATE_TOKEN = var10000 + String.valueOf(ChatFormatting.OBFUSCATED) + String.valueOf(ChatFormatting.GREEN) + String.valueOf(ChatFormatting.AQUA);
-      END_POEM_LOCATION = ResourceLocation.withDefaultNamespace("texts/end.txt");
-      CREDITS_LOCATION = ResourceLocation.withDefaultNamespace("texts/credits.json");
-      POSTCREDITS_LOCATION = ResourceLocation.withDefaultNamespace("texts/postcredits.txt");
+      END_POEM_LOCATION = Identifier.withDefaultNamespace("texts/end.txt");
+      CREDITS_LOCATION = Identifier.withDefaultNamespace("texts/credits.json");
+      POSTCREDITS_LOCATION = Identifier.withDefaultNamespace("texts/postcredits.txt");
    }
 
    @FunctionalInterface

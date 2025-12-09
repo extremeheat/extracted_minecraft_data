@@ -3,18 +3,17 @@ package net.minecraft.world.level.chunk;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class BulkSectionAccess implements AutoCloseable {
    private final LevelAccessor level;
    private final Long2ObjectMap<LevelChunkSection> acquiredSections = new Long2ObjectOpenHashMap();
-   @Nullable
-   private LevelChunkSection lastSection;
+   private @Nullable LevelChunkSection lastSection;
    private long lastSectionKey;
 
    public BulkSectionAccess(LevelAccessor var1) {
@@ -22,8 +21,7 @@ public class BulkSectionAccess implements AutoCloseable {
       this.level = var1;
    }
 
-   @Nullable
-   public LevelChunkSection getSection(BlockPos var1) {
+   public @Nullable LevelChunkSection getSection(BlockPos var1) {
       int var2 = this.level.getSectionIndex(var1.getY());
       if (var2 >= 0 && var2 < this.level.getSectionsCount()) {
          long var3 = SectionPos.asLong(var1);

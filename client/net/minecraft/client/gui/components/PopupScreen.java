@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -12,10 +11,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class PopupScreen extends Screen {
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("popup/background");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("popup/background");
    private static final int SPACING = 12;
    private static final int BG_BORDER_WITH_SPACING = 18;
    private static final int BUTTON_SPACING = 6;
@@ -23,16 +23,14 @@ public class PopupScreen extends Screen {
    private static final int IMAGE_SIZE_Y = 64;
    private static final int POPUP_DEFAULT_WIDTH = 250;
    private final Screen backgroundScreen;
-   @Nullable
-   private final ResourceLocation image;
+   private final @Nullable Identifier image;
    private final Component message;
    private final List<ButtonOption> buttons;
-   @Nullable
-   private final Runnable onClose;
+   private final @Nullable Runnable onClose;
    private final int contentWidth;
    private final LinearLayout layout = LinearLayout.vertical();
 
-   PopupScreen(Screen var1, int var2, @Nullable ResourceLocation var3, Component var4, Component var5, List<ButtonOption> var6, @Nullable Runnable var7) {
+   PopupScreen(Screen var1, int var2, @Nullable Identifier var3, Component var4, Component var5, List<ButtonOption> var6, @Nullable Runnable var7) {
       super(var4);
       this.backgroundScreen = var1;
       this.image = var3;
@@ -48,7 +46,7 @@ public class PopupScreen extends Screen {
    }
 
    protected void init() {
-      this.backgroundScreen.init(this.minecraft, this.width, this.height);
+      this.backgroundScreen.init(this.width, this.height);
       this.layout.spacing(12).defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild((new MultiLineTextWidget(this.title.copy().withStyle(ChatFormatting.BOLD), this.font)).setMaxWidth(this.contentWidth).setCentered(true));
       if (this.image != null) {
@@ -77,7 +75,7 @@ public class PopupScreen extends Screen {
    }
 
    protected void repositionElements() {
-      this.backgroundScreen.resize(this.minecraft, this.width, this.height);
+      this.backgroundScreen.resize(this.width, this.height);
       this.layout.arrangeElements();
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
@@ -108,11 +106,9 @@ public class PopupScreen extends Screen {
       private final Component title;
       private Component message;
       private int width;
-      @Nullable
-      private ResourceLocation image;
+      private @Nullable Identifier image;
       private final List<ButtonOption> buttons;
-      @Nullable
-      private Runnable onClose;
+      private @Nullable Runnable onClose;
 
       public Builder(Screen var1, Component var2) {
          super();
@@ -129,7 +125,7 @@ public class PopupScreen extends Screen {
          return this;
       }
 
-      public Builder setImage(ResourceLocation var1) {
+      public Builder setImage(Identifier var1) {
          this.image = var1;
          return this;
       }

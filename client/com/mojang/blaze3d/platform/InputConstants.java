@@ -1,8 +1,13 @@
 package com.mojang.blaze3d.platform;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -11,11 +16,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
+import java.util.function.Supplier;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.LazyLoadedValue;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharModsCallbackI;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
@@ -25,8 +30,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 
 public class InputConstants {
-   @Nullable
-   private static final MethodHandle GLFW_RAW_MOUSE_MOTION_SUPPORTED;
+   private static final @Nullable MethodHandle GLFW_RAW_MOUSE_MOTION_SUPPORTED;
    private static final int GLFW_RAW_MOUSE_MOTION;
    public static final int KEY_0 = 48;
    public static final int KEY_1 = 49;
@@ -147,8 +151,13 @@ public class InputConstants {
    public static final int RELEASE = 0;
    public static final int REPEAT = 2;
    public static final int MOUSE_BUTTON_LEFT = 0;
-   public static final int MOUSE_BUTTON_MIDDLE = 2;
    public static final int MOUSE_BUTTON_RIGHT = 1;
+   public static final int MOUSE_BUTTON_MIDDLE = 2;
+   public static final int MOUSE_BUTTON_4 = 3;
+   public static final int MOUSE_BUTTON_5 = 4;
+   public static final int MOUSE_BUTTON_6 = 5;
+   public static final int MOUSE_BUTTON_7 = 6;
+   public static final int MOUSE_BUTTON_8 = 0;
    public static final int MOD_SHIFT = 1;
    public static final int MOD_CONTROL = 2;
    public static final int MOD_ALT = 4;
@@ -428,7 +437,7 @@ public class InputConstants {
       private final String name;
       private final Type type;
       private final int value;
-      private final LazyLoadedValue<Component> displayName;
+      private final Supplier<Component> displayName;
       static final Map<String, Key> NAME_MAP = Maps.newHashMap();
 
       Key(String var1, Type var2, int var3) {
@@ -436,7 +445,7 @@ public class InputConstants {
          this.name = var1;
          this.type = var2;
          this.value = var3;
-         this.displayName = new LazyLoadedValue<Component>(() -> (Component)var2.displayTextSupplier.apply(var3, var1));
+         this.displayName = Suppliers.memoize(() -> (Component)var2.displayTextSupplier.apply(var3, var1));
          NAME_MAP.put(var1, this);
       }
 
@@ -453,7 +462,7 @@ public class InputConstants {
       }
 
       public Component getDisplayName() {
-         return this.displayName.get();
+         return (Component)this.displayName.get();
       }
 
       public OptionalInt getNumericKeyValue() {
@@ -482,5 +491,10 @@ public class InputConstants {
       public String toString() {
          return this.name;
       }
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Value {
    }
 }

@@ -1,6 +1,8 @@
 package net.minecraft.server.jsonrpc.methods;
 
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 
@@ -137,12 +139,12 @@ public class ServerSettingsService {
       return var0.serverSettingsService().setStatusHeartbeatInterval(var1, var2);
    }
 
-   public static int operatorUserPermissionLevel(MinecraftApi var0) {
-      return var0.serverSettingsService().getOperatorUserPermissionLevel();
+   public static PermissionLevel operatorUserPermissionLevel(MinecraftApi var0) {
+      return var0.serverSettingsService().getOperatorUserPermissions().level();
    }
 
-   public static int setOperatorUserPermissionLevel(MinecraftApi var0, int var1, ClientInfo var2) {
-      return var0.serverSettingsService().setOperatorUserPermissionLevel(var1, var2);
+   public static PermissionLevel setOperatorUserPermissionLevel(MinecraftApi var0, PermissionLevel var1, ClientInfo var2) {
+      return var0.serverSettingsService().setOperatorUserPermissions(LevelBasedPermissionSet.forLevel(var1), var2).level();
    }
 
    public static boolean hidesOnlinePlayers(MinecraftApi var0) {

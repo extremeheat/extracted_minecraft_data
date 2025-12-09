@@ -1,18 +1,17 @@
 package net.minecraft.client;
 
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ServerboundBlockEntityTagQueryPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQueryPacket;
+import org.jspecify.annotations.Nullable;
 
 public class DebugQueryHandler {
    private final ClientPacketListener connection;
    private int transactionId = -1;
-   @Nullable
-   private Consumer<CompoundTag> callback;
+   private @Nullable Consumer<CompoundTag> callback;
 
    public DebugQueryHandler(ClientPacketListener var1) {
       super();

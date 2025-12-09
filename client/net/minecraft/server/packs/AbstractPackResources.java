@@ -9,10 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Nullable;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class AbstractPackResources implements PackResources {
@@ -24,8 +24,7 @@ public abstract class AbstractPackResources implements PackResources {
       this.location = var1;
    }
 
-   @Nullable
-   public <T> T getMetadataSection(MetadataSectionType<T> var1) throws IOException {
+   public <T> @Nullable T getMetadataSection(MetadataSectionType<T> var1) throws IOException {
       IoSupplier var2 = this.getRootResource(new String[]{"pack.mcmeta"});
       if (var2 == null) {
          return null;
@@ -55,8 +54,7 @@ public abstract class AbstractPackResources implements PackResources {
       }
    }
 
-   @Nullable
-   public static <T> T getMetadataFromStream(MetadataSectionType<T> var0, InputStream var1, PackLocationInfo var2) {
+   public static <T> @Nullable T getMetadataFromStream(MetadataSectionType<T> var0, InputStream var1, PackLocationInfo var2) {
       JsonObject var3;
       try {
          BufferedReader var4 = new BufferedReader(new InputStreamReader(var1, StandardCharsets.UTF_8));

@@ -3,9 +3,10 @@ package net.minecraft.world.entity.ai.attributes;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class Attributes {
+   public static final double DEFAULT_ATTACK_SPEED = 4.0;
    public static final Holder<Attribute> ARMOR = register("armor", (new RangedAttribute("attribute.name.armor", 0.0, 0.0, 30.0)).setSyncable(true));
    public static final Holder<Attribute> ARMOR_TOUGHNESS = register("armor_toughness", (new RangedAttribute("attribute.name.armor_toughness", 0.0, 0.0, 20.0)).setSyncable(true));
    public static final Holder<Attribute> ATTACK_DAMAGE = register("attack_damage", new RangedAttribute("attribute.name.attack_damage", 2.0, 0.0, 2048.0));
@@ -47,7 +48,7 @@ public class Attributes {
    }
 
    private static Holder<Attribute> register(String var0, Attribute var1) {
-      return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, ResourceLocation.withDefaultNamespace(var0), var1);
+      return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.withDefaultNamespace(var0), var1);
    }
 
    public static Holder<Attribute> bootstrap(Registry<Attribute> var0) {

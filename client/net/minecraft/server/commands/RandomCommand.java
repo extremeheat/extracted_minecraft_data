@@ -13,18 +13,19 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.RangeArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomSequences;
+import org.jspecify.annotations.Nullable;
 
 public class RandomCommand {
    private static final SimpleCommandExceptionType ERROR_RANGE_TOO_LARGE = new SimpleCommandExceptionType(Component.translatable("commands.random.error.range_too_large"));
@@ -35,11 +36,11 @@ public class RandomCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("random").then(drawRandomValueTree("value", false))).then(drawRandomValueTree("roll", true))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("reset").requires(Commands.hasPermission(2))).then(((LiteralArgumentBuilder)Commands.literal("*").executes((var0x) -> resetAllSequences((CommandSourceStack)var0x.getSource()))).then(((RequiredArgumentBuilder)Commands.argument("seed", IntegerArgumentType.integer()).executes((var0x) -> resetAllSequencesAndSetNewDefaults((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "seed"), true, true))).then(((RequiredArgumentBuilder)Commands.argument("includeWorldSeed", BoolArgumentType.bool()).executes((var0x) -> resetAllSequencesAndSetNewDefaults((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), true))).then(Commands.argument("includeSequenceId", BoolArgumentType.bool()).executes((var0x) -> resetAllSequencesAndSetNewDefaults((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), BoolArgumentType.getBool(var0x, "includeSequenceId")))))))).then(((RequiredArgumentBuilder)Commands.argument("sequence", ResourceLocationArgument.id()).suggests(RandomCommand::suggestRandomSequence).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "sequence")))).then(((RequiredArgumentBuilder)Commands.argument("seed", IntegerArgumentType.integer()).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "sequence"), IntegerArgumentType.getInteger(var0x, "seed"), true, true))).then(((RequiredArgumentBuilder)Commands.argument("includeWorldSeed", BoolArgumentType.bool()).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "sequence"), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), true))).then(Commands.argument("includeSequenceId", BoolArgumentType.bool()).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "sequence"), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), BoolArgumentType.getBool(var0x, "includeSequenceId")))))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("random").then(drawRandomValueTree("value", false))).then(drawRandomValueTree("roll", true))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("reset").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((LiteralArgumentBuilder)Commands.literal("*").executes((var0x) -> resetAllSequences((CommandSourceStack)var0x.getSource()))).then(((RequiredArgumentBuilder)Commands.argument("seed", IntegerArgumentType.integer()).executes((var0x) -> resetAllSequencesAndSetNewDefaults((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "seed"), true, true))).then(((RequiredArgumentBuilder)Commands.argument("includeWorldSeed", BoolArgumentType.bool()).executes((var0x) -> resetAllSequencesAndSetNewDefaults((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), true))).then(Commands.argument("includeSequenceId", BoolArgumentType.bool()).executes((var0x) -> resetAllSequencesAndSetNewDefaults((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), BoolArgumentType.getBool(var0x, "includeSequenceId")))))))).then(((RequiredArgumentBuilder)Commands.argument("sequence", IdentifierArgument.id()).suggests(RandomCommand::suggestRandomSequence).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "sequence")))).then(((RequiredArgumentBuilder)Commands.argument("seed", IntegerArgumentType.integer()).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "sequence"), IntegerArgumentType.getInteger(var0x, "seed"), true, true))).then(((RequiredArgumentBuilder)Commands.argument("includeWorldSeed", BoolArgumentType.bool()).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "sequence"), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), true))).then(Commands.argument("includeSequenceId", BoolArgumentType.bool()).executes((var0x) -> resetSequence((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "sequence"), IntegerArgumentType.getInteger(var0x, "seed"), BoolArgumentType.getBool(var0x, "includeWorldSeed"), BoolArgumentType.getBool(var0x, "includeSequenceId")))))))));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> drawRandomValueTree(String var0, boolean var1) {
-      return (LiteralArgumentBuilder)Commands.literal(var0).then(((RequiredArgumentBuilder)Commands.argument("range", RangeArgument.intRange()).executes((var1x) -> randomSample((CommandSourceStack)var1x.getSource(), RangeArgument.Ints.getRange(var1x, "range"), (ResourceLocation)null, var1))).then(((RequiredArgumentBuilder)Commands.argument("sequence", ResourceLocationArgument.id()).suggests(RandomCommand::suggestRandomSequence).requires(Commands.hasPermission(2))).executes((var1x) -> randomSample((CommandSourceStack)var1x.getSource(), RangeArgument.Ints.getRange(var1x, "range"), ResourceLocationArgument.getId(var1x, "sequence"), var1))));
+      return (LiteralArgumentBuilder)Commands.literal(var0).then(((RequiredArgumentBuilder)Commands.argument("range", RangeArgument.intRange()).executes((var1x) -> randomSample((CommandSourceStack)var1x.getSource(), RangeArgument.Ints.getRange(var1x, "range"), (Identifier)null, var1))).then(((RequiredArgumentBuilder)Commands.argument("sequence", IdentifierArgument.id()).suggests(RandomCommand::suggestRandomSequence).requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var1x) -> randomSample((CommandSourceStack)var1x.getSource(), RangeArgument.Ints.getRange(var1x, "range"), IdentifierArgument.getId(var1x, "sequence"), var1))));
    }
 
    private static CompletableFuture<Suggestions> suggestRandomSequence(CommandContext<CommandSourceStack> var0, SuggestionsBuilder var1) {
@@ -48,7 +49,7 @@ public class RandomCommand {
       return SharedSuggestionProvider.suggest(var2, var1);
    }
 
-   private static int randomSample(CommandSourceStack var0, MinMaxBounds.Ints var1, @Nullable ResourceLocation var2, boolean var3) throws CommandSyntaxException {
+   private static int randomSample(CommandSourceStack var0, MinMaxBounds.Ints var1, @Nullable Identifier var2, boolean var3) throws CommandSyntaxException {
       RandomSource var4;
       if (var2 != null) {
          var4 = var0.getLevel().getRandomSequence(var2);
@@ -75,14 +76,16 @@ public class RandomCommand {
       }
    }
 
-   private static int resetSequence(CommandSourceStack var0, ResourceLocation var1) throws CommandSyntaxException {
-      var0.getLevel().getRandomSequences().reset(var1);
+   private static int resetSequence(CommandSourceStack var0, Identifier var1) throws CommandSyntaxException {
+      ServerLevel var2 = var0.getLevel();
+      var2.getRandomSequences().reset(var1, var2.getSeed());
       var0.sendSuccess(() -> Component.translatable("commands.random.reset.success", Component.translationArg(var1)), false);
       return 1;
    }
 
-   private static int resetSequence(CommandSourceStack var0, ResourceLocation var1, int var2, boolean var3, boolean var4) throws CommandSyntaxException {
-      var0.getLevel().getRandomSequences().reset(var1, var2, var3, var4);
+   private static int resetSequence(CommandSourceStack var0, Identifier var1, int var2, boolean var3, boolean var4) throws CommandSyntaxException {
+      ServerLevel var5 = var0.getLevel();
+      var5.getRandomSequences().reset(var1, var5.getSeed(), var2, var3, var4);
       var0.sendSuccess(() -> Component.translatable("commands.random.reset.success", Component.translationArg(var1)), false);
       return 1;
    }

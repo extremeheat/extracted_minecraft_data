@@ -20,6 +20,8 @@ public interface EnchantmentEntityEffect extends EnchantmentLocationBasedEffect 
       Registry.register(var0, (String)"damage_entity", DamageEntity.CODEC);
       Registry.register(var0, (String)"explode", ExplodeEffect.CODEC);
       Registry.register(var0, (String)"ignite", Ignite.CODEC);
+      Registry.register(var0, (String)"apply_impulse", ApplyEntityImpulse.CODEC);
+      Registry.register(var0, (String)"apply_exhaustion", ApplyExhaustion.CODEC);
       Registry.register(var0, (String)"play_sound", PlaySoundEffect.CODEC);
       Registry.register(var0, (String)"replace_block", ReplaceBlock.CODEC);
       Registry.register(var0, (String)"replace_disk", ReplaceDisk.CODEC);

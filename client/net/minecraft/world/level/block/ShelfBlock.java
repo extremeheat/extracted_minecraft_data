@@ -4,9 +4,9 @@ import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -21,6 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -46,6 +47,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContainer, SideChainPartBlock, SimpleWaterloggedBlock {
    public static final MapCodec<ShelfBlock> CODEC = simpleCodec(ShelfBlock::new);
@@ -76,8 +78,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       return var2 == PathComputationType.WATER && var1.getFluidState().is(FluidTags.WATER);
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new ShelfBlockEntity(var1, var2);
    }
 
@@ -137,11 +138,11 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                return InteractionResult.PASS;
             }
 
+            Inventory var10 = var5.getInventory();
             if (var3.isClientSide()) {
-               return InteractionResult.SUCCESS;
+               return (InteractionResult)(var10.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
             }
 
-            Inventory var10 = var5.getInventory();
             if (!(Boolean)var2.getValue(POWERED)) {
                boolean var14 = swapSingleItem(var1, var5, var8, var13.getAsInt(), var10);
                if (var14) {
@@ -180,7 +181,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       ItemStack var6 = var1.hasInfiniteMaterials() && var5.isEmpty() ? var0.copy() : var5;
       var4.setItem(var4.getSelectedSlot(), var6);
       var4.setChanged();
-      var2.setChanged(GameEvent.ITEM_INTERACT_FINISH);
+      var2.setChanged(var6.has(DataComponents.USE_EFFECTS) && !((UseEffects)var6.get(DataComponents.USE_EFFECTS)).interactVibrations() ? null : GameEvent.ITEM_INTERACT_FINISH);
       return !var5.isEmpty();
    }
 

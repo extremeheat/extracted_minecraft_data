@@ -13,10 +13,10 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
-import javax.annotation.Nullable;
 import net.jpountz.lz4.LZ4BlockInputStream;
 import net.jpountz.lz4.LZ4BlockOutputStream;
 import net.minecraft.util.FastBufferedInputStream;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RegionFileVersion {
@@ -35,8 +35,7 @@ public class RegionFileVersion {
    public static final RegionFileVersion DEFAULT;
    private static volatile RegionFileVersion selected;
    private final int id;
-   @Nullable
-   private final String optionName;
+   private final @Nullable String optionName;
    private final StreamWrapper<InputStream> inputWrapper;
    private final StreamWrapper<OutputStream> outputWrapper;
 
@@ -57,8 +56,7 @@ public class RegionFileVersion {
       return var0;
    }
 
-   @Nullable
-   public static RegionFileVersion fromId(int var0) {
+   public static @Nullable RegionFileVersion fromId(int var0) {
       return (RegionFileVersion)VERSIONS.get(var0);
    }
 

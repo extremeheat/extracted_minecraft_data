@@ -13,8 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.StreamTagVisitor;
@@ -22,12 +20,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.util.thread.PriorityConsecutiveExecutor;
 import net.minecraft.util.thread.StrictQueue;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class IOWorker implements ChunkScanAccess, AutoCloseable {
+   public static final Supplier<CompoundTag> STORE_EMPTY = () -> null;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final AtomicBoolean shutdownRequested = new AtomicBoolean();
    private final PriorityConsecutiveExecutor consecutiveExecutor;
@@ -119,7 +120,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       return var1.getIntOr("DataVersion", 0) < 4295 ? true : var1.getCompound("blending_data").isPresent();
    }
 
-   public CompletableFuture<Void> store(ChunkPos var1, @Nullable CompoundTag var2) {
+   public CompletableFuture<Void> store(ChunkPos var1, CompoundTag var2) {
       return this.store(var1, (Supplier)(() -> var2));
    }
 
@@ -266,8 +267,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    static class PendingStore {
-      @Nullable
-      CompoundTag data;
+      @Nullable CompoundTag data;
       final CompletableFuture<Void> result = new CompletableFuture();
 
       public PendingStore(@Nullable CompoundTag var1) {
@@ -275,8 +275,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
          this.data = var1;
       }
 
-      @Nullable
-      CompoundTag copyData() {
+      @Nullable CompoundTag copyData() {
          CompoundTag var1 = this.data;
          return var1 == null ? null : var1.copy();
       }
@@ -284,7 +283,6 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
    @FunctionalInterface
    interface ThrowingSupplier<T> {
-      @Nullable
-      T get() throws Exception;
+      @Nullable T get() throws Exception;
    }
 }

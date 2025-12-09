@@ -1,16 +1,16 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.SlimeModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.monster.slime.SlimeModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
@@ -26,9 +26,9 @@ public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
       if (!var4.isInvisible || var7) {
          int var8 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
          if (var7) {
-            var2.order(1).submitModel(this.model, var4, var1, RenderType.outline(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            var2.order(1).submitModel(this.model, var4, var1, RenderTypes.outline(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          } else {
-            var2.order(1).submitModel(this.model, var4, var1, RenderType.entityTranslucent(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            var2.order(1).submitModel(this.model, var4, var1, RenderTypes.entityTranslucent(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          }
 
       }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.lighting;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
@@ -8,15 +7,14 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunkGetter;
+import org.jspecify.annotations.Nullable;
 
 public class LevelLightEngine implements LightEventListener {
    public static final int LIGHT_SECTION_PADDING = 1;
    public static final LevelLightEngine EMPTY = new LevelLightEngine();
    protected final LevelHeightAccessor levelHeightAccessor;
-   @Nullable
-   private final LightEngine<?, ?> blockEngine;
-   @Nullable
-   private final LightEngine<?, ?> skyEngine;
+   private final @Nullable LightEngine<?, ?> blockEngine;
+   private final @Nullable LightEngine<?, ?> skyEngine;
 
    public LevelLightEngine(LightChunkGetter var1, boolean var2, boolean var3) {
       super();

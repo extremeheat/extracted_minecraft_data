@@ -1,7 +1,6 @@
 package net.minecraft.world.level.redstone;
 
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -14,11 +13,12 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public interface NeighborUpdater {
    Direction[] UPDATE_ORDER = new Direction[]{Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH};
 
-   void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6);
+   void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6);
 
    void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3);
 
@@ -33,7 +33,7 @@ public interface NeighborUpdater {
 
    }
 
-   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
       BlockState var7 = var0.getBlockState(var2);
       if ((var5 & 128) == 0 || !var7.is(Blocks.REDSTONE_WIRE)) {
          BlockState var8 = var7.updateShape(var0, var0, var2, var1, var3, var4, var0.getRandom());

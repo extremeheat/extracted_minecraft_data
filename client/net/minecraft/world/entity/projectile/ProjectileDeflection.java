@@ -1,9 +1,9 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface ProjectileDeflection {
@@ -14,13 +14,13 @@ public interface ProjectileDeflection {
       var0.setDeltaMovement(var0.getDeltaMovement().scale(-0.5));
       var0.setYRot(var0.getYRot() + var3);
       var0.yRotO += var3;
-      var0.hasImpulse = true;
+      var0.needsSync = true;
    };
    ProjectileDeflection AIM_DEFLECT = (var0, var1, var2) -> {
       if (var1 != null) {
-         Vec3 var3 = var1.getLookAngle().normalize();
+         Vec3 var3 = var1.getLookAngle();
          var0.setDeltaMovement(var3);
-         var0.hasImpulse = true;
+         var0.needsSync = true;
       }
 
    };
@@ -28,7 +28,7 @@ public interface ProjectileDeflection {
       if (var1 != null) {
          Vec3 var3 = var1.getDeltaMovement().normalize();
          var0.setDeltaMovement(var3);
-         var0.hasImpulse = true;
+         var0.needsSync = true;
       }
 
    };

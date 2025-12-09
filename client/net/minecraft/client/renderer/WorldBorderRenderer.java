@@ -16,14 +16,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.WorldBorderRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -31,7 +31,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class WorldBorderRenderer {
-   public static final ResourceLocation FORCEFIELD_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
+   public static final Identifier FORCEFIELD_LOCATION = Identifier.withDefaultNamespace("textures/misc/forcefield.png");
    private boolean needsRebuild = true;
    private double lastMinX;
    private double lastMinZ;
@@ -44,7 +44,7 @@ public class WorldBorderRenderer {
 
    public WorldBorderRenderer() {
       super();
-      this.worldBorderBuffer = RenderSystem.getDevice().createBuffer(() -> "World border vertex buffer", 40, 16 * DefaultVertexFormat.POSITION_TEX.getVertexSize());
+      this.worldBorderBuffer = RenderSystem.getDevice().createBuffer(() -> "World border vertex buffer", 40, 16L * (long)DefaultVertexFormat.POSITION_TEX.getVertexSize());
       this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
    }
 
@@ -95,18 +95,18 @@ public class WorldBorderRenderer {
 
    }
 
-   public void extract(WorldBorder var1, Vec3 var2, double var3, WorldBorderRenderState var5) {
-      var5.minX = var1.getMinX();
-      var5.maxX = var1.getMaxX();
-      var5.minZ = var1.getMinZ();
-      var5.maxZ = var1.getMaxZ();
-      if ((!(var2.x < var5.maxX - var3) || !(var2.x > var5.minX + var3) || !(var2.z < var5.maxZ - var3) || !(var2.z > var5.minZ + var3)) && !(var2.x < var5.minX - var3) && !(var2.x > var5.maxX + var3) && !(var2.z < var5.minZ - var3) && !(var2.z > var5.maxZ + var3)) {
-         var5.alpha = 1.0 - var1.getDistanceToBorder(var2.x, var2.z) / var3;
-         var5.alpha = Math.pow(var5.alpha, 4.0);
-         var5.alpha = Mth.clamp(var5.alpha, 0.0, 1.0);
-         var5.tint = var1.getStatus().getColor();
+   public void extract(WorldBorder var1, float var2, Vec3 var3, double var4, WorldBorderRenderState var6) {
+      var6.minX = var1.getMinX(var2);
+      var6.maxX = var1.getMaxX(var2);
+      var6.minZ = var1.getMinZ(var2);
+      var6.maxZ = var1.getMaxZ(var2);
+      if ((!(var3.x < var6.maxX - var4) || !(var3.x > var6.minX + var4) || !(var3.z < var6.maxZ - var4) || !(var3.z > var6.minZ + var4)) && !(var3.x < var6.minX - var4) && !(var3.x > var6.maxX + var4) && !(var3.z < var6.minZ - var4) && !(var3.z > var6.maxZ + var4)) {
+         var6.alpha = 1.0 - var1.getDistanceToBorder(var3.x, var3.z) / var4;
+         var6.alpha = Math.pow(var6.alpha, 4.0);
+         var6.alpha = Mth.clamp(var6.alpha, 0.0, 1.0);
+         var6.tint = var1.getStatus().getColor();
       } else {
-         var5.alpha = 0.0;
+         var6.alpha = 0.0;
       }
    }
 
@@ -127,7 +127,6 @@ public class WorldBorderRenderer {
 
          TextureManager var18 = Minecraft.getInstance().getTextureManager();
          AbstractTexture var19 = var18.getTexture(FORCEFIELD_LOCATION);
-         var19.setUseMipmaps(false);
          RenderPipeline var20 = RenderPipelines.WORLD_BORDER;
          RenderTarget var21 = Minecraft.getInstance().getMainRenderTarget();
          RenderTarget var22 = Minecraft.getInstance().levelRenderer.getWeatherTarget();
@@ -142,14 +141,14 @@ public class WorldBorderRenderer {
          }
 
          GpuBuffer var25 = this.indices.getBuffer(6);
-         GpuBufferSlice var26 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(var12, var13, var14, (float)var1.alpha), new Vector3f((float)(this.lastMinX - var7), (float)(-var2.y), (float)(this.lastMinZ - var9)), (new Matrix4f()).translation(var15, var15, 0.0F), 0.0F);
+         GpuBufferSlice var26 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(var12, var13, var14, (float)var1.alpha), new Vector3f((float)(this.lastMinX - var7), (float)(-var2.y), (float)(this.lastMinZ - var9)), (new Matrix4f()).translation(var15, var15, 0.0F));
 
          try (RenderPass var27 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "World border", var23, OptionalInt.empty(), var24, OptionalDouble.empty())) {
             var27.setPipeline(var20);
             RenderSystem.bindDefaultUniforms(var27);
             var27.setUniform("DynamicTransforms", var26);
             var27.setIndexBuffer(var25, this.indices.type());
-            var27.bindSampler("Sampler0", var19.getTextureView());
+            var27.bindTexture("Sampler0", var19.getTextureView(), var19.getSampler());
             var27.setVertexBuffer(0, this.worldBorderBuffer);
             ArrayList var28 = new ArrayList();
 

@@ -1,24 +1,24 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.math.OctahedralGroup;
-import com.mojang.math.Quadrant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.BedRule;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.DyeColor;
@@ -47,6 +47,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jspecify.annotations.Nullable;
 
 public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock {
    public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(var0, BedBlock::new));
@@ -65,8 +66,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(PART, BedPart.FOOT)).setValue(OCCUPIED, false));
    }
 
-   @Nullable
-   public static Direction getBedOrientation(BlockGetter var0, BlockPos var1) {
+   public static @Nullable Direction getBedOrientation(BlockGetter var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
       return var2.getBlock() instanceof BedBlock ? (Direction)var2.getValue(FACING) : null;
    }
@@ -83,15 +83,17 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
             }
          }
 
-         if (!canSetSpawn(var2)) {
+         BedRule var6 = (BedRule)var2.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, var3);
+         if (var6.explodes()) {
+            var6.errorMessage().ifPresent((var1x) -> var4.displayClientMessage(var1x, true));
             var2.removeBlock(var3, false);
-            BlockPos var6 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
-            if (var2.getBlockState(var6).is(this)) {
-               var2.removeBlock(var6, false);
+            BlockPos var7 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
+            if (var2.getBlockState(var7).is(this)) {
+               var2.removeBlock(var7, false);
             }
 
-            Vec3 var7 = var3.getCenter();
-            var2.explode((Entity)null, var2.damageSources().badRespawnPointExplosion(var7), (ExplosionDamageCalculator)null, var7, 5.0F, true, Level.ExplosionInteraction.BLOCK);
+            Vec3 var8 = var3.getCenter();
+            var2.explode((Entity)null, var2.damageSources().badRespawnPointExplosion(var8), (ExplosionDamageCalculator)null, var8, 5.0F, true, Level.ExplosionInteraction.BLOCK);
             return InteractionResult.SUCCESS_SERVER;
          } else if ((Boolean)var1.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(var2, var3)) {
@@ -101,18 +103,14 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
             return InteractionResult.SUCCESS_SERVER;
          } else {
             var4.startSleepInBed(var3).ifLeft((var1x) -> {
-               if (var1x.getMessage() != null) {
-                  var4.displayClientMessage(var1x.getMessage(), true);
+               if (var1x.message() != null) {
+                  var4.displayClientMessage(var1x.message(), true);
                }
 
             });
             return InteractionResult.SUCCESS_SERVER;
          }
       }
-   }
-
-   public static boolean canSetSpawn(Level var0) {
-      return var0.dimensionType().bedWorks();
    }
 
    private boolean kickVillagerOutOfBed(Level var1, BlockPos var2) {
@@ -175,8 +173,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       Direction var2 = var1.getHorizontalDirection();
       BlockPos var3 = var1.getClickedPos();
       BlockPos var4 = var3.relative(var2);
@@ -305,7 +302,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       OCCUPIED = BlockStateProperties.OCCUPIED;
       SHAPES = (Map)Util.make(() -> {
          VoxelShape var0 = Block.box(0.0, 0.0, 0.0, 3.0, 3.0, 3.0);
-         VoxelShape var1 = Shapes.rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90));
+         VoxelShape var1 = Shapes.rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90);
          return Shapes.rotateHorizontal(Shapes.or(Block.column(16.0, 3.0, 9.0), var0, var1));
       });
    }

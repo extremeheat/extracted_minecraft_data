@@ -7,8 +7,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -19,7 +17,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class SubtitleOverlay implements SoundEventListener {
    private static final long DISPLAY_TIME = 3000L;
@@ -92,7 +92,7 @@ public class SubtitleOverlay implements SoundEventListener {
                   int var24 = var23 / 2;
                   float var25 = 1.0F;
                   int var26 = this.minecraft.font.width((FormattedText)var14);
-                  int var27 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var15.time) / (float)(3000.0 * var9)));
+                  int var27 = Mth.floor(Mth.clampedLerp((float)(Util.getMillis() - var15.time) / (float)(3000.0 * var9), 255.0F, 75.0F));
                   var1.pose().pushMatrix();
                   var1.pose().translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var29 * (var23 + 1)) * 1.0F);
                   var1.pose().scale(1.0F, 1.0F);
@@ -159,8 +159,7 @@ public class SubtitleOverlay implements SoundEventListener {
          return this.text;
       }
 
-      @Nullable
-      public SoundPlayedAt getClosest(Vec3 var1) {
+      public @Nullable SoundPlayedAt getClosest(Vec3 var1) {
          if (this.playedAt.isEmpty()) {
             return null;
          } else {

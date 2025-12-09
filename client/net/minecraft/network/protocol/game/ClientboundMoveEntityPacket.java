@@ -1,6 +1,5 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
@@ -8,6 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListener> {
    protected final int entityId;
@@ -43,8 +43,7 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
       return "Entity_" + super.toString();
    }
 
-   @Nullable
-   public Entity getEntity(Level var1) {
+   public @Nullable Entity getEntity(Level var1) {
       return var1.getEntity(this.entityId);
    }
 

@@ -2,19 +2,18 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
+import org.jspecify.annotations.Nullable;
 
 public class BreedGoal extends Goal {
    private static final TargetingConditions PARTNER_TARGETING = TargetingConditions.forNonCombat().range(8.0).ignoreLineOfSight();
    protected final Animal animal;
    private final Class<? extends Animal> partnerClass;
    protected final ServerLevel level;
-   @Nullable
-   protected Animal partner;
+   protected @Nullable Animal partner;
    private int loveTime;
    private final double speedModifier;
 
@@ -59,8 +58,7 @@ public class BreedGoal extends Goal {
 
    }
 
-   @Nullable
-   private Animal getFreePartner() {
+   private @Nullable Animal getFreePartner() {
       List var1 = this.level.getNearbyEntities(this.partnerClass, PARTNER_TARGETING, this.animal, this.animal.getBoundingBox().inflate(8.0));
       double var2 = 1.7976931348623157E308;
       Animal var4 = null;

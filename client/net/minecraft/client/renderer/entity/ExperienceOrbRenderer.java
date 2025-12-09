@@ -2,20 +2,21 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ExperienceOrb;
 import org.joml.Quaternionfc;
 
 public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, ExperienceOrbRenderState> {
-   private static final ResourceLocation EXPERIENCE_ORB_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/experience_orb.png");
+   private static final Identifier EXPERIENCE_ORB_LOCATION = Identifier.withDefaultNamespace("textures/entity/experience_orb.png");
    private static final RenderType RENDER_TYPE;
 
    public ExperienceOrbRenderer(EntityRendererProvider.Context var1) {
@@ -40,9 +41,9 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
       float var12 = 0.25F;
       float var13 = 255.0F;
       float var14 = var1.ageInTicks / 2.0F;
-      int var15 = (int)((Mth.sin(var14 + 0.0F) + 1.0F) * 0.5F * 255.0F);
+      int var15 = (int)((Mth.sin((double)(var14 + 0.0F)) + 1.0F) * 0.5F * 255.0F);
       boolean var16 = true;
-      int var17 = (int)((Mth.sin(var14 + 4.1887903F) + 1.0F) * 0.1F * 255.0F);
+      int var17 = (int)((Mth.sin((double)(var14 + 4.1887903F)) + 1.0F) * 0.1F * 255.0F);
       var2.translate(0.0F, 0.1F, 0.0F);
       var2.mulPose((Quaternionfc)var4.orientation);
       float var18 = 0.3F;
@@ -76,6 +77,6 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
    }
 
    static {
-      RENDER_TYPE = RenderType.itemEntityTranslucentCull(EXPERIENCE_ORB_LOCATION);
+      RENDER_TYPE = RenderTypes.itemEntityTranslucentCull(EXPERIENCE_ORB_LOCATION);
    }
 }

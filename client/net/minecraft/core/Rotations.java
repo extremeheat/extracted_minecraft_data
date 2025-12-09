@@ -3,8 +3,8 @@ package net.minecraft.core;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Util;
 
 public record Rotations(float x, float y, float z) {
    final float x;

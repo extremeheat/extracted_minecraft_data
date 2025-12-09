@@ -3,6 +3,7 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Optional;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class OutlineBufferSource implements MultiBufferSource {
    private final MultiBufferSource.BufferSource outlineBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(1536));
@@ -51,6 +52,10 @@ public class OutlineBufferSource implements MultiBufferSource {
          return this;
       }
 
+      public VertexConsumer setColor(int var1) {
+         return this;
+      }
+
       public VertexConsumer setUv(float var1, float var2) {
          this.delegate.setUv(var1, var2);
          return this;
@@ -65,6 +70,10 @@ public class OutlineBufferSource implements MultiBufferSource {
       }
 
       public VertexConsumer setNormal(float var1, float var2, float var3) {
+         return this;
+      }
+
+      public VertexConsumer setLineWidth(float var1) {
          return this;
       }
    }

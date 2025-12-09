@@ -4,17 +4,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public interface MinecraftPlayerListService {
    List<ServerPlayer> getPlayers();
 
-   @Nullable
-   ServerPlayer getPlayer(UUID var1);
+   @Nullable ServerPlayer getPlayer(UUID var1);
 
    default CompletableFuture<Optional<NameAndId>> getUser(Optional<UUID> var1, Optional<String> var2) {
       if (var1.isPresent()) {
@@ -35,8 +34,7 @@ public interface MinecraftPlayerListService {
 
    List<ServerPlayer> getPlayersWithAddress(String var1);
 
-   @Nullable
-   ServerPlayer getPlayerByName(String var1);
+   @Nullable ServerPlayer getPlayerByName(String var1);
 
    void remove(ServerPlayer var1, ClientInfo var2);
 }

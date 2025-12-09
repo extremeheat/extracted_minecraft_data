@@ -1,17 +1,17 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryLookingAtEntity implements DebugScreenEntry {
-   private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("looking_at_entity");
+   private static final Identifier GROUP = Identifier.withDefaultNamespace("looking_at_entity");
 
    public DebugEntryLookingAtEntity() {
       super();

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EntityAttachments {
    private final Map<EntityAttachment, List<Vec3>> attachments;
@@ -37,8 +37,7 @@ public class EntityAttachments {
       }));
    }
 
-   @Nullable
-   public Vec3 getNullable(EntityAttachment var1, int var2, float var3) {
+   public @Nullable Vec3 getNullable(EntityAttachment var1, int var2, float var3) {
       List var4 = (List)this.attachments.get(var1);
       return var2 >= 0 && var2 < var4.size() ? transformPoint((Vec3)var4.get(var2), var3) : null;
    }

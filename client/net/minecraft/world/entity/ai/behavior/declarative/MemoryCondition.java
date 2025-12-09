@@ -6,18 +6,17 @@ import com.mojang.datafixers.kinds.K1;
 import com.mojang.datafixers.kinds.OptionalBox;
 import com.mojang.datafixers.util.Unit;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import org.jspecify.annotations.Nullable;
 
 public interface MemoryCondition<F extends K1, Value> {
    MemoryModuleType<Value> memory();
 
    MemoryStatus condition();
 
-   @Nullable
-   MemoryAccessor<F, Value> createAccessor(Brain<?> var1, Optional<Value> var2);
+   @Nullable MemoryAccessor<F, Value> createAccessor(Brain<?> var1, Optional<Value> var2);
 
    public static record Registered<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<OptionalBox.Mu, Value> {
       public Registered(MemoryModuleType<Value> var1) {

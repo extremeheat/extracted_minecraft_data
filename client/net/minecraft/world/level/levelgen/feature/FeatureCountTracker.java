@@ -53,18 +53,18 @@ public class FeatureCountTracker {
    public static void logCounts() {
       LOGGER.debug("Logging feature counts:");
       data.asMap().forEach((var0, var1) -> {
-         String var2 = var0.dimension().location().toString();
+         String var2 = var0.dimension().identifier().toString();
          boolean var3 = var0.getServer().isRunning();
          Registry var4 = var0.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
          String var5 = (var3 ? "running" : "dead") + " " + var2;
-         Integer var6 = var1.chunksWithFeatures().getValue();
+         int var6 = var1.chunksWithFeatures().intValue();
          LOGGER.debug("{} total_chunks: {}", var5, var6);
          var1.featureData().forEach((var3x, var4x) -> {
             Logger var10000 = LOGGER;
             Object[] var10002 = new Object[]{var5, String.format(Locale.ROOT, "%10d", var4x), String.format(Locale.ROOT, "%10f", (double)var4x / (double)var6), null, null, null};
             Optional var10005 = var3x.topFeature();
             Objects.requireNonNull(var4);
-            var10002[3] = var10005.flatMap(var4::getResourceKey).map(ResourceKey::location);
+            var10002[3] = var10005.flatMap(var4::getResourceKey).map(ResourceKey::identifier);
             var10002[4] = var3x.feature().feature();
             var10002[5] = var3x.feature();
             var10000.debug("{} {} {} {} {} {}", var10002);

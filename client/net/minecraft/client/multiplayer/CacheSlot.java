@@ -1,14 +1,12 @@
 package net.minecraft.client.multiplayer;
 
 import java.util.function.Function;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class CacheSlot<C extends CacheSlot.Cleaner<C>, D> {
    private final Function<C, D> operation;
-   @Nullable
-   private C context;
-   @Nullable
-   private D value;
+   private @Nullable C context;
+   private @Nullable D value;
 
    public CacheSlot(Function<C, D> var1) {
       super();

@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.fox.Fox;
 
 public class FoxRenderState extends HoldingEntityRenderState {
    public float headRollAngle;

@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.level.ServerPlayer;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerService {
    private static final Component DEFAULT_KICK_MESSAGE = Component.translatable("multiplayer.disconnect.kicked");
@@ -38,8 +38,7 @@ public class PlayerService {
       return var3;
    }
 
-   @Nullable
-   private static ServerPlayer getServerPlayer(MinecraftApi var0, PlayerDto var1) {
+   private static @Nullable ServerPlayer getServerPlayer(MinecraftApi var0, PlayerDto var1) {
       if (var1.id().isPresent()) {
          return var0.playerListService().getPlayer((UUID)var1.id().get());
       } else {

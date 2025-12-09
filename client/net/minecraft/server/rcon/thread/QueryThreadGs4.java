@@ -14,12 +14,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.server.ServerInterface;
 import net.minecraft.server.rcon.NetworkDataOutputStream;
 import net.minecraft.server.rcon.PktUtils;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class QueryThreadGs4 extends GenericThread {
@@ -71,8 +71,7 @@ public class QueryThreadGs4 extends GenericThread {
       this.validChallenges = Maps.newHashMap();
    }
 
-   @Nullable
-   public static QueryThreadGs4 create(ServerInterface var0) {
+   public static @Nullable QueryThreadGs4 create(ServerInterface var0) {
       int var1 = var0.getProperties().queryPort;
       if (0 < var1 && 65535 >= var1) {
          QueryThreadGs4 var2 = new QueryThreadGs4(var0, var1);

@@ -20,8 +20,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,12 +34,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.FileUtil;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -54,13 +50,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.nbt.visitors.SkipFields;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.util.DirectoryLock;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.MemoryReserve;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -75,15 +73,14 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.validation.ContentValidationException;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.world.level.validation.PathAllowList;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LevelStorageSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   static final DateTimeFormatter FORMATTER = FileNameDateFormatter.create();
    public static final String TAG_DATA = "Data";
    private static final PathMatcher NO_SYMLINKS_ALLOWED = (var0) -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
-   private static final int UNCOMPRESSED_NBT_QUOTA = 104857600;
    private static final int DISK_SPACE_WARNING_THRESHOLD = 67108864;
    private final Path baseDir;
    private final Path backupDir;
@@ -248,13 +245,13 @@ public class LevelStorageSource {
    }
 
    static CompoundTag readLevelDataTagRaw(Path var0) throws IOException {
-      return NbtIo.readCompressed(var0, NbtAccounter.create(104857600L));
+      return NbtIo.readCompressed(var0, NbtAccounter.uncompressedQuota());
    }
 
    static Dynamic<?> readLevelDataTagFixed(Path var0, DataFixer var1) throws IOException {
       CompoundTag var2 = readLevelDataTagRaw(var0);
       CompoundTag var3 = var2.getCompoundOrEmpty("Data");
-      int var4 = NbtUtils.getDataVersion(var3, -1);
+      int var4 = NbtUtils.getDataVersion(var3);
       Dynamic var5 = DataFixTypes.LEVEL.updateToCurrentVersion(var1, new Dynamic(NbtOps.INSTANCE, var3), var4);
       var5 = var5.update("Player", (var2x) -> DataFixTypes.PLAYER.updateToCurrentVersion(var1, var2x, var4));
       var5 = var5.update("WorldGenSettings", (var2x) -> DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(var1, var2x, var4));
@@ -277,7 +274,7 @@ public class LevelStorageSource {
             if (var10 instanceof CompoundTag) {
                CompoundTag var5 = (CompoundTag)var10;
                CompoundTag var6 = var5.getCompoundOrEmpty("Data");
-               int var7 = NbtUtils.getDataVersion(var6, -1);
+               int var7 = NbtUtils.getDataVersion(var6);
                Dynamic var8 = DataFixTypes.LEVEL_SUMMARY.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, var6), var7);
                return this.makeLevelSummary(var8, var1, var2);
             }
@@ -300,8 +297,7 @@ public class LevelStorageSource {
       return var1 == null ? -1L : var1.toEpochMilli();
    }
 
-   @Nullable
-   static Instant getFileModificationTime(Path var0) {
+   static @Nullable Instant getFileModificationTime(Path var0) {
       try {
          return Files.getLastModifiedTime(var0).toInstant();
       } catch (IOException var2) {
@@ -326,15 +322,14 @@ public class LevelStorageSource {
    }
 
    private static FeatureFlagSet parseFeatureFlagsFromSummary(Dynamic<?> var0) {
-      Set var1 = (Set)var0.get("enabled_features").asStream().flatMap((var0x) -> var0x.asString().result().map(ResourceLocation::tryParse).stream()).collect(Collectors.toSet());
+      Set var1 = (Set)var0.get("enabled_features").asStream().flatMap((var0x) -> var0x.asString().result().map(Identifier::tryParse).stream()).collect(Collectors.toSet());
       return FeatureFlags.REGISTRY.fromNames(var1, (var0x) -> {
       });
    }
 
-   @Nullable
-   private static Tag readLightweightData(Path var0) throws IOException {
+   private static @Nullable Tag readLightweightData(Path var0) throws IOException {
       SkipFields var1 = new SkipFields(new FieldSelector[]{new FieldSelector("Data", CompoundTag.TYPE, "Player"), new FieldSelector("Data", CompoundTag.TYPE, "WorldGenSettings")});
-      NbtIo.parseCompressed((Path)var0, var1, NbtAccounter.create(104857600L));
+      NbtIo.parseCompressed((Path)var0, var1, NbtAccounter.uncompressedQuota());
       return var1.getResult();
    }
 
@@ -538,7 +533,7 @@ public class LevelStorageSource {
                   }
 
                   // $FF: synthetic method
-                  public FileVisitResult postVisitDirectory(final Object var1x, @Nullable final IOException var2) throws IOException {
+                  public FileVisitResult postVisitDirectory(final Object var1x, final @Nullable IOException var2) throws IOException {
                      return this.postVisitDirectory((Path)var1x, var2);
                   }
 
@@ -584,7 +579,7 @@ public class LevelStorageSource {
 
       public long makeWorldBackup() throws IOException {
          this.checkLock();
-         String var10000 = LocalDateTime.now().format(LevelStorageSource.FORMATTER);
+         String var10000 = FileNameDateFormatter.FORMATTER.format(ZonedDateTime.now());
          String var1 = var10000 + "_" + this.levelId;
          Path var2 = LevelStorageSource.this.getBackupPath();
 
@@ -641,11 +636,10 @@ public class LevelStorageSource {
       }
 
       public boolean restoreLevelDataFromOld() {
-         return Util.safeReplaceOrMoveFile(this.levelDirectory.dataFile(), this.levelDirectory.oldDataFile(), this.levelDirectory.corruptedDataFile(LocalDateTime.now()), true);
+         return Util.safeReplaceOrMoveFile(this.levelDirectory.dataFile(), this.levelDirectory.oldDataFile(), this.levelDirectory.corruptedDataFile(ZonedDateTime.now()), true);
       }
 
-      @Nullable
-      public Instant getFileModificationTime(boolean var1) {
+      public @Nullable Instant getFileModificationTime(boolean var1) {
          return LevelStorageSource.getFileModificationTime(var1 ? this.levelDirectory.oldDataFile() : this.levelDirectory.dataFile());
       }
    }
@@ -687,16 +681,16 @@ public class LevelStorageSource {
          return this.resourcePath(LevelResource.OLD_LEVEL_DATA_FILE);
       }
 
-      public Path corruptedDataFile(LocalDateTime var1) {
+      public Path corruptedDataFile(ZonedDateTime var1) {
          Path var10000 = this.path;
          String var10001 = LevelResource.LEVEL_DATA_FILE.getId();
-         return var10000.resolve(var10001 + "_corrupted_" + var1.format(LevelStorageSource.FORMATTER));
+         return var10000.resolve(var10001 + "_corrupted_" + var1.format(FileNameDateFormatter.FORMATTER));
       }
 
-      public Path rawDataFile(LocalDateTime var1) {
+      public Path rawDataFile(ZonedDateTime var1) {
          Path var10000 = this.path;
          String var10001 = LevelResource.LEVEL_DATA_FILE.getId();
-         return var10000.resolve(var10001 + "_raw_" + var1.format(LevelStorageSource.FORMATTER));
+         return var10000.resolve(var10001 + "_raw_" + var1.format(FileNameDateFormatter.FORMATTER));
       }
 
       public Path iconFile() {

@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.Util;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChaseServer {
@@ -27,8 +27,7 @@ public class ChaseServer {
    private final PlayerList playerList;
    private final int broadcastIntervalMs;
    private volatile boolean wantsToRun;
-   @Nullable
-   private ServerSocket serverSocket;
+   private @Nullable ServerSocket serverSocket;
    private final CopyOnWriteArrayList<Socket> clientSockets = new CopyOnWriteArrayList();
 
    public ChaseServer(String var1, int var2, PlayerList var3, int var4) {
@@ -127,8 +126,7 @@ public class ChaseServer {
       this.wantsToRun = false;
    }
 
-   @Nullable
-   private PlayerPosition getPlayerPosition() {
+   private @Nullable PlayerPosition getPlayerPosition() {
       List var1 = this.playerList.getPlayers();
       if (var1.isEmpty()) {
          return null;

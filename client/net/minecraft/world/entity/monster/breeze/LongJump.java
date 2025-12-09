@@ -5,8 +5,6 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +14,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class LongJump extends Behavior<Breeze> {
    private static final int REQUIRED_AIR_BLOCKS_ABOVE = 4;
@@ -157,8 +157,7 @@ public class LongJump extends Behavior<Breeze> {
       return var1 && (var2 || var3);
    }
 
-   @Nullable
-   private static BlockPos snapToSurface(LivingEntity var0, Vec3 var1) {
+   private static @Nullable BlockPos snapToSurface(LivingEntity var0, Vec3 var1) {
       ClipContext var2 = new ClipContext(var1, var1.relative(Direction.DOWN, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0);
       BlockHitResult var3 = var0.level().clip(var2);
       if (((HitResult)var3).getType() == HitResult.Type.BLOCK) {

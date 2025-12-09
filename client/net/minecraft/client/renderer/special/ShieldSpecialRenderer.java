@@ -3,10 +3,9 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
-import java.util.Set;
-import javax.annotation.Nullable;
-import net.minecraft.client.model.ShieldModel;
+import java.util.function.Consumer;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.object.equipment.ShieldModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -20,7 +19,8 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
    private final MaterialSet materials;
@@ -32,8 +32,7 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       this.model = var2;
    }
 
-   @Nullable
-   public DataComponentMap extractArgument(ItemStack var1) {
+   public @Nullable DataComponentMap extractArgument(ItemStack var1) {
       return var1.immutableComponents();
    }
 
@@ -54,15 +53,14 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       var3.popPose();
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       var2.scale(1.0F, -1.0F, -1.0F);
       this.model.root().getExtentsForGui(var2, var1);
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object extractArgument(final ItemStack var1) {
+   public @Nullable Object extractArgument(final ItemStack var1) {
       return this.extractArgument(var1);
    }
 

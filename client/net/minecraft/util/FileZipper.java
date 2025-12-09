@@ -16,7 +16,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import org.slf4j.Logger;
 
 public class FileZipper implements Closeable {

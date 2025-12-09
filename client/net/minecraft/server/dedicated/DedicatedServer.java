@@ -26,12 +26,10 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.ConsoleInput;
@@ -53,6 +51,8 @@ import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.network.ServerTextFilter;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.server.players.PlayerList;
@@ -62,6 +62,7 @@ import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.TimeUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.RemoteSampleLogger;
@@ -70,10 +71,11 @@ import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DedicatedServer extends MinecraftServer implements ServerInterface {
@@ -81,23 +83,17 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private static final int CONVERSION_RETRY_DELAY_MS = 5000;
    private static final int CONVERSION_RETRIES = 2;
    private final List<ConsoleInput> consoleInput = Collections.synchronizedList(Lists.newArrayList());
-   @Nullable
-   private QueryThreadGs4 queryThreadGs4;
+   private @Nullable QueryThreadGs4 queryThreadGs4;
    private final RconConsoleSource rconConsoleSource;
-   @Nullable
-   private RconThread rconThread;
+   private @Nullable RconThread rconThread;
    private final DedicatedServerSettings settings;
-   @Nullable
-   private MinecraftServerGui gui;
-   @Nullable
-   private final ServerTextFilter serverTextFilter;
-   @Nullable
-   private RemoteSampleLogger tickTimeLogger;
+   private @Nullable MinecraftServerGui gui;
+   private final @Nullable ServerTextFilter serverTextFilter;
+   private @Nullable RemoteSampleLogger tickTimeLogger;
    private boolean isTickTimeLoggingEnabled;
    private final ServerLinks serverLinks;
    private final Map<String, String> codeOfConductTexts;
-   @Nullable
-   private ManagementServer jsonRpcServer;
+   private @Nullable ManagementServer jsonRpcServer;
    private long lastHeartbeat;
 
    public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7) {
@@ -183,16 +179,17 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          String var3 = this.getProperties().managementServerHost;
          HostAndPort var4 = HostAndPort.fromParts(var3, var1);
          SecurityConfig var5 = new SecurityConfig(var2);
-         AuthenticationHandler var6 = new AuthenticationHandler(var5);
+         String var6 = this.getProperties().managementServerAllowedOrigins;
+         AuthenticationHandler var7 = new AuthenticationHandler(var5, var6);
          LOGGER.info("Starting json RPC server on {}", var4);
-         this.jsonRpcServer = new ManagementServer(var4, var6);
-         MinecraftApi var7 = MinecraftApi.of(this);
-         var7.notificationManager().registerService(new JsonRpcNotificationService(var7, this.jsonRpcServer));
+         this.jsonRpcServer = new ManagementServer(var4, var7);
+         MinecraftApi var8 = MinecraftApi.of(this);
+         var8.notificationManager().registerService(new JsonRpcNotificationService(var8, this.jsonRpcServer));
          if (this.getProperties().managementServerTlsEnabled) {
-            SslContext var8 = this.createSslContext();
-            this.jsonRpcServer.startWithTls(var7, var8);
+            SslContext var9 = this.createSslContext();
+            this.jsonRpcServer.startWithTls(var8, var9);
          } else {
-            this.jsonRpcServer.startWithoutTls(var7);
+            this.jsonRpcServer.startWithoutTls(var8);
          }
       }
 
@@ -273,10 +270,10 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
          this.loadLevel();
          long var16 = Util.getNanos() - var15;
-         String var9 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
-         LOGGER.info("Done ({})! For help, type \"help\"", var9);
+         String var17 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
+         LOGGER.info("Done ({})! For help, type \"help\"", var17);
          if (var13.announcePlayerAchievements != null) {
-            ((GameRules.BooleanValue)this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var13.announcePlayerAchievements, this);
+            this.worldData.getGameRules().set(GameRules.SHOW_ADVANCEMENT_MESSAGES, var13.announcePlayerAchievements, this);
          }
 
          if (var13.enableQuery) {
@@ -477,7 +474,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.getProperties().rateLimitPacketsPerSecond;
    }
 
-   public boolean isEpollEnabled() {
+   public boolean useNativeTransport() {
       return this.getProperties().useNativeTransport;
    }
 
@@ -514,10 +511,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.gui = MinecraftServerGui.showFrameFor(this);
       }
 
-   }
-
-   public boolean hasGui() {
-      return this.gui != null;
    }
 
    public int spawnProtectionRadius() {
@@ -563,16 +556,16 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.settings.update((var2) -> (DedicatedServerProperties)var2.hideOnlinePlayers.update(this.registryAccess(), var1));
    }
 
-   public int operatorUserPermissionLevel() {
-      return (Integer)this.getProperties().opPermissionLevel.get();
+   public LevelBasedPermissionSet operatorUserPermissions() {
+      return this.getProperties().opPermissions.get();
    }
 
-   public void setOperatorUserPermissionLevel(int var1) {
-      this.settings.update((var2) -> (DedicatedServerProperties)var2.opPermissionLevel.update(this.registryAccess(), var1));
+   public void setOperatorUserPermissions(LevelBasedPermissionSet var1) {
+      this.settings.update((var2) -> (DedicatedServerProperties)var2.opPermissions.update(this.registryAccess(), var1));
    }
 
-   public int getFunctionCompilationLevel() {
-      return this.getProperties().functionPermissionLevel;
+   public PermissionSet getFunctionCompilationPermissions() {
+      return this.getProperties().functionPermissions;
    }
 
    public int playerIdleTimeout() {
@@ -742,8 +735,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.serverTextFilter != null ? this.serverTextFilter.createContext(var1.getGameProfile()) : TextFilter.DUMMY;
    }
 
-   @Nullable
-   public GameType getForcedGameType() {
+   public @Nullable GameType getForcedGameType() {
       return this.forceGameMode() ? this.worldData.getGameType() : null;
    }
 

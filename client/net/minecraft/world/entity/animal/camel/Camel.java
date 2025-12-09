@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.camel;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Dynamic;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -42,7 +41,7 @@ import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
@@ -55,6 +54,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Camel extends AbstractHorse {
    public static final float BABY_SCALE = 0.45F;
@@ -160,7 +160,7 @@ public class Camel extends AbstractHorse {
       if (this.dashCooldown > 0) {
          --this.dashCooldown;
          if (this.dashCooldown == 0) {
-            this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), this.getDashReadySound(), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
       }
 
@@ -269,7 +269,7 @@ public class Camel extends AbstractHorse {
       this.addDeltaMovement(this.getLookAngle().multiply(1.0, 0.0, 1.0).normalize().scale((double)(22.2222F * var1) * this.getAttributeValue(Attributes.MOVEMENT_SPEED) * (double)this.getBlockSpeedFactor()).add(0.0, (double)(1.4285F * var1) * var3, 0.0));
       this.dashCooldown = 55;
       this.setDashing(true);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    public boolean isDashing() {
@@ -281,9 +281,17 @@ public class Camel extends AbstractHorse {
    }
 
    public void handleStartJump(int var1) {
-      this.makeSound(SoundEvents.CAMEL_DASH);
+      this.makeSound(this.getDashingSound());
       this.gameEvent(GameEvent.ENTITY_ACTION);
       this.setDashing(true);
+   }
+
+   protected SoundEvent getDashingSound() {
+      return SoundEvents.CAMEL_DASH;
+   }
+
+   protected SoundEvent getDashReadySound() {
+      return SoundEvents.CAMEL_DASH_READY;
    }
 
    public void handleStopJump() {
@@ -334,7 +342,7 @@ public class Camel extends AbstractHorse {
                this.doPlayerRide(var1);
             }
 
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
          }
       }
    }
@@ -410,12 +418,10 @@ public class Camel extends AbstractHorse {
       return var10000;
    }
 
-   @Nullable
-   public Camel getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Camel getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.CAMEL.create(var1, EntitySpawnReason.BREEDING);
    }
 
-   @Nullable
    protected SoundEvent getEatingSound() {
       return SoundEvents.CAMEL_EAT;
    }
@@ -513,7 +519,7 @@ public class Camel extends AbstractHorse {
 
    public void sitDown() {
       if (!this.isCamelSitting()) {
-         this.makeSound(SoundEvents.CAMEL_SIT);
+         this.makeSound(this.getSitDownSound());
          this.setPose(Pose.SITTING);
          this.gameEvent(GameEvent.ENTITY_ACTION);
          this.resetLastPoseChangeTick(-this.level().getGameTime());
@@ -522,11 +528,19 @@ public class Camel extends AbstractHorse {
 
    public void standUp() {
       if (this.isCamelSitting()) {
-         this.makeSound(SoundEvents.CAMEL_STAND);
+         this.makeSound(this.getStandUpSound());
          this.setPose(Pose.STANDING);
          this.gameEvent(GameEvent.ENTITY_ACTION);
          this.resetLastPoseChangeTick(this.level().getGameTime());
       }
+   }
+
+   protected SoundEvent getStandUpSound() {
+      return SoundEvents.CAMEL_STAND;
+   }
+
+   protected SoundEvent getSitDownSound() {
+      return SoundEvents.CAMEL_SIT;
    }
 
    public void standUpInstantly() {
@@ -549,7 +563,11 @@ public class Camel extends AbstractHorse {
    }
 
    protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
-      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.CAMEL_SADDLE : super.getEquipSound(var1, var2, var3));
+      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? this.getSaddleSound() : super.getEquipSound(var1, var2, var3));
+   }
+
+   protected Holder.Reference<SoundEvent> getSaddleSound() {
+      return SoundEvents.CAMEL_SADDLE;
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -576,8 +594,7 @@ public class Camel extends AbstractHorse {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

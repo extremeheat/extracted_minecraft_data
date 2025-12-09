@@ -13,7 +13,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -21,6 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.PositionTracker;
+import net.minecraft.world.entity.ai.behavior.SpearAttack;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
@@ -86,6 +87,13 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Set<GlobalPos>> VISITED_BLOCK_POSITIONS;
    public static final MemoryModuleType<Set<GlobalPos>> UNREACHABLE_TRANSPORT_BLOCK_POSITIONS;
    public static final MemoryModuleType<Integer> TRANSPORT_ITEMS_COOLDOWN_TICKS;
+   public static final MemoryModuleType<Integer> CHARGE_COOLDOWN_TICKS;
+   public static final MemoryModuleType<Integer> ATTACK_TARGET_COOLDOWN;
+   public static final MemoryModuleType<Integer> SPEAR_FLEEING_TIME;
+   public static final MemoryModuleType<Vec3> SPEAR_FLEEING_POSITION;
+   public static final MemoryModuleType<Vec3> SPEAR_CHARGE_POSITION;
+   public static final MemoryModuleType<Integer> SPEAR_ENGAGE_TIME;
+   public static final MemoryModuleType<SpearAttack.SpearStatus> SPEAR_STATUS;
    public static final MemoryModuleType<UUID> ANGRY_AT;
    public static final MemoryModuleType<Boolean> UNIVERSAL_ANGER;
    public static final MemoryModuleType<Boolean> ADMIRING_ITEM;
@@ -156,11 +164,11 @@ public class MemoryModuleType<U> {
    }
 
    private static <U> MemoryModuleType<U> register(String var0, Codec<U> var1) {
-      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new MemoryModuleType(Optional.of(var1)));
+      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new MemoryModuleType(Optional.of(var1)));
    }
 
    private static <U> MemoryModuleType<U> register(String var0) {
-      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new MemoryModuleType(Optional.empty()));
+      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new MemoryModuleType(Optional.empty()));
    }
 
    static {
@@ -220,6 +228,13 @@ public class MemoryModuleType<U> {
       VISITED_BLOCK_POSITIONS = register("visited_block_positions", GlobalPos.CODEC.listOf().xmap(Sets::newHashSet, Lists::newArrayList));
       UNREACHABLE_TRANSPORT_BLOCK_POSITIONS = register("unreachable_transport_block_positions", GlobalPos.CODEC.listOf().xmap(Sets::newHashSet, Lists::newArrayList));
       TRANSPORT_ITEMS_COOLDOWN_TICKS = register("transport_items_cooldown_ticks");
+      CHARGE_COOLDOWN_TICKS = register("charge_cooldown_ticks", Codec.INT);
+      ATTACK_TARGET_COOLDOWN = register("attack_target_cooldown", Codec.INT);
+      SPEAR_FLEEING_TIME = register("spear_fleeing_time");
+      SPEAR_FLEEING_POSITION = register("spear_fleeing_position");
+      SPEAR_CHARGE_POSITION = register("spear_charge_position");
+      SPEAR_ENGAGE_TIME = register("spear_engage_time");
+      SPEAR_STATUS = register("spear_status");
       ANGRY_AT = register("angry_at", UUIDUtil.CODEC);
       UNIVERSAL_ANGER = register("universal_anger", Codec.BOOL);
       ADMIRING_ITEM = register("admiring_item", Codec.BOOL);

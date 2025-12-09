@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui.screens;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -16,24 +15,21 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.world.level.storage.LevelSummary;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Component TITLE = Component.translatable("mco.upload.select.world.title");
    private static final Component UNABLE_TO_LOAD_WORLD = Component.translatable("selectWorld.unable_to_load");
-   @Nullable
-   private final RealmCreationTask realmCreationTask;
+   private final @Nullable RealmCreationTask realmCreationTask;
    private final RealmsResetWorldScreen lastScreen;
    private final long realmId;
    private final int slotId;
    private final HeaderAndFooterLayout layout;
-   @Nullable
-   protected EditBox searchBox;
-   @Nullable
-   private WorldSelectionList list;
-   @Nullable
-   private Button uploadButton;
+   protected @Nullable EditBox searchBox;
+   private @Nullable WorldSelectionList list;
+   private @Nullable Button uploadButton;
 
    public RealmsSelectFileToUploadScreen(@Nullable RealmCreationTask var1, long var2, int var4, RealmsResetWorldScreen var5) {
       super(TITLE);

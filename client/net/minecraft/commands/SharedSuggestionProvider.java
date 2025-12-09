@@ -21,13 +21,14 @@ import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 
-public interface SharedSuggestionProvider {
+public interface SharedSuggestionProvider extends PermissionSetSupplier {
    CharMatcher MATCH_SPLITTER = CharMatcher.anyOf("._/");
 
    Collection<String> getOnlinePlayerNames();
@@ -42,7 +43,7 @@ public interface SharedSuggestionProvider {
 
    Collection<String> getAllTeams();
 
-   Stream<ResourceLocation> getAvailableSounds();
+   Stream<Identifier> getAvailableSounds();
 
    CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1);
 
@@ -66,7 +67,7 @@ public interface SharedSuggestionProvider {
       }
 
       if (var2.shouldSuggestElements()) {
-         suggestResource(var1.listElementIds().map(ResourceKey::location), var3);
+         suggestResource(var1.listElementIds().map(ResourceKey::identifier), var3);
       }
 
    }
@@ -82,24 +83,24 @@ public interface SharedSuggestionProvider {
 
    CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4);
 
-   static <T> void filterResources(Iterable<T> var0, String var1, Function<T, ResourceLocation> var2, Consumer<T> var3) {
+   static <T> void filterResources(Iterable<T> var0, String var1, Function<T, Identifier> var2, Consumer<T> var3) {
       boolean var4 = var1.indexOf(58) > -1;
 
       for(Object var6 : var0) {
-         ResourceLocation var7 = (ResourceLocation)var2.apply(var6);
+         Identifier var7 = (Identifier)var2.apply(var6);
          if (var4) {
             String var8 = var7.toString();
             if (matchesSubStr(var1, var8)) {
                var3.accept(var6);
             }
-         } else if (matchesSubStr(var1, var7.getNamespace()) || var7.getNamespace().equals("minecraft") && matchesSubStr(var1, var7.getPath())) {
+         } else if (matchesSubStr(var1, var7.getNamespace()) || matchesSubStr(var1, var7.getPath())) {
             var3.accept(var6);
          }
       }
 
    }
 
-   static <T> void filterResources(Iterable<T> var0, String var1, String var2, Function<T, ResourceLocation> var3, Consumer<T> var4) {
+   static <T> void filterResources(Iterable<T> var0, String var1, String var2, Function<T, Identifier> var3, Consumer<T> var4) {
       if (var1.isEmpty()) {
          var0.forEach(var4);
       } else {
@@ -112,35 +113,35 @@ public interface SharedSuggestionProvider {
 
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Iterable<ResourceLocation> var0, SuggestionsBuilder var1, String var2) {
+   static CompletableFuture<Suggestions> suggestResource(Iterable<Identifier> var0, SuggestionsBuilder var1, String var2) {
       String var3 = var1.getRemaining().toLowerCase(Locale.ROOT);
       filterResources(var0, var3, var2, (var0x) -> var0x, (var2x) -> var1.suggest(var2 + String.valueOf(var2x)));
       return var1.buildFuture();
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Stream<ResourceLocation> var0, SuggestionsBuilder var1, String var2) {
+   static CompletableFuture<Suggestions> suggestResource(Stream<Identifier> var0, SuggestionsBuilder var1, String var2) {
       Objects.requireNonNull(var0);
       return suggestResource(var0::iterator, var1, var2);
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Iterable<ResourceLocation> var0, SuggestionsBuilder var1) {
+   static CompletableFuture<Suggestions> suggestResource(Iterable<Identifier> var0, SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
       filterResources(var0, var2, (var0x) -> var0x, (var1x) -> var1.suggest(var1x.toString()));
       return var1.buildFuture();
    }
 
-   static <T> CompletableFuture<Suggestions> suggestResource(Iterable<T> var0, SuggestionsBuilder var1, Function<T, ResourceLocation> var2, Function<T, Message> var3) {
+   static <T> CompletableFuture<Suggestions> suggestResource(Iterable<T> var0, SuggestionsBuilder var1, Function<T, Identifier> var2, Function<T, Message> var3) {
       String var4 = var1.getRemaining().toLowerCase(Locale.ROOT);
-      filterResources(var0, var4, var2, (var3x) -> var1.suggest(((ResourceLocation)var2.apply(var3x)).toString(), (Message)var3.apply(var3x)));
+      filterResources(var0, var4, var2, (var3x) -> var1.suggest(((Identifier)var2.apply(var3x)).toString(), (Message)var3.apply(var3x)));
       return var1.buildFuture();
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Stream<ResourceLocation> var0, SuggestionsBuilder var1) {
+   static CompletableFuture<Suggestions> suggestResource(Stream<Identifier> var0, SuggestionsBuilder var1) {
       Objects.requireNonNull(var0);
       return suggestResource(var0::iterator, var1);
    }
 
-   static <T> CompletableFuture<Suggestions> suggestResource(Stream<T> var0, SuggestionsBuilder var1, Function<T, ResourceLocation> var2, Function<T, Message> var3) {
+   static <T> CompletableFuture<Suggestions> suggestResource(Stream<T> var0, SuggestionsBuilder var1, Function<T, Identifier> var2, Function<T, Message> var3) {
       Objects.requireNonNull(var0);
       return suggestResource(var0::iterator, var1, var2, var3);
    }

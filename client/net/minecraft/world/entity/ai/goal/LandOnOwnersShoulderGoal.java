@@ -2,7 +2,7 @@ package net.minecraft.world.entity.ai.goal;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.ShoulderRidingEntity;
+import net.minecraft.world.entity.animal.parrot.ShoulderRidingEntity;
 
 public class LandOnOwnersShoulderGoal extends Goal {
    private final ShoulderRidingEntity entity;

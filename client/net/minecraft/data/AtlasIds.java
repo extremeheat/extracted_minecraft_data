@@ -1,21 +1,23 @@
 package net.minecraft.data;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class AtlasIds {
-   public static final ResourceLocation ARMOR_TRIMS = ResourceLocation.withDefaultNamespace("armor_trims");
-   public static final ResourceLocation BANNER_PATTERNS = ResourceLocation.withDefaultNamespace("banner_patterns");
-   public static final ResourceLocation BEDS = ResourceLocation.withDefaultNamespace("beds");
-   public static final ResourceLocation BLOCKS = ResourceLocation.withDefaultNamespace("blocks");
-   public static final ResourceLocation CHESTS = ResourceLocation.withDefaultNamespace("chests");
-   public static final ResourceLocation DECORATED_POT = ResourceLocation.withDefaultNamespace("decorated_pot");
-   public static final ResourceLocation GUI = ResourceLocation.withDefaultNamespace("gui");
-   public static final ResourceLocation MAP_DECORATIONS = ResourceLocation.withDefaultNamespace("map_decorations");
-   public static final ResourceLocation PAINTINGS = ResourceLocation.withDefaultNamespace("paintings");
-   public static final ResourceLocation PARTICLES = ResourceLocation.withDefaultNamespace("particles");
-   public static final ResourceLocation SHIELD_PATTERNS = ResourceLocation.withDefaultNamespace("shield_patterns");
-   public static final ResourceLocation SHULKER_BOXES = ResourceLocation.withDefaultNamespace("shulker_boxes");
-   public static final ResourceLocation SIGNS = ResourceLocation.withDefaultNamespace("signs");
+   public static final Identifier ARMOR_TRIMS = Identifier.withDefaultNamespace("armor_trims");
+   public static final Identifier BANNER_PATTERNS = Identifier.withDefaultNamespace("banner_patterns");
+   public static final Identifier BEDS = Identifier.withDefaultNamespace("beds");
+   public static final Identifier BLOCKS = Identifier.withDefaultNamespace("blocks");
+   public static final Identifier ITEMS = Identifier.withDefaultNamespace("items");
+   public static final Identifier CHESTS = Identifier.withDefaultNamespace("chests");
+   public static final Identifier DECORATED_POT = Identifier.withDefaultNamespace("decorated_pot");
+   public static final Identifier GUI = Identifier.withDefaultNamespace("gui");
+   public static final Identifier MAP_DECORATIONS = Identifier.withDefaultNamespace("map_decorations");
+   public static final Identifier PAINTINGS = Identifier.withDefaultNamespace("paintings");
+   public static final Identifier PARTICLES = Identifier.withDefaultNamespace("particles");
+   public static final Identifier SHIELD_PATTERNS = Identifier.withDefaultNamespace("shield_patterns");
+   public static final Identifier SHULKER_BOXES = Identifier.withDefaultNamespace("shulker_boxes");
+   public static final Identifier SIGNS = Identifier.withDefaultNamespace("signs");
+   public static final Identifier CELESTIALS = Identifier.withDefaultNamespace("celestials");
 
    public AtlasIds() {
       super();

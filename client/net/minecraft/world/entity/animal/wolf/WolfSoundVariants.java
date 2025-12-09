@@ -4,8 +4,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 
@@ -23,7 +23,7 @@ public class WolfSoundVariants {
    }
 
    private static ResourceKey<WolfSoundVariant> createKey(SoundSet var0) {
-      return ResourceKey.create(Registries.WOLF_SOUND_VARIANT, ResourceLocation.withDefaultNamespace(var0.getIdentifier()));
+      return ResourceKey.create(Registries.WOLF_SOUND_VARIANT, Identifier.withDefaultNamespace(var0.getIdentifier()));
    }
 
    public static void bootstrap(BootstrapContext<WolfSoundVariant> var0) {

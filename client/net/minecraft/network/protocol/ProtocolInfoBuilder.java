@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.ClientboundPacketListener;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.PacketListener;
@@ -13,13 +12,13 @@ import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Unit;
+import org.jspecify.annotations.Nullable;
 
 public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf, C> {
    final ConnectionProtocol protocol;
    final PacketFlow flow;
    private final List<CodecEntry<T, ?, B, C>> codecs = new ArrayList();
-   @Nullable
-   private BundlerInfo bundlerInfo;
+   private @Nullable BundlerInfo bundlerInfo;
 
    public ProtocolInfoBuilder(ConnectionProtocol var1, PacketFlow var2) {
       super();

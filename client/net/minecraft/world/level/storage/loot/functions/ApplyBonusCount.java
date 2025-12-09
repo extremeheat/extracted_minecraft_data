@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextKey;
@@ -23,7 +23,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ApplyBonusCount extends LootItemConditionalFunction {
-   private static final Map<ResourceLocation, FormulaType> FORMULAS;
+   private static final Map<Identifier, FormulaType> FORMULAS;
    private static final Codec<FormulaType> FORMULA_TYPE_CODEC;
    private static final MapCodec<Formula> FORMULA_CODEC;
    public static final MapCodec<ApplyBonusCount> CODEC;
@@ -60,7 +60,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Holder<Enchantment> var0) {
-      return simpleBuilder((var1) -> new ApplyBonusCount(var1, var0, new OreDrops()));
+      return simpleBuilder((var1) -> new ApplyBonusCount(var1, var0, ApplyBonusCount.OreDrops.INSTANCE));
    }
 
    public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0) {
@@ -73,7 +73,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
 
    static {
       FORMULAS = (Map)Stream.of(ApplyBonusCount.BinomialWithBonusCount.TYPE, ApplyBonusCount.OreDrops.TYPE, ApplyBonusCount.UniformBonusCount.TYPE).collect(Collectors.toMap(FormulaType::id, Function.identity()));
-      FORMULA_TYPE_CODEC = ResourceLocation.CODEC.comapFlatMap((var0) -> {
+      FORMULA_TYPE_CODEC = Identifier.CODEC.comapFlatMap((var0) -> {
          FormulaType var1 = (FormulaType)FORMULAS.get(var0);
          return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No formula type with id: '" + String.valueOf(var0) + "'");
       }, FormulaType::id);
@@ -81,8 +81,8 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> var0x.enchantment), FORMULA_CODEC.forGetter((var0x) -> var0x.formula))).apply(var0, ApplyBonusCount::new));
    }
 
-   static record FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
-      FormulaType(ResourceLocation var1, Codec<? extends Formula> var2) {
+   static record FormulaType(Identifier id, Codec<? extends Formula> codec) {
+      FormulaType(Identifier var1, Codec<? extends Formula> var2) {
          super();
          this.id = var1;
          this.codec = var2;
@@ -114,7 +114,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
 
       static {
-         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("binomial_with_bonus_count"), CODEC);
+         TYPE = new FormulaType(Identifier.withDefaultNamespace("binomial_with_bonus_count"), CODEC);
       }
    }
 
@@ -136,15 +136,16 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
 
       static {
-         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("uniform_bonus_count"), CODEC);
+         TYPE = new FormulaType(Identifier.withDefaultNamespace("uniform_bonus_count"), CODEC);
       }
    }
 
    static record OreDrops() implements Formula {
-      public static final Codec<OreDrops> CODEC = Codec.unit(OreDrops::new);
+      public static final OreDrops INSTANCE = new OreDrops();
+      public static final Codec<OreDrops> CODEC;
       public static final FormulaType TYPE;
 
-      OreDrops() {
+      private OreDrops() {
          super();
       }
 
@@ -166,7 +167,8 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
 
       static {
-         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("ore_drops"), CODEC);
+         CODEC = MapCodec.unitCodec(INSTANCE);
+         TYPE = new FormulaType(Identifier.withDefaultNamespace("ore_drops"), CODEC);
       }
    }
 

@@ -2,36 +2,35 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class FaviconTexture implements AutoCloseable {
-   private static final ResourceLocation MISSING_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/unknown_server.png");
+   private static final Identifier MISSING_LOCATION = Identifier.withDefaultNamespace("textures/misc/unknown_server.png");
    private static final int WIDTH = 64;
    private static final int HEIGHT = 64;
    private final TextureManager textureManager;
-   private final ResourceLocation textureLocation;
-   @Nullable
-   private DynamicTexture texture;
+   private final Identifier textureLocation;
+   private @Nullable DynamicTexture texture;
    private boolean closed;
 
-   private FaviconTexture(TextureManager var1, ResourceLocation var2) {
+   private FaviconTexture(TextureManager var1, Identifier var2) {
       super();
       this.textureManager = var1;
       this.textureLocation = var2;
    }
 
    public static FaviconTexture forWorld(TextureManager var0, String var1) {
-      String var10003 = Util.sanitizeName(var1, ResourceLocation::validPathChar);
-      return new FaviconTexture(var0, ResourceLocation.withDefaultNamespace("worlds/" + var10003 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var1)) + "/icon"));
+      String var10003 = Util.sanitizeName(var1, Identifier::validPathChar);
+      return new FaviconTexture(var0, Identifier.withDefaultNamespace("worlds/" + var10003 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var1)) + "/icon"));
    }
 
    public static FaviconTexture forServer(TextureManager var0, String var1) {
       String var10003 = String.valueOf(Hashing.sha1().hashUnencodedChars(var1));
-      return new FaviconTexture(var0, ResourceLocation.withDefaultNamespace("servers/" + var10003 + "/icon"));
+      return new FaviconTexture(var0, Identifier.withDefaultNamespace("servers/" + var10003 + "/icon"));
    }
 
    public void upload(NativeImage var1) {
@@ -68,7 +67,7 @@ public class FaviconTexture implements AutoCloseable {
 
    }
 
-   public ResourceLocation textureLocation() {
+   public Identifier textureLocation() {
       return this.texture != null ? this.textureLocation : MISSING_LOCATION;
    }
 

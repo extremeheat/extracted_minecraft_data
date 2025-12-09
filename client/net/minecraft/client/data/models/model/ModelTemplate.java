@@ -11,43 +11,43 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
 public class ModelTemplate {
-   private final Optional<ResourceLocation> model;
+   private final Optional<Identifier> model;
    private final Set<TextureSlot> requiredSlots;
    private final Optional<String> suffix;
 
-   public ModelTemplate(Optional<ResourceLocation> var1, Optional<String> var2, TextureSlot... var3) {
+   public ModelTemplate(Optional<Identifier> var1, Optional<String> var2, TextureSlot... var3) {
       super();
       this.model = var1;
       this.suffix = var2;
       this.requiredSlots = ImmutableSet.copyOf(var3);
    }
 
-   public ResourceLocation getDefaultModelLocation(Block var1) {
+   public Identifier getDefaultModelLocation(Block var1) {
       return ModelLocationUtils.getModelLocation(var1, (String)this.suffix.orElse(""));
    }
 
-   public ResourceLocation create(Block var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
+   public Identifier create(Block var1, TextureMapping var2, BiConsumer<Identifier, ModelInstance> var3) {
       return this.create(ModelLocationUtils.getModelLocation(var1, (String)this.suffix.orElse("")), var2, var3);
    }
 
-   public ResourceLocation createWithSuffix(Block var1, String var2, TextureMapping var3, BiConsumer<ResourceLocation, ModelInstance> var4) {
+   public Identifier createWithSuffix(Block var1, String var2, TextureMapping var3, BiConsumer<Identifier, ModelInstance> var4) {
       return this.create(ModelLocationUtils.getModelLocation(var1, var2 + (String)this.suffix.orElse("")), var3, var4);
    }
 
-   public ResourceLocation createWithOverride(Block var1, String var2, TextureMapping var3, BiConsumer<ResourceLocation, ModelInstance> var4) {
+   public Identifier createWithOverride(Block var1, String var2, TextureMapping var3, BiConsumer<Identifier, ModelInstance> var4) {
       return this.create(ModelLocationUtils.getModelLocation(var1, var2), var3, var4);
    }
 
-   public ResourceLocation create(Item var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
+   public Identifier create(Item var1, TextureMapping var2, BiConsumer<Identifier, ModelInstance> var3) {
       return this.create(ModelLocationUtils.getModelLocation(var1, (String)this.suffix.orElse("")), var2, var3);
    }
 
-   public ResourceLocation create(ResourceLocation var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
+   public Identifier create(Identifier var1, TextureMapping var2, BiConsumer<Identifier, ModelInstance> var3) {
       Map var4 = this.createMap(var2);
       var3.accept(var1, (ModelInstance)() -> {
          JsonObject var2 = new JsonObject();
@@ -63,7 +63,7 @@ public class ModelTemplate {
       return var1;
    }
 
-   private Map<TextureSlot, ResourceLocation> createMap(TextureMapping var1) {
+   private Map<TextureSlot, Identifier> createMap(TextureMapping var1) {
       Stream var10000 = Streams.concat(new Stream[]{this.requiredSlots.stream(), var1.getForced()});
       Function var10001 = Function.identity();
       Objects.requireNonNull(var1);

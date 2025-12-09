@@ -2,11 +2,11 @@ package net.minecraft.world.level.levelgen.structure.pieces;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
+import org.jspecify.annotations.Nullable;
 
 public class StructurePiecesBuilder implements StructurePieceAccessor {
    private final List<StructurePiece> pieces = Lists.newArrayList();
@@ -19,8 +19,7 @@ public class StructurePiecesBuilder implements StructurePieceAccessor {
       this.pieces.add(var1);
    }
 
-   @Nullable
-   public StructurePiece findCollisionPiece(BoundingBox var1) {
+   public @Nullable StructurePiece findCollisionPiece(BoundingBox var1) {
       return StructurePiece.findCollisionPiece(this.pieces, var1);
    }
 

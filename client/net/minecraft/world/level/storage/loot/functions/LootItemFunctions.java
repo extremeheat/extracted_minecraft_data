@@ -8,8 +8,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 
@@ -58,13 +58,14 @@ public class LootItemFunctions {
    public static final LootItemFunctionType<ToggleTooltips> TOGGLE_TOOLTIPS;
    public static final LootItemFunctionType<SetOminousBottleAmplifierFunction> SET_OMINOUS_BOTTLE_AMPLIFIER;
    public static final LootItemFunctionType<SetCustomModelDataFunction> SET_CUSTOM_MODEL_DATA;
+   public static final LootItemFunctionType<DiscardItem> DISCARD;
 
    public LootItemFunctions() {
       super();
    }
 
    private static <T extends LootItemFunction> LootItemFunctionType<T> register(String var0, MapCodec<T> var1) {
-      return (LootItemFunctionType)Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootItemFunctionType(var1));
+      return (LootItemFunctionType)Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootItemFunctionType(var1));
    }
 
    public static BiFunction<ItemStack, LootContext, ItemStack> compose(List<? extends BiFunction<ItemStack, LootContext, ItemStack>> var0) {
@@ -139,5 +140,6 @@ public class LootItemFunctions {
       TOGGLE_TOOLTIPS = register("toggle_tooltips", ToggleTooltips.CODEC);
       SET_OMINOUS_BOTTLE_AMPLIFIER = register("set_ominous_bottle_amplifier", SetOminousBottleAmplifierFunction.CODEC);
       SET_CUSTOM_MODEL_DATA = register("set_custom_model_data", SetCustomModelDataFunction.CODEC);
+      DISCARD = register("discard", DiscardItem.CODEC);
    }
 }

@@ -4,8 +4,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import javax.annotation.Nullable;
 import net.minecraft.commands.ExecutionCommandSource;
+import org.jspecify.annotations.Nullable;
 
 public interface CustomCommandExecutor<T> {
    void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4);

@@ -6,11 +6,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.LevelReader;
+import org.jspecify.annotations.Nullable;
 
 public class BlockPattern {
    private final Predicate<BlockInWorld>[][][] pattern;
@@ -53,15 +53,13 @@ public class BlockPattern {
       return this.pattern;
    }
 
-   @Nullable
    @VisibleForTesting
-   public BlockPatternMatch matches(LevelReader var1, BlockPos var2, Direction var3, Direction var4) {
+   public @Nullable BlockPatternMatch matches(LevelReader var1, BlockPos var2, Direction var3, Direction var4) {
       LoadingCache var5 = createLevelCache(var1, false);
       return this.matches(var2, var3, var4, var5);
    }
 
-   @Nullable
-   private BlockPatternMatch matches(BlockPos var1, Direction var2, Direction var3, LoadingCache<BlockPos, BlockInWorld> var4) {
+   private @Nullable BlockPatternMatch matches(BlockPos var1, Direction var2, Direction var3, LoadingCache<BlockPos, BlockInWorld> var4) {
       for(int var5 = 0; var5 < this.width; ++var5) {
          for(int var6 = 0; var6 < this.height; ++var6) {
             for(int var7 = 0; var7 < this.depth; ++var7) {
@@ -75,8 +73,7 @@ public class BlockPattern {
       return new BlockPatternMatch(var1, var2, var3, var4, this.width, this.height, this.depth);
    }
 
-   @Nullable
-   public BlockPatternMatch find(LevelReader var1, BlockPos var2) {
+   public @Nullable BlockPatternMatch find(LevelReader var1, BlockPos var2) {
       LoadingCache var3 = createLevelCache(var1, false);
       int var4 = Math.max(Math.max(this.width, this.height), this.depth);
 

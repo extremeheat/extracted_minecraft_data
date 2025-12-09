@@ -8,10 +8,10 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -45,7 +45,7 @@ public class SmithingTransformRecipeBuilder {
    }
 
    public void save(RecipeOutput var1, String var2) {
-      this.save(var1, ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var2)));
+      this.save(var1, ResourceKey.create(Registries.RECIPE, Identifier.parse(var2)));
    }
 
    public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
@@ -55,12 +55,12 @@ public class SmithingTransformRecipeBuilder {
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
       SmithingTransformRecipe var4 = new SmithingTransformRecipe(Optional.of(this.template), this.base, Optional.of(this.addition), new TransmuteResult(this.result));
-      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.location()));
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
       }
    }
 }

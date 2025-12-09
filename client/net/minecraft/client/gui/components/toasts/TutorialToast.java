@@ -2,17 +2,17 @@ package net.minecraft.client.gui.components.toasts;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class TutorialToast implements Toast {
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/tutorial");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("toast/tutorial");
    public static final int PROGRESS_BAR_WIDTH = 154;
    public static final int PROGRESS_BAR_HEIGHT = 1;
    public static final int PROGRESS_BAR_X = 3;
@@ -62,7 +62,7 @@ public class TutorialToast implements Toast {
             this.hide();
          }
       } else if (this.progressable) {
-         this.smoothedProgress = Mth.clampedLerp(this.smoothedProgress, this.progress, (float)(var2 - this.lastSmoothingTime) / 100.0F);
+         this.smoothedProgress = Mth.clampedLerp((float)(var2 - this.lastSmoothingTime) / 100.0F, this.smoothedProgress, this.progress);
          this.lastSmoothingTime = var2;
       }
 
@@ -78,7 +78,7 @@ public class TutorialToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       int var5 = this.height();
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
       this.icon.render(var1, 6, 6);
       int var6 = this.lines.size() * 11;
       int var7 = 7 + (this.contentHeight() - var6) / 2;
@@ -111,22 +111,22 @@ public class TutorialToast implements Toast {
    }
 
    public static enum Icons {
-      MOVEMENT_KEYS(ResourceLocation.withDefaultNamespace("toast/movement_keys")),
-      MOUSE(ResourceLocation.withDefaultNamespace("toast/mouse")),
-      TREE(ResourceLocation.withDefaultNamespace("toast/tree")),
-      RECIPE_BOOK(ResourceLocation.withDefaultNamespace("toast/recipe_book")),
-      WOODEN_PLANKS(ResourceLocation.withDefaultNamespace("toast/wooden_planks")),
-      SOCIAL_INTERACTIONS(ResourceLocation.withDefaultNamespace("toast/social_interactions")),
-      RIGHT_CLICK(ResourceLocation.withDefaultNamespace("toast/right_click"));
+      MOVEMENT_KEYS(Identifier.withDefaultNamespace("toast/movement_keys")),
+      MOUSE(Identifier.withDefaultNamespace("toast/mouse")),
+      TREE(Identifier.withDefaultNamespace("toast/tree")),
+      RECIPE_BOOK(Identifier.withDefaultNamespace("toast/recipe_book")),
+      WOODEN_PLANKS(Identifier.withDefaultNamespace("toast/wooden_planks")),
+      SOCIAL_INTERACTIONS(Identifier.withDefaultNamespace("toast/social_interactions")),
+      RIGHT_CLICK(Identifier.withDefaultNamespace("toast/right_click"));
 
-      private final ResourceLocation sprite;
+      private final Identifier sprite;
 
-      private Icons(final ResourceLocation var3) {
+      private Icons(final Identifier var3) {
          this.sprite = var3;
       }
 
       public void render(GuiGraphics var1, int var2, int var3) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, var2, var3, 20, 20);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, var2, var3, 20, 20);
       }
 
       // $FF: synthetic method

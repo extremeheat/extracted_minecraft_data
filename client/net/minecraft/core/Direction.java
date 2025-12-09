@@ -13,14 +13,13 @@ import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
@@ -28,6 +27,7 @@ import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public enum Direction implements StringRepresentable {
    DOWN(0, 1, -1, "down", Direction.AxisDirection.NEGATIVE, Direction.Axis.Y, new Vec3i(0, -1, 0)),
@@ -77,10 +77,10 @@ public enum Direction implements StringRepresentable {
    public static Direction[] orderedByNearest(Entity var0) {
       float var1 = var0.getViewXRot(1.0F) * 0.017453292F;
       float var2 = -var0.getViewYRot(1.0F) * 0.017453292F;
-      float var3 = Mth.sin(var1);
-      float var4 = Mth.cos(var1);
-      float var5 = Mth.sin(var2);
-      float var6 = Mth.cos(var2);
+      float var3 = Mth.sin((double)var1);
+      float var4 = Mth.cos((double)var1);
+      float var5 = Mth.sin((double)var2);
+      float var6 = Mth.cos((double)var2);
       boolean var7 = var5 > 0.0F;
       boolean var8 = var3 < 0.0F;
       boolean var9 = var6 > 0.0F;
@@ -324,8 +324,7 @@ public enum Direction implements StringRepresentable {
       return this.axis;
    }
 
-   @Nullable
-   public static Direction byName(@Nullable String var0) {
+   public static @Nullable Direction byName(String var0) {
       return CODEC.byName(var0);
    }
 
@@ -384,9 +383,8 @@ public enum Direction implements StringRepresentable {
       return getApproximateNearest(var0.x, var0.y, var0.z);
    }
 
-   @Nullable
    @Contract("_,_,_,!null->!null;_,_,_,_->_")
-   public static Direction getNearest(int var0, int var1, int var2, @Nullable Direction var3) {
+   public static @Nullable Direction getNearest(int var0, int var1, int var2, @Nullable Direction var3) {
       int var4 = Math.abs(var0);
       int var5 = Math.abs(var1);
       int var6 = Math.abs(var2);
@@ -401,9 +399,8 @@ public enum Direction implements StringRepresentable {
       }
    }
 
-   @Nullable
    @Contract("_,!null->!null;_,_->_")
-   public static Direction getNearest(Vec3i var0, @Nullable Direction var1) {
+   public static @Nullable Direction getNearest(Vec3i var0, @Nullable Direction var1) {
       return getNearest(var0.getX(), var0.getY(), var0.getZ(), var1);
    }
 
@@ -448,8 +445,8 @@ public enum Direction implements StringRepresentable {
 
    public boolean isFacingAngle(float var1) {
       float var2 = var1 * 0.017453292F;
-      float var3 = -Mth.sin(var2);
-      float var4 = Mth.cos(var2);
+      float var3 = -Mth.sin((double)var2);
+      float var4 = Mth.cos((double)var2);
       return (float)this.normal.getX() * var3 + (float)this.normal.getZ() * var4 > 0.0F;
    }
 
@@ -481,7 +478,7 @@ public enum Direction implements StringRepresentable {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable final Object var1) {
+         public boolean test(final @Nullable Object var1) {
             return super.test((Direction)var1);
          }
       },
@@ -507,7 +504,7 @@ public enum Direction implements StringRepresentable {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable final Object var1) {
+         public boolean test(final @Nullable Object var1) {
             return super.test((Direction)var1);
          }
       },
@@ -533,7 +530,7 @@ public enum Direction implements StringRepresentable {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable final Object var1) {
+         public boolean test(final @Nullable Object var1) {
             return super.test((Direction)var1);
          }
       };
@@ -546,8 +543,7 @@ public enum Direction implements StringRepresentable {
          this.name = var3;
       }
 
-      @Nullable
-      public static Axis byName(String var0) {
+      public static @Nullable Axis byName(String var0) {
          return CODEC.byName(var0);
       }
 
@@ -611,7 +607,7 @@ public enum Direction implements StringRepresentable {
       public abstract boolean choose(boolean var1, boolean var2, boolean var3);
 
       // $FF: synthetic method
-      public boolean test(@Nullable final Object var1) {
+      public boolean test(final @Nullable Object var1) {
          return this.test((Direction)var1);
       }
 
@@ -696,7 +692,7 @@ public enum Direction implements StringRepresentable {
       }
 
       // $FF: synthetic method
-      public boolean test(@Nullable final Object var1) {
+      public boolean test(final @Nullable Object var1) {
          return this.test((Direction)var1);
       }
 

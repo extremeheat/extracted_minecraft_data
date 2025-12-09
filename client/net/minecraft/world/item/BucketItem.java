@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +13,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -29,6 +29,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
 
 public class BucketItem extends Item implements DispensibleContainerItem {
    private final Fluid content;
@@ -134,14 +135,14 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          boolean var17 = var16.isAir() || var10 && (!var9 || var4 == null);
          if (!var17) {
             return var4 != null && this.emptyContents(var1, var2, var4.getBlockPos().relative(var4.getDirection()), (BlockHitResult)null);
-         } else if (var2.dimensionType().ultraWarm() && this.content.is(FluidTags.WATER)) {
+         } else if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3) && this.content.is(FluidTags.WATER)) {
             int var18 = var3.getX();
             int var13 = var3.getY();
             int var14 = var3.getZ();
             var2.playSound(var1, (BlockPos)var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
             for(int var15 = 0; var15 < 8; ++var15) {
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var18 + Math.random(), (double)var13 + Math.random(), (double)var14 + Math.random(), 0.0, 0.0, 0.0);
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)((float)var18 + var2.random.nextFloat()), (double)((float)var13 + var2.random.nextFloat()), (double)((float)var14 + var2.random.nextFloat()), 0.0, 0.0, 0.0);
             }
 
             return true;

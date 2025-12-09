@@ -2,24 +2,25 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.ShulkerBulletModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.projectile.ShulkerBulletModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ShulkerBulletRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import org.joml.Quaternionfc;
 
 public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, ShulkerBulletRenderState> {
-   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/shulker/spark.png");
+   private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/shulker/spark.png");
    private static final RenderType RENDER_TYPE;
    private final ShulkerBulletModel model;
 
@@ -36,9 +37,9 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       var2.pushPose();
       float var5 = var1.ageInTicks;
       var2.translate(0.0F, 0.15F, 0.0F);
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin(var5 * 0.1F) * 180.0F));
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos(var5 * 0.1F) * 180.0F));
-      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 0.15F) * 360.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin((double)(var5 * 0.1F)) * 180.0F));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos((double)(var5 * 0.1F)) * 180.0F));
+      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin((double)(var5 * 0.15F)) * 360.0F));
       var2.scale(-0.5F, -0.5F, 0.5F);
       var3.submitModel(this.model, var1, var2, this.model.renderType(TEXTURE_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.scale(1.5F, 1.5F, 1.5F);
@@ -63,6 +64,6 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
    }
 
    static {
-      RENDER_TYPE = RenderType.entityTranslucent(TEXTURE_LOCATION);
+      RENDER_TYPE = RenderTypes.entityTranslucent(TEXTURE_LOCATION);
    }
 }

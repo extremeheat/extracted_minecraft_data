@@ -17,6 +17,7 @@ import net.minecraft.client.data.models.WaypointStyleProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.util.Util;
 
 public class Main {
    public Main() {
@@ -44,6 +45,7 @@ public class Main {
          DataGenerator var10 = new DataGenerator(var7, SharedConstants.getCurrentVersion(), true);
          addClientProviders(var10, var9);
          var10.run();
+         Util.shutdownExecutors();
       } else {
          var1.printHelpOn(System.out);
       }

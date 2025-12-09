@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -35,7 +35,7 @@ public final class JigsawStructure extends Structure {
    public static final int MAX_DEPTH = 20;
    public static final MapCodec<JigsawStructure> CODEC;
    private final Holder<StructureTemplatePool> startPool;
-   private final Optional<ResourceLocation> startJigsawName;
+   private final Optional<Identifier> startJigsawName;
    private final int maxDepth;
    private final HeightProvider startHeight;
    private final boolean useExpansionHack;
@@ -65,7 +65,7 @@ public final class JigsawStructure extends Structure {
       return var0.maxDistanceFromCenter.horizontal() + var1 > 128 ? DataResult.error(() -> "Horizontal structure size including terrain adaptation must not exceed 128") : DataResult.success(var0);
    }
 
-   public JigsawStructure(Structure.StructureSettings var1, Holder<StructureTemplatePool> var2, Optional<ResourceLocation> var3, int var4, HeightProvider var5, boolean var6, Optional<Heightmap.Types> var7, MaxDistance var8, List<PoolAliasBinding> var9, DimensionPadding var10, LiquidSettings var11) {
+   public JigsawStructure(Structure.StructureSettings var1, Holder<StructureTemplatePool> var2, Optional<Identifier> var3, int var4, HeightProvider var5, boolean var6, Optional<Heightmap.Types> var7, MaxDistance var8, List<PoolAliasBinding> var9, DimensionPadding var10, LiquidSettings var11) {
       super(var1);
       this.startPool = var2;
       this.startJigsawName = var3;
@@ -111,7 +111,7 @@ public final class JigsawStructure extends Structure {
    static {
       DEFAULT_DIMENSION_PADDING = DimensionPadding.ZERO;
       DEFAULT_LIQUID_SETTINGS = LiquidSettings.APPLY_WATERLOGGING;
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), StructureTemplatePool.CODEC.fieldOf("start_pool").forGetter((var0x) -> var0x.startPool), ResourceLocation.CODEC.optionalFieldOf("start_jigsaw_name").forGetter((var0x) -> var0x.startJigsawName), Codec.intRange(0, 20).fieldOf("size").forGetter((var0x) -> var0x.maxDepth), HeightProvider.CODEC.fieldOf("start_height").forGetter((var0x) -> var0x.startHeight), Codec.BOOL.fieldOf("use_expansion_hack").forGetter((var0x) -> var0x.useExpansionHack), Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter((var0x) -> var0x.projectStartToHeightmap), JigsawStructure.MaxDistance.CODEC.fieldOf("max_distance_from_center").forGetter((var0x) -> var0x.maxDistanceFromCenter), Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter((var0x) -> var0x.poolAliases), DimensionPadding.CODEC.optionalFieldOf("dimension_padding", DEFAULT_DIMENSION_PADDING).forGetter((var0x) -> var0x.dimensionPadding), LiquidSettings.CODEC.optionalFieldOf("liquid_settings", DEFAULT_LIQUID_SETTINGS).forGetter((var0x) -> var0x.liquidSettings)).apply(var0, JigsawStructure::new)).validate(JigsawStructure::verifyRange);
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), StructureTemplatePool.CODEC.fieldOf("start_pool").forGetter((var0x) -> var0x.startPool), Identifier.CODEC.optionalFieldOf("start_jigsaw_name").forGetter((var0x) -> var0x.startJigsawName), Codec.intRange(0, 20).fieldOf("size").forGetter((var0x) -> var0x.maxDepth), HeightProvider.CODEC.fieldOf("start_height").forGetter((var0x) -> var0x.startHeight), Codec.BOOL.fieldOf("use_expansion_hack").forGetter((var0x) -> var0x.useExpansionHack), Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter((var0x) -> var0x.projectStartToHeightmap), JigsawStructure.MaxDistance.CODEC.fieldOf("max_distance_from_center").forGetter((var0x) -> var0x.maxDistanceFromCenter), Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter((var0x) -> var0x.poolAliases), DimensionPadding.CODEC.optionalFieldOf("dimension_padding", DEFAULT_DIMENSION_PADDING).forGetter((var0x) -> var0x.dimensionPadding), LiquidSettings.CODEC.optionalFieldOf("liquid_settings", DEFAULT_LIQUID_SETTINGS).forGetter((var0x) -> var0x.liquidSettings)).apply(var0, JigsawStructure::new)).validate(JigsawStructure::verifyRange);
    }
 
    public static record MaxDistance(int horizontal, int vertical) {

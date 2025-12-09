@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import joptsimple.AbstractOptionSpec;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
@@ -28,7 +27,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
-import net.minecraft.Util;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -43,16 +41,17 @@ import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
@@ -61,6 +60,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.storage.WorldData;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Main {
@@ -224,7 +224,7 @@ public class Main {
          };
          var38.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
          Runtime.getRuntime().addShutdownHook(var38);
-      } catch (Exception var42) {
+      } catch (Throwable var42) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var42);
       }
 
@@ -272,7 +272,7 @@ public class Main {
       }
 
       WorldLoader.PackConfig var7 = new WorldLoader.PackConfig(var3, var5, var2, var4);
-      return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissionLevel);
+      return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissions);
    }
 
    private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, WorldData var1, DataFixer var2, boolean var3, BooleanSupplier var4, RegistryAccess var5, boolean var6) {

@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -26,6 +25,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
+import org.jspecify.annotations.Nullable;
 
 public class ItemEnchantments implements TooltipProvider {
    public static final ItemEnchantments EMPTY = new ItemEnchantments(new Object2IntOpenHashMap());
@@ -77,7 +77,7 @@ public class ItemEnchantments implements TooltipProvider {
 
    }
 
-   private static <T> HolderSet<T> getTagOrEmpty(@Nullable HolderLookup.Provider var0, ResourceKey<Registry<T>> var1, TagKey<T> var2) {
+   private static <T> HolderSet<T> getTagOrEmpty(HolderLookup.@Nullable Provider var0, ResourceKey<Registry<T>> var1, TagKey<T> var2) {
       if (var0 != null) {
          Optional var3 = var0.lookupOrThrow(var1).get(var2);
          if (var3.isPresent()) {

@@ -4,11 +4,10 @@ import com.google.common.collect.Queues;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface StrictQueue<T extends Runnable> {
-   @Nullable
-   Runnable pop();
+   @Nullable Runnable pop();
 
    boolean push(T var1);
 
@@ -24,8 +23,7 @@ public interface StrictQueue<T extends Runnable> {
          this.queue = var1;
       }
 
-      @Nullable
-      public Runnable pop() {
+      public @Nullable Runnable pop() {
          return (Runnable)this.queue.poll();
       }
 
@@ -70,8 +68,7 @@ public interface StrictQueue<T extends Runnable> {
 
       }
 
-      @Nullable
-      public Runnable pop() {
+      public @Nullable Runnable pop() {
          for(Queue var4 : this.queues) {
             Runnable var5 = (Runnable)var4.poll();
             if (var5 != null) {

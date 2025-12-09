@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.entity.animal.Panda;
+import net.minecraft.world.entity.animal.panda.Panda;
 
 public class PandaRenderState extends HoldingEntityRenderState {
    public Panda.Gene variant;

@@ -1,6 +1,5 @@
 package net.minecraft.client;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -13,6 +12,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -36,17 +36,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.renderer.GpuWarnlistManager;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
@@ -59,7 +60,6 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.server.packs.repository.Pack;
@@ -70,11 +70,12 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.PlayerModelPart;
-import org.apache.commons.lang3.ArrayUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Options {
@@ -101,37 +102,44 @@ public class Options {
    private final OptionInstance<Double> entityDistanceScaling;
    public static final int UNLIMITED_FRAMERATE_CUTOFF = 260;
    private final OptionInstance<Integer> framerateLimit;
+   private boolean isApplyingGraphicsPreset;
+   private final OptionInstance<GraphicsPreset> graphicsPreset;
    private static final Component INACTIVITY_FPS_LIMIT_TOOLTIP_MINIMIZED = Component.translatable("options.inactivityFpsLimit.minimized.tooltip");
    private static final Component INACTIVITY_FPS_LIMIT_TOOLTIP_AFK = Component.translatable("options.inactivityFpsLimit.afk.tooltip");
    private final OptionInstance<InactivityFpsLimit> inactivityFpsLimit;
    private final OptionInstance<CloudStatus> cloudStatus;
    private final OptionInstance<Integer> cloudRange;
-   private static final Component GRAPHICS_TOOLTIP_FAST = Component.translatable("options.graphics.fast.tooltip");
-   private static final Component GRAPHICS_TOOLTIP_FABULOUS;
-   private static final Component GRAPHICS_TOOLTIP_FANCY;
-   private final OptionInstance<GraphicsStatus> graphicsMode;
+   private static final Component GRAPHICS_TOOLTIP_WEATHER_RADIUS = Component.translatable("options.weatherRadius.tooltip");
+   private final OptionInstance<Integer> weatherRadius;
+   private static final Component GRAPHICS_TOOLTIP_CUTOUT_LEAVES = Component.translatable("options.cutoutLeaves.tooltip");
+   private final OptionInstance<Boolean> cutoutLeaves;
+   private static final Component GRAPHICS_TOOLTIP_VIGNETTE = Component.translatable("options.vignette.tooltip");
+   private final OptionInstance<Boolean> vignette;
+   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.tooltip");
+   private final OptionInstance<Boolean> improvedTransparency;
    private final OptionInstance<Boolean> ambientOcclusion;
-   private static final Component PRIORITIZE_CHUNK_TOOLTIP_NONE;
-   private static final Component PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED;
-   private static final Component PRIORITIZE_CHUNK_TOOLTIP_NEARBY;
+   private static final Component GRAPHICS_TOOLTIP_CHUNK_FADE = Component.translatable("options.chunkFade.tooltip");
+   private final OptionInstance<Double> chunkSectionFadeInTime;
+   private static final Component PRIORITIZE_CHUNK_TOOLTIP_NONE = Component.translatable("options.prioritizeChunkUpdates.none.tooltip");
+   private static final Component PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED = Component.translatable("options.prioritizeChunkUpdates.byPlayer.tooltip");
+   private static final Component PRIORITIZE_CHUNK_TOOLTIP_NEARBY = Component.translatable("options.prioritizeChunkUpdates.nearby.tooltip");
    private final OptionInstance<PrioritizeChunkUpdates> prioritizeChunkUpdates;
    public List<String> resourcePacks;
    public List<String> incompatibleResourcePacks;
    private final OptionInstance<ChatVisiblity> chatVisibility;
    private final OptionInstance<Double> chatOpacity;
    private final OptionInstance<Double> chatLineSpacing;
-   private static final Component MENU_BACKGROUND_BLURRINESS_TOOLTIP;
+   private static final Component MENU_BACKGROUND_BLURRINESS_TOOLTIP = Component.translatable("options.accessibility.menu_background_blurriness.tooltip");
    private static final int BLURRINESS_DEFAULT_VALUE = 5;
    private final OptionInstance<Integer> menuBackgroundBlurriness;
    private final OptionInstance<Double> textBackgroundOpacity;
    private final OptionInstance<Double> panoramaSpeed;
-   private static final Component ACCESSIBILITY_TOOLTIP_CONTRAST_MODE;
+   private static final Component ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
    private final OptionInstance<Boolean> highContrast;
-   private static final Component HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP;
+   private static final Component HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP = Component.translatable("options.accessibility.high_contrast_block_outline.tooltip");
    private final OptionInstance<Boolean> highContrastBlockOutline;
    private final OptionInstance<Boolean> narratorHotkey;
-   @Nullable
-   public String fullscreenVideoModeString;
+   public @Nullable String fullscreenVideoModeString;
    public boolean hideServerAddress;
    public boolean advancedItemTooltips;
    public boolean pauseOnLostFocus;
@@ -144,21 +152,27 @@ public class Options {
    private final OptionInstance<Double> chatHeightUnfocused;
    private final OptionInstance<Double> chatHeightFocused;
    private final OptionInstance<Double> chatDelay;
-   private static final Component ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME;
+   private static final Component ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
    private final OptionInstance<Double> notificationDisplayTime;
    private final OptionInstance<Integer> mipmapLevels;
-   public boolean useNativeTransport;
+   private static final Component GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING = Component.translatable("options.maxAnisotropy.tooltip");
+   private final OptionInstance<Integer> maxAnisotropyBit;
+   private static final Component FILTERING_NONE_TOOLTIP = Component.translatable("options.textureFiltering.none.tooltip");
+   private static final Component FILTERING_RGSS_TOOLTIP = Component.translatable("options.textureFiltering.rgss.tooltip");
+   private static final Component FILTERING_ANISOTROPIC_TOOLTIP = Component.translatable("options.textureFiltering.anisotropic.tooltip");
+   private final OptionInstance<TextureFilteringMethod> textureFiltering;
+   private boolean useNativeTransport;
    private final OptionInstance<AttackIndicatorStatus> attackIndicator;
    public TutorialSteps tutorialStep;
    public boolean joinedFirstServer;
    private final OptionInstance<Integer> biomeBlendRadius;
    private final OptionInstance<Double> mouseWheelSensitivity;
    private final OptionInstance<Boolean> rawMouseInput;
-   private static final Component ALLOW_CURSOR_CHANGES_TOOLTIP;
+   private static final Component ALLOW_CURSOR_CHANGES_TOOLTIP = Component.translatable("options.allowCursorChanges.tooltip");
    private final OptionInstance<Boolean> allowCursorChanges;
    public int glDebugVerbosity;
    private final OptionInstance<Boolean> autoJump;
-   private static final Component ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART;
+   private static final Component ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART = Component.translatable("options.rotateWithMinecart.tooltip");
    private final OptionInstance<Boolean> rotateWithMinecart;
    private final OptionInstance<Boolean> operatorItemsTab;
    private final OptionInstance<Boolean> autoSuggestions;
@@ -172,36 +186,36 @@ public class Options {
    private final OptionInstance<Boolean> invertXMouse;
    private final OptionInstance<Boolean> invertYMouse;
    private final OptionInstance<Boolean> discreteMouseScroll;
-   private static final Component REALMS_NOTIFICATIONS_TOOLTIP;
+   private static final Component REALMS_NOTIFICATIONS_TOOLTIP = Component.translatable("options.realmsNotifications.tooltip");
    private final OptionInstance<Boolean> realmsNotifications;
-   private static final Component ALLOW_SERVER_LISTING_TOOLTIP;
+   private static final Component ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");
    private final OptionInstance<Boolean> allowServerListing;
    private final OptionInstance<Boolean> reducedDebugInfo;
    private final Map<SoundSource, OptionInstance<Double>> soundSourceVolumes;
-   private static final Component CLOSED_CAPTIONS_TOOLTIP;
+   private static final Component CLOSED_CAPTIONS_TOOLTIP = Component.translatable("options.showSubtitles.tooltip");
    private final OptionInstance<Boolean> showSubtitles;
-   private static final Component DIRECTIONAL_AUDIO_TOOLTIP_ON;
-   private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF;
+   private static final Component DIRECTIONAL_AUDIO_TOOLTIP_ON = Component.translatable("options.directionalAudio.on.tooltip");
+   private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
    private final OptionInstance<Boolean> directionalAudio;
    private final OptionInstance<Boolean> backgroundForChatOnly;
    private final OptionInstance<Boolean> touchscreen;
    private final OptionInstance<Boolean> fullscreen;
    private final OptionInstance<Boolean> bobView;
-   private static final Component KEY_TOGGLE;
-   private static final Component KEY_HOLD;
+   private static final Component KEY_TOGGLE = Component.translatable("options.key.toggle");
+   private static final Component KEY_HOLD = Component.translatable("options.key.hold");
    private final OptionInstance<Boolean> toggleCrouch;
    private final OptionInstance<Boolean> toggleSprint;
    private final OptionInstance<Boolean> toggleAttack;
    private final OptionInstance<Boolean> toggleUse;
-   private static final Component SPRINT_WINDOW_TOOLTIP;
+   private static final Component SPRINT_WINDOW_TOOLTIP = Component.translatable("options.sprintWindow.tooltip");
    private final OptionInstance<Integer> sprintWindow;
    public boolean skipMultiplayerWarning;
-   private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES;
+   private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
    private final OptionInstance<Boolean> hideMatchedNames;
    private final OptionInstance<Boolean> showAutosaveIndicator;
-   private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE;
+   private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
    private final OptionInstance<Boolean> onlyShowSecureChat;
-   private static final Component CHAT_TOOLTIP_SAVE_DRAFTS;
+   private static final Component CHAT_TOOLTIP_SAVE_DRAFTS = Component.translatable("options.chat.drafts.tooltip");
    private final OptionInstance<Boolean> saveChatDrafts;
    public final KeyMapping keyUp;
    public final KeyMapping keyLeft;
@@ -226,11 +240,35 @@ public class Options {
    public final KeyMapping keyFullscreen;
    public final KeyMapping keyAdvancements;
    public final KeyMapping keyQuickActions;
+   public final KeyMapping keyToggleGui;
+   public final KeyMapping keyToggleSpectatorShaderEffects;
    public final KeyMapping[] keyHotbarSlots;
    public final KeyMapping keySaveHotbarActivator;
    public final KeyMapping keyLoadHotbarActivator;
    public final KeyMapping keySpectatorOutlines;
    public final KeyMapping keySpectatorHotbar;
+   public final KeyMapping keyDebugOverlay;
+   public final KeyMapping keyDebugModifier;
+   public final KeyMapping keyDebugCrash;
+   public final KeyMapping keyDebugReloadChunk;
+   public final KeyMapping keyDebugShowHitboxes;
+   public final KeyMapping keyDebugClearChat;
+   public final KeyMapping keyDebugShowChunkBorders;
+   public final KeyMapping keyDebugShowAdvancedTooltips;
+   public final KeyMapping keyDebugCopyRecreateCommand;
+   public final KeyMapping keyDebugSpectate;
+   public final KeyMapping keyDebugSwitchGameMode;
+   public final KeyMapping keyDebugDebugOptions;
+   public final KeyMapping keyDebugFocusPause;
+   public final KeyMapping keyDebugDumpDynamicTextures;
+   public final KeyMapping keyDebugReloadResourcePacks;
+   public final KeyMapping keyDebugProfiling;
+   public final KeyMapping keyDebugCopyLocation;
+   public final KeyMapping keyDebugDumpVersion;
+   public final KeyMapping keyDebugPofilingChart;
+   public final KeyMapping keyDebugFpsCharts;
+   public final KeyMapping keyDebugNetworkCharts;
+   public final KeyMapping[] debugKeys;
    public final KeyMapping[] keyMappings;
    protected Minecraft minecraft;
    private final File optionsFile;
@@ -239,19 +277,19 @@ public class Options {
    public String lastMpIp;
    public boolean smoothCamera;
    private final OptionInstance<Integer> fov;
-   private static final Component TELEMETRY_TOOLTIP;
+   private static final Component TELEMETRY_TOOLTIP = Component.translatable("options.telemetry.button.tooltip", Component.translatable("options.telemetry.state.minimal"), Component.translatable("options.telemetry.state.all"));
    private final OptionInstance<Boolean> telemetryOptInExtra;
-   private static final Component ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT;
+   private static final Component ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT = Component.translatable("options.screenEffectScale.tooltip");
    private final OptionInstance<Double> screenEffectScale;
-   private static final Component ACCESSIBILITY_TOOLTIP_FOV_EFFECT;
+   private static final Component ACCESSIBILITY_TOOLTIP_FOV_EFFECT = Component.translatable("options.fovEffectScale.tooltip");
    private final OptionInstance<Double> fovEffectScale;
-   private static final Component ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT;
+   private static final Component ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT = Component.translatable("options.darknessEffectScale.tooltip");
    private final OptionInstance<Double> darknessEffectScale;
-   private static final Component ACCESSIBILITY_TOOLTIP_GLINT_SPEED;
+   private static final Component ACCESSIBILITY_TOOLTIP_GLINT_SPEED = Component.translatable("options.glintSpeed.tooltip");
    private final OptionInstance<Double> glintSpeed;
-   private static final Component ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH;
+   private static final Component ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH = Component.translatable("options.glintStrength.tooltip");
    private final OptionInstance<Double> glintStrength;
-   private static final Component ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH;
+   private static final Component ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH = Component.translatable("options.damageTiltStrength.tooltip");
    private final OptionInstance<Double> damageTiltStrength;
    private final OptionInstance<Double> gamma;
    public static final int AUTO_GUI_SCALE = 0;
@@ -262,12 +300,19 @@ public class Options {
    public String languageCode;
    private final OptionInstance<String> soundDevice;
    public boolean onboardAccessibility;
-   private static final Component MUSIC_FREQUENCY_TOOLTIP;
+   private static final Component MUSIC_FREQUENCY_TOOLTIP = Component.translatable("options.music_frequency.tooltip");
    private final OptionInstance<MusicManager.MusicFrequency> musicFrequency;
-   private static final Component NOW_PLAYING_TOAST_TOOLTIP;
-   private final OptionInstance<Boolean> showNowPlayingToast;
+   private final OptionInstance<MusicToastDisplayState> musicToast;
    public boolean syncWrites;
    public boolean startedCleanly;
+
+   private static void operateOnLevelRenderer(Consumer<LevelRenderer> var0) {
+      LevelRenderer var1 = Minecraft.getInstance().levelRenderer;
+      if (var1 != null) {
+         var0.accept(var1);
+      }
+
+   }
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
       return this.darkMojangStudiosBackground;
@@ -301,6 +346,16 @@ public class Options {
       return this.framerateLimit;
    }
 
+   public void applyGraphicsPreset(GraphicsPreset var1) {
+      this.isApplyingGraphicsPreset = true;
+      var1.apply(this.minecraft);
+      this.isApplyingGraphicsPreset = false;
+   }
+
+   public OptionInstance<GraphicsPreset> graphicsPreset() {
+      return this.graphicsPreset;
+   }
+
    public OptionInstance<InactivityFpsLimit> inactivityFpsLimit() {
       return this.inactivityFpsLimit;
    }
@@ -313,12 +368,28 @@ public class Options {
       return this.cloudRange;
    }
 
-   public OptionInstance<GraphicsStatus> graphicsMode() {
-      return this.graphicsMode;
+   public OptionInstance<Integer> weatherRadius() {
+      return this.weatherRadius;
+   }
+
+   public OptionInstance<Boolean> cutoutLeaves() {
+      return this.cutoutLeaves;
+   }
+
+   public OptionInstance<Boolean> vignette() {
+      return this.vignette;
+   }
+
+   public OptionInstance<Boolean> improvedTransparency() {
+      return this.improvedTransparency;
    }
 
    public OptionInstance<Boolean> ambientOcclusion() {
       return this.ambientOcclusion;
+   }
+
+   public OptionInstance<Double> chunkSectionFadeInTime() {
+      return this.chunkSectionFadeInTime;
    }
 
    public OptionInstance<PrioritizeChunkUpdates> prioritizeChunkUpdates() {
@@ -417,6 +488,18 @@ public class Options {
 
    public OptionInstance<Integer> mipmapLevels() {
       return this.mipmapLevels;
+   }
+
+   public OptionInstance<Integer> maxAnisotropyBit() {
+      return this.maxAnisotropyBit;
+   }
+
+   public int maxAnisotropyValue() {
+      return Math.min(1 << (Integer)this.maxAnisotropyBit.get(), RenderSystem.getDevice().getMaxSupportedAnisotropy());
+   }
+
+   public OptionInstance<TextureFilteringMethod> textureFiltering() {
+      return this.textureFiltering;
    }
 
    public OptionInstance<AttackIndicatorStatus> attackIndicator() {
@@ -541,12 +624,16 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> {
-         Minecraft var2x = Minecraft.getInstance();
-         SoundManager var3 = var2x.getSoundManager();
-         var3.updateSourceVolume(var2);
-         if (var2x.level == null) {
-            SoundPreviewHandler.preview(var3, var2, var1x.floatValue());
+      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var2x) -> {
+         Minecraft var3 = Minecraft.getInstance();
+         SoundManager var4 = var3.getSoundManager();
+         if ((var2 == SoundSource.MASTER || var2 == SoundSource.MUSIC) && this.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
+            var3.getMusicManager().showNowPlayingToastIfNeeded();
+         }
+
+         var4.refreshCategoryVolume(var2);
+         if (var3.level == null) {
+            SoundPreviewHandler.preview(var4, var2, var2x.floatValue());
          }
 
       });
@@ -612,6 +699,18 @@ public class Options {
       return this.saveChatDrafts;
    }
 
+   private void setGraphicsPresetToCustom() {
+      if (!this.isApplyingGraphicsPreset) {
+         this.graphicsPreset.set(GraphicsPreset.CUSTOM);
+         Screen var2 = this.minecraft.screen;
+         if (var2 instanceof OptionsSubScreen) {
+            OptionsSubScreen var1 = (OptionsSubScreen)var2;
+            var1.resetOption(this.graphicsPreset);
+         }
+
+      }
+   }
+
    public OptionInstance<Integer> fov() {
       return this.fov;
    }
@@ -673,8 +772,8 @@ public class Options {
       return this.musicFrequency;
    }
 
-   public OptionInstance<Boolean> showNowPlayingToast() {
-      return this.showNowPlayingToast;
+   public OptionInstance<MusicToastDisplayState> musicToast() {
+      return this.musicToast;
    }
 
    public Options(Minecraft var1, File var2) {
@@ -691,9 +790,9 @@ public class Options {
       }, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
       });
       this.serverRenderDistance = 0;
-      this.entityDistanceScaling = new OptionInstance<Double>("options.entityDistanceScaling", OptionInstance.noTooltip(), Options::percentValueLabel, (new OptionInstance.IntRange(2, 20)).xmap((var0) -> (double)var0 / 4.0, (var0) -> (int)(var0 * 4.0)), Codec.doubleRange(0.5, 5.0), 1.0, (var0) -> {
-      });
-      this.framerateLimit = new OptionInstance<Integer>("options.framerateLimit", OptionInstance.noTooltip(), (var0, var1x) -> var1x == 260 ? genericValueLabel(var0, Component.translatable("options.framerateLimit.max")) : genericValueLabel(var0, Component.translatable("options.framerate", var1x)), (new OptionInstance.IntRange(1, 26)).xmap((var0) -> var0 * 10, (var0) -> var0 / 10), Codec.intRange(10, 260), 120, (var0) -> Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(var0));
+      this.entityDistanceScaling = new OptionInstance<Double>("options.entityDistanceScaling", OptionInstance.noTooltip(), Options::percentValueLabel, (new OptionInstance.IntRange(2, 20)).xmap((var0) -> (double)var0 / 4.0, (var0) -> (int)(var0 * 4.0), true), Codec.doubleRange(0.5, 5.0), 1.0, (var1x) -> this.setGraphicsPresetToCustom());
+      this.framerateLimit = new OptionInstance<Integer>("options.framerateLimit", OptionInstance.noTooltip(), (var0, var1x) -> var1x == 260 ? genericValueLabel(var0, Component.translatable("options.framerateLimit.max")) : genericValueLabel(var0, Component.translatable("options.framerate", var1x)), (new OptionInstance.IntRange(1, 26)).xmap((var0) -> var0 * 10, (var0) -> var0 / 10, true), Codec.intRange(10, 260), 120, (var0) -> Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(var0));
+      this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (var0, var1x) -> genericValueLabel(var0, Component.translatable(var1x.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
       this.inactivityFpsLimit = new OptionInstance<InactivityFpsLimit>("options.inactivityFpsLimit", (var0) -> {
          Tooltip var10000;
          switch (var0) {
@@ -703,36 +802,35 @@ public class Options {
          }
 
          return var10000;
-      }, OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(InactivityFpsLimit.values()), InactivityFpsLimit.CODEC), InactivityFpsLimit.AFK, (var0) -> {
+      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(InactivityFpsLimit.values()), InactivityFpsLimit.CODEC), InactivityFpsLimit.AFK, (var0) -> {
       });
-      this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var0) -> {
+      this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var1x) -> this.setGraphicsPresetToCustom());
+      this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var1x) -> {
+         operateOnLevelRenderer((var0) -> var0.getCloudRenderer().markForRebuild());
+         this.setGraphicsPresetToCustom();
       });
-      this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var0) -> Minecraft.getInstance().levelRenderer.getCloudRenderer().markForRebuild());
-      this.graphicsMode = new OptionInstance<GraphicsStatus>("options.graphics", (var0) -> {
-         Tooltip var10000;
-         switch (var0) {
-            case FANCY -> var10000 = Tooltip.create(GRAPHICS_TOOLTIP_FANCY);
-            case FAST -> var10000 = Tooltip.create(GRAPHICS_TOOLTIP_FAST);
-            case FABULOUS -> var10000 = Tooltip.create(GRAPHICS_TOOLTIP_FABULOUS);
-            default -> throw new MatchException((String)null, (Throwable)null);
-         }
-
-         return var10000;
-      }, (var0, var1x) -> {
-         MutableComponent var2 = Component.translatable(var1x.getKey());
-         return var1x == GraphicsStatus.FABULOUS ? var2.withStyle(ChatFormatting.ITALIC) : var2;
-      }, new OptionInstance.AltEnum(Arrays.asList(GraphicsStatus.values()), (List)Stream.of(GraphicsStatus.values()).filter((var0) -> var0 != GraphicsStatus.FABULOUS).collect(Collectors.toList()), () -> Minecraft.getInstance().isRunning() && Minecraft.getInstance().getGpuWarnlistManager().isSkippingFabulous(), (var0, var1x) -> {
+      this.weatherRadius = new OptionInstance<Integer>("options.weatherRadius", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_WEATHER_RADIUS), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.blocks", var1x)), new OptionInstance.IntRange(3, 10, true), 10, (var1x) -> this.setGraphicsPresetToCustom());
+      this.cutoutLeaves = OptionInstance.createBoolean("options.cutoutLeaves", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CUTOUT_LEAVES), true, (var1x) -> {
+         operateOnLevelRenderer(LevelRenderer::allChanged);
+         this.setGraphicsPresetToCustom();
+      });
+      this.vignette = OptionInstance.createBoolean("options.vignette", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_VIGNETTE), true);
+      this.improvedTransparency = OptionInstance.createBoolean("options.improvedTransparency", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY), false, (var1x) -> {
          Minecraft var2 = Minecraft.getInstance();
          GpuWarnlistManager var3 = var2.getGpuWarnlistManager();
-         if (var1x == GraphicsStatus.FABULOUS && var3.willShowWarning()) {
+         if (var1x && var3.willShowWarning()) {
             var3.showWarning();
          } else {
-            var0.set(var1x);
-            var2.levelRenderer.allChanged();
+            operateOnLevelRenderer(LevelRenderer::allChanged);
+            this.setGraphicsPresetToCustom();
          }
-      }, Codec.INT.xmap(GraphicsStatus::byId, GraphicsStatus::getId)), GraphicsStatus.FANCY, (var0) -> {
       });
-      this.ambientOcclusion = OptionInstance.createBoolean("options.ao", true, (var0) -> Minecraft.getInstance().levelRenderer.allChanged());
+      this.ambientOcclusion = OptionInstance.createBoolean("options.ao", true, (var1x) -> {
+         operateOnLevelRenderer(LevelRenderer::allChanged);
+         this.setGraphicsPresetToCustom();
+      });
+      this.chunkSectionFadeInTime = new OptionInstance<Double>("options.chunkFade", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CHUNK_FADE), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chunkFade.none") : Component.translatable("options.chunkFade.seconds", String.format(Locale.ROOT, "%.2f", var1x)), (new OptionInstance.IntRange(0, 40)).xmap((var0) -> (double)var0 / 20.0, (var0) -> (int)(var0 * 20.0), true), Codec.doubleRange(0.0, 2.0), 0.75, (var0) -> {
+      });
       this.prioritizeChunkUpdates = new OptionInstance<PrioritizeChunkUpdates>("options.prioritizeChunkUpdates", (var0) -> {
          Tooltip var10000;
          switch (var0) {
@@ -743,17 +841,15 @@ public class Options {
          }
 
          return var10000;
-      }, OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), Codec.INT.xmap(PrioritizeChunkUpdates::byId, PrioritizeChunkUpdates::getId)), PrioritizeChunkUpdates.NONE, (var0) -> {
-      });
+      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), PrioritizeChunkUpdates.LEGACY_CODEC), PrioritizeChunkUpdates.NONE, (var1x) -> this.setGraphicsPresetToCustom());
       this.resourcePacks = Lists.newArrayList();
       this.incompatibleResourcePacks = Lists.newArrayList();
-      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), Codec.INT.xmap(ChatVisiblity::byId, ChatVisiblity::getId)), ChatVisiblity.FULL, (var0) -> {
+      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (var0) -> {
       });
       this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (var0, var1x) -> percentValueLabel(var0, var1x * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatLineSpacing = new OptionInstance<Double>("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (var0) -> {
       });
-      this.menuBackgroundBlurriness = new OptionInstance<Integer>("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::genericValueOrOffLabel, new OptionInstance.IntRange(0, 10), 5, (var0) -> {
-      });
+      this.menuBackgroundBlurriness = new OptionInstance<Integer>("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::genericValueOrOffLabel, new OptionInstance.IntRange(0, 10), 5, (var1x) -> this.setGraphicsPresetToCustom());
       this.textBackgroundOpacity = new OptionInstance<Double>("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.panoramaSpeed = new OptionInstance<Double>("options.accessibility.panorama_speed", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
       });
@@ -773,27 +869,47 @@ public class Options {
       this.narratorHotkey = OptionInstance.createBoolean("options.accessibility.narrator_hotkey", OptionInstance.cachedConstantTooltip(InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY ? Component.translatable("options.accessibility.narrator_hotkey.mac.tooltip") : Component.translatable("options.accessibility.narrator_hotkey.tooltip")), true);
       this.pauseOnLostFocus = true;
       this.modelParts = EnumSet.allOf(PlayerModelPart.class);
-      this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (var0) -> {
+      this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (var0) -> {
       });
       this.chatScale = new OptionInstance<Double>("options.chat.scale", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0.0 ? CommonComponents.optionStatus(var0, false) : percentValueLabel(var0, var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatWidth = new OptionInstance<Double>("options.chat.width", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getWidth(var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatHeightUnfocused = new OptionInstance<Double>("options.chat.height.unfocused", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getHeight(var1x)), OptionInstance.UnitDouble.INSTANCE, ChatComponent.defaultUnfocusedPct(), (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatHeightFocused = new OptionInstance<Double>("options.chat.height.focused", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getHeight(var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatDelay = new OptionInstance<Double>("options.chat.delay_instant", OptionInstance.noTooltip(), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", var1x)), (new OptionInstance.IntRange(0, 60)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0)), Codec.doubleRange(0.0, 6.0), 0.0, (var0) -> Minecraft.getInstance().getChatListener().setMessageDelay(var0));
-      this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)), (new OptionInstance.IntRange(5, 100)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0)), Codec.doubleRange(0.5, 10.0), 1.0, (var0) -> {
+      this.chatDelay = new OptionInstance<Double>("options.chat.delay_instant", OptionInstance.noTooltip(), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", var1x)), (new OptionInstance.IntRange(0, 60)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0), true), Codec.doubleRange(0.0, 6.0), 0.0, (var0) -> Minecraft.getInstance().getChatListener().setMessageDelay(var0));
+      this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)), (new OptionInstance.IntRange(5, 100)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0), true), Codec.doubleRange(0.5, 10.0), 1.0, (var0) -> {
       });
-      this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x)), new OptionInstance.IntRange(0, 4), 4, (var0) -> {
+      this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x)), new OptionInstance.IntRange(0, 4), 4, (var1x) -> this.setGraphicsPresetToCustom());
+      this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, Component.translatable("options.multiplier", Integer.toString(1 << var1x)))), new OptionInstance.IntRange(1, 3), 2, (var1x) -> {
+         this.setGraphicsPresetToCustom();
+         operateOnLevelRenderer(LevelRenderer::resetSampler);
+      });
+      this.textureFiltering = new OptionInstance<TextureFilteringMethod>("options.textureFiltering", (var0) -> {
+         Tooltip var10000;
+         switch (var0) {
+            case NONE -> var10000 = Tooltip.create(FILTERING_NONE_TOOLTIP);
+            case RGSS -> var10000 = Tooltip.create(FILTERING_RGSS_TOOLTIP);
+            case ANISOTROPIC -> var10000 = Tooltip.create(FILTERING_ANISOTROPIC_TOOLTIP);
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(TextureFilteringMethod.values()), TextureFilteringMethod.LEGACY_CODEC), TextureFilteringMethod.NONE, (var1x) -> {
+         this.setGraphicsPresetToCustom();
+         operateOnLevelRenderer(LevelRenderer::resetSampler);
       });
       this.useNativeTransport = true;
-      this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
+      this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
       });
       this.tutorialStep = TutorialSteps.MOVEMENT;
       this.joinedFirstServer = false;
       this.biomeBlendRadius = new OptionInstance<Integer>("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
          int var2 = var1x * 2 + 1;
          return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2));
-      }, new OptionInstance.IntRange(0, 7, false), 2, (var0) -> Minecraft.getInstance().levelRenderer.allChanged());
-      this.mouseWheelSensitivity = new OptionInstance<Double>("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.literal(String.format(Locale.ROOT, "%.2f", var1x))), (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), (var0) -> {
+      }, new OptionInstance.IntRange(0, 7, false), 2, (var1x) -> {
+         operateOnLevelRenderer(LevelRenderer::allChanged);
+         this.setGraphicsPresetToCustom();
+      });
+      this.mouseWheelSensitivity = new OptionInstance<Double>("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.literal(String.format(Locale.ROOT, "%.2f", var1x))), (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse, false), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), (var0) -> {
       });
       this.rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, (var0) -> {
          Window var1 = Minecraft.getInstance().getWindow();
@@ -823,7 +939,7 @@ public class Options {
          }
 
       });
-      this.entityShadows = OptionInstance.createBoolean("options.entityShadows", true);
+      this.entityShadows = OptionInstance.createBoolean("options.entityShadows", OptionInstance.noTooltip(), true, (var1x) -> this.setGraphicsPresetToCustom());
       this.forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, (var0) -> updateFontOptions());
       this.japaneseGlyphVariants = OptionInstance.createBoolean("options.japaneseGlyphVariants", OptionInstance.cachedConstantTooltip(Component.translatable("options.japaneseGlyphVariants.tooltip")), japaneseGlyphVariantsDefault(), (var0) -> updateFontOptions());
       this.invertXMouse = OptionInstance.createBoolean("options.invertMouseX", false);
@@ -903,12 +1019,36 @@ public class Options {
       this.keyFullscreen = new KeyMapping("key.fullscreen", 300, KeyMapping.Category.MISC);
       this.keyAdvancements = new KeyMapping("key.advancements", 76, KeyMapping.Category.MISC);
       this.keyQuickActions = new KeyMapping("key.quickActions", 71, KeyMapping.Category.MISC);
+      this.keyToggleGui = new KeyMapping("key.toggleGui", 290, KeyMapping.Category.MISC);
+      this.keyToggleSpectatorShaderEffects = new KeyMapping("key.toggleSpectatorShaderEffects", 293, KeyMapping.Category.MISC);
       this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.2", 50, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.3", 51, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.4", 52, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.5", 53, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.6", 54, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.7", 55, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.8", 56, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.9", 57, KeyMapping.Category.INVENTORY)};
       this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, KeyMapping.Category.CREATIVE);
       this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, KeyMapping.Category.CREATIVE);
       this.keySpectatorOutlines = new KeyMapping("key.spectatorOutlines", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.SPECTATOR);
       this.keySpectatorHotbar = new KeyMapping("key.spectatorHotbar", InputConstants.Type.MOUSE, 2, KeyMapping.Category.SPECTATOR);
-      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions}, this.keyHotbarSlots);
+      this.keyDebugOverlay = new KeyMapping("key.debug.overlay", InputConstants.Type.KEYSYM, 292, KeyMapping.Category.DEBUG, -2);
+      this.keyDebugModifier = new KeyMapping("key.debug.modifier", InputConstants.Type.KEYSYM, 292, KeyMapping.Category.DEBUG, -1);
+      this.keyDebugCrash = new KeyMapping("key.debug.crash", InputConstants.Type.KEYSYM, 67, KeyMapping.Category.DEBUG);
+      this.keyDebugReloadChunk = new KeyMapping("key.debug.reloadChunk", InputConstants.Type.KEYSYM, 65, KeyMapping.Category.DEBUG);
+      this.keyDebugShowHitboxes = new KeyMapping("key.debug.showHitboxes", InputConstants.Type.KEYSYM, 66, KeyMapping.Category.DEBUG);
+      this.keyDebugClearChat = new KeyMapping("key.debug.clearChat", InputConstants.Type.KEYSYM, 68, KeyMapping.Category.DEBUG);
+      this.keyDebugShowChunkBorders = new KeyMapping("key.debug.showChunkBorders", InputConstants.Type.KEYSYM, 71, KeyMapping.Category.DEBUG);
+      this.keyDebugShowAdvancedTooltips = new KeyMapping("key.debug.showAdvancedTooltips", InputConstants.Type.KEYSYM, 72, KeyMapping.Category.DEBUG);
+      this.keyDebugCopyRecreateCommand = new KeyMapping("key.debug.copyRecreateCommand", InputConstants.Type.KEYSYM, 73, KeyMapping.Category.DEBUG);
+      this.keyDebugSpectate = new KeyMapping("key.debug.spectate", InputConstants.Type.KEYSYM, 78, KeyMapping.Category.DEBUG);
+      this.keyDebugSwitchGameMode = new KeyMapping("key.debug.switchGameMode", InputConstants.Type.KEYSYM, 293, KeyMapping.Category.DEBUG);
+      this.keyDebugDebugOptions = new KeyMapping("key.debug.debugOptions", InputConstants.Type.KEYSYM, 295, KeyMapping.Category.DEBUG);
+      this.keyDebugFocusPause = new KeyMapping("key.debug.focusPause", InputConstants.Type.KEYSYM, 80, KeyMapping.Category.DEBUG);
+      this.keyDebugDumpDynamicTextures = new KeyMapping("key.debug.dumpDynamicTextures", InputConstants.Type.KEYSYM, 83, KeyMapping.Category.DEBUG);
+      this.keyDebugReloadResourcePacks = new KeyMapping("key.debug.reloadResourcePacks", InputConstants.Type.KEYSYM, 84, KeyMapping.Category.DEBUG);
+      this.keyDebugProfiling = new KeyMapping("key.debug.profiling", InputConstants.Type.KEYSYM, 76, KeyMapping.Category.DEBUG);
+      this.keyDebugCopyLocation = new KeyMapping("key.debug.copyLocation", InputConstants.Type.KEYSYM, 67, KeyMapping.Category.DEBUG);
+      this.keyDebugDumpVersion = new KeyMapping("key.debug.dumpVersion", InputConstants.Type.KEYSYM, 86, KeyMapping.Category.DEBUG);
+      this.keyDebugPofilingChart = new KeyMapping("key.debug.profilingChart", InputConstants.Type.KEYSYM, 49, KeyMapping.Category.DEBUG, 1);
+      this.keyDebugFpsCharts = new KeyMapping("key.debug.fpsCharts", InputConstants.Type.KEYSYM, 50, KeyMapping.Category.DEBUG, 2);
+      this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYSYM, 51, KeyMapping.Category.DEBUG, 3);
+      this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts};
+      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((var0) -> new KeyMapping[var0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (var0, var1x) -> {
@@ -920,7 +1060,7 @@ public class Options {
          }
 
          return var10000;
-      }, new OptionInstance.IntRange(30, 110), Codec.DOUBLE.xmap((var0) -> (int)(var0 * 40.0 + 70.0), (var0) -> ((double)var0 - 70.0) / 40.0), 70, (var0) -> Minecraft.getInstance().levelRenderer.needsUpdate());
+      }, new OptionInstance.IntRange(30, 110), Codec.DOUBLE.xmap((var0) -> (int)(var0 * 40.0 + 70.0), (var0) -> ((double)var0 - 70.0) / 40.0), 70, (var0) -> operateOnLevelRenderer(LevelRenderer::needsUpdate));
       this.telemetryOptInExtra = OptionInstance.createBoolean("options.telemetry.button", OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP), (var0, var1x) -> {
          Minecraft var2 = Minecraft.getInstance();
          if (!var2.allowsTelemetry()) {
@@ -957,9 +1097,8 @@ public class Options {
          Minecraft var0 = Minecraft.getInstance();
          return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
       }, 2147483646), 0, (var1x) -> this.minecraft.resizeDisplay());
-      this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), Codec.INT.xmap(ParticleStatus::byId, ParticleStatus::getId)), ParticleStatus.ALL, (var0) -> {
-      });
-      this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (var1x, var2x) -> (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), Codec.INT.xmap(NarratorStatus::byId, NarratorStatus::getId)), NarratorStatus.OFF, (var1x) -> this.minecraft.getNarrator().updateNarratorStatus(var1x));
+      this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), ParticleStatus.LEGACY_CODEC), ParticleStatus.ALL, (var1x) -> this.setGraphicsPresetToCustom());
+      this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (var1x, var2x) -> (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), NarratorStatus.LEGACY_CODEC), NarratorStatus.OFF, (var1x) -> this.minecraft.getNarrator().updateNarratorStatus(var1x));
       this.languageCode = "en_us";
       this.soundDevice = new OptionInstance<String>("options.audioDevice", OptionInstance.noTooltip(), (var0, var1x) -> {
          if ("".equals(var1x)) {
@@ -973,22 +1112,17 @@ public class Options {
          var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
-      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
-      this.showNowPlayingToast = OptionInstance.createBoolean("options.showNowPlayingToast", OptionInstance.cachedConstantTooltip(NOW_PLAYING_TOAST_TOOLTIP), false, (var1x) -> {
-         if (var1x) {
-            this.minecraft.getToastManager().createNowPlayingToast();
-         } else {
-            this.minecraft.getToastManager().removeNowPlayingToast();
-         }
-
-      });
+      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
+      this.musicToast = new OptionInstance<MusicToastDisplayState>("options.musicToast", (var0) -> Tooltip.create(var0.tooltip()), (var0, var1x) -> var1x.text(), new OptionInstance.Enum(Arrays.asList(MusicToastDisplayState.values()), MusicToastDisplayState.CODEC), MusicToastDisplayState.NEVER, (var1x) -> this.minecraft.getToastManager().setMusicToastDisplayState(var1x));
       this.startedCleanly = true;
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
-      this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var0) -> Minecraft.getInstance().levelRenderer.needsUpdate());
-      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, var3 ? 32 : 16, false), 12, (var0) -> {
+      this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var1x) -> {
+         operateOnLevelRenderer(LevelRenderer::needsUpdate);
+         this.setGraphicsPresetToCustom();
       });
+      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, var3 ? 32 : 16, false), 12, (var1x) -> this.setGraphicsPresetToCustom());
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
    }
@@ -1008,6 +1142,8 @@ public class Options {
    private void processDumpedOptions(OptionAccess var1) {
       var1.process("ao", this.ambientOcclusion);
       var1.process("biomeBlendRadius", this.biomeBlendRadius);
+      var1.process("chunkSectionFadeInTime", this.chunkSectionFadeInTime);
+      var1.process("cutoutLeaves", this.cutoutLeaves);
       var1.process("enableVsync", this.enableVsync);
       var1.process("entityDistanceScaling", this.entityDistanceScaling);
       var1.process("entityShadows", this.entityShadows);
@@ -1018,12 +1154,15 @@ public class Options {
       var1.process("darknessEffectScale", this.darknessEffectScale);
       var1.process("glintSpeed", this.glintSpeed);
       var1.process("glintStrength", this.glintStrength);
+      var1.process("graphicsPreset", this.graphicsPreset);
       var1.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
       var1.process("fullscreen", this.fullscreen);
       var1.process("gamma", this.gamma);
-      var1.process("graphicsMode", this.graphicsMode);
       var1.process("guiScale", this.guiScale);
+      var1.process("maxAnisotropyBit", this.maxAnisotropyBit);
+      var1.process("textureFiltering", this.textureFiltering);
       var1.process("maxFps", this.framerateLimit);
+      var1.process("improvedTransparency", this.improvedTransparency);
       var1.process("inactivityFpsLimit", this.inactivityFpsLimit);
       var1.process("mipmapLevels", this.mipmapLevels);
       var1.process("narrator", this.narrator);
@@ -1035,6 +1174,8 @@ public class Options {
       var1.process("simulationDistance", this.simulationDistance);
       var1.process("screenEffectScale", this.screenEffectScale);
       var1.process("soundDevice", this.soundDevice);
+      var1.process("vignette", this.vignette);
+      var1.process("weatherRadius", this.weatherRadius);
    }
 
    private void processOptions(FieldAccess var1) {
@@ -1116,7 +1257,7 @@ public class Options {
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
       this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
-      var1.process("showNowPlayingToast", this.showNowPlayingToast);
+      var1.process("musicToast", this.musicToast);
       var1.process("musicFrequency", this.musicFrequency);
 
       for(KeyMapping var5 : this.keyMappings) {
@@ -1148,7 +1289,7 @@ public class Options {
          }
 
          CompoundTag var1 = new CompoundTag();
-         BufferedReader var2 = Files.newReader(this.optionsFile, Charsets.UTF_8);
+         BufferedReader var2 = Files.newReader(this.optionsFile, StandardCharsets.UTF_8);
 
          try {
             var2.lines().forEach((var1x) -> {
@@ -1177,14 +1318,8 @@ public class Options {
          }
 
          final CompoundTag var8 = this.dataFix(var1);
-         Optional var3 = var8.getString("fancyGraphics");
-         if (var3.isPresent() && !var8.contains("graphicsMode")) {
-            this.graphicsMode.set(isTrue((String)var3.get()) ? GraphicsStatus.FANCY : GraphicsStatus.FAST);
-         }
-
          this.processOptions(new FieldAccess() {
-            @Nullable
-            private String getValue(String var1) {
+            private @Nullable String getValue(String var1) {
                Tag var2 = var8.get(var1);
                if (var2 == null) {
                   return null;
@@ -1362,8 +1497,7 @@ public class Options {
       this.broadcastOptions();
    }
 
-   @Nullable
-   private String getFullscreenVideoModeString() {
+   private @Nullable String getFullscreenVideoModeString() {
       Window var1 = this.minecraft.getWindow();
       if (var1 == null) {
          return this.fullscreenVideoModeString;
@@ -1505,40 +1639,6 @@ public class Options {
 
    private static Component percentValueOrOffLabel(Component var0, double var1) {
       return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
-   }
-
-   static {
-      GRAPHICS_TOOLTIP_FABULOUS = Component.translatable("options.graphics.fabulous.tooltip", Component.translatable("options.graphics.fabulous").withStyle(ChatFormatting.ITALIC));
-      GRAPHICS_TOOLTIP_FANCY = Component.translatable("options.graphics.fancy.tooltip");
-      PRIORITIZE_CHUNK_TOOLTIP_NONE = Component.translatable("options.prioritizeChunkUpdates.none.tooltip");
-      PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED = Component.translatable("options.prioritizeChunkUpdates.byPlayer.tooltip");
-      PRIORITIZE_CHUNK_TOOLTIP_NEARBY = Component.translatable("options.prioritizeChunkUpdates.nearby.tooltip");
-      MENU_BACKGROUND_BLURRINESS_TOOLTIP = Component.translatable("options.accessibility.menu_background_blurriness.tooltip");
-      ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
-      HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP = Component.translatable("options.accessibility.high_contrast_block_outline.tooltip");
-      ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
-      ALLOW_CURSOR_CHANGES_TOOLTIP = Component.translatable("options.allowCursorChanges.tooltip");
-      ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART = Component.translatable("options.rotateWithMinecart.tooltip");
-      REALMS_NOTIFICATIONS_TOOLTIP = Component.translatable("options.realmsNotifications.tooltip");
-      ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");
-      CLOSED_CAPTIONS_TOOLTIP = Component.translatable("options.showSubtitles.tooltip");
-      DIRECTIONAL_AUDIO_TOOLTIP_ON = Component.translatable("options.directionalAudio.on.tooltip");
-      DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
-      KEY_TOGGLE = Component.translatable("options.key.toggle");
-      KEY_HOLD = Component.translatable("options.key.hold");
-      SPRINT_WINDOW_TOOLTIP = Component.translatable("options.sprintWindow.tooltip");
-      CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
-      CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
-      CHAT_TOOLTIP_SAVE_DRAFTS = Component.translatable("options.chat.drafts.tooltip");
-      TELEMETRY_TOOLTIP = Component.translatable("options.telemetry.button.tooltip", Component.translatable("options.telemetry.state.minimal"), Component.translatable("options.telemetry.state.all"));
-      ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT = Component.translatable("options.screenEffectScale.tooltip");
-      ACCESSIBILITY_TOOLTIP_FOV_EFFECT = Component.translatable("options.fovEffectScale.tooltip");
-      ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT = Component.translatable("options.darknessEffectScale.tooltip");
-      ACCESSIBILITY_TOOLTIP_GLINT_SPEED = Component.translatable("options.glintSpeed.tooltip");
-      ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH = Component.translatable("options.glintStrength.tooltip");
-      ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH = Component.translatable("options.damageTiltStrength.tooltip");
-      MUSIC_FREQUENCY_TOOLTIP = Component.translatable("options.music_frequency.tooltip");
-      NOW_PLAYING_TOAST_TOOLTIP = Component.translatable("options.showNowPlayingToast.tooltip");
    }
 
    interface FieldAccess extends OptionAccess {

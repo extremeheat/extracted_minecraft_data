@@ -1,14 +1,14 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandMinecartPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSetCommandMinecartPacket>codec(ServerboundSetCommandMinecartPacket::write, ServerboundSetCommandMinecartPacket::new);
@@ -44,8 +44,7 @@ public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePac
       var1.handleSetCommandMinecart(this);
    }
 
-   @Nullable
-   public BaseCommandBlock getCommandBlock(Level var1) {
+   public @Nullable BaseCommandBlock getCommandBlock(Level var1) {
       Entity var2 = var1.getEntity(this.entity);
       return var2 instanceof MinecartCommandBlock ? ((MinecartCommandBlock)var2).getCommandBlock() : null;
    }

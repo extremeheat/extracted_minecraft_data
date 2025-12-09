@@ -1,22 +1,22 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.GhastModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.ghast.GhastModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GhastRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Ghast;
 
 public class GhastRenderer extends MobRenderer<Ghast, GhastRenderState, GhastModel> {
-   private static final ResourceLocation GHAST_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/ghast.png");
-   private static final ResourceLocation GHAST_SHOOTING_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/ghast_shooting.png");
+   private static final Identifier GHAST_LOCATION = Identifier.withDefaultNamespace("textures/entity/ghast/ghast.png");
+   private static final Identifier GHAST_SHOOTING_LOCATION = Identifier.withDefaultNamespace("textures/entity/ghast/ghast_shooting.png");
 
    public GhastRenderer(EntityRendererProvider.Context var1) {
       super(var1, new GhastModel(var1.bakeLayer(ModelLayers.GHAST)), 1.5F);
    }
 
-   public ResourceLocation getTextureLocation(GhastRenderState var1) {
+   public Identifier getTextureLocation(GhastRenderState var1) {
       return var1.isCharging ? GHAST_SHOOTING_LOCATION : GHAST_LOCATION;
    }
 
@@ -30,7 +30,7 @@ public class GhastRenderer extends MobRenderer<Ghast, GhastRenderState, GhastMod
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((GhastRenderState)var1);
    }
 

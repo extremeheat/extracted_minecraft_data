@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class ListTag extends AbstractList<Tag> implements CollectionTag {
    private static final String WRAPPER_MARKER = "";
@@ -379,8 +379,7 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
       }
    }
 
-   @Nullable
-   private Tag getNullable(int var1) {
+   private @Nullable Tag getNullable(int var1) {
       return var1 >= 0 && var1 < this.list.size() ? (Tag)this.list.get(var1) : null;
    }
 

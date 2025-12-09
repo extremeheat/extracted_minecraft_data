@@ -3,9 +3,9 @@ package net.minecraft.client.multiplayer.chat.report;
 import com.mojang.authlib.yggdrasil.request.AbuseReportRequest;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import org.jspecify.annotations.Nullable;
 
 public record ReportEnvironment(String clientVersion, @Nullable Server server) {
    public ReportEnvironment(String var1, @Nullable Server var2) {
@@ -34,8 +34,7 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
       return new AbuseReportRequest.ClientInfo(this.clientVersion, Locale.getDefault().toLanguageTag());
    }
 
-   @Nullable
-   public AbuseReportRequest.ThirdPartyServerInfo thirdPartyServerInfo() {
+   public AbuseReportRequest.@Nullable ThirdPartyServerInfo thirdPartyServerInfo() {
       Server var2 = this.server;
       if (var2 instanceof Server.ThirdParty var1) {
          return new AbuseReportRequest.ThirdPartyServerInfo(var1.ip);
@@ -44,8 +43,7 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
       }
    }
 
-   @Nullable
-   public AbuseReportRequest.RealmInfo realmInfo() {
+   public AbuseReportRequest.@Nullable RealmInfo realmInfo() {
       Server var2 = this.server;
       if (var2 instanceof Server.Realm var1) {
          return new AbuseReportRequest.RealmInfo(String.valueOf(var1.realmId()), var1.slotId());

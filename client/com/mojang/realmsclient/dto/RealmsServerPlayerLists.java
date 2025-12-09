@@ -17,45 +17,43 @@ import net.minecraft.util.LenientJsonParser;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.slf4j.Logger;
 
-public class RealmsServerPlayerLists extends ValueObject {
+public record RealmsServerPlayerLists(Map<Long, List<ResolvableProfile>> servers) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public Map<Long, List<ResolvableProfile>> servers = Map.of();
 
-   public RealmsServerPlayerLists() {
+   public RealmsServerPlayerLists(Map<Long, List<ResolvableProfile>> var1) {
       super();
+      this.servers = var1;
    }
 
    public static RealmsServerPlayerLists parse(String var0) {
-      RealmsServerPlayerLists var1 = new RealmsServerPlayerLists();
-      ImmutableMap.Builder var2 = ImmutableMap.builder();
+      ImmutableMap.Builder var1 = ImmutableMap.builder();
 
       try {
-         JsonObject var3 = GsonHelper.parse(var0);
-         if (GsonHelper.isArrayNode(var3, "lists")) {
-            for(JsonElement var6 : var3.getAsJsonArray("lists")) {
-               JsonObject var8 = var6.getAsJsonObject();
-               String var9 = JsonUtils.getStringOr("playerList", var8, (String)null);
-               Object var7;
-               if (var9 != null) {
-                  JsonElement var10 = LenientJsonParser.parse(var9);
-                  if (var10.isJsonArray()) {
-                     var7 = parsePlayers(var10.getAsJsonArray());
+         JsonObject var2 = GsonHelper.parse(var0);
+         if (GsonHelper.isArrayNode(var2, "lists")) {
+            for(JsonElement var5 : var2.getAsJsonArray("lists")) {
+               JsonObject var7 = var5.getAsJsonObject();
+               String var8 = JsonUtils.getStringOr("playerList", var7, (String)null);
+               Object var6;
+               if (var8 != null) {
+                  JsonElement var9 = LenientJsonParser.parse(var8);
+                  if (var9.isJsonArray()) {
+                     var6 = parsePlayers(var9.getAsJsonArray());
                   } else {
-                     var7 = Lists.newArrayList();
+                     var6 = Lists.newArrayList();
                   }
                } else {
-                  var7 = Lists.newArrayList();
+                  var6 = Lists.newArrayList();
                }
 
-               var2.put(JsonUtils.getLongOr("serverId", var8, -1L), var7);
+               var1.put(JsonUtils.getLongOr("serverId", var7, -1L), var6);
             }
          }
-      } catch (Exception var11) {
-         LOGGER.error("Could not parse RealmsServerPlayerLists: {}", var11.getMessage());
+      } catch (Exception var10) {
+         LOGGER.error("Could not parse RealmsServerPlayerLists", var10);
       }
 
-      var1.servers = var2.build();
-      return var1;
+      return new RealmsServerPlayerLists(var1.build());
    }
 
    private static List<ResolvableProfile> parsePlayers(JsonArray var0) {

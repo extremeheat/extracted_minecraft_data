@@ -4,44 +4,46 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.StateSwitchingButton;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import org.jspecify.annotations.Nullable;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
-   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_forward"), ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"));
-   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_backward"), ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"));
+   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/page_forward"), Identifier.withDefaultNamespace("recipe_book/page_forward_highlighted"));
+   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/page_backward"), Identifier.withDefaultNamespace("recipe_book/page_backward_highlighted"));
+   private static final Component NEXT_PAGE_TEXT = Component.translatable("gui.recipebook.next_page");
+   private static final Component PREVIOUS_PAGE_TEXT = Component.translatable("gui.recipebook.previous_page");
+   private static final int TURN_PAGE_SPRITE_WIDTH = 12;
+   private static final int TURN_PAGE_SPRITE_HEIGHT = 17;
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
-   @Nullable
-   private RecipeButton hoveredButton;
+   private @Nullable RecipeButton hoveredButton;
    private final OverlayRecipeComponent overlay;
    private Minecraft minecraft;
    private final RecipeBookComponent<?> parent;
    private List<RecipeCollection> recipeCollections = ImmutableList.of();
-   private StateSwitchingButton forwardButton;
-   private StateSwitchingButton backButton;
+   private @Nullable ImageButton forwardButton;
+   private @Nullable ImageButton backButton;
    private int totalPages;
    private int currentPage;
    private ClientRecipeBook recipeBook;
-   @Nullable
-   private RecipeDisplayId lastClickedRecipe;
-   @Nullable
-   private RecipeCollection lastClickedRecipeCollection;
+   private @Nullable RecipeDisplayId lastClickedRecipe;
+   private @Nullable RecipeCollection lastClickedRecipeCollection;
    private boolean isFiltering;
 
    public RecipeBookPage(RecipeBookComponent<?> var1, SlotSelectTime var2, boolean var3) {
@@ -63,10 +65,10 @@ public class RecipeBookPage {
          ((RecipeButton)this.buttons.get(var4)).setPosition(var2 + 11 + 25 * (var4 % 5), var3 + 31 + 25 * (var4 / 5));
       }
 
-      this.forwardButton = new StateSwitchingButton(var2 + 93, var3 + 137, 12, 17, false);
-      this.forwardButton.initTextureValues(PAGE_FORWARD_SPRITES);
-      this.backButton = new StateSwitchingButton(var2 + 38, var3 + 137, 12, 17, true);
-      this.backButton.initTextureValues(PAGE_BACKWARD_SPRITES);
+      this.forwardButton = new ImageButton(var2 + 93, var3 + 137, 12, 17, PAGE_FORWARD_SPRITES, (var1x) -> this.updateArrowButtons(), NEXT_PAGE_TEXT);
+      this.forwardButton.setTooltip(Tooltip.create(NEXT_PAGE_TEXT));
+      this.backButton = new ImageButton(var2 + 38, var3 + 137, 12, 17, PAGE_BACKWARD_SPRITES, (var1x) -> this.updateArrowButtons(), PREVIOUS_PAGE_TEXT);
+      this.backButton.setTooltip(Tooltip.create(PREVIOUS_PAGE_TEXT));
    }
 
    public void updateCollections(List<RecipeCollection> var1, boolean var2, boolean var3) {
@@ -99,8 +101,14 @@ public class RecipeBookPage {
    }
 
    private void updateArrowButtons() {
-      this.forwardButton.visible = this.totalPages > 1 && this.currentPage < this.totalPages - 1;
-      this.backButton.visible = this.totalPages > 1 && this.currentPage > 0;
+      if (this.forwardButton != null) {
+         this.forwardButton.visible = this.totalPages > 1 && this.currentPage < this.totalPages - 1;
+      }
+
+      if (this.backButton != null) {
+         this.backButton.visible = this.totalPages > 1 && this.currentPage > 0;
+      }
+
    }
 
    public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
@@ -119,8 +127,14 @@ public class RecipeBookPage {
          }
       }
 
-      this.backButton.render(var1, var4, var5, var6);
-      this.forwardButton.render(var1, var4, var5, var6);
+      if (this.forwardButton != null) {
+         this.forwardButton.render(var1, var4, var5, var6);
+      }
+
+      if (this.backButton != null) {
+         this.backButton.render(var1, var4, var5, var6);
+      }
+
       var1.nextStratum();
       this.overlay.render(var1, var4, var5, var6);
    }
@@ -128,19 +142,17 @@ public class RecipeBookPage {
    public void renderTooltip(GuiGraphics var1, int var2, int var3) {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          ItemStack var4 = this.hoveredButton.getDisplayStack();
-         ResourceLocation var5 = (ResourceLocation)var4.get(DataComponents.TOOLTIP_STYLE);
+         Identifier var5 = (Identifier)var4.get(DataComponents.TOOLTIP_STYLE);
          var1.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(var4), var2, var3, var5);
       }
 
    }
 
-   @Nullable
-   public RecipeDisplayId getLastClickedRecipe() {
+   public @Nullable RecipeDisplayId getLastClickedRecipe() {
       return this.lastClickedRecipe;
    }
 
-   @Nullable
-   public RecipeCollection getLastClickedRecipeCollection() {
+   public @Nullable RecipeCollection getLastClickedRecipeCollection() {
       return this.lastClickedRecipeCollection;
    }
 
@@ -197,8 +209,6 @@ public class RecipeBookPage {
    }
 
    protected void listButtons(Consumer<AbstractWidget> var1) {
-      var1.accept(this.forwardButton);
-      var1.accept(this.backButton);
       this.buttons.forEach(var1);
    }
 }

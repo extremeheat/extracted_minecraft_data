@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.ItemStack;
 
 public class PlayerItemInHandLayer<S extends AvatarRenderState, M extends EntityModel<S> & ArmedModel & HeadedModel> extends ItemInHandLayer<S, M> {
    private static final float X_ROT_MIN = -0.5235988F;
@@ -22,13 +23,13 @@ public class PlayerItemInHandLayer<S extends AvatarRenderState, M extends Entity
       super(var1);
    }
 
-   protected void submitArmWithItem(S var1, ItemStackRenderState var2, HumanoidArm var3, PoseStack var4, SubmitNodeCollector var5, int var6) {
+   protected void submitArmWithItem(S var1, ItemStackRenderState var2, ItemStack var3, HumanoidArm var4, PoseStack var5, SubmitNodeCollector var6, int var7) {
       if (!var2.isEmpty()) {
-         InteractionHand var7 = var3 == var1.mainArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-         if (var1.isUsingItem && var1.useItemHand == var7 && var1.attackTime < 1.0E-5F && !var1.heldOnHead.isEmpty()) {
-            this.renderItemHeldToEye(var1, var3, var4, var5, var6);
+         InteractionHand var8 = var4 == var1.mainArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+         if (var1.isUsingItem && var1.useItemHand == var8 && var1.attackTime < 1.0E-5F && !var1.heldOnHead.isEmpty()) {
+            this.renderItemHeldToEye(var1, var4, var5, var6, var7);
          } else {
-            super.submitArmWithItem(var1, var2, var3, var4, var5, var6);
+            super.submitArmWithItem(var1, var2, var3, var4, var5, var6, var7);
          }
 
       }

@@ -14,7 +14,7 @@ import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.PlayerSkin;
@@ -23,7 +23,7 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 
 public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
-   private static final ResourceLocation TELEPORT_TO_TEAM_SPRITE = ResourceLocation.withDefaultNamespace("spectator/teleport_to_team");
+   private static final Identifier TELEPORT_TO_TEAM_SPRITE = Identifier.withDefaultNamespace("spectator/teleport_to_team");
    private static final Component TELEPORT_TEXT = Component.translatable("spectatorMenu.team_teleport");
    private static final Component TELEPORT_PROMPT = Component.translatable("spectatorMenu.team_teleport.prompt");
    private final List<SpectatorMenuItem> items;
@@ -55,7 +55,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
    }
 
    public boolean isEnabled() {

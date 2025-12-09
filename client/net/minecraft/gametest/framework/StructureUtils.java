@@ -13,8 +13,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -77,7 +77,7 @@ public class StructureUtils {
       }
    }
 
-   public static TestInstanceBlockEntity createNewEmptyTest(ResourceLocation var0, BlockPos var1, Vec3i var2, Rotation var3, ServerLevel var4) {
+   public static TestInstanceBlockEntity createNewEmptyTest(Identifier var0, BlockPos var1, Vec3i var2, Rotation var3, ServerLevel var4) {
       BoundingBox var5 = getStructureBoundingBox(TestInstanceBlockEntity.getStructurePos(var1), var2, var3);
       clearSpaceForStructure(var5, var4);
       var4.setBlockAndUpdate(var1, Blocks.TEST_INSTANCE_BLOCK.defaultBlockState());

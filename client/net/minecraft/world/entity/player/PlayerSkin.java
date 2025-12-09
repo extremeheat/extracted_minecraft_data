@@ -5,13 +5,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.jspecify.annotations.Nullable;
 
-public record PlayerSkin(ClientAsset.Texture body, @Nullable ClientAsset.Texture cape, @Nullable ClientAsset.Texture elytra, PlayerModelType model, boolean secure) {
-   public PlayerSkin(ClientAsset.Texture var1, @Nullable ClientAsset.Texture var2, @Nullable ClientAsset.Texture var3, PlayerModelType var4, boolean var5) {
+public record PlayerSkin(ClientAsset.Texture body, ClientAsset.@Nullable Texture cape, ClientAsset.@Nullable Texture elytra, PlayerModelType model, boolean secure) {
+   public PlayerSkin(ClientAsset.Texture var1, ClientAsset.@Nullable Texture var2, ClientAsset.@Nullable Texture var3, PlayerModelType var4, boolean var5) {
       super();
       this.body = var1;
       this.cape = var2;
@@ -20,7 +20,7 @@ public record PlayerSkin(ClientAsset.Texture body, @Nullable ClientAsset.Texture
       this.secure = var5;
    }
 
-   public static PlayerSkin insecure(ClientAsset.Texture var0, @Nullable ClientAsset.Texture var1, @Nullable ClientAsset.Texture var2, PlayerModelType var3) {
+   public static PlayerSkin insecure(ClientAsset.Texture var0, ClientAsset.@Nullable Texture var1, ClientAsset.@Nullable Texture var2, PlayerModelType var3) {
       return new PlayerSkin(var0, var1, var2, var3, false);
    }
 

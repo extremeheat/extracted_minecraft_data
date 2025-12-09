@@ -7,13 +7,13 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BlockTypes;
 import net.minecraft.world.level.block.state.BlockState;
@@ -66,7 +66,7 @@ public class BlockListReport implements DataProvider {
                   var18.addProperty(var11.getName(), Util.getPropertyName(var11, var15.getValue(var11)));
                }
 
-               if (var18.size() > 0) {
+               if (!var18.isEmpty()) {
                   var17.add("properties", var18);
                }
 

@@ -15,11 +15,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FilePackResources extends AbstractPackResources {
@@ -33,16 +33,15 @@ public class FilePackResources extends AbstractPackResources {
       this.prefix = var3;
    }
 
-   private static String getPathFromLocation(PackType var0, ResourceLocation var1) {
+   private static String getPathFromLocation(PackType var0, Identifier var1) {
       return String.format(Locale.ROOT, "%s/%s/%s", var0.getDirectory(), var1.getNamespace(), var1.getPath());
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getRootResource(String... var1) {
+   public @Nullable IoSupplier<InputStream> getRootResource(String... var1) {
       return this.getResource(String.join("/", var1));
    }
 
-   public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public IoSupplier<InputStream> getResource(PackType var1, Identifier var2) {
       return this.getResource(getPathFromLocation(var1, var2));
    }
 
@@ -50,8 +49,7 @@ public class FilePackResources extends AbstractPackResources {
       return this.prefix.isEmpty() ? var1 : this.prefix + "/" + var1;
    }
 
-   @Nullable
-   private IoSupplier<InputStream> getResource(String var1) {
+   private @Nullable IoSupplier<InputStream> getResource(String var1) {
       ZipFile var2 = this.zipFileAccess.getOrCreateZipFile();
       if (var2 == null) {
          return null;
@@ -75,7 +73,7 @@ public class FilePackResources extends AbstractPackResources {
             String var7 = var6.getName();
             String var8 = extractNamespace(var5, var7);
             if (!var8.isEmpty()) {
-               if (ResourceLocation.isValidNamespace(var8)) {
+               if (Identifier.isValidNamespace(var8)) {
                   var4.add(var8);
                } else {
                   LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", var8, this.zipFileAccess.file);
@@ -116,7 +114,7 @@ public class FilePackResources extends AbstractPackResources {
                String var10 = var9.getName();
                if (var10.startsWith(var8)) {
                   String var11 = var10.substring(var7.length());
-                  ResourceLocation var12 = ResourceLocation.tryBuild(var2, var11);
+                  Identifier var12 = Identifier.tryBuild(var2, var11);
                   if (var12 != null) {
                      var4.accept(var12, IoSupplier.create(var5, var9));
                   } else {
@@ -131,8 +129,7 @@ public class FilePackResources extends AbstractPackResources {
 
    static class SharedZipFileAccess implements AutoCloseable {
       final File file;
-      @Nullable
-      private ZipFile zipFile;
+      private @Nullable ZipFile zipFile;
       private boolean failedToLoad;
 
       SharedZipFileAccess(File var1) {
@@ -140,8 +137,7 @@ public class FilePackResources extends AbstractPackResources {
          this.file = var1;
       }
 
-      @Nullable
-      ZipFile getOrCreateZipFile() {
+      @Nullable ZipFile getOrCreateZipFile() {
          if (this.failedToLoad) {
             return null;
          } else {

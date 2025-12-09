@@ -1,14 +1,13 @@
 package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public interface NoDataSpecialModelRenderer extends SpecialModelRenderer<Void> {
-   @Nullable
-   default Void extractArgument(ItemStack var1) {
+   default @Nullable Void extractArgument(ItemStack var1) {
       return null;
    }
 
@@ -19,8 +18,7 @@ public interface NoDataSpecialModelRenderer extends SpecialModelRenderer<Void> {
    void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7);
 
    // $FF: synthetic method
-   @Nullable
-   default Object extractArgument(final ItemStack var1) {
+   default @Nullable Object extractArgument(final ItemStack var1) {
       return this.extractArgument(var1);
    }
 }

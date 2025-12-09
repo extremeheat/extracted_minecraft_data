@@ -4,13 +4,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.FontDescription;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record AtlasSprite(ResourceLocation atlas, ResourceLocation sprite) implements ObjectInfo {
-   public static final ResourceLocation DEFAULT_ATLAS;
+public record AtlasSprite(Identifier atlas, Identifier sprite) implements ObjectInfo {
+   public static final Identifier DEFAULT_ATLAS;
    public static final MapCodec<AtlasSprite> MAP_CODEC;
 
-   public AtlasSprite(ResourceLocation var1, ResourceLocation var2) {
+   public AtlasSprite(Identifier var1, Identifier var2) {
       super();
       this.atlas = var1;
       this.sprite = var2;
@@ -24,7 +24,7 @@ public record AtlasSprite(ResourceLocation atlas, ResourceLocation sprite) imple
       return new FontDescription.AtlasSprite(this.atlas, this.sprite);
    }
 
-   private static String toShortName(ResourceLocation var0) {
+   private static String toShortName(Identifier var0) {
       return var0.getNamespace().equals("minecraft") ? var0.getPath() : var0.toString();
    }
 
@@ -35,6 +35,6 @@ public record AtlasSprite(ResourceLocation atlas, ResourceLocation sprite) imple
 
    static {
       DEFAULT_ATLAS = AtlasIds.BLOCKS;
-      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.optionalFieldOf("atlas", DEFAULT_ATLAS).forGetter(AtlasSprite::atlas), ResourceLocation.CODEC.fieldOf("sprite").forGetter(AtlasSprite::sprite)).apply(var0, AtlasSprite::new));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.optionalFieldOf("atlas", DEFAULT_ATLAS).forGetter(AtlasSprite::atlas), Identifier.CODEC.fieldOf("sprite").forGetter(AtlasSprite::sprite)).apply(var0, AtlasSprite::new));
    }
 }

@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 
 public class WorldPresetTags {
@@ -13,6 +13,6 @@ public class WorldPresetTags {
    }
 
    private static TagKey<WorldPreset> create(String var0) {
-      return TagKey.<WorldPreset>create(Registries.WORLD_PRESET, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<WorldPreset>create(Registries.WORLD_PRESET, Identifier.withDefaultNamespace(var0));
    }
 }

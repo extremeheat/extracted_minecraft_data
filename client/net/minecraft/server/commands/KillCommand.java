@@ -16,7 +16,7 @@ public class KillCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kill").requires(Commands.hasPermission(2))).executes((var0x) -> kill((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getEntityOrException())))).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> kill((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets")))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kill").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> kill((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getEntityOrException())))).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> kill((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets")))));
    }
 
    private static int kill(CommandSourceStack var0, Collection<? extends Entity> var1) {

@@ -6,9 +6,7 @@ import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.gui.screens.RealmsNotificationsScreen;
 import java.io.IOException;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -36,9 +34,11 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TitleScreen extends Screen {
@@ -46,10 +46,8 @@ public class TitleScreen extends Screen {
    private static final Component TITLE = Component.translatable("narrator.screen.title");
    private static final Component COPYRIGHT_TEXT = Component.translatable("title.credits");
    private static final String DEMO_LEVEL_ID = "Demo_World";
-   @Nullable
-   private SplashRenderer splash;
-   @Nullable
-   private RealmsNotificationsScreen realmsNotificationsScreen;
+   private @Nullable SplashRenderer splash;
+   private @Nullable RealmsNotificationsScreen realmsNotificationsScreen;
    private boolean fading;
    private long fadeInStart;
    private final LogoRenderer logoRenderer;
@@ -123,7 +121,7 @@ public class TitleScreen extends Screen {
       }
 
       if (this.realmsNotificationsEnabled()) {
-         this.realmsNotificationsScreen.init(this.minecraft, this.width, this.height);
+         this.realmsNotificationsScreen.init(this.width, this.height);
       }
 
    }
@@ -150,8 +148,7 @@ public class TitleScreen extends Screen {
       return var1;
    }
 
-   @Nullable
-   private Component getMultiplayerDisabledReason() {
+   private @Nullable Component getMultiplayerDisabledReason() {
       if (this.minecraft.allowsMultiplayer()) {
          return null;
       } else if (this.minecraft.isNameBanned()) {
@@ -240,7 +237,7 @@ public class TitleScreen extends Screen {
          var8 = var8 + I18n.get("menu.modded");
       }
 
-      var1.drawString(this.font, (String)var8, 2, this.height - 10, ARGB.color(var5, -1));
+      var1.drawString(this.font, (String)var8, 2, this.height - 10, ARGB.white(var5));
       if (this.realmsNotificationsEnabled() && var5 >= 1.0F) {
          this.realmsNotificationsScreen.render(var1, var2, var3, var4);
       }

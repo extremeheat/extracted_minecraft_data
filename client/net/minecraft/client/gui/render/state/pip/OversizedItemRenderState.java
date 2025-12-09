@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.render.state.pip;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import org.joml.Matrix3x2f;
+import org.jspecify.annotations.Nullable;
 
 public record OversizedItemRenderState(GuiItemRenderState guiItemRenderState, int x0, int y0, int x1, int y1) implements PictureInPictureRenderState {
    public OversizedItemRenderState(GuiItemRenderState var1, int var2, int var3, int var4, int var5) {
@@ -23,13 +23,11 @@ public record OversizedItemRenderState(GuiItemRenderState guiItemRenderState, in
       return this.guiItemRenderState.pose();
    }
 
-   @Nullable
-   public ScreenRectangle scissorArea() {
+   public @Nullable ScreenRectangle scissorArea() {
       return this.guiItemRenderState.scissorArea();
    }
 
-   @Nullable
-   public ScreenRectangle bounds() {
+   public @Nullable ScreenRectangle bounds() {
       return this.guiItemRenderState.bounds();
    }
 }

@@ -1,11 +1,12 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.GuardianParticleModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.guardian.GuardianParticleModel;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ElderGuardianRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
@@ -15,7 +16,7 @@ public class ElderGuardianParticle extends Particle {
 
    ElderGuardianParticle(ClientLevel var1, double var2, double var4, double var6) {
       super(var1, var2, var4, var6);
-      this.renderType = RenderType.entityTranslucent(ElderGuardianRenderer.GUARDIAN_ELDER_LOCATION);
+      this.renderType = RenderTypes.entityTranslucent(ElderGuardianRenderer.GUARDIAN_ELDER_LOCATION);
       this.model = new GuardianParticleModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.ELDER_GUARDIAN));
       this.gravity = 0.0F;
       this.lifetime = 30;

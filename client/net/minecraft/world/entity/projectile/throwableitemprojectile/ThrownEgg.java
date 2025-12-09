@@ -1,0 +1,87 @@
+package net.minecraft.world.entity.projectile.throwableitemprojectile;
+
+import java.util.Objects;
+import java.util.Optional;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.item.EitherHolder;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+
+public class ThrownEgg extends ThrowableItemProjectile {
+   private static final EntityDimensions ZERO_SIZED_DIMENSIONS = EntityDimensions.fixed(0.0F, 0.0F);
+
+   public ThrownEgg(EntityType<? extends ThrownEgg> var1, Level var2) {
+      super(var1, var2);
+   }
+
+   public ThrownEgg(Level var1, LivingEntity var2, ItemStack var3) {
+      super(EntityType.EGG, var2, var1, var3);
+   }
+
+   public ThrownEgg(Level var1, double var2, double var4, double var6, ItemStack var8) {
+      super(EntityType.EGG, var2, var4, var6, var1, var8);
+   }
+
+   public void handleEntityEvent(byte var1) {
+      if (var1 == 3) {
+         double var2 = 0.08;
+
+         for(int var4 = 0; var4 < 8; ++var4) {
+            this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, this.getItem()), this.getX(), this.getY(), this.getZ(), ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08);
+         }
+      }
+
+   }
+
+   protected void onHitEntity(EntityHitResult var1) {
+      super.onHitEntity(var1);
+      var1.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
+   }
+
+   protected void onHit(HitResult var1) {
+      super.onHit(var1);
+      if (!this.level().isClientSide()) {
+         if (this.random.nextInt(8) == 0) {
+            byte var2 = 1;
+            if (this.random.nextInt(32) == 0) {
+               var2 = 4;
+            }
+
+            for(int var3 = 0; var3 < var2; ++var3) {
+               Chicken var4 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);
+               if (var4 != null) {
+                  var4.setAge(-24000);
+                  var4.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                  Optional var10000 = Optional.ofNullable((EitherHolder)this.getItem().get(DataComponents.CHICKEN_VARIANT)).flatMap((var1x) -> var1x.unwrap(this.registryAccess()));
+                  Objects.requireNonNull(var4);
+                  var10000.ifPresent(var4::setVariant);
+                  if (!var4.fudgePositionAfterSizeChange(ZERO_SIZED_DIMENSIONS)) {
+                     break;
+                  }
+
+                  this.level().addFreshEntity(var4);
+               }
+            }
+         }
+
+         this.level().broadcastEntityEvent(this, (byte)3);
+         this.discard();
+      }
+
+   }
+
+   protected Item getDefaultItem() {
+      return Items.EGG;
+   }
+}

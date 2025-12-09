@@ -30,13 +30,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.BlockUtil;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -67,12 +64,13 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -81,9 +79,12 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugEntityBlockIntersection;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueSource;
@@ -92,13 +93,14 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -152,9 +154,10 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class Entity implements SyncedDataHolder, DebugValueSource, Nameable, ItemOwner, EntityAccess, ScoreHolder, DataComponentGetter {
+public abstract class Entity implements SyncedDataHolder, DebugValueSource, Nameable, ItemOwner, SlotProvider, EntityAccess, ScoreHolder, DataComponentGetter {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String TAG_ID = "id";
    public static final String TAG_UUID = "UUID";
@@ -198,8 +201,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public boolean blocksBuilding;
    private ImmutableList<Entity> passengers;
    protected int boardingCooldown;
-   @Nullable
-   private Entity vehicle;
+   private @Nullable Entity vehicle;
    private Level level;
    public double xo;
    public double yo;
@@ -220,8 +222,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public boolean minorHorizontalCollision;
    public boolean hurtMarked;
    protected Vec3 stuckSpeedMultiplier;
-   @Nullable
-   private RemovalReason removalReason;
+   private @Nullable RemovalReason removalReason;
    public static final float DEFAULT_BB_WIDTH = 0.6F;
    public static final float DEFAULT_BB_HEIGHT = 1.8F;
    public float moveDist;
@@ -259,9 +260,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    private static final EntityDataAccessor<Integer> DATA_TICKS_FROZEN;
    private EntityInLevelCallback levelCallback;
    private final VecDeltaCodec packetPositionCodec;
-   public boolean hasImpulse;
-   @Nullable
-   public PortalProcessor portalProcess;
+   public boolean needsSync;
+   public @Nullable PortalProcessor portalProcess;
    private int portalCooldown;
    private boolean invulnerable;
    protected UUID uuid;
@@ -279,8 +279,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    private float crystalSoundIntensity;
    private int lastCrystalSoundPlayTick;
    private boolean hasVisualFire;
-   @Nullable
-   private BlockState inBlockState;
+   private Vec3 lastKnownSpeed;
+   private @Nullable Vec3 lastKnownPosition;
+   private @Nullable BlockState inBlockState;
    public static final int MAX_MOVEMENTS_HANDELED_PER_TICK = 100;
    private final ArrayDeque<Movement> movementThisTick;
    private final List<Movement> finalMovementsThisTick;
@@ -308,6 +309,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.pistonDeltas = new double[]{0.0, 0.0, 0.0};
       this.mainSupportingBlockPos = Optional.empty();
       this.onGroundNoBlocks = false;
+      this.lastKnownSpeed = Vec3.ZERO;
       this.inBlockState = null;
       this.movementThisTick = new ArrayDeque(100);
       this.finalMovementsThisTick = new ObjectArrayList();
@@ -487,6 +489,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    protected void reapplyPosition() {
+      this.lastKnownPosition = null;
       this.setPos(this.position.x, this.position.y, this.position.z);
    }
 
@@ -505,6 +508,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    }
 
+   public void updateDataBeforeSync() {
+   }
+
    public void tick() {
       this.baseTick();
    }
@@ -512,6 +518,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public void baseTick() {
       ProfilerFiller var1 = Profiler.get();
       var1.push("entityBaseTick");
+      this.computeSpeed();
       this.inBlockState = null;
       if (this.isPassenger() && this.getVehicle().isRemoved()) {
          this.stopRiding();
@@ -566,6 +573,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
 
       var1.pop();
+   }
+
+   protected void computeSpeed() {
+      if (this.lastKnownPosition == null) {
+         this.lastKnownPosition = this.position();
+      }
+
+      this.lastKnownSpeed = this.position().subtract(this.lastKnownPosition);
+      this.lastKnownPosition = this.position();
    }
 
    public void setSharedFlagOnFire(boolean var1) {
@@ -873,6 +889,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    protected void clearMovementThisTick() {
       this.movementThisTick.clear();
+   }
+
+   public boolean hasMovedHorizontallyRecently() {
+      return Math.abs(this.lastKnownSpeed.horizontalDistance()) > 9.999999747378752E-6;
    }
 
    public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
@@ -1513,16 +1533,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public boolean isInClouds() {
-      Optional var1 = this.level.dimensionType().cloudHeight();
-      if (var1.isEmpty()) {
+      if (ARGB.alpha((Integer)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_COLOR, this.position())) == 0) {
          return false;
       } else {
-         int var2 = (Integer)var1.get();
-         if (this.getY() + (double)this.getBbHeight() < (double)var2) {
+         float var1 = (Float)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_HEIGHT, this.position());
+         if (this.getY() + (double)this.getBbHeight() < (double)var1) {
             return false;
          } else {
-            int var3 = var2 + 4;
-            return this.getY() <= (double)var3;
+            float var2 = var1 + 4.0F;
+            return this.getY() <= (double)var2;
          }
       }
    }
@@ -1539,7 +1558,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    protected boolean updateInWaterStateAndDoFluidPushing() {
       this.fluidHeight.clear();
       this.updateInWaterStateAndDoWaterCurrentPushing();
-      double var1 = this.level().dimensionType().ultraWarm() ? 0.007 : 0.0023333333333333335;
+      double var1 = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
       boolean var3 = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, var1);
       return this.isInWater() || var3;
    }
@@ -1671,8 +1690,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          return Vec3.ZERO;
       } else {
          Vec3 var5 = (var3 > 1.0 ? var0.normalize() : var0).scale((double)var1);
-         float var6 = Mth.sin(var2 * 0.017453292F);
-         float var7 = Mth.cos(var2 * 0.017453292F);
+         float var6 = Mth.sin((double)(var2 * 0.017453292F));
+         float var7 = Mth.cos((double)(var2 * 0.017453292F));
          return new Vec3(var5.x * (double)var7 - var5.z * (double)var6, var5.y, var5.z * (double)var7 + var5.x * (double)var6);
       }
    }
@@ -1822,12 +1841,18 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public void push(Vec3 var1) {
-      this.push(var1.x, var1.y, var1.z);
+      if (var1.isFinite()) {
+         this.push(var1.x, var1.y, var1.z);
+      }
+
    }
 
    public void push(double var1, double var3, double var5) {
-      this.setDeltaMovement(this.getDeltaMovement().add(var1, var3, var5));
-      this.hasImpulse = true;
+      if (Double.isFinite(var1) && Double.isFinite(var3) && Double.isFinite(var5)) {
+         this.setDeltaMovement(this.getDeltaMovement().add(var1, var3, var5));
+         this.needsSync = true;
+      }
+
    }
 
    protected void markHurt() {
@@ -1888,10 +1913,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public final Vec3 calculateViewVector(float var1, float var2) {
       float var3 = var1 * 0.017453292F;
       float var4 = -var2 * 0.017453292F;
-      float var5 = Mth.cos(var4);
-      float var6 = Mth.sin(var4);
-      float var7 = Mth.cos(var3);
-      float var8 = Mth.sin(var3);
+      float var5 = Mth.cos((double)var4);
+      float var6 = Mth.sin((double)var4);
+      float var7 = Mth.cos((double)var3);
+      float var8 = Mth.sin((double)var3);
       return new Vec3((double)(var6 * var7), (double)(-var8), (double)(var5 * var7));
    }
 
@@ -2069,7 +2094,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          Vec3 var8 = (Vec3)var1.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
          Vec2 var9 = (Vec2)var1.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
          this.setDeltaMovement(Math.abs(var8.x) > 10.0 ? 0.0 : var8.x, Math.abs(var8.y) > 10.0 ? 0.0 : var8.y, Math.abs(var8.z) > 10.0 ? 0.0 : var8.z);
-         this.hasImpulse = true;
+         this.needsSync = true;
          double var5 = 3.0000512E7;
          this.setPosRaw(Mth.clamp(var2.x, -3.0000512E7, 3.0000512E7), Mth.clamp(var2.y, -2.0E7, 2.0E7), Mth.clamp(var2.z, -3.0000512E7, 3.0000512E7));
          this.setYRot(var9.x);
@@ -2127,10 +2152,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return true;
    }
 
-   @Nullable
-   protected final String getEncodeId() {
+   protected final @Nullable String getEncodeId() {
       EntityType var1 = this.getType();
-      ResourceLocation var2 = EntityType.getKey(var1);
+      Identifier var2 = EntityType.getKey(var1);
       return !var1.canSerialize() ? null : var2.toString();
    }
 
@@ -2138,18 +2162,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    protected abstract void addAdditionalSaveData(ValueOutput var1);
 
-   @Nullable
-   public ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2) {
+   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2) {
       return this.spawnAtLocation(var1, new ItemStack(var2), 0.0F);
    }
 
-   @Nullable
-   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2) {
+   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2) {
       return this.spawnAtLocation(var1, var2, 0.0F);
    }
 
-   @Nullable
-   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, Vec3 var3) {
+   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, Vec3 var3) {
       if (var2.isEmpty()) {
          return null;
       } else {
@@ -2160,8 +2181,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   @Nullable
-   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
+   public @Nullable ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
       return this.spawnAtLocation(var1, var2, new Vec3(0.0, (double)var3, 0.0));
    }
 
@@ -2245,7 +2265,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
             ItemStack var12 = var1.getItemInHand(var2);
             if (var12.is(Items.LEAD) && !(var11.getLeashHolder() instanceof Player)) {
-               if (!this.level().isClientSide() && var11.canHaveALeashAttachedTo(var1)) {
+               if (this.level().isClientSide()) {
+                  return InteractionResult.CONSUME;
+               }
+
+               if (var11.canHaveALeashAttachedTo(var1)) {
                   if (var11.isLeashed()) {
                      var11.dropLeash();
                   }
@@ -2253,9 +2277,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                   var11.setLeashedTo(var1, true);
                   this.playSound(SoundEvents.LEAD_TIED);
                   var12.shrink(1);
+                  return InteractionResult.SUCCESS_SERVER;
                }
-
-               return InteractionResult.SUCCESS;
             }
          }
 
@@ -2510,8 +2533,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    }
 
-   @Nullable
-   public InterpolationHandler getInterpolation() {
+   public @Nullable InterpolationHandler getInterpolation() {
       return null;
    }
 
@@ -2525,6 +2547,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    public Vec3 getLookAngle() {
       return this.calculateViewVector(this.getXRot(), this.getYRot());
+   }
+
+   public Vec3 getHeadLookAngle() {
+      return this.calculateViewVector(this.getXRot(), this.getYHeadRot());
    }
 
    public Vec3 getHandHoldingItemAngle(Item var1) {
@@ -2573,7 +2599,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
                if (var3 != null) {
                   ServerLevel var4 = var3.newLevel();
-                  if (var1.getServer().isAllowedToEnterPortal(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
+                  if (var1.isAllowedToEnterPortal(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
                      this.teleport(var3);
                   }
                }
@@ -2716,8 +2742,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public void updateDynamicGameEventListener(BiConsumer<DynamicGameEventListener<?>, ServerLevel> var1) {
    }
 
-   @Nullable
-   public PlayerTeam getTeam() {
+   public @Nullable PlayerTeam getTeam() {
       return this.level().getScoreboard().getPlayersTeam(this.getScoreboardName());
    }
 
@@ -2970,8 +2995,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.portalProcess = var1.portalProcess;
    }
 
-   @Nullable
-   public Entity teleport(TeleportTransition var1) {
+   public @Nullable Entity teleport(TeleportTransition var1) {
       ServerLevel var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
          if (!this.isRemoved()) {
@@ -3009,8 +3033,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this;
    }
 
-   @Nullable
-   private Entity teleportCrossDimension(ServerLevel var1, ServerLevel var2, TeleportTransition var3) {
+   private @Nullable Entity teleportCrossDimension(ServerLevel var1, ServerLevel var2, TeleportTransition var3) {
       List var4 = this.getPassengers();
       ArrayList var5 = new ArrayList(var4.size());
       this.ejectPassengers();
@@ -3224,8 +3247,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.entityData.set(DATA_CUSTOM_NAME, Optional.ofNullable(var1));
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return (Component)((Optional)this.entityData.get(DATA_CUSTOM_NAME)).orElse((Object)null);
    }
 
@@ -3366,8 +3388,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.eyeHeight;
    }
 
-   public SlotAccess getSlot(int var1) {
-      return SlotAccess.NULL;
+   public @Nullable SlotAccess getSlot(int var1) {
+      return null;
    }
 
    public InteractionResult interactAt(Player var1, Vec3 var2, InteractionHand var3) {
@@ -3413,8 +3435,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getType().is(EntityTypeTags.DEFLECTS_PROJECTILES) ? ProjectileDeflection.REVERSE : ProjectileDeflection.NONE;
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       return null;
    }
 
@@ -3426,8 +3447,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.passengers;
    }
 
-   @Nullable
-   public Entity getFirstPassenger() {
+   public @Nullable Entity getFirstPassenger() {
       return this.passengers.isEmpty() ? null : (Entity)this.passengers.get(0);
    }
 
@@ -3521,8 +3541,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    protected static Vec3 getCollisionHorizontalEscapeVector(double var0, double var2, float var4) {
       double var5 = (var0 + var2 + 9.999999747378752E-6) / 2.0;
-      float var7 = -Mth.sin(var4 * 0.017453292F);
-      float var8 = Mth.cos(var4 * 0.017453292F);
+      float var7 = -Mth.sin((double)(var4 * 0.017453292F));
+      float var8 = Mth.cos((double)(var4 * 0.017453292F));
       float var9 = Math.max(Math.abs(var7), Math.abs(var8));
       return new Vec3((double)var7 * var5 / (double)var9, 0.0, (double)var8 * var5 / (double)var9);
    }
@@ -3531,13 +3551,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return new Vec3(this.getX(), this.getBoundingBox().maxY, this.getZ());
    }
 
-   @Nullable
-   public Entity getVehicle() {
+   public @Nullable Entity getVehicle() {
       return this.vehicle;
    }
 
-   @Nullable
-   public Entity getControlledVehicle() {
+   public @Nullable Entity getControlledVehicle() {
       return this.vehicle != null && this.vehicle.getControllingPassenger() == this ? this.vehicle : null;
    }
 
@@ -3554,7 +3572,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getPlainTextName(), this.getDisplayName(), var1.getServer(), this);
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, PermissionSet.NO_PERMISSIONS, this.getPlainTextName(), this.getDisplayName(), var1.getServer(), this);
    }
 
    public void lookAt(EntityAnchorArgument.Anchor var1, Vec3 var2) {
@@ -3707,11 +3725,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public void setDeltaMovement(Vec3 var1) {
-      this.deltaMovement = var1;
+      if (var1.isFinite()) {
+         this.deltaMovement = var1;
+      }
+
    }
 
    public void addDeltaMovement(Vec3 var1) {
-      this.setDeltaMovement(this.getDeltaMovement().add(var1));
+      if (var1.isFinite()) {
+         this.setDeltaMovement(this.getDeltaMovement().add(var1));
+      }
+
    }
 
    public void setDeltaMovement(double var1, double var3, double var5) {
@@ -3843,8 +3867,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.setDeltaMovement(var1.getMovement());
    }
 
-   @Nullable
-   public ItemStack getPickResult() {
+   public @Nullable ItemStack getPickResult() {
       return null;
    }
 
@@ -3903,8 +3926,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.removalReason != null;
    }
 
-   @Nullable
-   public RemovalReason getRemovalReason() {
+   public @Nullable RemovalReason getRemovalReason() {
       return this.removalReason;
    }
 
@@ -3994,8 +4016,18 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.getDeltaMovement();
    }
 
-   @Nullable
-   public ItemStack getWeaponItem() {
+   public Vec3 getKnownSpeed() {
+      LivingEntity var2 = this.getControllingPassenger();
+      if (var2 instanceof Player var1) {
+         if (this.isAlive()) {
+            return var1.getKnownSpeed();
+         }
+      }
+
+      return this.lastKnownSpeed;
+   }
+
+   public @Nullable ItemStack getWeaponItem() {
       return null;
    }
 
@@ -4012,8 +4044,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.applyImplicitComponents(var1.getComponents());
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.CUSTOM_NAME) {
          return (T)castComponentValue(var1, this.getCustomName());
       } else {
@@ -4021,9 +4052,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
    }
 
-   @Nullable
    @Contract("_,!null->!null;_,_->_")
-   protected static <T> T castComponentValue(DataComponentType<T> var0, @Nullable Object var1) {
+   protected static <T> @Nullable T castComponentValue(DataComponentType<T> var0, @Nullable Object var1) {
       return (T)var1;
    }
 

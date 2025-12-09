@@ -1,12 +1,11 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -34,6 +33,7 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class NoteBlock extends Block {
    public static final MapCodec<NoteBlock> CODEC = simpleCodec(NoteBlock::new);
@@ -130,7 +130,7 @@ public class NoteBlock extends Block {
 
       Holder var10;
       if (var7.hasCustomSound()) {
-         ResourceLocation var9 = this.getCustomSoundId(var2, var3);
+         Identifier var9 = this.getCustomSoundId(var2, var3);
          if (var9 == null) {
             return false;
          }
@@ -144,8 +144,7 @@ public class NoteBlock extends Block {
       return true;
    }
 
-   @Nullable
-   private ResourceLocation getCustomSoundId(Level var1, BlockPos var2) {
+   private @Nullable Identifier getCustomSoundId(Level var1, BlockPos var2) {
       BlockEntity var4 = var1.getBlockEntity(var2.above());
       if (var4 instanceof SkullBlockEntity var3) {
          return var3.getNoteBlockSound();

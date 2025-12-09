@@ -14,7 +14,7 @@ import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.server.players.UserBanListEntry;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
 
 public class JsonRpcNotificationService implements NotificationService {
    private final ManagementServer managementServer;
@@ -50,6 +50,10 @@ public class JsonRpcNotificationService implements NotificationService {
       this.broadcastNotification(OutgoingRpcMethods.SERVER_SAVE_COMPLETED);
    }
 
+   public void serverActivityOccured() {
+      this.broadcastNotification(OutgoingRpcMethods.SERVER_ACTIVITY_OCCURRED);
+   }
+
    public void playerOped(ServerOpListEntry var1) {
       this.broadcastNotification(OutgoingRpcMethods.PLAYER_OPED, OperatorService.OperatorDto.from(var1));
    }
@@ -82,7 +86,7 @@ public class JsonRpcNotificationService implements NotificationService {
       this.broadcastNotification(OutgoingRpcMethods.PLAYER_UNBANNED, PlayerDto.from(var1));
    }
 
-   public void onGameRuleChanged(String var1, GameRules.Value<?> var2) {
+   public <T> void onGameRuleChanged(GameRule<T> var1, T var2) {
       this.broadcastNotification(OutgoingRpcMethods.GAMERULE_CHANGED, GameRulesService.getTypedRule(this.minecraftApi, var1, var2));
    }
 

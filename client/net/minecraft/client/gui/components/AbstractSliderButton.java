@@ -12,21 +12,21 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractSliderButton extends AbstractWidget {
-   private static final ResourceLocation SLIDER_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider");
-   private static final ResourceLocation HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_highlighted");
-   private static final ResourceLocation SLIDER_HANDLE_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_handle");
-   private static final ResourceLocation SLIDER_HANDLE_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_handle_highlighted");
+public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMessage {
+   private static final Identifier SLIDER_SPRITE = Identifier.withDefaultNamespace("widget/slider");
+   private static final Identifier HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/slider_highlighted");
+   private static final Identifier SLIDER_HANDLE_SPRITE = Identifier.withDefaultNamespace("widget/slider_handle");
+   private static final Identifier SLIDER_HANDLE_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/slider_handle_highlighted");
    protected static final int TEXT_MARGIN = 2;
    public static final int DEFAULT_HEIGHT = 20;
-   private static final int HANDLE_WIDTH = 8;
+   protected static final int HANDLE_WIDTH = 8;
    private static final int HANDLE_HALF_WIDTH = 4;
    protected double value;
-   private boolean canChangeValue;
+   protected boolean canChangeValue;
    private boolean dragging;
 
    public AbstractSliderButton(int var1, int var2, int var3, int var4, Component var5, double var6) {
@@ -34,11 +34,11 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.value = var6;
    }
 
-   private ResourceLocation getSprite() {
+   private Identifier getSprite() {
       return this.isActive() && this.isFocused() && !this.canChangeValue ? HIGHLIGHTED_SPRITE : SLIDER_SPRITE;
    }
 
-   private ResourceLocation getHandleSprite() {
+   private Identifier getHandleSprite() {
       return !this.isActive() || !this.isHovered && !this.canChangeValue ? SLIDER_HANDLE_SPRITE : SLIDER_HANDLE_HIGHLIGHTED_SPRITE;
    }
 
@@ -63,11 +63,9 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      Minecraft var5 = Minecraft.getInstance();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
-      int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
-      this.renderScrollingString(var1, var5.font, 2, var6);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
+      this.renderScrollingStringOverContents(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE), this.getMessage(), 2);
       if (this.isHovered()) {
          var1.requestCursor(this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND);
       }
@@ -115,7 +113,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.setValue((var1.x() - (double)(this.getX() + 4)) / (double)(this.width - 8));
    }
 
-   private void setValue(double var1) {
+   protected void setValue(double var1) {
       double var3 = this.value;
       this.value = Mth.clamp(var1, 0.0, 1.0);
       if (var3 != this.value) {

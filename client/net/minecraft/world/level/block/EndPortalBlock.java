@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class EndPortalBlock extends BaseEntityBlock implements Portal {
    public static final MapCodec<EndPortalBlock> CODEC = simpleCodec(EndPortalBlock::new);
@@ -68,8 +68,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
 
    }
 
-   @Nullable
-   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+   public @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       LevelData.RespawnData var4 = var1.getRespawnData();
       ResourceKey var5 = var1.dimension();
       boolean var6 = var5 == Level.END;

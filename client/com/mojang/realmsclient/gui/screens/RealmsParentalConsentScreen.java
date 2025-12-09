@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
 import java.net.URI;
-import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -15,14 +14,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsParentalConsentScreen extends RealmsScreen {
    private static final Component MESSAGE = Component.translatable("mco.account.privacy.information");
    private static final int SPACING = 15;
    private final LinearLayout layout = LinearLayout.vertical();
    private final Screen lastScreen;
-   @Nullable
-   private MultiLineTextWidget textWidget;
+   private @Nullable MultiLineTextWidget textWidget;
 
    public RealmsParentalConsentScreen(Screen var1) {
       super(GameNarrator.NO_TITLE);

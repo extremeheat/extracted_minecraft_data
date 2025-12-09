@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TextureTarget extends RenderTarget {
    public TextureTarget(@Nullable String var1, int var2, int var3, boolean var4) {

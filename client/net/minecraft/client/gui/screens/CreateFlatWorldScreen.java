@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,7 +18,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,10 +26,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.flat.FlatLayerInfo;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
+import org.jspecify.annotations.Nullable;
 
 public class CreateFlatWorldScreen extends Screen {
    private static final Component TITLE = Component.translatable("createWorld.customize.flat.title");
-   static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
+   static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
    private static final int SLOT_BG_SIZE = 18;
    private static final int SLOT_STAT_HEIGHT = 20;
    private static final int SLOT_BG_X = 1;
@@ -41,10 +41,8 @@ public class CreateFlatWorldScreen extends Screen {
    protected final CreateWorldScreen parent;
    private final Consumer<FlatLevelGeneratorSettings> applySettings;
    FlatLevelGeneratorSettings generator;
-   @Nullable
-   private DetailsList list;
-   @Nullable
-   private Button deleteLayerButton;
+   private @Nullable DetailsList list;
+   private @Nullable Button deleteLayerButton;
 
    public CreateFlatWorldScreen(CreateWorldScreen var1, Consumer<FlatLevelGeneratorSettings> var2, FlatLevelGeneratorSettings var3) {
       super(TITLE);
@@ -247,7 +245,7 @@ public class CreateFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)CreateFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)CreateFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
          }
       }
 

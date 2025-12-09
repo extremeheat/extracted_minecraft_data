@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.options;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -29,6 +28,7 @@ import net.minecraft.network.protocol.game.ServerboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ServerboundLockDifficultyPacket;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.Difficulty;
+import org.jspecify.annotations.Nullable;
 
 public class OptionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("options.title");
@@ -47,10 +47,8 @@ public class OptionsScreen extends Screen {
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 61, 33);
    private final Screen lastScreen;
    private final Options options;
-   @Nullable
-   private CycleButton<Difficulty> difficultyButton;
-   @Nullable
-   private LockIconButton lockButton;
+   private @Nullable CycleButton<Difficulty> difficultyButton;
+   private @Nullable LockIconButton lockButton;
 
    public OptionsScreen(Screen var1, Options var2) {
       super(TITLE);
@@ -126,7 +124,7 @@ public class OptionsScreen extends Screen {
    }
 
    public static CycleButton<Difficulty> createDifficultyButton(int var0, int var1, String var2, Minecraft var3) {
-      return CycleButton.builder(Difficulty::getDisplayName).withValues(Difficulty.values()).withInitialValue(var3.level.getDifficulty()).create(var0, var1, 150, 20, Component.translatable(var2), (var1x, var2x) -> var3.getConnection().send(new ServerboundChangeDifficultyPacket(var2x)));
+      return CycleButton.builder(Difficulty::getDisplayName, var3.level.getDifficulty()).withValues(Difficulty.values()).create(var0, var1, 150, 20, Component.translatable(var2), (var1x, var2x) -> var3.getConnection().send(new ServerboundChangeDifficultyPacket(var2x)));
    }
 
    private void lockCallback(boolean var1) {

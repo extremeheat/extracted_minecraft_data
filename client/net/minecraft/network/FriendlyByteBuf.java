@@ -33,7 +33,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ToIntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -55,8 +53,8 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.codec.StreamEncoder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 import net.minecraft.util.LenientJsonParser;
@@ -65,10 +63,12 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class FriendlyByteBuf extends ByteBuf {
-   public static final int DEFAULT_NBT_QUOTA = 2097152;
    private final ByteBuf source;
    public static final short MAX_STRING_LENGTH = 32767;
    public static final int MAX_COMPONENT_STRING_LENGTH = 262144;
@@ -251,13 +251,11 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.readBoolean() ? Either.left(var1.decode(this)) : Either.right(var2.decode(this));
    }
 
-   @Nullable
-   public <T> T readNullable(StreamDecoder<? super FriendlyByteBuf, T> var1) {
+   public <T> @Nullable T readNullable(StreamDecoder<? super FriendlyByteBuf, T> var1) {
       return (T)readNullable(this, var1);
    }
 
-   @Nullable
-   public static <T, B extends ByteBuf> T readNullable(B var0, StreamDecoder<? super B, T> var1) {
+   public static <T, B extends ByteBuf> @Nullable T readNullable(B var0, StreamDecoder<? super B, T> var1) {
       return (T)(var0.readBoolean() ? var1.decode(var0) : null);
    }
 
@@ -442,7 +440,7 @@ public class FriendlyByteBuf extends ByteBuf {
       writeVector3f(this, var1);
    }
 
-   public static void writeVector3f(ByteBuf var0, Vector3f var1) {
+   public static void writeVector3f(ByteBuf var0, Vector3fc var1) {
       var0.writeFloat(var1.x());
       var0.writeFloat(var1.y());
       var0.writeFloat(var1.z());
@@ -460,11 +458,11 @@ public class FriendlyByteBuf extends ByteBuf {
       writeQuaternion(this, var1);
    }
 
-   public static void writeQuaternion(ByteBuf var0, Quaternionf var1) {
-      var0.writeFloat(var1.x);
-      var0.writeFloat(var1.y);
-      var0.writeFloat(var1.z);
-      var0.writeFloat(var1.w);
+   public static void writeQuaternion(ByteBuf var0, Quaternionfc var1) {
+      var0.writeFloat(var1.x());
+      var0.writeFloat(var1.y());
+      var0.writeFloat(var1.z());
+      var0.writeFloat(var1.w());
    }
 
    public static Vec3 readVec3(ByteBuf var0) {
@@ -564,14 +562,12 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
-   @Nullable
-   public CompoundTag readNbt() {
+   public @Nullable CompoundTag readNbt() {
       return readNbt((ByteBuf)this);
    }
 
-   @Nullable
-   public static CompoundTag readNbt(ByteBuf var0) {
-      Tag var1 = readNbt(var0, NbtAccounter.create(2097152L));
+   public static @Nullable CompoundTag readNbt(ByteBuf var0) {
+      Tag var1 = readNbt(var0, NbtAccounter.defaultQuota());
       if (var1 != null && !(var1 instanceof CompoundTag)) {
          throw new DecoderException("Not a compound tag: " + String.valueOf(var1));
       } else {
@@ -579,8 +575,7 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
-   @Nullable
-   public static Tag readNbt(ByteBuf var0, NbtAccounter var1) {
+   public static @Nullable Tag readNbt(ByteBuf var0, NbtAccounter var1) {
       try {
          Tag var2 = NbtIo.readAnyTag(new ByteBufInputStream(var0), var1);
          return var2.getId() == 0 ? null : var2;
@@ -589,8 +584,7 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
-   @Nullable
-   public Tag readNbt(NbtAccounter var1) {
+   public @Nullable Tag readNbt(NbtAccounter var1) {
       return readNbt(this, var1);
    }
 
@@ -611,36 +605,27 @@ public class FriendlyByteBuf extends ByteBuf {
       return this;
    }
 
-   public ResourceLocation readResourceLocation() {
-      return ResourceLocation.parse(this.readUtf(32767));
+   public Identifier readIdentifier() {
+      return Identifier.parse(this.readUtf(32767));
    }
 
-   public FriendlyByteBuf writeResourceLocation(ResourceLocation var1) {
+   public FriendlyByteBuf writeIdentifier(Identifier var1) {
       this.writeUtf(var1.toString());
       return this;
    }
 
    public <T> ResourceKey<T> readResourceKey(ResourceKey<? extends Registry<T>> var1) {
-      ResourceLocation var2 = this.readResourceLocation();
+      Identifier var2 = this.readIdentifier();
       return ResourceKey.create(var1, var2);
    }
 
    public void writeResourceKey(ResourceKey<?> var1) {
-      this.writeResourceLocation(var1.location());
+      this.writeIdentifier(var1.identifier());
    }
 
    public <T> ResourceKey<? extends Registry<T>> readRegistryKey() {
-      ResourceLocation var1 = this.readResourceLocation();
+      Identifier var1 = this.readIdentifier();
       return ResourceKey.createRegistryKey(var1);
-   }
-
-   public Date readDate() {
-      return new Date(this.readLong());
-   }
-
-   public FriendlyByteBuf writeDate(Date var1) {
-      this.writeLong(var1.getTime());
-      return this;
    }
 
    public Instant readInstant() {
@@ -1247,6 +1232,10 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public CharSequence readCharSequence(int var1, Charset var2) {
       return this.source.readCharSequence(var1, var2);
+   }
+
+   public String readString(int var1, Charset var2) {
+      return this.source.readString(var1, var2);
    }
 
    public int readBytes(FileChannel var1, long var2, int var4) throws IOException {

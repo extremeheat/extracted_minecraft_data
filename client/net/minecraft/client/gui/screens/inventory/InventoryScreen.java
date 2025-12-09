@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenPosition;
@@ -10,8 +9,10 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.joml.Quaternionf;
@@ -58,9 +59,8 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.effects.renderEffects(var1, var2, var3);
+      this.effects.render(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.renderTooltip(var1, var2, var3);
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;
    }
@@ -83,43 +83,38 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    public static void renderEntityInInventoryFollowsMouse(GuiGraphics var0, int var1, int var2, int var3, int var4, int var5, float var6, float var7, float var8, LivingEntity var9) {
       float var10 = (float)(var1 + var3) / 2.0F;
       float var11 = (float)(var2 + var4) / 2.0F;
-      var0.enableScissor(var1, var2, var3, var4);
       float var12 = (float)Math.atan((double)((var10 - var7) / 40.0F));
       float var13 = (float)Math.atan((double)((var11 - var8) / 40.0F));
       Quaternionf var14 = (new Quaternionf()).rotateZ(3.1415927F);
       Quaternionf var15 = (new Quaternionf()).rotateX(var13 * 20.0F * 0.017453292F);
       var14.mul(var15);
-      float var16 = var9.yBodyRot;
-      float var17 = var9.getYRot();
-      float var18 = var9.getXRot();
-      float var19 = var9.yHeadRotO;
-      float var20 = var9.yHeadRot;
-      var9.yBodyRot = 180.0F + var12 * 20.0F;
-      var9.setYRot(180.0F + var12 * 40.0F);
-      var9.setXRot(-var13 * 20.0F);
-      var9.yHeadRot = var9.getYRot();
-      var9.yHeadRotO = var9.getYRot();
-      float var21 = var9.getScale();
-      Vector3f var22 = new Vector3f(0.0F, var9.getBbHeight() / 2.0F + var6 * var21, 0.0F);
-      float var23 = (float)var5 / var21;
-      renderEntityInInventory(var0, var1, var2, var3, var4, var23, var22, var14, var15, var9);
-      var9.yBodyRot = var16;
-      var9.setYRot(var17);
-      var9.setXRot(var18);
-      var9.yHeadRotO = var19;
-      var9.yHeadRot = var20;
-      var0.disableScissor();
+      EntityRenderState var16 = extractRenderState(var9);
+      if (var16 instanceof LivingEntityRenderState var17) {
+         var17.bodyRot = 180.0F + var12 * 20.0F;
+         var17.yRot = var12 * 20.0F;
+         if (var17.pose != Pose.FALL_FLYING) {
+            var17.xRot = -var13 * 20.0F;
+         } else {
+            var17.xRot = 0.0F;
+         }
+
+         var17.boundingBoxWidth /= var17.scale;
+         var17.boundingBoxHeight /= var17.scale;
+         var17.scale = 1.0F;
+      }
+
+      Vector3f var18 = new Vector3f(0.0F, var16.boundingBoxHeight / 2.0F + var6, 0.0F);
+      var0.submitEntityRenderState(var16, (float)var5, var18, var14, var15, var1, var2, var3, var4);
    }
 
-   public static void renderEntityInInventory(GuiGraphics var0, int var1, int var2, int var3, int var4, float var5, Vector3f var6, Quaternionf var7, @Nullable Quaternionf var8, LivingEntity var9) {
-      EntityRenderDispatcher var10 = Minecraft.getInstance().getEntityRenderDispatcher();
-      EntityRenderer var11 = var10.getRenderer(var9);
-      EntityRenderState var12 = var11.createRenderState(var9, 1.0F);
-      var12.lightCoords = 15728880;
-      var12.hitboxesRenderState = null;
-      var12.shadowPieces.clear();
-      var12.outlineColor = 0;
-      var0.submitEntityRenderState(var12, var5, var6, var7, var8, var1, var2, var3, var4);
+   private static EntityRenderState extractRenderState(LivingEntity var0) {
+      EntityRenderDispatcher var1 = Minecraft.getInstance().getEntityRenderDispatcher();
+      EntityRenderer var2 = var1.getRenderer(var0);
+      EntityRenderState var3 = var2.createRenderState(var0, 1.0F);
+      var3.lightCoords = 15728880;
+      var3.shadowPieces.clear();
+      var3.outlineColor = 0;
+      return var3;
    }
 
    public boolean mouseReleased(MouseButtonEvent var1) {

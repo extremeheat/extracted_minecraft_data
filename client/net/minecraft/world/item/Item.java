@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -29,8 +27,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -38,15 +36,20 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
@@ -57,17 +60,22 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.KineticWeapon;
+import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.ProvidesTrimMaterial;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Repairable;
@@ -84,6 +92,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Item implements FeatureElement, ItemLike {
@@ -91,16 +100,15 @@ public class Item implements FeatureElement, ItemLike {
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> STREAM_CODEC;
    private static final Logger LOGGER;
    public static final Map<Block, Item> BY_BLOCK;
-   public static final ResourceLocation BASE_ATTACK_DAMAGE_ID;
-   public static final ResourceLocation BASE_ATTACK_SPEED_ID;
+   public static final Identifier BASE_ATTACK_DAMAGE_ID;
+   public static final Identifier BASE_ATTACK_SPEED_ID;
    public static final int DEFAULT_MAX_STACK_SIZE = 64;
    public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
    protected static final int APPROXIMATELY_INFINITE_USE_DURATION = 72000;
    private final Holder.Reference<Item> builtInRegistryHolder;
    private final DataComponentMap components;
-   @Nullable
-   private final Item craftingRemainingItem;
+   private final @Nullable Item craftingRemainingItem;
    protected final String descriptionId;
    private final FeatureFlagSet requiredFeatures;
 
@@ -195,10 +203,14 @@ public class Item implements FeatureElement, ItemLike {
          Equippable var6 = (Equippable)var4.get(DataComponents.EQUIPPABLE);
          if (var6 != null && var6.swappable()) {
             return var6.swapWithEquipmentSlot(var4, var2);
+         } else if (var4.has(DataComponents.BLOCKS_ATTACKS)) {
+            var2.startUsingItem(var3);
+            return InteractionResult.CONSUME;
          } else {
-            BlocksAttacks var7 = (BlocksAttacks)var4.get(DataComponents.BLOCKS_ATTACKS);
+            KineticWeapon var7 = (KineticWeapon)var4.get(DataComponents.KINETIC_WEAPON);
             if (var7 != null) {
                var2.startUsingItem(var3);
+               var7.makeSound(var2);
                return InteractionResult.CONSUME;
             } else {
                return InteractionResult.PASS;
@@ -238,8 +250,9 @@ public class Item implements FeatureElement, ItemLike {
       return 0.0F;
    }
 
-   @Nullable
-   public DamageSource getDamageSource(LivingEntity var1) {
+   /** @deprecated */
+   @Deprecated
+   public @Nullable DamageSource getItemDamageSource(LivingEntity var1) {
       return null;
    }
 
@@ -293,9 +306,10 @@ public class Item implements FeatureElement, ItemLike {
       Consumable var2 = (Consumable)var1.get(DataComponents.CONSUMABLE);
       if (var2 != null) {
          return var2.animation();
+      } else if (var1.has(DataComponents.BLOCKS_ATTACKS)) {
+         return ItemUseAnimation.BLOCK;
       } else {
-         BlocksAttacks var3 = (BlocksAttacks)var1.get(DataComponents.BLOCKS_ATTACKS);
-         return var3 != null ? ItemUseAnimation.BLOCK : ItemUseAnimation.NONE;
+         return var1.has(DataComponents.KINETIC_WEAPON) ? ItemUseAnimation.SPEAR : ItemUseAnimation.NONE;
       }
    }
 
@@ -304,8 +318,7 @@ public class Item implements FeatureElement, ItemLike {
       if (var3 != null) {
          return var3.consumeTicks();
       } else {
-         BlocksAttacks var4 = (BlocksAttacks)var1.get(DataComponents.BLOCKS_ATTACKS);
-         return var4 != null ? 72000 : 0;
+         return !var1.has(DataComponents.BLOCKS_ATTACKS) && !var1.has(DataComponents.KINETIC_WEAPON) ? 0 : 72000;
       }
    }
 
@@ -370,28 +383,26 @@ public class Item implements FeatureElement, ItemLike {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
       LOGGER = LogUtils.getLogger();
       BY_BLOCK = Maps.newHashMap();
-      BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
-      BASE_ATTACK_SPEED_ID = ResourceLocation.withDefaultNamespace("base_attack_speed");
+      BASE_ATTACK_DAMAGE_ID = Identifier.withDefaultNamespace("base_attack_damage");
+      BASE_ATTACK_SPEED_ID = Identifier.withDefaultNamespace("base_attack_speed");
    }
 
    public static class Properties {
-      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.location());
-      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.location());
+      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.identifier());
+      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.identifier());
       private final DataComponentMap.Builder components;
-      @Nullable
-      Item craftingRemainingItem;
+      @Nullable Item craftingRemainingItem;
       FeatureFlagSet requiredFeatures;
-      @Nullable
-      private ResourceKey<Item> id;
+      private @Nullable ResourceKey<Item> id;
       private DependantName<Item, String> descriptionId;
-      private DependantName<Item, ResourceLocation> model;
+      private final DependantName<Item, Identifier> model;
 
       public Properties() {
          super();
          this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
          this.descriptionId = ITEM_DESCRIPTION_ID;
-         this.model = ResourceKey::location;
+         this.model = ResourceKey::identifier;
       }
 
       public Properties food(FoodProperties var1) {
@@ -483,6 +494,10 @@ public class Item implements FeatureElement, ItemLike {
          return var1.applySwordProperties(this, var2, var3);
       }
 
+      public Properties spear(ToolMaterial var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
+         return this.durability(var1.durability()).repairable(var1.repairItems()).enchantable(var1.enchantmentValue()).component(DataComponents.DAMAGE_TYPE, new EitherHolder(DamageTypes.SPEAR)).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(10, (int)(var4 * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(var5 * 20.0F), var6), KineticWeapon.Condition.ofAttackerSpeed((int)(var7 * 20.0F), var8), KineticWeapon.Condition.ofRelativeSpeed((int)(var9 * 20.0F), var10), 0.38F, var3, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 4.5F, 2.0F, 6.5F, 0.125F, 0.5F)).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(var2 * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + var1.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / var2) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, false, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
+      }
+
       public Properties spawnEgg(EntityType<?> var1) {
          return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(var1, new CompoundTag()));
       }
@@ -498,6 +513,11 @@ public class Item implements FeatureElement, ItemLike {
       public Properties horseArmor(ArmorMaterial var1) {
          HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
          return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
+      }
+
+      public Properties nautilusArmor(ArmorMaterial var1) {
+         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
+         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
       }
 
       public Properties trimMaterial(ResourceKey<TrimMaterial> var1) {
@@ -533,7 +553,7 @@ public class Item implements FeatureElement, ItemLike {
          return this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
-      public ResourceLocation effectiveModel() {
+      public Identifier effectiveModel() {
          return this.model.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
@@ -546,7 +566,7 @@ public class Item implements FeatureElement, ItemLike {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
       }
 
-      DataComponentMap buildAndValidateComponents(Component var1, ResourceLocation var2) {
+      DataComponentMap buildAndValidateComponents(Component var1, Identifier var2) {
          DataComponentMap var3 = this.components.set(DataComponents.ITEM_NAME, var1).set(DataComponents.ITEM_MODEL, var2).build();
          if (var3.has(DataComponents.DAMAGE) && (Integer)var3.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
             throw new IllegalStateException("Item cannot have both durability and be stackable");
@@ -558,8 +578,7 @@ public class Item implements FeatureElement, ItemLike {
 
    public interface TooltipContext {
       TooltipContext EMPTY = new TooltipContext() {
-         @Nullable
-         public HolderLookup.Provider registries() {
+         public HolderLookup.@Nullable Provider registries() {
             return null;
          }
 
@@ -567,8 +586,7 @@ public class Item implements FeatureElement, ItemLike {
             return 20.0F;
          }
 
-         @Nullable
-         public MapItemSavedData mapData(MapId var1) {
+         public @Nullable MapItemSavedData mapData(MapId var1) {
             return null;
          }
 
@@ -577,17 +595,15 @@ public class Item implements FeatureElement, ItemLike {
          }
       };
 
-      @Nullable
-      HolderLookup.Provider registries();
+      HolderLookup.@Nullable Provider registries();
 
       float tickRate();
 
-      @Nullable
-      MapItemSavedData mapData(MapId var1);
+      @Nullable MapItemSavedData mapData(MapId var1);
 
       boolean isPeaceful();
 
-      static TooltipContext of(@Nullable final Level var0) {
+      static TooltipContext of(final @Nullable Level var0) {
          return var0 == null ? EMPTY : new TooltipContext() {
             public HolderLookup.Provider registries() {
                return var0.registryAccess();
@@ -617,8 +633,7 @@ public class Item implements FeatureElement, ItemLike {
                return 20.0F;
             }
 
-            @Nullable
-            public MapItemSavedData mapData(MapId var1) {
+            public @Nullable MapItemSavedData mapData(MapId var1) {
                return null;
             }
 

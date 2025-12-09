@@ -7,21 +7,22 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EntitySelector {
    public static final int INFINITE = 2147483647;
@@ -40,21 +41,17 @@ public class EntitySelector {
    private final boolean includesEntities;
    private final boolean worldLimited;
    private final List<Predicate<Entity>> contextFreePredicates;
-   @Nullable
-   private final MinMaxBounds.Doubles range;
+   private final MinMaxBounds.@Nullable Doubles range;
    private final Function<Vec3, Vec3> position;
-   @Nullable
-   private final AABB aabb;
+   private final @Nullable AABB aabb;
    private final BiConsumer<Vec3, List<? extends Entity>> order;
    private final boolean currentEntity;
-   @Nullable
-   private final String playerName;
-   @Nullable
-   private final UUID entityUUID;
+   private final @Nullable String playerName;
+   private final @Nullable UUID entityUUID;
    private final EntityTypeTest<Entity, ?> type;
    private final boolean usesSelector;
 
-   public EntitySelector(int var1, boolean var2, boolean var3, List<Predicate<Entity>> var4, @Nullable MinMaxBounds.Doubles var5, Function<Vec3, Vec3> var6, @Nullable AABB var7, BiConsumer<Vec3, List<? extends Entity>> var8, boolean var9, @Nullable String var10, @Nullable UUID var11, @Nullable EntityType<?> var12, boolean var13) {
+   public EntitySelector(int var1, boolean var2, boolean var3, List<Predicate<Entity>> var4, MinMaxBounds.@Nullable Doubles var5, Function<Vec3, Vec3> var6, @Nullable AABB var7, BiConsumer<Vec3, List<? extends Entity>> var8, boolean var9, @Nullable String var10, @Nullable UUID var11, @Nullable EntityType<?> var12, boolean var13) {
       super();
       this.maxResults = var1;
       this.includesEntities = var2;
@@ -92,7 +89,7 @@ public class EntitySelector {
    }
 
    private void checkPermissions(CommandSourceStack var1) throws CommandSyntaxException {
-      if (this.usesSelector && !var1.allowsSelectors()) {
+      if (this.usesSelector && !var1.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS)) {
          throw EntityArgument.ERROR_SELECTORS_NOT_ALLOWED.create();
       }
    }
@@ -221,8 +218,7 @@ public class EntitySelector {
       }
    }
 
-   @Nullable
-   private AABB getAbsoluteAabb(Vec3 var1) {
+   private @Nullable AABB getAbsoluteAabb(Vec3 var1) {
       return this.aabb != null ? this.aabb.move(var1) : null;
    }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,15 +16,16 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public abstract class TamableAnimal extends Animal implements OwnableEntity {
    public static final int TELEPORT_WHEN_DISTANCE_IS_SQ = 144;
@@ -138,8 +138,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getOwnerReference() {
+   public @Nullable EntityReference<LivingEntity> getOwnerReference() {
       return (EntityReference)((Optional)this.entityData.get(DATA_OWNERUUID_ID)).orElse((Object)null);
    }
 
@@ -172,8 +171,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return true;
    }
 
-   @Nullable
-   public PlayerTeam getTeam() {
+   public @Nullable PlayerTeam getTeam() {
       PlayerTeam var1 = super.getTeam();
       if (var1 != null) {
          return var1;
@@ -207,7 +205,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    public void die(DamageSource var1) {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
-         if (var2.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) {
+         if ((Boolean)var2.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)) {
             LivingEntity var4 = this.getOwner();
             if (var4 instanceof ServerPlayer) {
                ServerPlayer var5 = (ServerPlayer)var4;

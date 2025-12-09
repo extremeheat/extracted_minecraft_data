@@ -11,15 +11,14 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Reader;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface JsonEventLogReader<T> extends Closeable {
    static <T> JsonEventLogReader<T> create(final Codec<T> var0, Reader var1) {
       final JsonReader var2 = new JsonReader(var1);
       var2.setStrictness(Strictness.LENIENT);
       return new JsonEventLogReader<T>() {
-         @Nullable
-         public T next() throws IOException {
+         public @Nullable T next() throws IOException {
             try {
                if (!var2.hasNext()) {
                   return null;
@@ -40,6 +39,5 @@ public interface JsonEventLogReader<T> extends Closeable {
       };
    }
 
-   @Nullable
-   T next() throws IOException;
+   @Nullable T next() throws IOException;
 }

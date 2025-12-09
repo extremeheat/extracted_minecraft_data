@@ -61,14 +61,14 @@ public class MagmaCube extends Slime {
       Vec3 var1 = this.getDeltaMovement();
       float var2 = (float)this.getSize() * 0.1F;
       this.setDeltaMovement(var1.x, (double)(this.getJumpPower() + var2), var1.z);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    protected void jumpInLiquid(TagKey<Fluid> var1) {
       if (var1 == FluidTags.LAVA) {
          Vec3 var2 = this.getDeltaMovement();
          this.setDeltaMovement(var2.x, (double)(0.22F + (float)this.getSize() * 0.05F), var2.z);
-         this.hasImpulse = true;
+         this.needsSync = true;
       } else {
          super.jumpInLiquid(var1);
       }

@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -27,6 +26,7 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RaidCommand {
    public RaidCommand() {
@@ -34,7 +34,7 @@ public class RaidCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(3))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getResolvedComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getResolvedComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int glow(CommandSourceStack var0) throws CommandSyntaxException {
@@ -152,8 +152,7 @@ public class RaidCommand {
       }
    }
 
-   @Nullable
-   private static Raid getRaid(ServerPlayer var0) {
+   private static @Nullable Raid getRaid(ServerPlayer var0) {
       return var0.level().getRaidAt(var0.blockPosition());
    }
 }

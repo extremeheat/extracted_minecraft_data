@@ -2,15 +2,15 @@ package net.minecraft.client.telemetry;
 
 import java.time.Duration;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.telemetry.events.PerformanceMetricsEvent;
 import net.minecraft.client.telemetry.events.WorldLoadEvent;
 import net.minecraft.client.telemetry.events.WorldLoadTimesEvent;
 import net.minecraft.client.telemetry.events.WorldUnloadEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class WorldSessionTelemetryManager {
    private final UUID worldSessionId = UUID.randomUUID();
@@ -65,7 +65,7 @@ public class WorldSessionTelemetryManager {
    }
 
    public void onAdvancementDone(Level var1, AdvancementHolder var2) {
-      ResourceLocation var3 = var2.id();
+      Identifier var3 = var2.id();
       if (var2.value().sendsTelemetryEvent() && "minecraft".equals(var3.getNamespace())) {
          long var4 = var1.getGameTime();
          this.eventSender.send(TelemetryEventType.ADVANCEMENT_MADE, (var3x) -> {

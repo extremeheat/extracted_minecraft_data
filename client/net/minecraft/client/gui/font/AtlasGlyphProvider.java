@@ -10,22 +10,21 @@ import java.util.function.Function;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public class AtlasGlyphProvider {
-   private static final float WIDTH = 8.0F;
-   private static final float HEIGHT = 8.0F;
    static final GlyphInfo GLYPH_INFO = GlyphInfo.simple(8.0F);
    final TextureAtlas atlas;
    final GlyphRenderTypes renderTypes;
    private final GlyphSource missingWrapper;
-   private final Map<ResourceLocation, GlyphSource> wrapperCache = new HashMap();
-   private final Function<ResourceLocation, GlyphSource> spriteResolver;
+   private final Map<Identifier, GlyphSource> wrapperCache = new HashMap();
+   private final Function<Identifier, GlyphSource> spriteResolver;
 
    public AtlasGlyphProvider(TextureAtlas var1) {
       super();
@@ -39,7 +38,7 @@ public class AtlasGlyphProvider {
       };
    }
 
-   public GlyphSource sourceForSprite(ResourceLocation var1) {
+   public GlyphSource sourceForSprite(Identifier var1) {
       return (GlyphSource)this.wrapperCache.computeIfAbsent(var1, this.spriteResolver);
    }
 
@@ -49,14 +48,14 @@ public class AtlasGlyphProvider {
             return AtlasGlyphProvider.GLYPH_INFO;
          }
 
-         public TextRenderable createGlyph(float var1x, float var2, int var3, int var4, Style var5, float var6, float var7) {
-            return new Instance(AtlasGlyphProvider.this.renderTypes, AtlasGlyphProvider.this.atlas.getTextureView(), var1, var1x, var2, var3, var4, var7);
+         public TextRenderable.Styled createGlyph(float var1x, float var2, int var3, int var4, Style var5, float var6, float var7) {
+            return new Instance(AtlasGlyphProvider.this.renderTypes, AtlasGlyphProvider.this.atlas.getTextureView(), var1, var1x, var2, var3, var4, var7, var5);
          }
       });
    }
 
-   static record Instance(GlyphRenderTypes renderTypes, GpuTextureView textureView, TextureAtlasSprite sprite, float x, float y, int color, int shadowColor, float shadowOffset) implements PlainTextRenderable {
-      Instance(GlyphRenderTypes var1, GpuTextureView var2, TextureAtlasSprite var3, float var4, float var5, int var6, int var7, float var8) {
+   static record Instance(GlyphRenderTypes renderTypes, GpuTextureView textureView, TextureAtlasSprite sprite, float x, float y, int color, int shadowColor, float shadowOffset, Style style) implements PlainTextRenderable {
+      Instance(GlyphRenderTypes var1, GpuTextureView var2, TextureAtlasSprite var3, float var4, float var5, int var6, int var7, float var8, Style var9) {
          super();
          this.renderTypes = var1;
          this.textureView = var2;
@@ -66,6 +65,7 @@ public class AtlasGlyphProvider {
          this.color = var6;
          this.shadowColor = var7;
          this.shadowOffset = var8;
+         this.style = var9;
       }
 
       public void renderSprite(Matrix4f var1, VertexConsumer var2, int var3, float var4, float var5, float var6, int var7) {
@@ -73,10 +73,10 @@ public class AtlasGlyphProvider {
          float var9 = var4 + this.right();
          float var10 = var5 + this.top();
          float var11 = var5 + this.bottom();
-         var2.addVertex(var1, var8, var10, var6).setUv(this.sprite.getU0(), this.sprite.getV0()).setColor(var7).setLight(var3);
-         var2.addVertex(var1, var8, var11, var6).setUv(this.sprite.getU0(), this.sprite.getV1()).setColor(var7).setLight(var3);
-         var2.addVertex(var1, var9, var11, var6).setUv(this.sprite.getU1(), this.sprite.getV1()).setColor(var7).setLight(var3);
-         var2.addVertex(var1, var9, var10, var6).setUv(this.sprite.getU1(), this.sprite.getV0()).setColor(var7).setLight(var3);
+         var2.addVertex((Matrix4fc)var1, var8, var10, var6).setUv(this.sprite.getU0(), this.sprite.getV0()).setColor(var7).setLight(var3);
+         var2.addVertex((Matrix4fc)var1, var8, var11, var6).setUv(this.sprite.getU0(), this.sprite.getV1()).setColor(var7).setLight(var3);
+         var2.addVertex((Matrix4fc)var1, var9, var11, var6).setUv(this.sprite.getU1(), this.sprite.getV1()).setColor(var7).setLight(var3);
+         var2.addVertex((Matrix4fc)var1, var9, var10, var6).setUv(this.sprite.getU1(), this.sprite.getV0()).setColor(var7).setLight(var3);
       }
 
       public RenderType renderType(Font.DisplayMode var1) {
@@ -85,22 +85,6 @@ public class AtlasGlyphProvider {
 
       public RenderPipeline guiPipeline() {
          return this.renderTypes.guiPipeline();
-      }
-
-      public float left() {
-         return 0.0F;
-      }
-
-      public float right() {
-         return 8.0F;
-      }
-
-      public float top() {
-         return -1.0F;
-      }
-
-      public float bottom() {
-         return 7.0F;
       }
    }
 }

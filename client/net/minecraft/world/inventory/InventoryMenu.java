@@ -2,7 +2,7 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -28,12 +28,12 @@ public class InventoryMenu extends AbstractCraftingMenu {
    public static final int USE_ROW_SLOT_START = 36;
    public static final int USE_ROW_SLOT_END = 45;
    public static final int SHIELD_SLOT = 45;
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = ResourceLocation.withDefaultNamespace("container/slot/helmet");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = ResourceLocation.withDefaultNamespace("container/slot/chestplate");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = ResourceLocation.withDefaultNamespace("container/slot/leggings");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = ResourceLocation.withDefaultNamespace("container/slot/boots");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = ResourceLocation.withDefaultNamespace("container/slot/shield");
-   private static final Map<EquipmentSlot, ResourceLocation> TEXTURE_EMPTY_SLOTS;
+   public static final Identifier EMPTY_ARMOR_SLOT_HELMET = Identifier.withDefaultNamespace("container/slot/helmet");
+   public static final Identifier EMPTY_ARMOR_SLOT_CHESTPLATE = Identifier.withDefaultNamespace("container/slot/chestplate");
+   public static final Identifier EMPTY_ARMOR_SLOT_LEGGINGS = Identifier.withDefaultNamespace("container/slot/leggings");
+   public static final Identifier EMPTY_ARMOR_SLOT_BOOTS = Identifier.withDefaultNamespace("container/slot/boots");
+   public static final Identifier EMPTY_ARMOR_SLOT_SHIELD = Identifier.withDefaultNamespace("container/slot/shield");
+   private static final Map<EquipmentSlot, Identifier> TEXTURE_EMPTY_SLOTS;
    private static final EquipmentSlot[] SLOT_IDS;
    public final boolean active;
    private final Player owner;
@@ -47,7 +47,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
 
       for(int var4 = 0; var4 < 4; ++var4) {
          EquipmentSlot var5 = SLOT_IDS[var4];
-         ResourceLocation var6 = (ResourceLocation)TEXTURE_EMPTY_SLOTS.get(var5);
+         Identifier var6 = (Identifier)TEXTURE_EMPTY_SLOTS.get(var5);
          this.addSlot(new ArmorSlot(var1, var3, var5, 39 - var4, 8, 8 + var4 * 18, var6));
       }
 
@@ -58,7 +58,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
             super.setByPlayer(var1, var2);
          }
 
-         public ResourceLocation getNoItemIcon() {
+         public Identifier getNoItemIcon() {
             return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
          }
       });

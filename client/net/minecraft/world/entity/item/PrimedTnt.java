@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.item;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -19,14 +18,15 @@ import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class PrimedTnt extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<Integer> DATA_FUSE_ID;
@@ -38,8 +38,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    public static final String TAG_FUSE = "fuse";
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
    private static final ExplosionDamageCalculator USED_PORTAL_DAMAGE_CALCULATOR;
-   @Nullable
-   private EntityReference<LivingEntity> owner;
+   private @Nullable EntityReference<LivingEntity> owner;
    private boolean usedPortal;
    private float explosionPower;
 
@@ -107,7 +106,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    private void explode() {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
-         if (var1.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+         if ((Boolean)var1.getGameRules().get(GameRules.TNT_EXPLODES)) {
             this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
          }
       }
@@ -131,8 +130,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.owner = EntityReference.<LivingEntity>read(var1, "owner");
    }
 
-   @Nullable
-   public LivingEntity getOwner() {
+   public @Nullable LivingEntity getOwner() {
       return EntityReference.getLivingEntity(this.owner, this.level());
    }
 
@@ -164,8 +162,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.usedPortal = var1;
    }
 
-   @Nullable
-   public Entity teleport(TeleportTransition var1) {
+   public @Nullable Entity teleport(TeleportTransition var1) {
       Entity var2 = super.teleport(var1);
       if (var2 instanceof PrimedTnt var3) {
          var3.setUsedPortal(true);
@@ -179,8 +176,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return this.getOwner();
    }
 

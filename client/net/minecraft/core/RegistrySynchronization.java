@@ -13,9 +13,9 @@ import java.util.stream.Stream;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.packs.repository.KnownPack;
 
@@ -48,7 +48,7 @@ public class RegistrySynchronization {
                var7 = Optional.of(var8);
             }
 
-            var5.add(new PackedRegistryEntry(var5x.key().location(), var7));
+            var5.add(new PackedRegistryEntry(var5x.key().identifier(), var7));
          });
          var4.accept(var4x.key(), var5);
       });
@@ -76,17 +76,17 @@ public class RegistrySynchronization {
       NETWORKABLE_REGISTRIES = (Set)RegistryDataLoader.SYNCHRONIZED_REGISTRIES.stream().map(RegistryDataLoader.RegistryData::key).collect(Collectors.toUnmodifiableSet());
    }
 
-   public static record PackedRegistryEntry(ResourceLocation id, Optional<Tag> data) {
+   public static record PackedRegistryEntry(Identifier id, Optional<Tag> data) {
       public static final StreamCodec<ByteBuf, PackedRegistryEntry> STREAM_CODEC;
 
-      public PackedRegistryEntry(ResourceLocation var1, Optional<Tag> var2) {
+      public PackedRegistryEntry(Identifier var1, Optional<Tag> var2) {
          super();
          this.id = var1;
          this.data = var2;
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, PackedRegistryEntry::id, ByteBufCodecs.TAG.apply(ByteBufCodecs::optional), PackedRegistryEntry::data, PackedRegistryEntry::new);
+         STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, PackedRegistryEntry::id, ByteBufCodecs.TAG.apply(ByteBufCodecs::optional), PackedRegistryEntry::data, PackedRegistryEntry::new);
       }
    }
 }

@@ -189,7 +189,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       DESCRIBE_PLACEHOLDER = Component.translatable("gui.abuseReport.describe");
       MORE_COMMENTS_LABEL = Component.translatable("gui.abuseReport.more_comments");
       MORE_COMMENTS_NARRATION = Component.translatable("gui.abuseReport.comments");
-      ATTESTATION_CHECKBOX = Component.translatable("gui.abuseReport.attestation");
+      ATTESTATION_CHECKBOX = Component.translatable("gui.abuseReport.attestation").withColor(-2039584);
       LOGGER = LogUtils.getLogger();
    }
 

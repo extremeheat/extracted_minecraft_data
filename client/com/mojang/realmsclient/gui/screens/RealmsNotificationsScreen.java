@@ -6,24 +6,22 @@ import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsNotificationsScreen extends RealmsScreen {
-   private static final ResourceLocation UNSEEN_NOTIFICATION_SPRITE = ResourceLocation.withDefaultNamespace("icon/unseen_notification");
-   private static final ResourceLocation NEWS_SPRITE = ResourceLocation.withDefaultNamespace("icon/news");
-   private static final ResourceLocation INVITE_SPRITE = ResourceLocation.withDefaultNamespace("icon/invite");
-   private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = ResourceLocation.withDefaultNamespace("icon/trial_available");
+   private static final Identifier UNSEEN_NOTIFICATION_SPRITE = Identifier.withDefaultNamespace("icon/unseen_notification");
+   private static final Identifier NEWS_SPRITE = Identifier.withDefaultNamespace("icon/news");
+   private static final Identifier INVITE_SPRITE = Identifier.withDefaultNamespace("icon/invite");
+   private static final Identifier TRIAL_AVAILABLE_SPRITE = Identifier.withDefaultNamespace("icon/trial_available");
    private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply((var0) -> var0.type() == RealmsAvailability.Type.SUCCESS);
-   @Nullable
-   private DataFetcher.Subscription realmsDataSubscription;
-   @Nullable
-   private DataFetcherConfiguration currentConfiguration;
+   private DataFetcher.@Nullable Subscription realmsDataSubscription;
+   private @Nullable DataFetcherConfiguration currentConfiguration;
    private volatile int numberOfPendingInvites;
    private static boolean trialAvailable;
    private static boolean hasUnreadNews;
@@ -68,8 +66,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       this.minecraft.realmsDataFetcher().notificationsTask.reset();
    }
 
-   @Nullable
-   private DataFetcherConfiguration getConfiguration() {
+   private @Nullable DataFetcherConfiguration getConfiguration() {
       boolean var1 = this.inTitleScreen() && (Boolean)this.validClient.getNow(false);
       if (!var1) {
          return null;
@@ -122,23 +119,23 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       int var6 = var4 + 48 + 2;
       int var7 = var5 - 3;
       if (hasUnseenNotifications) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)UNSEEN_NOTIFICATION_SPRITE, var7 - 12, var6 + 3, 10, 10);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)UNSEEN_NOTIFICATION_SPRITE, var7 - 12, var6 + 3, 10, 10);
          var7 -= 16;
       }
 
       if (this.currentConfiguration != null && this.currentConfiguration.showOldNotifications()) {
          if (hasUnreadNews) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NEWS_SPRITE, var7 - 14, var6 + 1, 14, 14);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NEWS_SPRITE, var7 - 14, var6 + 1, 14, 14);
             var7 -= 16;
          }
 
          if (var2 != 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)INVITE_SPRITE, var7 - 14, var6 + 1, 14, 14);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)INVITE_SPRITE, var7 - 14, var6 + 1, 14, 14);
             var7 -= 16;
          }
 
          if (trialAvailable) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TRIAL_AVAILABLE_SPRITE, var7 - 10, var6 + 4, 8, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRIAL_AVAILABLE_SPRITE, var7 - 10, var6 + 4, 8, 8);
          }
       }
 

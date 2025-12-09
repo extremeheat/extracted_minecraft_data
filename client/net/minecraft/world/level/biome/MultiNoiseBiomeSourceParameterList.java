@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class MultiNoiseBiomeSourceParameterList {
    public static final Codec<MultiNoiseBiomeSourceParameterList> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(MultiNoiseBiomeSourceParameterList.Preset.CODEC.fieldOf("preset").forGetter((var0x) -> var0x.preset), RegistryOps.retrieveGetter(Registries.BIOME)).apply(var0, MultiNoiseBiomeSourceParameterList::new));
@@ -46,22 +46,22 @@ public class MultiNoiseBiomeSourceParameterList {
       CODEC = RegistryFileCodec.<Holder<MultiNoiseBiomeSourceParameterList>>create(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, DIRECT_CODEC);
    }
 
-   public static record Preset(ResourceLocation id, SourceProvider provider) {
+   public static record Preset(Identifier id, SourceProvider provider) {
       final SourceProvider provider;
-      public static final Preset NETHER = new Preset(ResourceLocation.withDefaultNamespace("nether"), new SourceProvider() {
+      public static final Preset NETHER = new Preset(Identifier.withDefaultNamespace("nether"), new SourceProvider() {
          public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
             return new Climate.ParameterList<T>(List.of(Pair.of(Climate.parameters(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.NETHER_WASTES)), Pair.of(Climate.parameters(0.0F, -0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.SOUL_SAND_VALLEY)), Pair.of(Climate.parameters(0.4F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.CRIMSON_FOREST)), Pair.of(Climate.parameters(0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.375F), var1.apply(Biomes.WARPED_FOREST)), Pair.of(Climate.parameters(-0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.175F), var1.apply(Biomes.BASALT_DELTAS))));
          }
       });
-      public static final Preset OVERWORLD = new Preset(ResourceLocation.withDefaultNamespace("overworld"), new SourceProvider() {
+      public static final Preset OVERWORLD = new Preset(Identifier.withDefaultNamespace("overworld"), new SourceProvider() {
          public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
             return MultiNoiseBiomeSourceParameterList.Preset.<T>generateOverworldBiomes(var1);
          }
       });
-      static final Map<ResourceLocation, Preset> BY_NAME;
+      static final Map<Identifier, Preset> BY_NAME;
       public static final Codec<Preset> CODEC;
 
-      public Preset(ResourceLocation var1, SourceProvider var2) {
+      public Preset(Identifier var1, SourceProvider var2) {
          super();
          this.id = var1;
          this.provider = var2;
@@ -79,7 +79,7 @@ public class MultiNoiseBiomeSourceParameterList {
 
       static {
          BY_NAME = (Map)Stream.of(NETHER, OVERWORLD).collect(Collectors.toMap(Preset::id, (var0) -> var0));
-         CODEC = ResourceLocation.CODEC.flatXmap((var0) -> (DataResult)Optional.ofNullable((Preset)BY_NAME.get(var0)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown preset: " + String.valueOf(var0))), (var0) -> DataResult.success(var0.id));
+         CODEC = Identifier.CODEC.flatXmap((var0) -> (DataResult)Optional.ofNullable((Preset)BY_NAME.get(var0)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown preset: " + String.valueOf(var0))), (var0) -> DataResult.success(var0.id));
       }
 
       @FunctionalInterface

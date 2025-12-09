@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster.hoglin;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,6 +18,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -48,6 +48,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Hoglin extends Animal implements Enemy, HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION;
@@ -170,8 +171,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       return !var1.getBlockState(var3.below()).is(Blocks.NETHER_WART_BLOCK);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var1.getRandom().nextFloat() < 0.2F) {
          this.setBaby(true);
       }
@@ -180,7 +180,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean removeWhenFarAway(double var1) {
-      return !this.isPersistenceRequired();
+      return true;
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -262,7 +262,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean isConverting() {
-      return !this.level().dimensionType().piglinSafe() && !this.isImmuneToZombification() && !this.isNoAi();
+      return !this.isImmuneToZombification() && !this.isNoAi() && (Boolean)this.level().environmentAttributes().getValue(EnvironmentAttributes.PIGLINS_ZOMBIFY, this.position());
    }
 
    private void setCannotBeHunted(boolean var1) {
@@ -273,8 +273,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       return this.isAdult() && !this.cannotBeHunted;
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Hoglin var3 = EntityType.HOGLIN.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          var3.setPersistenceRequired();
@@ -315,8 +314,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       this.playSound(SoundEvents.HOGLIN_STEP, 0.15F, 1.0F);
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 

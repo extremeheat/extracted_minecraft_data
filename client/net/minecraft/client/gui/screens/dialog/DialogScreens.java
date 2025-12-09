@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.dialog;
 import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.server.dialog.ConfirmationDialog;
 import net.minecraft.server.dialog.Dialog;
@@ -11,6 +10,7 @@ import net.minecraft.server.dialog.DialogListDialog;
 import net.minecraft.server.dialog.MultiActionDialog;
 import net.minecraft.server.dialog.NoticeDialog;
 import net.minecraft.server.dialog.ServerLinksDialog;
+import org.jspecify.annotations.Nullable;
 
 public class DialogScreens {
    private static final Map<MapCodec<? extends Dialog>, Factory<?>> FACTORIES = new HashMap();
@@ -23,8 +23,7 @@ public class DialogScreens {
       FACTORIES.put(var0, var1);
    }
 
-   @Nullable
-   public static <T extends Dialog> DialogScreen<T> createFromData(T var0, @Nullable Screen var1, DialogConnectionAccess var2) {
+   public static <T extends Dialog> @Nullable DialogScreen<T> createFromData(T var0, @Nullable Screen var1, DialogConnectionAccess var2) {
       Factory var3 = (Factory)FACTORIES.get(var0.codec());
       return var3 != null ? var3.create(var1, var0, var2) : null;
    }

@@ -5,7 +5,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public enum RealmsRegion {
@@ -42,8 +42,7 @@ public enum RealmsRegion {
       this.translationKey = var4;
    }
 
-   @Nullable
-   public static RealmsRegion findByNameId(String var0) {
+   public static @Nullable RealmsRegion findByNameId(String var0) {
       for(RealmsRegion var4 : values()) {
          if (var4.nameId.equals(var0)) {
             return var4;

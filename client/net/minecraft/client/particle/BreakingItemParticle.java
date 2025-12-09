@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
@@ -17,6 +18,7 @@ import net.minecraft.world.item.Items;
 public class BreakingItemParticle extends SingleQuadParticle {
    private final float uo;
    private final float vo;
+   private final SingleQuadParticle.Layer layer;
 
    BreakingItemParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
       this(var1, var2, var4, var6, var14);
@@ -28,16 +30,13 @@ public class BreakingItemParticle extends SingleQuadParticle {
       this.zd += var12;
    }
 
-   public SingleQuadParticle.Layer getLayer() {
-      return SingleQuadParticle.Layer.TERRAIN;
-   }
-
    protected BreakingItemParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
       super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var8);
       this.gravity = 1.0F;
       this.quadSize /= 2.0F;
       this.uo = this.random.nextFloat() * 3.0F;
       this.vo = this.random.nextFloat() * 3.0F;
+      this.layer = var8.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
    }
 
    protected float getU0() {
@@ -56,6 +55,10 @@ public class BreakingItemParticle extends SingleQuadParticle {
       return this.sprite.getV((this.vo + 1.0F) / 4.0F);
    }
 
+   public SingleQuadParticle.Layer getLayer() {
+      return this.layer;
+   }
+
    public abstract static class ItemParticleProvider<T extends ParticleOptions> implements ParticleProvider<T> {
       private final ItemStackRenderState scratchRenderState = new ItemStackRenderState();
 
@@ -66,7 +69,7 @@ public class BreakingItemParticle extends SingleQuadParticle {
       protected TextureAtlasSprite getSprite(ItemStack var1, ClientLevel var2, RandomSource var3) {
          Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, var2, (ItemOwner)null, 0);
          TextureAtlasSprite var4 = this.scratchRenderState.pickParticleIcon(var3);
-         return var4 != null ? var4 : Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).missingSprite();
+         return var4 != null ? var4 : Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.ITEMS).missingSprite();
       }
    }
 

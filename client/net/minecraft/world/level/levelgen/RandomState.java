@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
@@ -22,7 +22,7 @@ public final class RandomState {
    private final PositionalRandomFactory aquiferRandom;
    private final PositionalRandomFactory oreRandom;
    private final Map<ResourceKey<NormalNoise.NoiseParameters>, NormalNoise> noiseIntances;
-   private final Map<ResourceLocation, PositionalRandomFactory> positionalRandoms;
+   private final Map<Identifier, PositionalRandomFactory> positionalRandoms;
 
    public static RandomState create(HolderGetter.Provider var0, ResourceKey<NoiseGeneratorSettings> var1, long var2) {
       return create((NoiseGeneratorSettings)var0.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(var1).value(), var0.lookupOrThrow(Registries.NOISE), var2);
@@ -36,8 +36,8 @@ public final class RandomState {
       super();
       this.random = var1.getRandomSource().newInstance(var3).forkPositional();
       this.noises = var2;
-      this.aquiferRandom = this.random.fromHashOf(ResourceLocation.withDefaultNamespace("aquifer")).forkPositional();
-      this.oreRandom = this.random.fromHashOf(ResourceLocation.withDefaultNamespace("ore")).forkPositional();
+      this.aquiferRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("aquifer")).forkPositional();
+      this.oreRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("ore")).forkPositional();
       this.noiseIntances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
       this.surfaceSystem = new SurfaceSystem(this, var1.defaultBlock(), var1.seaLevel(), this.random);
@@ -68,7 +68,7 @@ public final class RandomState {
                }
 
                if (var2.is(Noises.SHIFT)) {
-                  NormalNoise var4 = NormalNoise.create(RandomState.this.random.fromHashOf(Noises.SHIFT.location()), new NormalNoise.NoiseParameters(0, 0.0, new double[0]));
+                  NormalNoise var4 = NormalNoise.create(RandomState.this.random.fromHashOf(Noises.SHIFT.identifier()), new NormalNoise.NoiseParameters(0, 0.0, new double[0]));
                   return new DensityFunction.NoiseHolder(var2, var4);
                }
             }
@@ -79,7 +79,7 @@ public final class RandomState {
 
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof BlendedNoise var2) {
-               RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(ResourceLocation.withDefaultNamespace("terrain"));
+               RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(Identifier.withDefaultNamespace("terrain"));
                return var2.withNewRandom(var3x);
             } else {
                return (DensityFunction)(var1 instanceof DensityFunctions.EndIslandDensityFunction ? new DensityFunctions.EndIslandDensityFunction(var3) : var1);
@@ -116,7 +116,7 @@ public final class RandomState {
       return (NormalNoise)this.noiseIntances.computeIfAbsent(var1, (var2) -> Noises.instantiate(this.noises, this.random, var1));
    }
 
-   public PositionalRandomFactory getOrCreateRandomFactory(ResourceLocation var1) {
+   public PositionalRandomFactory getOrCreateRandomFactory(Identifier var1) {
       return (PositionalRandomFactory)this.positionalRandoms.computeIfAbsent(var1, (var2) -> this.random.fromHashOf(var1).forkPositional());
    }
 

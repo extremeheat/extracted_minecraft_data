@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerSkin;
 
 public class PlayerFaceRenderer {
@@ -29,7 +29,7 @@ public class PlayerFaceRenderer {
       draw(var0, var1.body().texturePath(), var2, var3, var4, true, false, var5);
    }
 
-   public static void draw(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5, boolean var6, int var7) {
+   public static void draw(GuiGraphics var0, Identifier var1, int var2, int var3, int var4, boolean var5, boolean var6, int var7) {
       int var8 = 8 + (var6 ? 8 : 0);
       int var9 = 8 * (var6 ? -1 : 1);
       var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, 8.0F, (float)var8, var4, var4, 8, var9, 64, 64, var7);
@@ -39,7 +39,7 @@ public class PlayerFaceRenderer {
 
    }
 
-   private static void drawHat(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5, int var6) {
+   private static void drawHat(GuiGraphics var0, Identifier var1, int var2, int var3, int var4, boolean var5, int var6) {
       int var7 = 8 + (var5 ? 8 : 0);
       int var8 = 8 * (var5 ? -1 : 1);
       var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, 40.0F, (float)var7, var4, var4, 8, var8, 64, 64, var6);

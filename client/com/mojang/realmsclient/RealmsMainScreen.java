@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -35,10 +36,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -79,26 +78,28 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameType;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsMainScreen extends RealmsScreen {
-   static final ResourceLocation INFO_SPRITE = ResourceLocation.withDefaultNamespace("icon/info");
-   static final ResourceLocation NEW_REALM_SPRITE = ResourceLocation.withDefaultNamespace("icon/new_realm");
-   static final ResourceLocation EXPIRED_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/expired");
-   static final ResourceLocation EXPIRES_SOON_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/expires_soon");
-   static final ResourceLocation OPEN_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/open");
-   static final ResourceLocation CLOSED_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/closed");
-   private static final ResourceLocation INVITE_SPRITE = ResourceLocation.withDefaultNamespace("icon/invite");
-   private static final ResourceLocation NEWS_SPRITE = ResourceLocation.withDefaultNamespace("icon/news");
-   public static final ResourceLocation HARDCORE_MODE_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full");
+   static final Identifier INFO_SPRITE = Identifier.withDefaultNamespace("icon/info");
+   static final Identifier NEW_REALM_SPRITE = Identifier.withDefaultNamespace("icon/new_realm");
+   static final Identifier EXPIRED_SPRITE = Identifier.withDefaultNamespace("realm_status/expired");
+   static final Identifier EXPIRES_SOON_SPRITE = Identifier.withDefaultNamespace("realm_status/expires_soon");
+   static final Identifier OPEN_SPRITE = Identifier.withDefaultNamespace("realm_status/open");
+   static final Identifier CLOSED_SPRITE = Identifier.withDefaultNamespace("realm_status/closed");
+   private static final Identifier INVITE_SPRITE = Identifier.withDefaultNamespace("icon/invite");
+   private static final Identifier NEWS_SPRITE = Identifier.withDefaultNamespace("icon/news");
+   public static final Identifier HARDCORE_MODE_SPRITE = Identifier.withDefaultNamespace("hud/heart/hardcore_full");
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation NO_REALMS_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/no_realms.png");
+   private static final Identifier NO_REALMS_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/no_realms.png");
    private static final Component TITLE = Component.translatable("menu.online");
    private static final Component LOADING_TEXT = Component.translatable("mco.selectServer.loading");
    static final Component SERVER_UNITIALIZED_TEXT = Component.translatable("mco.selectServer.uninitialized");
@@ -131,7 +132,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final boolean SNAPSHOT;
    private static boolean snapshotToggle;
    private final CompletableFuture<RealmsAvailability.Result> availability = RealmsAvailability.get();
-   @Nullable
    private DataFetcher.Subscription dataSubscription;
    private final Set<UUID> handledSeenNotifications = new HashSet();
    private static boolean regionsPinged;
@@ -145,17 +145,15 @@ public class RealmsMainScreen extends RealmsScreen {
    RealmSelectionList realmSelectionList;
    RealmsServerList serverList;
    List<RealmsServer> availableSnapshotServers = List.of();
-   RealmsServerPlayerLists onlinePlayersPerRealm = new RealmsServerPlayerLists();
+   RealmsServerPlayerLists onlinePlayersPerRealm = new RealmsServerPlayerLists(Map.of());
    private volatile boolean trialsAvailable;
-   @Nullable
-   private volatile String newsLink;
+   private volatile @Nullable String newsLink;
    final List<RealmsNotification> notifications = new ArrayList();
    private Button addRealmButton;
    private NotificationButton pendingInvitesButton;
    private NotificationButton newsButton;
    private LayoutState activeLayoutState;
-   @Nullable
-   private HeaderAndFooterLayout layout;
+   private @Nullable HeaderAndFooterLayout layout;
 
    public RealmsMainScreen(Screen var1) {
       super(TITLE);
@@ -189,7 +187,7 @@ public class RealmsMainScreen extends RealmsScreen {
       this.addRealmButton = Button.builder(Component.translatable("mco.selectServer.purchase"), (var1x) -> this.openTrialAvailablePopup()).size(100, 20).build();
       this.backButton = Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(100).build();
       if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
-         this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release")).create(5, 5, 100, 20, Component.literal("Realm"), (var1x, var2x) -> {
+         this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(5, 5, 100, 20, Component.literal("Realm"), (var1x, var2x) -> {
             snapshotToggle = var2x;
             this.availableSnapshotServers = List.of();
             this.debugRefreshDataFetchers();
@@ -299,8 +297,7 @@ public class RealmsMainScreen extends RealmsScreen {
       LinearLayout var1 = LinearLayout.vertical().spacing(8);
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(ImageWidget.texture(130, 64, NO_REALMS_LOCATION, 130, 64));
-      FocusableTextWidget var2 = new FocusableTextWidget(308, NO_REALMS_TEXT, this.font, false, FocusableTextWidget.BackgroundFill.NEVER, 4);
-      var1.addChild(var2);
+      var1.addChild(FocusableTextWidget.builder(NO_REALMS_TEXT, this.font).maxWidth(308).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build());
       return var1;
    }
 
@@ -453,9 +450,7 @@ public class RealmsMainScreen extends RealmsScreen {
       (new Thread(() -> {
          List var1 = Ping.pingAllRegions();
          RealmsClient var2 = RealmsClient.getOrCreate();
-         PingResult var3 = new PingResult();
-         var3.pingResults = var1;
-         var3.realmIds = this.getOwnedNonExpiredRealmIds();
+         PingResult var3 = new PingResult(var1, this.getOwnedNonExpiredRealmIds());
 
          try {
             var2.sendPingResults(var3);
@@ -508,8 +503,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
    }
 
-   @Nullable
-   private RealmsServer getSelectedServer() {
+   private @Nullable RealmsServer getSelectedServer() {
       AbstractSelectionList.Entry var2 = this.realmSelectionList.getSelected();
       if (var2 instanceof ServerEntry var1) {
          return var1.getServer();
@@ -667,7 +661,7 @@ public class RealmsMainScreen extends RealmsScreen {
          super(Minecraft.getInstance(), RealmsMainScreen.this.width, RealmsMainScreen.this.height, 0, 36);
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          RealmsMainScreen.this.updateButtonStates();
       }
@@ -691,9 +685,9 @@ public class RealmsMainScreen extends RealmsScreen {
          this.refreshServerEntries(var2);
       }
 
-      private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2, @Nullable Entry var3) {
+      private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2, Entry var3) {
          Component var4 = var1.getMessage();
-         int var5 = RealmsMainScreen.this.font.wordWrapHeight((FormattedText)var4, RealmsMainScreen.NotificationMessageEntry.textWidth(this.getRowWidth()));
+         int var5 = RealmsMainScreen.this.font.wordWrapHeight(var4, RealmsMainScreen.NotificationMessageEntry.textWidth(this.getRowWidth()));
          NotificationMessageEntry var6 = RealmsMainScreen.this.new NotificationMessageEntry(var2, var5, var4, var1);
          this.addEntry(var6, 38 + var5);
          if (var3 instanceof NotificationMessageEntry var7) {
@@ -704,7 +698,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      private void refreshServerEntries(@Nullable Entry var1) {
+      private void refreshServerEntries(Entry var1) {
          for(RealmsServer var3 : RealmsMainScreen.this.availableSnapshotServers) {
             this.addEntry(RealmsMainScreen.this.new AvailableSnapshotEntry(var3));
          }
@@ -763,8 +757,8 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var2, var3, 10, 28);
+      private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, Identifier var6, Supplier<Component> var7) {
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var6, var2, var3, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)var4, (double)var5) && var4 >= var2 && var4 <= var2 + 10 && var5 >= var3 && var5 <= var3 + 28) {
             var1.setTooltipForNextFrame((Component)var7.get(), var4, var5);
          }
@@ -845,7 +839,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
          if (var6) {
             var8 -= 10;
-            var2.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
+            var2.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
          }
 
          return var8;
@@ -879,8 +873,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public static final int HEIGHT_WITHOUT_TEXT = 38;
       private final Component text;
       private final List<AbstractWidget> children = new ArrayList();
-      @Nullable
-      private final CrossButton dismissButton;
+      private final @Nullable CrossButton dismissButton;
       private final MultiLineTextWidget textWidget;
       private final GridLayout gridLayout;
       private final FrameLayout textFrame;
@@ -903,6 +896,7 @@ public class RealmsMainScreen extends RealmsScreen {
          }
 
          this.button = (Button)this.gridLayout.addChild(var5.buildOpenLinkButton(var2), 1, 1, this.gridLayout.newCellSettings().alignHorizontallyCenter().padding(4));
+         this.button.setOverrideRenderHighlightedSprite(() -> this.isFocused());
          GridLayout var10000 = this.gridLayout;
          List var10001 = this.children;
          Objects.requireNonNull(var10001);
@@ -910,15 +904,15 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public boolean keyPressed(KeyEvent var1) {
-         if (this.dismissButton != null && this.dismissButton.keyPressed(var1)) {
+         if (this.button.keyPressed(var1)) {
             return true;
          } else {
-            return this.button.keyPressed(var1) ? true : super.keyPressed(var1);
+            return this.dismissButton != null && this.dismissButton.keyPressed(var1) ? true : super.keyPressed(var1);
          }
       }
 
       private void updateEntryWidth() {
-         int var1 = this.getContentWidth();
+         int var1 = this.getWidth();
          if (this.lastEntryWidth != var1) {
             this.refreshLayout(var1);
             this.lastEntryWidth = var1;
@@ -973,7 +967,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
          int var10000 = this.getContentYMiddle();
          Objects.requireNonNull(RealmsMainScreen.this.font);
          int var6 = var10000 - 9 / 2;
@@ -1055,7 +1049,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(RealmsMainScreen.this.font);
             int var7 = var10000 - 9 / 2;
@@ -1157,13 +1151,13 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    static class NotificationButton extends SpriteIconButton.CenteredIcon {
-      private static final ResourceLocation[] NOTIFICATION_ICONS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("notification/1"), ResourceLocation.withDefaultNamespace("notification/2"), ResourceLocation.withDefaultNamespace("notification/3"), ResourceLocation.withDefaultNamespace("notification/4"), ResourceLocation.withDefaultNamespace("notification/5"), ResourceLocation.withDefaultNamespace("notification/more")};
+      private static final Identifier[] NOTIFICATION_ICONS = new Identifier[]{Identifier.withDefaultNamespace("notification/1"), Identifier.withDefaultNamespace("notification/2"), Identifier.withDefaultNamespace("notification/3"), Identifier.withDefaultNamespace("notification/4"), Identifier.withDefaultNamespace("notification/5"), Identifier.withDefaultNamespace("notification/more")};
       private static final int UNKNOWN_COUNT = 2147483647;
       private static final int SIZE = 20;
       private static final int SPRITE_SIZE = 14;
       private int notificationCount;
 
-      public NotificationButton(Component var1, ResourceLocation var2, Button.OnPress var3, @Nullable Component var4) {
+      public NotificationButton(Component var1, Identifier var2, Button.OnPress var3, @Nullable Component var4) {
          super(20, 20, var1, 14, 14, new WidgetSprites(var2), var3, var4, (Button.CreateNarration)null);
       }
 
@@ -1175,8 +1169,8 @@ public class RealmsMainScreen extends RealmsScreen {
          this.notificationCount = var1;
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+         super.renderContents(var1, var2, var3, var4);
          if (this.active && this.notificationCount != 0) {
             this.drawNotificationCounter(var1);
          }
@@ -1184,12 +1178,12 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void drawNotificationCounter(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
       }
    }
 
    static class CrossButton extends ImageButton {
-      private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/cross_button"), ResourceLocation.withDefaultNamespace("widget/cross_button_highlighted"));
+      private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/cross_button"), Identifier.withDefaultNamespace("widget/cross_button_highlighted"));
 
       protected CrossButton(Button.OnPress var1, Component var2) {
          super(0, 0, 14, 14, SPRITES, var1);

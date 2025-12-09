@@ -9,11 +9,11 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class FontTexture extends AbstractTexture implements Dumpable {
    private static final int SIZE = 256;
@@ -27,13 +27,12 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       this.root = new Node(0, 0, 256, 256);
       GpuDevice var4 = RenderSystem.getDevice();
       this.texture = var4.createTexture(var1, 7, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1, 1);
-      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = var4.createTextureView(this.texture);
       this.renderTypes = var2;
    }
 
-   @Nullable
-   public BakedSheetGlyph add(GlyphInfo var1, GlyphBitmap var2) {
+   public @Nullable BakedSheetGlyph add(GlyphInfo var1, GlyphBitmap var2) {
       if (var2.isColored() != this.colored) {
          return null;
       } else {
@@ -50,7 +49,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       }
    }
 
-   public void dumpContents(ResourceLocation var1, Path var2) {
+   public void dumpContents(Identifier var1, Path var2) {
       if (this.texture != null) {
          String var3 = var1.toDebugFileName();
          TextureUtil.writeAsPNG(var2, var3, this.texture, 0, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
@@ -62,10 +61,8 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       final int y;
       private final int width;
       private final int height;
-      @Nullable
-      private Node left;
-      @Nullable
-      private Node right;
+      private @Nullable Node left;
+      private @Nullable Node right;
       private boolean occupied;
 
       Node(int var1, int var2, int var3, int var4) {
@@ -76,8 +73,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
          this.height = var4;
       }
 
-      @Nullable
-      Node insert(GlyphBitmap var1) {
+      @Nullable Node insert(GlyphBitmap var1) {
          if (this.left != null && this.right != null) {
             Node var6 = this.left.insert(var1);
             if (var6 == null) {

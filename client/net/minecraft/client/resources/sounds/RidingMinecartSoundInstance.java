@@ -1,54 +1,32 @@
 package net.minecraft.client.resources.sounds;
 
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 
-public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
-   private static final float VOLUME_MIN = 0.0F;
-   private static final float VOLUME_MAX = 0.75F;
+public class RidingMinecartSoundInstance extends RidingEntitySoundInstance {
    private final Player player;
    private final AbstractMinecart minecart;
    private final boolean underwaterSound;
 
-   public RidingMinecartSoundInstance(Player var1, AbstractMinecart var2, boolean var3) {
-      super(var3 ? SoundEvents.MINECART_INSIDE_UNDERWATER : SoundEvents.MINECART_INSIDE, SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
+   public RidingMinecartSoundInstance(Player var1, AbstractMinecart var2, boolean var3, SoundEvent var4, float var5, float var6, float var7) {
+      super(var1, var2, var3, var4, SoundSource.NEUTRAL, var5, var6, var7);
       this.player = var1;
       this.minecart = var2;
       this.underwaterSound = var3;
-      this.attenuation = SoundInstance.Attenuation.NONE;
-      this.looping = true;
-      this.delay = 0;
-      this.volume = 0.0F;
    }
 
-   public boolean canPlaySound() {
-      return !this.minecart.isSilent();
+   protected boolean shouldNotPlayUnderwaterSound() {
+      return this.underwaterSound != this.player.isUnderWater();
    }
 
-   public boolean canStartSilent() {
-      return true;
+   protected float getEntitySpeed() {
+      return (float)this.minecart.getDeltaMovement().horizontalDistance();
    }
 
-   public void tick() {
-      if (!this.minecart.isRemoved() && this.player.isPassenger() && this.player.getVehicle() == this.minecart) {
-         if (this.underwaterSound != this.player.isUnderWater()) {
-            this.volume = 0.0F;
-         } else {
-            float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
-            boolean var2 = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
-            if (var1 >= 0.01F && !var2) {
-               this.volume = Mth.clampedLerp(0.0F, 0.75F, var1);
-            } else {
-               this.volume = 0.0F;
-            }
-
-         }
-      } else {
-         this.stop();
-      }
+   protected boolean shoudlPlaySound() {
+      return this.minecart.isOnRails() || !(this.minecart.getBehavior() instanceof NewMinecartBehavior);
    }
 }

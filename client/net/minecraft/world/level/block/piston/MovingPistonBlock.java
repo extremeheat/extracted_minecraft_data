@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.piston;
 import com.mojang.serialization.MapCodec;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
@@ -34,6 +33,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class MovingPistonBlock extends BaseEntityBlock {
    public static final MapCodec<MovingPistonBlock> CODEC = simpleCodec(MovingPistonBlock::new);
@@ -49,8 +49,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, PistonType.DEFAULT));
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return null;
    }
 
@@ -58,8 +57,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
       return new PistonMovingBlockEntity(var0, var1, var2, var3, var4, var5);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(var3, BlockEntityType.PISTON, PistonMovingBlockEntity::tick);
    }
 
@@ -95,8 +93,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
       return var5 != null ? var5.getCollisionShape(var2, var3) : Shapes.empty();
    }
 
-   @Nullable
-   private PistonMovingBlockEntity getBlockEntity(BlockGetter var1, BlockPos var2) {
+   private @Nullable PistonMovingBlockEntity getBlockEntity(BlockGetter var1, BlockPos var2) {
       BlockEntity var3 = var1.getBlockEntity(var2);
       return var3 instanceof PistonMovingBlockEntity ? (PistonMovingBlockEntity)var3 : null;
    }

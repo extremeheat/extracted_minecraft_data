@@ -17,12 +17,11 @@ import java.util.Spliterators;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataComponentGetter {
    DataComponentMap EMPTY = new DataComponentMap() {
-      @Nullable
-      public <T> T get(DataComponentType<? extends T> var1) {
+      public <T> @Nullable T get(DataComponentType<? extends T> var1) {
          return null;
       }
 
@@ -61,8 +60,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
 
    static DataComponentMap composite(final DataComponentMap var0, final DataComponentMap var1) {
       return new DataComponentMap() {
-         @Nullable
-         public <T> T get(DataComponentType<? extends T> var1x) {
+         public <T> @Nullable T get(DataComponentType<? extends T> var1x) {
             Object var2 = var1.get(var1x);
             return (T)(var2 != null ? var2 : var0.get(var1x));
          }
@@ -101,8 +99,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
 
    default DataComponentMap filter(final Predicate<DataComponentType<?>> var1) {
       return new DataComponentMap() {
-         @Nullable
-         public <T> T get(DataComponentType<? extends T> var1x) {
+         public <T> @Nullable T get(DataComponentType<? extends T> var1x) {
             return (T)(var1.test(var1x) ? DataComponentMap.this.get(var1x) : null);
          }
 
@@ -162,8 +159,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataC
             this.map = var1;
          }
 
-         @Nullable
-         public <T> T get(DataComponentType<? extends T> var1) {
+         public <T> @Nullable T get(DataComponentType<? extends T> var1) {
             return (T)this.map.get(var1);
          }
 

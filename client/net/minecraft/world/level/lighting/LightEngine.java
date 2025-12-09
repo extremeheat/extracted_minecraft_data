@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.Arrays;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.chunk.LightChunk;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends LayerLightSectionStorage<M>> implements LayerLightEventListener {
    public static final int MAX_LEVEL = 15;
@@ -84,8 +84,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       return Shapes.faceShapeOccludes(var4, var5);
    }
 
-   @Nullable
-   protected LightChunk getChunk(int var1, int var2) {
+   protected @Nullable LightChunk getChunk(int var1, int var2) {
       long var3 = ChunkPos.asLong(var1, var2);
 
       for(int var5 = 0; var5 < 2; ++var5) {
@@ -194,8 +193,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       return this.storage.hasInconsistencies() || !this.blockNodesToCheck.isEmpty() || !this.decreaseQueue.isEmpty() || !this.increaseQueue.isEmpty();
    }
 
-   @Nullable
-   public DataLayer getDataLayerData(SectionPos var1) {
+   public @Nullable DataLayer getDataLayerData(SectionPos var1) {
       return this.storage.getDataLayerData(var1.asLong());
    }
 

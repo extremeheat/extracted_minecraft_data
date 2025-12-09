@@ -3,15 +3,15 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 
@@ -27,7 +27,7 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var1.yRot));
       float var5 = var1.hurtTime;
       if (var5 > 0.0F) {
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var5) * var5 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)var5) * var5 * var1.damageTime / 10.0F * (float)var1.hurtDir));
       }
 
       if (!var1.isUnderWater && !Mth.equal(var1.bubbleAngle, 0.0F)) {

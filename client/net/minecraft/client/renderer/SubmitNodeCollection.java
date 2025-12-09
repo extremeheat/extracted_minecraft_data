@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
@@ -12,12 +11,12 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelPartFeatureRenderer;
 import net.minecraft.client.renderer.feature.NameTagFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -27,13 +26,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.ShadowSubmit> shadowSubmits = new ArrayList();
    private final List<SubmitNodeStorage.FlameSubmit> flameSubmits = new ArrayList();
    private final NameTagFeatureRenderer.Storage nameTagSubmits = new NameTagFeatureRenderer.Storage();
    private final List<SubmitNodeStorage.TextSubmit> textSubmits = new ArrayList();
-   private final List<SubmitNodeStorage.HitboxSubmit> hitboxSubmits = new ArrayList();
    private final List<SubmitNodeStorage.LeashSubmit> leashSubmits = new ArrayList();
    private final List<SubmitNodeStorage.BlockSubmit> blockSubmits = new ArrayList();
    private final List<SubmitNodeStorage.MovingBlockSubmit> movingBlockSubmits = new ArrayList();
@@ -49,11 +48,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public SubmitNodeCollection(SubmitNodeStorage var1) {
       super();
       this.submitNodeStorage = var1;
-   }
-
-   public void submitHitbox(PoseStack var1, EntityRenderState var2, HitboxesRenderState var3) {
-      this.wasUsed = true;
-      this.hitboxSubmits.add(new SubmitNodeStorage.HitboxSubmit(new Matrix4f(var1.last().pose()), var2, var3));
    }
 
    public void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3) {
@@ -82,13 +76,13 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.leashSubmits.add(new SubmitNodeStorage.LeashSubmit(new Matrix4f(var1.last().pose()), var2));
    }
 
-   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
+   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10) {
       this.wasUsed = true;
       SubmitNodeStorage.ModelSubmit var11 = new SubmitNodeStorage.ModelSubmit(var3.last().copy(), var1, var2, var5, var6, var7, var8, var9, var10);
       this.modelSubmits.add(var4, var11);
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10, int var11) {
+   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10, int var11) {
       this.wasUsed = true;
       this.modelPartSubmits.add(var3, new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10, var11));
    }
@@ -96,7 +90,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {
       this.wasUsed = true;
       this.blockSubmits.add(new SubmitNodeStorage.BlockSubmit(var1.last().copy(), var2, var3, var4, var5));
-      ((SpecialBlockModelRenderer)Minecraft.getInstance().getModelManager().specialBlockModelRenderer().get()).renderByBlock(var2.getBlock(), ItemDisplayContext.NONE, var1, this.submitNodeStorage, var3, var4, var5);
+      Minecraft.getInstance().getModelManager().specialBlockModelRenderer().renderByBlock(var2.getBlock(), ItemDisplayContext.NONE, var1, this.submitNodeStorage, var3, var4, var5);
    }
 
    public void submitMovingBlock(PoseStack var1, MovingBlockRenderState var2) {
@@ -138,10 +132,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    public List<SubmitNodeStorage.TextSubmit> getTextSubmits() {
       return this.textSubmits;
-   }
-
-   public List<SubmitNodeStorage.HitboxSubmit> getHitboxSubmits() {
-      return this.hitboxSubmits;
    }
 
    public List<SubmitNodeStorage.LeashSubmit> getLeashSubmits() {
@@ -189,7 +179,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.flameSubmits.clear();
       this.nameTagSubmits.clear();
       this.textSubmits.clear();
-      this.hitboxSubmits.clear();
       this.leashSubmits.clear();
       this.blockSubmits.clear();
       this.movingBlockSubmits.clear();

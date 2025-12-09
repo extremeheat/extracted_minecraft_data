@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -34,6 +33,7 @@ import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class AbstractContainerMenu {
@@ -56,15 +56,13 @@ public abstract class AbstractContainerMenu {
    private final IntList remoteDataSlots;
    private RemoteSlot remoteCarried;
    private int stateId;
-   @Nullable
-   private final MenuType<?> menuType;
+   private final @Nullable MenuType<?> menuType;
    public final int containerId;
    private int quickcraftType;
    private int quickcraftStatus;
    private final Set<Slot> quickcraftSlots;
    private final List<ContainerListener> containerListeners;
-   @Nullable
-   private ContainerSynchronizer synchronizer;
+   private @Nullable ContainerSynchronizer synchronizer;
    private boolean suppressRemoteUpdates;
 
    protected AbstractContainerMenu(@Nullable MenuType<?> var1, int var2) {
@@ -104,7 +102,7 @@ public abstract class AbstractContainerMenu {
    }
 
    protected static boolean stillValid(ContainerLevelAccess var0, Player var1, Block var2) {
-      return (Boolean)var0.evaluate((var2x, var3) -> !var2x.getBlockState(var3).is(var2) ? false : var1.canInteractWithBlock(var3, 4.0), true);
+      return (Boolean)var0.evaluate((var2x, var3) -> !var2x.getBlockState(var3).is(var2) ? false : var1.isWithinBlockInteractionRange(var3, 4.0), true);
    }
 
    public MenuType<?> getType() {

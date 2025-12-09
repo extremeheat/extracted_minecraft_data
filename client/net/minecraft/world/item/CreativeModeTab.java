@@ -3,27 +3,26 @@ package net.minecraft.world.item;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public class CreativeModeTab {
-   static final ResourceLocation DEFAULT_BACKGROUND = createTextureLocation("items");
+   static final Identifier DEFAULT_BACKGROUND = createTextureLocation("items");
    private final Component displayName;
-   ResourceLocation backgroundTexture;
+   Identifier backgroundTexture;
    boolean canScroll;
    boolean showTitle;
    boolean alignedRight;
    private final Row row;
    private final int column;
    private final Type type;
-   @Nullable
-   private ItemStack iconItemStack;
+   private @Nullable ItemStack iconItemStack;
    private Collection<ItemStack> displayItems;
    private Set<ItemStack> displayItemsSearchTab;
    private final Supplier<ItemStack> iconGenerator;
@@ -45,8 +44,8 @@ public class CreativeModeTab {
       this.type = var3;
    }
 
-   public static ResourceLocation createTextureLocation(String var0) {
-      return ResourceLocation.withDefaultNamespace("textures/gui/container/creative_inventory/tab_" + var0 + ".png");
+   public static Identifier createTextureLocation(String var0) {
+      return Identifier.withDefaultNamespace("textures/gui/container/creative_inventory/tab_" + var0 + ".png");
    }
 
    public static Builder builder(Row var0, int var1) {
@@ -65,7 +64,7 @@ public class CreativeModeTab {
       return this.iconItemStack;
    }
 
-   public ResourceLocation getBackgroundTexture() {
+   public Identifier getBackgroundTexture() {
       return this.backgroundTexture;
    }
 
@@ -176,7 +175,7 @@ public class CreativeModeTab {
       private boolean showTitle;
       private boolean alignedRight;
       private Type type;
-      private ResourceLocation backgroundTexture;
+      private Identifier backgroundTexture;
 
       public Builder(Row var1, int var2) {
          super();
@@ -225,7 +224,7 @@ public class CreativeModeTab {
          return this;
       }
 
-      public Builder backgroundTexture(ResourceLocation var1) {
+      public Builder backgroundTexture(Identifier var1) {
          this.backgroundTexture = var1;
          return this;
       }

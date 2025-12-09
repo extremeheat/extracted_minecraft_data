@@ -2,7 +2,7 @@ package net.minecraft.client.resources.sounds;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -25,8 +25,8 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       return new SimpleSoundInstance(var0.location(), SoundSource.UI, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
-   public static SimpleSoundInstance forMusic(SoundEvent var0, float var1) {
-      return new SimpleSoundInstance(var0.location(), SoundSource.MUSIC, var1, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+   public static SimpleSoundInstance forMusic(SoundEvent var0) {
+      return new SimpleSoundInstance(var0.location(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forJukeboxSong(SoundEvent var0, Vec3 var1) {
@@ -53,7 +53,7 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       this(var1.location(), var2, var3, var4, var5, var6, var7, var8, var9, var11, var13, false);
    }
 
-   public SimpleSoundInstance(ResourceLocation var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13, boolean var15) {
+   public SimpleSoundInstance(Identifier var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13, boolean var15) {
       super(var1, var2, var5);
       this.volume = var3;
       this.pitch = var4;

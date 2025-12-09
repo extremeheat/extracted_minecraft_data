@@ -3,8 +3,8 @@ package net.minecraft.data;
 import java.nio.file.Path;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class PackOutput {
    private final Path outputFolder;
@@ -61,18 +61,18 @@ public class PackOutput {
          this.kind = var3;
       }
 
-      public Path file(ResourceLocation var1, String var2) {
+      public Path file(Identifier var1, String var2) {
          Path var10000 = this.root.resolve(var1.getNamespace()).resolve(this.kind);
          String var10001 = var1.getPath();
          return var10000.resolve(var10001 + "." + var2);
       }
 
-      public Path json(ResourceLocation var1) {
+      public Path json(Identifier var1) {
          return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + ".json");
       }
 
       public Path json(ResourceKey<?> var1) {
-         return this.root.resolve(var1.location().getNamespace()).resolve(this.kind).resolve(var1.location().getPath() + ".json");
+         return this.root.resolve(var1.identifier().getNamespace()).resolve(this.kind).resolve(var1.identifier().getPath() + ".json");
       }
    }
 }

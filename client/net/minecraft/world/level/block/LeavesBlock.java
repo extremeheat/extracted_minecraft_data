@@ -34,6 +34,7 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
    public static final BooleanProperty WATERLOGGED;
    protected final float leafParticleChance;
    private static final int TICK_DELAY = 1;
+   private static boolean cutoutLeaves;
 
    public abstract MapCodec<? extends LeavesBlock> codec();
 
@@ -41,6 +42,14 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
       super(var2);
       this.leafParticleChance = var1;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(PERSISTENT, false)).setValue(WATERLOGGED, false));
+   }
+
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+      return !cutoutLeaves && var2.getBlock() instanceof LeavesBlock ? true : super.skipRendering(var1, var2, var3);
+   }
+
+   public static void setCutoutLeaves(boolean var0) {
+      cutoutLeaves = var0;
    }
 
    protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -157,5 +166,6 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
       DISTANCE = BlockStateProperties.DISTANCE;
       PERSISTENT = BlockStateProperties.PERSISTENT;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
+      cutoutLeaves = true;
    }
 }

@@ -38,9 +38,11 @@ public final class TypedEntityData<IdType> implements TooltipProvider {
    public static <T> Codec<TypedEntityData<T>> codec(final Codec<T> var0) {
       return new Codec<TypedEntityData<T>>() {
          public <V> DataResult<Pair<TypedEntityData<T>, V>> decode(DynamicOps<V> var1, V var2) {
-            DataResult var3 = var1.get(var2, "id").flatMap((var2x) -> var0.parse(var1, var2x).mapError((var0x) -> "Failed to parse 'id': " + var0x));
-            DataResult var4 = CustomData.COMPOUND_TAG_CODEC.decode(var1, var1.remove(var2, "id"));
-            return var3.apply2stable((var0x, var1x) -> new Pair(new TypedEntityData(var0x, (CompoundTag)var1x.getFirst()), var1x.getSecond()), var4);
+            return CustomData.COMPOUND_TAG_CODEC.decode(var1, var2).flatMap((var3) -> {
+               CompoundTag var4 = ((CompoundTag)var3.getFirst()).copy();
+               Tag var5 = var4.remove("id");
+               return var5 == null ? DataResult.error(() -> "Expected 'id' field in " + String.valueOf(var2)) : var0.parse(asNbtOps(var1), var5).map((var2x) -> Pair.of(new TypedEntityData(var2x, var4), var3.getSecond()));
+            });
          }
 
          public <V> DataResult<V> encode(TypedEntityData<T> var1, DynamicOps<V> var2, V var3) {

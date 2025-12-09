@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class JsonEventLog<T> implements Closeable {
    private static final Gson GSON = new Gson();
@@ -50,8 +50,7 @@ public class JsonEventLog<T> implements Closeable {
          return new JsonEventLogReader<T>() {
             private volatile long position;
 
-            @Nullable
-            public T next() throws IOException {
+            public @Nullable T next() throws IOException {
                Object var1x;
                try {
                   JsonEventLog.this.channel.position(this.position);

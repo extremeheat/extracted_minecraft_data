@@ -2,21 +2,20 @@ package net.minecraft.world.level.chunk;
 
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.IdMap;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.VarInt;
 import org.apache.commons.lang3.Validate;
+import org.jspecify.annotations.Nullable;
 
 public class SingleValuePalette<T> implements Palette<T> {
-   @Nullable
-   private T value;
+   private @Nullable T value;
 
    public SingleValuePalette(List<T> var1) {
       super();
-      if (var1.size() > 0) {
+      if (!var1.isEmpty()) {
          Validate.isTrue(var1.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)var1.size());
-         this.value = (T)var1.get(0);
+         this.value = (T)var1.getFirst();
       }
 
    }

@@ -4,8 +4,8 @@ import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.variant.BiomeCheck;
@@ -30,7 +30,7 @@ public class WolfVariants {
    }
 
    private static ResourceKey<WolfVariant> createKey(String var0) {
-      return ResourceKey.create(Registries.WOLF_VARIANT, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.WOLF_VARIANT, Identifier.withDefaultNamespace(var0));
    }
 
    private static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, ResourceKey<Biome> var3) {
@@ -46,9 +46,9 @@ public class WolfVariants {
    }
 
    private static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, SpawnPrioritySelectors var3) {
-      ResourceLocation var4 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2);
-      ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_tame");
-      ResourceLocation var6 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_angry");
+      Identifier var4 = Identifier.withDefaultNamespace("entity/wolf/" + var2);
+      Identifier var5 = Identifier.withDefaultNamespace("entity/wolf/" + var2 + "_tame");
+      Identifier var6 = Identifier.withDefaultNamespace("entity/wolf/" + var2 + "_angry");
       var0.register(var1, new WolfVariant(new WolfVariant.AssetInfo(new ClientAsset.ResourceTexture(var4), new ClientAsset.ResourceTexture(var5), new ClientAsset.ResourceTexture(var6)), var3));
    }
 

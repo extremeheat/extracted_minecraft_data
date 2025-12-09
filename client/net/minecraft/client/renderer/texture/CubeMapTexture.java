@@ -7,18 +7,18 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import java.io.IOException;
 import java.util.Objects;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class CubeMapTexture extends ReloadableTexture {
    private static final String[] SUFFIXES = new String[]{"_1.png", "_3.png", "_5.png", "_4.png", "_0.png", "_2.png"};
 
-   public CubeMapTexture(ResourceLocation var1) {
+   public CubeMapTexture(Identifier var1) {
       super(var1);
    }
 
    public TextureContents loadContents(ResourceManager var1) throws IOException {
-      ResourceLocation var2 = this.resourceId();
+      Identifier var2 = this.resourceId();
       TextureContents var3 = TextureContents.load(var1, var2.withSuffix(SUFFIXES[0]));
 
       TextureContents var15;
@@ -55,7 +55,7 @@ public class CubeMapTexture extends ReloadableTexture {
             }
          }
 
-         var15 = new TextureContents(var6, new TextureMetadataSection(true, false));
+         var15 = new TextureContents(var6, new TextureMetadataSection(true, false, MipmapStrategy.MEAN, 0.0F));
       } catch (Throwable var14) {
          if (var3 != null) {
             try {
@@ -75,20 +75,18 @@ public class CubeMapTexture extends ReloadableTexture {
       return var15;
    }
 
-   protected void doLoad(NativeImage var1, boolean var2, boolean var3) {
-      GpuDevice var4 = RenderSystem.getDevice();
-      int var5 = var1.getWidth();
-      int var6 = var1.getHeight() / 6;
+   protected void doLoad(NativeImage var1) {
+      GpuDevice var2 = RenderSystem.getDevice();
+      int var3 = var1.getWidth();
+      int var4 = var1.getHeight() / 6;
       this.close();
-      ResourceLocation var10002 = this.resourceId();
+      Identifier var10002 = this.resourceId();
       Objects.requireNonNull(var10002);
-      this.texture = var4.createTexture(var10002::toString, 21, TextureFormat.RGBA8, var5, var6, 6, 1);
-      this.textureView = var4.createTextureView(this.texture);
-      this.setFilter(var2, false);
-      this.setClamp(var3);
+      this.texture = var2.createTexture(var10002::toString, 21, TextureFormat.RGBA8, var3, var4, 6, 1);
+      this.textureView = var2.createTextureView(this.texture);
 
-      for(int var7 = 0; var7 < 6; ++var7) {
-         var4.createCommandEncoder().writeToTexture(this.texture, var1, 0, var7, 0, 0, var5, var6, 0, var6 * var7);
+      for(int var5 = 0; var5 < 6; ++var5) {
+         var2.createCommandEncoder().writeToTexture(this.texture, var1, 0, var5, 0, 0, var3, var4, 0, var4 * var5);
       }
 
    }

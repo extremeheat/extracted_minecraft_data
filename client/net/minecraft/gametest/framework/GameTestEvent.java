@@ -1,10 +1,9 @@
 package net.minecraft.gametest.framework;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class GameTestEvent {
-   @Nullable
-   public final Long expectedDelay;
+   public final @Nullable Long expectedDelay;
    public final Runnable assertion;
 
    private GameTestEvent(@Nullable Long var1, Runnable var2) {

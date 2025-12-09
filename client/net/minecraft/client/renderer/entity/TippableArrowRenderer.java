@@ -2,18 +2,18 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.TippableArrowRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 
 public class TippableArrowRenderer extends ArrowRenderer<Arrow, TippableArrowRenderState> {
-   public static final ResourceLocation NORMAL_ARROW_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/projectiles/arrow.png");
-   public static final ResourceLocation TIPPED_ARROW_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/projectiles/tipped_arrow.png");
+   public static final Identifier NORMAL_ARROW_LOCATION = Identifier.withDefaultNamespace("textures/entity/projectiles/arrow.png");
+   public static final Identifier TIPPED_ARROW_LOCATION = Identifier.withDefaultNamespace("textures/entity/projectiles/tipped_arrow.png");
 
    public TippableArrowRenderer(EntityRendererProvider.Context var1) {
       super(var1);
    }
 
-   protected ResourceLocation getTextureLocation(TippableArrowRenderState var1) {
+   protected Identifier getTextureLocation(TippableArrowRenderState var1) {
       return var1.isTipped ? TIPPED_ARROW_LOCATION : NORMAL_ARROW_LOCATION;
    }
 

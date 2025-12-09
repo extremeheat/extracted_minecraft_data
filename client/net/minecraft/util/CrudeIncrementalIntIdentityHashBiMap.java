@@ -4,16 +4,16 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
 import java.util.Arrays;
 import java.util.Iterator;
-import javax.annotation.Nullable;
 import net.minecraft.core.IdMap;
+import org.jspecify.annotations.Nullable;
 
 public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
    private static final int NOT_FOUND = -1;
    private static final Object EMPTY_SLOT = null;
    private static final float LOADFACTOR = 0.8F;
-   private K[] keys;
+   private @Nullable K[] keys;
    private int[] values;
-   private K[] byId;
+   private @Nullable K[] byId;
    private int nextId;
    private int size;
 
@@ -41,8 +41,7 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
       return this.getValue(this.indexOf(var1, this.hash(var1)));
    }
 
-   @Nullable
-   public K byId(int var1) {
+   public @Nullable K byId(int var1) {
       return (K)(var1 >= 0 && var1 < this.byId.length ? this.byId[var1] : null);
    }
 

@@ -17,7 +17,6 @@ import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
@@ -33,6 +32,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> implements RecipeAccess {
@@ -79,7 +79,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       this.recipes.values().forEach((var3x) -> {
          Recipe var4 = var3x.value();
          if (!var4.isSpecial() && var4.placementInfo().isImpossibleToPlace()) {
-            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var3x.id().location());
+            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var3x.id().identifier());
          } else {
             var3.forEach((var1x) -> var1x.accept(var4));
             if (var4 instanceof StonecutterRecipe) {
@@ -123,8 +123,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       return Optional.ofNullable(this.recipes.byKey(var1));
    }
 
-   @Nullable
-   private <T extends Recipe<?>> RecipeHolder<T> byKeyTyped(RecipeType<T> var1, ResourceKey<Recipe<?>> var2) {
+   private <T extends Recipe<?>> @Nullable RecipeHolder<T> byKeyTyped(RecipeType<T> var1, ResourceKey<Recipe<?>> var2) {
       RecipeHolder var3 = this.recipes.byKey(var2);
       return var3 != null && var3.value().getType().equals(var1) ? var3 : null;
    }
@@ -149,8 +148,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       return this.recipes.values();
    }
 
-   @Nullable
-   public ServerDisplayInfo getRecipeFromDisplay(RecipeDisplayId var1) {
+   public @Nullable ServerDisplayInfo getRecipeFromDisplay(RecipeDisplayId var1) {
       int var2 = var1.index();
       return var2 >= 0 && var2 < this.allDisplays.size() ? (ServerDisplayInfo)this.allDisplays.get(var2) : null;
    }
@@ -171,8 +169,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
 
    public static <I extends RecipeInput, T extends Recipe<I>> CachedCheck<I, T> createCheck(final RecipeType<T> var0) {
       return new CachedCheck<I, T>() {
-         @Nullable
-         private ResourceKey<Recipe<?>> lastRecipe;
+         private @Nullable ResourceKey<Recipe<?>> lastRecipe;
 
          public Optional<RecipeHolder<T>> getRecipeFor(I var1, ServerLevel var2) {
             RecipeManager var3 = var2.recipeAccess();

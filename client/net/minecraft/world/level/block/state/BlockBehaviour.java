@@ -15,8 +15,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -30,6 +28,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -83,6 +82,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BlockBehaviour implements FeatureElement {
    protected static final Direction[] UPDATE_SHAPE_ORDER;
@@ -129,7 +129,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return RecordCodecBuilder.mapCodec((var1) -> var1.group(propertiesCodec()).apply(var1, var0));
    }
 
-   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4, int var5) {
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
@@ -285,8 +285,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   @Nullable
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return null;
    }
 
@@ -413,7 +412,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static class Properties {
-      public static final Codec<Properties> CODEC = Codec.unit(() -> of());
+      public static final Codec<Properties> CODEC = MapCodec.unitCodec(() -> of());
       Function<BlockState, MapColor> mapColor = (var0) -> MapColor.NONE;
       boolean hasCollision = true;
       SoundType soundType;
@@ -425,8 +424,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       float friction;
       float speedFactor;
       float jumpFactor;
-      @Nullable
-      private ResourceKey<Block> id;
+      private @Nullable ResourceKey<Block> id;
       private DependantName<Block, Optional<ResourceKey<LootTable>>> drops;
       private DependantName<Block, String> descriptionId;
       boolean canOcclude;
@@ -451,8 +449,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       StatePredicate emissiveRendering;
       boolean dynamicShape;
       FeatureFlagSet requiredFeatures;
-      @Nullable
-      OffsetFunction offsetFunction;
+      @Nullable OffsetFunction offsetFunction;
 
       private Properties() {
          super();
@@ -461,8 +458,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.friction = 0.6F;
          this.speedFactor = 1.0F;
          this.jumpFactor = 1.0F;
-         this.drops = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("blocks/")));
-         this.descriptionId = (var0) -> Util.makeDescriptionId("block", var0.location());
+         this.drops = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.identifier().withPrefix("blocks/")));
+         this.descriptionId = (var0) -> Util.makeDescriptionId("block", var0.identifier());
          this.canOcclude = true;
          this.pushReaction = PushReaction.NORMAL;
          this.spawnTerrainParticles = true;
@@ -778,13 +775,11 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final StatePredicate isViewBlocking;
       private final StatePredicate hasPostProcess;
       private final StatePredicate emissiveRendering;
-      @Nullable
-      private final OffsetFunction offsetFunction;
+      private final @Nullable OffsetFunction offsetFunction;
       private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
       private final boolean replaceable;
-      @Nullable
-      private Cache cache;
+      private @Nullable Cache cache;
       private FluidState fluidState;
       private boolean isRandomlyTicking;
       private boolean solidRender;
@@ -1062,11 +1057,11 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().neighborChanged(this.asState(), var1, var2, var3, var4, var5);
       }
 
-      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3) {
+      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3) {
          this.updateNeighbourShapes(var1, var2, var3, 512);
       }
 
-      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
+      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3, int var4) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
          for(Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
@@ -1076,11 +1071,11 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       }
 
-      public final void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3) {
+      public final void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3) {
          this.updateIndirectNeighbourShapes(var1, var2, var3, 512);
       }
 
-      public void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
+      public void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3, int var4) {
          this.getBlock().updateIndirectNeighbourShapes(this.asState(), var1, var2, var3, var4);
       }
 
@@ -1164,8 +1159,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.hasPostProcess.test(this.asState(), var1, var2);
       }
 
-      @Nullable
-      public MenuProvider getMenuProvider(Level var1, BlockPos var2) {
+      public @Nullable MenuProvider getMenuProvider(Level var1, BlockPos var2) {
          return this.getBlock().getMenuProvider(this.asState(), var1, var2);
       }
 
@@ -1197,8 +1191,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().shouldChangedStateKeepBlockEntity(var1);
       }
 
-      @Nullable
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockEntityType<T> var2) {
+      public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockEntityType<T> var2) {
          return this.getBlock() instanceof EntityBlock ? ((EntityBlock)this.getBlock()).getTicker(var1, this.asState(), var2) : null;
       }
 

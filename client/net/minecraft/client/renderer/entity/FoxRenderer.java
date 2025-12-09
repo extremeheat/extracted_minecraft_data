@@ -2,22 +2,22 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.FoxModel;
+import net.minecraft.client.model.animal.fox.FoxModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.FoxHeldItemLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FoxRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.fox.Fox;
 import org.joml.Quaternionfc;
 
 public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxModel> {
-   private static final ResourceLocation RED_FOX_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fox/fox.png");
-   private static final ResourceLocation RED_FOX_SLEEP_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fox/fox_sleep.png");
-   private static final ResourceLocation SNOW_FOX_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fox/snow_fox.png");
-   private static final ResourceLocation SNOW_FOX_SLEEP_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fox/snow_fox_sleep.png");
+   private static final Identifier RED_FOX_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fox/fox.png");
+   private static final Identifier RED_FOX_SLEEP_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fox/fox_sleep.png");
+   private static final Identifier SNOW_FOX_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fox/snow_fox.png");
+   private static final Identifier SNOW_FOX_SLEEP_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fox/snow_fox_sleep.png");
 
    public FoxRenderer(EntityRendererProvider.Context var1) {
       super(var1, new FoxModel(var1.bakeLayer(ModelLayers.FOX)), new FoxModel(var1.bakeLayer(ModelLayers.FOX_BABY)), 0.4F);
@@ -32,7 +32,7 @@ public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxMode
 
    }
 
-   public ResourceLocation getTextureLocation(FoxRenderState var1) {
+   public Identifier getTextureLocation(FoxRenderState var1) {
       if (var1.variant == Fox.Variant.RED) {
          return var1.isSleeping ? RED_FOX_SLEEP_TEXTURE : RED_FOX_TEXTURE;
       } else {
@@ -58,7 +58,7 @@ public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxMode
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((FoxRenderState)var1);
    }
 

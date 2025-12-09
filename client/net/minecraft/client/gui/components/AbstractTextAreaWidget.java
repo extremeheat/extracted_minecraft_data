@@ -6,10 +6,10 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
-   private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
+   private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/text_field"), Identifier.withDefaultNamespace("widget/text_field_highlighted"));
    private static final int INNER_PADDING = 4;
    public static final int DEFAULT_TOTAL_PADDING = 8;
    private boolean showBackground;
@@ -94,7 +94,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
    }
 
    protected void renderBorder(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      ResourceLocation var6 = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
+      Identifier var6 = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, var6, var2, var3, var4, var5);
    }
 

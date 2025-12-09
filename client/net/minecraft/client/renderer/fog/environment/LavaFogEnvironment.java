@@ -1,15 +1,14 @@
 package net.minecraft.client.renderer.fog.environment;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
+import org.jspecify.annotations.Nullable;
 
 public class LavaFogEnvironment extends FogEnvironment {
    private static final int COLOR = -6743808;
@@ -22,15 +21,16 @@ public class LavaFogEnvironment extends FogEnvironment {
       return -6743808;
    }
 
-   public void setupFog(FogData var1, Entity var2, BlockPos var3, ClientLevel var4, float var5, DeltaTracker var6) {
-      if (var2.isSpectator()) {
+   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
+      if (var2.entity().isSpectator()) {
          var1.environmentalStart = -8.0F;
-         var1.environmentalEnd = var5 * 0.5F;
+         var1.environmentalEnd = var4 * 0.5F;
       } else {
          label14: {
-            if (var2 instanceof LivingEntity) {
-               LivingEntity var7 = (LivingEntity)var2;
-               if (var7.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+            Entity var7 = var2.entity();
+            if (var7 instanceof LivingEntity) {
+               LivingEntity var6 = (LivingEntity)var7;
+               if (var6.hasEffect(MobEffects.FIRE_RESISTANCE)) {
                   var1.environmentalStart = 0.0F;
                   var1.environmentalEnd = 5.0F;
                   break label14;

@@ -4,16 +4,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.execution.UnboundEntryAction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 class FunctionBuilder<T extends ExecutionCommandSource<T>> {
-   @Nullable
-   private List<UnboundEntryAction<T>> plainEntries = new ArrayList();
-   @Nullable
-   private List<MacroFunction.Entry<T>> macroEntries;
+   private @Nullable List<UnboundEntryAction<T>> plainEntries = new ArrayList();
+   private @Nullable List<MacroFunction.Entry<T>> macroEntries;
    private final List<String> macroArguments = new ArrayList();
 
    FunctionBuilder() {
@@ -70,7 +68,7 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       this.macroEntries.add(new MacroFunction.MacroEntry(var4, this.convertToIndices(var4.variables()), var3));
    }
 
-   public CommandFunction<T> build(ResourceLocation var1) {
+   public CommandFunction<T> build(Identifier var1) {
       return (CommandFunction<T>)(this.macroEntries != null ? new MacroFunction(var1, this.macroEntries, this.macroArguments) : new PlainTextFunction(var1, this.plainEntries));
    }
 }

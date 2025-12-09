@@ -1,9 +1,10 @@
 package net.minecraft.world.entity.animal;
 
+import com.google.common.collect.UnmodifiableIterator;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,27 +19,32 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Animal extends AgeableMob {
    protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
    private static final int DEFAULT_IN_LOVE_TIME = 0;
    private int inLove = 0;
-   @Nullable
-   private EntityReference<ServerPlayer> loveCause;
+   private @Nullable EntityReference<ServerPlayer> loveCause;
 
    protected Animal(EntityType<? extends Animal> var1, Level var2) {
       super(var1, var2);
@@ -173,8 +179,7 @@ public abstract class Animal extends AgeableMob {
       return this.inLove;
    }
 
-   @Nullable
-   public ServerPlayer getLoveCause() {
+   public @Nullable ServerPlayer getLoveCause() {
       return (ServerPlayer)EntityReference.get(this.loveCause, this.level(), ServerPlayer.class);
    }
 
@@ -216,7 +221,7 @@ public abstract class Animal extends AgeableMob {
       this.resetLove();
       var2.resetLove();
       var1.broadcastEntityEvent(this, (byte)18);
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.MOB_DROPS)) {
          var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
       }
 
@@ -234,5 +239,36 @@ public abstract class Animal extends AgeableMob {
          super.handleEntityEvent(var1);
       }
 
+   }
+
+   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
+      Direction var2 = this.getMotionDirection();
+      if (var2.getAxis() == Direction.Axis.Y) {
+         return super.getDismountLocationForPassenger(var1);
+      } else {
+         int[][] var3 = DismountHelper.offsetsForDirection(var2);
+         BlockPos var4 = this.blockPosition();
+         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+         UnmodifiableIterator var6 = var1.getDismountPoses().iterator();
+
+         while(var6.hasNext()) {
+            Pose var7 = (Pose)var6.next();
+            AABB var8 = var1.getLocalBoundsForPose(var7);
+
+            for(int[] var12 : var3) {
+               var5.set(var4.getX() + var12[0], var4.getY(), var4.getZ() + var12[1]);
+               double var13 = this.level().getBlockFloorHeight(var5);
+               if (DismountHelper.isBlockFloorValid(var13)) {
+                  Vec3 var15 = Vec3.upFromBottomCenterOf(var5, var13);
+                  if (DismountHelper.canDismountTo(this.level(), var1, var8.move(var15))) {
+                     var1.setPose(var7);
+                     return var15;
+                  }
+               }
+            }
+         }
+
+         return super.getDismountLocationForPassenger(var1);
+      }
    }
 }

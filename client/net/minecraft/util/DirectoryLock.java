@@ -1,15 +1,14 @@
 package net.minecraft.util;
 
-import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import net.minecraft.FileUtil;
 
 public class DirectoryLock implements AutoCloseable {
    public static final String LOCK_FILE = "session.lock";
@@ -118,7 +117,7 @@ public class DirectoryLock implements AutoCloseable {
    }
 
    static {
-      byte[] var0 = "\u2603".getBytes(Charsets.UTF_8);
+      byte[] var0 = "\u2603".getBytes(StandardCharsets.UTF_8);
       DUMMY = ByteBuffer.allocateDirect(var0.length);
       DUMMY.put(var0);
       DUMMY.flip();

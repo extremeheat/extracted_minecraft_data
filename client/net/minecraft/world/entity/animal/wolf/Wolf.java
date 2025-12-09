@@ -2,8 +2,6 @@ package net.minecraft.world.entity.animal.wolf;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -16,8 +14,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -34,6 +32,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -62,13 +61,13 @@ import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.Turtle;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.Llama;
+import net.minecraft.world.entity.animal.turtle.Turtle;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
@@ -87,11 +86,12 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Wolf extends TamableAnimal implements NeutralMob {
    private static final EntityDataAccessor<Boolean> DATA_INTERESTED_ID;
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
-   private static final EntityDataAccessor<Integer> DATA_REMAINING_ANGER_TIME;
+   private static final EntityDataAccessor<Long> DATA_ANGER_END_TIME;
    private static final EntityDataAccessor<Holder<WolfVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<Holder<WolfSoundVariant>> DATA_SOUND_VARIANT_ID;
    public static final TargetingConditions.Selector PREY_SELECTOR;
@@ -107,8 +107,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private float shakeAnim;
    private float shakeAnimO;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   @Nullable
-   private UUID persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public Wolf(EntityType<? extends Wolf> var1, Level var2) {
       super(var1, var2);
@@ -140,7 +139,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.targetSelector.addGoal(8, new ResetUniversalAngerTargetGoal(this, true));
    }
 
-   public ResourceLocation getTexture() {
+   public Identifier getTexture() {
       WolfVariant var1 = (WolfVariant)this.getVariant().value();
       if (this.isTame()) {
          return var1.assetInfo().tame().texturePath();
@@ -165,8 +164,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_SOUND_VARIANT_ID, var1);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.WOLF_VARIANT) {
          return (T)castComponentValue(var1, this.getVariant());
       } else if (var1 == DataComponents.WOLF_SOUND_VARIANT) {
@@ -212,7 +210,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       var1.define(var10001, (Holder)var10002.or(var2::getAny).orElseThrow());
       var1.define(DATA_INTERESTED_ID, false);
       var1.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
-      var1.define(DATA_REMAINING_ANGER_TIME, 0);
+      var1.define(DATA_ANGER_END_TIME, -1L);
    }
 
    protected void playStepSound(BlockPos var1, BlockState var2) {
@@ -235,8 +233,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       var1.read("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 instanceof WolfPackData var5) {
          this.setVariant(var5.type);
       } else {
@@ -321,7 +318,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
             if (this.shakeAnim > 0.4F) {
                float var1 = (float)this.getY();
-               int var2 = (int)(Mth.sin((this.shakeAnim - 0.4F) * 3.1415927F) * 7.0F);
+               int var2 = (int)(Mth.sin((double)((this.shakeAnim - 0.4F) * 3.1415927F)) * 7.0F);
                Vec3 var3 = this.getDeltaMovement();
 
                for(int var4 = 0; var4 < var2; ++var4) {
@@ -516,24 +513,23 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       return 8;
    }
 
-   public int getRemainingPersistentAngerTime() {
-      return (Integer)this.entityData.get(DATA_REMAINING_ANGER_TIME);
+   public long getPersistentAngerEndTime() {
+      return (Long)this.entityData.get(DATA_ANGER_END_TIME);
    }
 
-   public void setRemainingPersistentAngerTime(int var1) {
-      this.entityData.set(DATA_REMAINING_ANGER_TIME, var1);
+   public void setPersistentAngerEndTime(long var1) {
+      this.entityData.set(DATA_ANGER_END_TIME, var1);
    }
 
    public void startPersistentAngerTimer() {
-      this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
+      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   @Nullable
-   public UUID getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
-   public void setPersistentAngerTarget(@Nullable UUID var1) {
+   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
       this.persistentAngerTarget = var1;
    }
 
@@ -545,8 +541,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_COLLAR_COLOR, var1.getId());
    }
 
-   @Nullable
-   public Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Wolf var3 = EntityType.WOLF.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Wolf var4) {
          if (this.random.nextBoolean()) {
@@ -649,15 +644,14 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
    static {
       DATA_INTERESTED_ID = SynchedEntityData.<Boolean>defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
-      DATA_REMAINING_ANGER_TIME = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
+      DATA_ANGER_END_TIME = SynchedEntityData.<Long>defineId(Wolf.class, EntityDataSerializers.LONG);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<WolfVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<WolfSoundVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_SOUND_VARIANT);
       PREY_SELECTOR = (var0, var1) -> {

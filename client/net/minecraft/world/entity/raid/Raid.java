@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -63,6 +62,7 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BannerPatterns;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Raid {
    public static final SpawnPlacementType RAVAGER_SPAWN_PLACEMENT_TYPE;
@@ -80,7 +80,6 @@ public class Raid {
    public static final int MAX_NO_ACTION_TIME = 2400;
    public static final int MAX_CELEBRATION_TICKS = 600;
    private static final int OUTSIDE_RAID_BOUNDS_TIMEOUT = 30;
-   public static final int TICKS_PER_DAY = 24000;
    public static final int DEFAULT_MAX_RAID_OMEN_LEVEL = 5;
    private static final int LOW_MOB_THRESHOLD = 2;
    private static final Component RAID_NAME_COMPONENT;
@@ -616,13 +615,11 @@ public class Raid {
       return var1;
    }
 
-   @Nullable
-   public Raider getLeader(int var1) {
+   public @Nullable Raider getLeader(int var1) {
       return (Raider)this.groupToLeaderMap.get(var1);
    }
 
-   @Nullable
-   private BlockPos findRandomSpawnPos(ServerLevel var1, int var2) {
+   private @Nullable BlockPos findRandomSpawnPos(ServerLevel var1, int var2) {
       int var3 = this.raidCooldownTicks / 20;
       float var4 = 0.22F * (float)var3 - 0.24F;
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
@@ -630,8 +627,8 @@ public class Raid {
 
       for(int var10 = 0; var10 < var2; ++var10) {
          float var11 = var9 + 3.1415927F * (float)var10 / 8.0F;
-         int var5 = this.center.getX() + Mth.floor(Mth.cos(var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
-         int var7 = this.center.getZ() + Mth.floor(Mth.sin(var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
+         int var5 = this.center.getX() + Mth.floor(Mth.cos((double)var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
+         int var7 = this.center.getZ() + Mth.floor(Mth.sin((double)var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
          int var6 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var5, var7);
          if (Mth.abs(var6 - this.center.getY()) <= 96) {
             var8.set(var5, var6, var7);

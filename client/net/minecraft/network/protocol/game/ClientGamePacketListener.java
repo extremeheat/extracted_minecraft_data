@@ -51,7 +51,7 @@ public interface ClientGamePacketListener extends ClientCommonPacketListener, Cl
 
    void handleContainerContent(ClientboundContainerSetContentPacket var1);
 
-   void handleHorseScreenOpen(ClientboundHorseScreenOpenPacket var1);
+   void handleMountScreenOpen(ClientboundMountScreenOpenPacket var1);
 
    void handleContainerSetData(ClientboundContainerSetDataPacket var1);
 

@@ -1,10 +1,9 @@
 package net.minecraft.util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MemoryReserve {
-   @Nullable
-   private static byte[] reserve;
+   private static byte @Nullable [] reserve;
 
    public MemoryReserve() {
       super();

@@ -3,13 +3,13 @@ package net.minecraft.world.level.chunk.status;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
+import org.jspecify.annotations.Nullable;
 
 public record ChunkStep(ChunkStatus targetStatus, ChunkDependencies directDependencies, ChunkDependencies accumulatedDependencies, int blockStateWriteRadius, ChunkStatusTask task) {
    final ChunkStatus targetStatus;
@@ -53,8 +53,7 @@ public record ChunkStep(ChunkStatus targetStatus, ChunkDependencies directDepend
 
    public static class Builder {
       private final ChunkStatus status;
-      @Nullable
-      private final ChunkStep parent;
+      private final @Nullable ChunkStep parent;
       private ChunkStatus[] directDependenciesByRadius;
       private int blockStateWriteRadius = -1;
       private ChunkStatusTask task = ChunkStatusTasks::passThrough;

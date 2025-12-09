@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -28,7 +27,7 @@ import net.minecraft.client.resources.sounds.AmbientSoundHandler;
 import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
 import net.minecraft.client.resources.sounds.BubbleColumnAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.ElytraOnPlayerSoundInstance;
-import net.minecraft.client.resources.sounds.RidingHappyGhastSoundInstance;
+import net.minecraft.client.resources.sounds.RidingEntitySoundInstance;
 import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
@@ -51,6 +50,8 @@ import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -61,21 +62,26 @@ import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.HappyGhast;
+import net.minecraft.world.entity.animal.happyghast.HappyGhast;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.AttackRange;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
-import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
@@ -87,10 +93,14 @@ import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LocalPlayer extends AbstractClientPlayer {
@@ -101,13 +111,12 @@ public class LocalPlayer extends AbstractClientPlayer {
    private static final float WATER_VISION_QUICK_PERCENT = 0.6F;
    private static final double SUFFOCATING_COLLISION_CHECK_SCALE = 0.35;
    private static final double MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN = 0.13962633907794952;
-   public static final float USING_ITEM_SPEED_FACTOR = 0.2F;
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
    private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1280);
    private final List<AmbientSoundHandler> ambientSoundHandlers = Lists.newArrayList();
-   private int permissionLevel = 0;
+   private PermissionSet permissions;
    private double xLast;
    private double yLast;
    private double zLast;
@@ -119,10 +128,12 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
-   public ClientInput input = new ClientInput();
+   public ClientInput input;
    private Input lastSentInput;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
+   private static final int EXPERIENCE_DISPLAY_UNREADY_TO_SET = -2147483648;
+   private static final int EXPERIENCE_DISPLAY_READY_TO_SET = -2147483647;
    public int experienceDisplayStartTick;
    public float yBob;
    public float xBob;
@@ -133,18 +144,23 @@ public class LocalPlayer extends AbstractClientPlayer {
    public float portalEffectIntensity;
    public float oPortalEffectIntensity;
    private boolean startedUsingItem;
-   @Nullable
-   private InteractionHand usingItemHand;
+   private @Nullable InteractionHand usingItemHand;
    private boolean handsBusy;
-   private boolean autoJumpEnabled = true;
+   private boolean autoJumpEnabled;
    private int autoJumpTime;
    private boolean wasFallFlying;
    private int waterVisionTime;
-   private boolean showDeathScreen = true;
-   private boolean doLimitedCrafting = false;
+   private boolean showDeathScreen;
+   private boolean doLimitedCrafting;
 
    public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, Input var6, boolean var7) {
       super(var2, var3.getLocalGameProfile());
+      this.permissions = PermissionSet.NO_PERMISSIONS;
+      this.input = new ClientInput();
+      this.experienceDisplayStartTick = -2147483648;
+      this.autoJumpEnabled = true;
+      this.showDeathScreen = true;
+      this.doLimitedCrafting = false;
       this.minecraft = var1;
       this.connection = var3;
       this.stats = var4;
@@ -153,7 +169,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.wasSprinting = var7;
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, var1.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
-      this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager(), var2.getBiomeManager()));
+      this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager()));
    }
 
    public void heal(float var1) {
@@ -164,10 +180,15 @@ public class LocalPlayer extends AbstractClientPlayer {
          return false;
       } else {
          if (var1 instanceof AbstractMinecart) {
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, true));
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, false));
+            AbstractMinecart var4 = (AbstractMinecart)var1;
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, var4, true, SoundEvents.MINECART_INSIDE_UNDERWATER, 0.0F, 0.75F, 1.0F));
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, var4, false, SoundEvents.MINECART_INSIDE, 0.0F, 0.75F, 1.0F));
          } else if (var1 instanceof HappyGhast) {
-            this.minecraft.getSoundManager().play(new RidingHappyGhastSoundInstance(this, (HappyGhast)var1));
+            HappyGhast var5 = (HappyGhast)var1;
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, var5, false, SoundEvents.HAPPY_GHAST_RIDING, var5.getSoundSource(), 0.0F, 1.0F, 5.0F));
+         } else if (var1 instanceof AbstractNautilus) {
+            AbstractNautilus var6 = (AbstractNautilus)var1;
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, var6, true, SoundEvents.NAUTILUS_RIDING, var6.getSoundSource(), 0.0F, 1.0F, 5.0F));
          }
 
          return true;
@@ -188,8 +209,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void tick() {
-      this.tickClientLoadTimeout();
-      if (this.hasClientLoaded()) {
+      if (this.connection.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
          if (!this.lastSentInput.equals(this.input.keyPresses)) {
@@ -369,12 +389,12 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public int getPermissionLevel() {
-      return this.permissionLevel;
+   public PermissionSet permissions() {
+      return this.permissions;
    }
 
-   public void setPermissionLevel(int var1) {
-      this.permissionLevel = var1;
+   public void setPermissions(PermissionSet var1) {
+      this.permissions = var1;
    }
 
    public void displayClientMessage(Component var1, boolean var2) {
@@ -418,17 +438,32 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void setExperienceValues(float var1, int var2, int var3) {
+      if (var1 != this.experienceProgress) {
+         this.setExperienceDisplayStartTickToTickCount();
+      }
+
       this.experienceProgress = var1;
       this.totalExperience = var2;
       this.experienceLevel = var3;
-      this.experienceDisplayStartTick = this.tickCount;
+   }
+
+   private void setExperienceDisplayStartTickToTickCount() {
+      if (this.experienceDisplayStartTick == -2147483648) {
+         this.experienceDisplayStartTick = -2147483647;
+      } else {
+         this.experienceDisplayStartTick = this.tickCount;
+      }
+
    }
 
    public void handleEntityEvent(byte var1) {
-      if (var1 >= 24 && var1 <= 28) {
-         this.setPermissionLevel(var1 - 24);
-      } else {
-         super.handleEntityEvent(var1);
+      switch (var1) {
+         case 24 -> this.setPermissions(PermissionSet.NO_PERMISSIONS);
+         case 25 -> this.setPermissions(LevelBasedPermissionSet.MODERATOR);
+         case 26 -> this.setPermissions(LevelBasedPermissionSet.GAMEMASTER);
+         case 27 -> this.setPermissions(LevelBasedPermissionSet.ADMIN);
+         case 28 -> this.setPermissions(LevelBasedPermissionSet.OWNER);
+         default -> super.handleEntityEvent(var1);
       }
 
    }
@@ -453,10 +488,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3, false);
    }
 
-   public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
-      this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var1, var2, var3, var4, false);
-   }
-
    public void startUsingItem(InteractionHand var1) {
       ItemStack var2 = this.getItemInHand(var1);
       if (!var2.isEmpty() && !this.isUsingItem()) {
@@ -468,6 +499,14 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public boolean isUsingItem() {
       return this.startedUsingItem;
+   }
+
+   private boolean isSlowDueToUsingItem() {
+      return this.isUsingItem() && !((UseEffects)this.useItem.getOrDefault(DataComponents.USE_EFFECTS, UseEffects.DEFAULT)).canSprint();
+   }
+
+   private float itemUseSpeedMultiplier() {
+      return ((UseEffects)this.useItem.getOrDefault(DataComponents.USE_EFFECTS, UseEffects.DEFAULT)).speedMultiplier();
    }
 
    public void stopUsingItem() {
@@ -497,8 +536,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   @Nullable
-   public PlayerRideableJumping jumpableVehicle() {
+   public @Nullable PlayerRideableJumping jumpableVehicle() {
       Entity var2 = this.getControlledVehicle();
       PlayerRideableJumping var10000;
       if (var2 instanceof PlayerRideableJumping var1) {
@@ -529,7 +567,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public void openMinecartCommandBlock(BaseCommandBlock var1) {
+   public void openMinecartCommandBlock(MinecartCommandBlock var1) {
       this.minecraft.setScreen(new MinecartCommandBlockEditScreen(var1));
    }
 
@@ -607,7 +645,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       } else {
          Vec2 var2 = var1.scale(0.98F);
          if (this.isUsingItem() && !this.isPassenger()) {
-            var2 = var2.scale(0.2F);
+            var2 = var2.scale(this.itemUseSpeedMultiplier());
          }
 
          if (this.isMovingSlowly()) {
@@ -691,7 +729,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35, this.getZ() + (double)this.getBbWidth() * 0.35);
       }
 
-      if (var2 || this.isUsingItem() && !this.isPassenger() || this.input.keyPresses.backward()) {
+      if (var2 || this.isSlowDueToUsingItem() && !this.isPassenger() || this.input.keyPresses.backward()) {
          this.sprintTriggerTime = 0;
       }
 
@@ -721,7 +759,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
       boolean var6 = false;
       if (var4.mayfly) {
-         if (this.minecraft.gameMode.isAlwaysFlying()) {
+         if (this.minecraft.gameMode.isSpectator()) {
             if (!var4.flying) {
                var4.flying = true;
                var6 = true;
@@ -730,7 +768,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          } else if (!var1 && this.input.keyPresses.jump() && !var5) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
-            } else if (!this.isSwimming()) {
+            } else if (!this.isSwimming() && (this.getVehicle() == null || this.jumpableVehicle() != null)) {
                var4.flying = !var4.flying;
                if (var4.flying && this.onGround()) {
                   this.jumpFromGround();
@@ -804,7 +842,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       super.aiStep();
-      if (this.onGround() && var4.flying && !this.minecraft.gameMode.isAlwaysFlying()) {
+      if (this.onGround() && var4.flying && !this.minecraft.gameMode.isSpectator()) {
          var4.flying = false;
          this.onUpdateAbilities();
       }
@@ -900,8 +938,8 @@ public class LocalPlayer extends AbstractClientPlayer {
             Vec2 var8 = this.input.getMoveVector();
             float var9 = var6 * var8.x;
             float var10 = var6 * var8.y;
-            float var11 = Mth.sin(this.getYRot() * 0.017453292F);
-            float var12 = Mth.cos(this.getYRot() * 0.017453292F);
+            float var11 = Mth.sin((double)(this.getYRot() * 0.017453292F));
+            float var12 = Mth.cos((double)(this.getYRot() * 0.017453292F));
             var5 = new Vec3((double)(var9 * var12 - var10 * var11), var5.y, (double)(var10 * var12 + var9 * var11));
             var7 = (float)var5.lengthSqr();
             if (var7 <= 0.001F) {
@@ -988,8 +1026,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    protected boolean isHorizontalCollisionMinor(Vec3 var1) {
       float var2 = this.getYRot() * 0.017453292F;
-      double var3 = (double)Mth.sin(var2);
-      double var5 = (double)Mth.cos(var2);
+      double var3 = (double)Mth.sin((double)var2);
+      double var5 = (double)Mth.cos((double)var2);
       double var7 = (double)this.xxa * var5 - (double)this.zza * var3;
       double var9 = (double)this.zza * var5 + (double)this.xxa * var3;
       double var11 = Mth.square(var7) + Mth.square(var9);
@@ -1012,19 +1050,34 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean isSprintingPossible(boolean var1) {
-      return !this.isMobilityRestricted() && this.hasEnoughFoodToSprint() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (var1 || !this.isInShallowWater());
+      boolean var10000;
+      if (!this.isMobilityRestricted()) {
+         label30: {
+            if (this.isPassenger()) {
+               if (!this.vehicleCanSprint(this.getVehicle())) {
+                  break label30;
+               }
+            } else if (!this.hasEnoughFoodToDoExhaustiveManoeuvres()) {
+               break label30;
+            }
+
+            if (var1 || !this.isInShallowWater()) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isUsingItem() && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
+      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isSlowDueToUsingItem() && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
    }
 
    private boolean vehicleCanSprint(Entity var1) {
       return var1.canSprint() && var1.isLocalInstanceAuthoritative();
-   }
-
-   private boolean hasEnoughFoodToSprint() {
-      return this.isPassenger() || (float)this.getFoodData().getFoodLevel() > 6.0F || this.getAbilities().mayfly;
    }
 
    public float getWaterVision() {
@@ -1107,5 +1160,55 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public Input getLastSentInput() {
       return this.lastSentInput;
+   }
+
+   public HitResult raycastHitResult(float var1, Entity var2) {
+      ItemStack var3 = this.getActiveItem();
+      AttackRange var4 = (AttackRange)var3.get(DataComponents.ATTACK_RANGE);
+      double var5 = this.blockInteractionRange();
+      HitResult var7 = null;
+      if (var4 != null) {
+         var7 = var4.getClosesetHit(var2, var1, EntitySelector.CAN_BE_PICKED);
+         if (var7 instanceof BlockHitResult) {
+            var7 = filterHitResult(var7, var2.getEyePosition(var1), var5);
+         }
+      }
+
+      if (var7 == null || var7.getType() == HitResult.Type.MISS) {
+         double var8 = this.entityInteractionRange();
+         var7 = pick(var2, var5, var8, var1);
+      }
+
+      return var7;
+   }
+
+   private static HitResult pick(Entity var0, double var1, double var3, float var5) {
+      double var6 = Math.max(var1, var3);
+      double var8 = Mth.square(var6);
+      Vec3 var10 = var0.getEyePosition(var5);
+      HitResult var11 = var0.pick(var6, var5, false);
+      double var12 = var11.getLocation().distanceToSqr(var10);
+      if (var11.getType() != HitResult.Type.MISS) {
+         var8 = var12;
+         var6 = Math.sqrt(var12);
+      }
+
+      Vec3 var14 = var0.getViewVector(var5);
+      Vec3 var15 = var10.add(var14.x * var6, var14.y * var6, var14.z * var6);
+      float var16 = 1.0F;
+      AABB var17 = var0.getBoundingBox().expandTowards(var14.scale(var6)).inflate(1.0, 1.0, 1.0);
+      EntityHitResult var18 = ProjectileUtil.getEntityHitResult(var0, var10, var15, var17, EntitySelector.CAN_BE_PICKED, var8);
+      return var18 != null && var18.getLocation().distanceToSqr(var10) < var12 ? filterHitResult(var18, var10, var3) : filterHitResult(var11, var10, var1);
+   }
+
+   private static HitResult filterHitResult(HitResult var0, Vec3 var1, double var2) {
+      Vec3 var4 = var0.getLocation();
+      if (!var4.closerThan(var1, var2)) {
+         Vec3 var5 = var0.getLocation();
+         Direction var6 = Direction.getApproximateNearest(var5.x - var1.x, var5.y - var1.y, var5.z - var1.z);
+         return BlockHitResult.miss(var5, var6, BlockPos.containing(var5));
+      } else {
+         return var0;
+      }
    }
 }

@@ -2,8 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.Optional;
-import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -11,7 +9,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -24,6 +22,7 @@ import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
@@ -42,7 +41,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractThrownPotion;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -50,13 +49,13 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -65,9 +64,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EnderMan extends Monster implements NeutralMob {
-   private static final ResourceLocation SPEED_MODIFIER_ATTACKING_ID = ResourceLocation.withDefaultNamespace("attacking");
+   private static final Identifier SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING;
    private static final int DELAY_BETWEEN_CREEPY_STARE_SOUND = 400;
    private static final int MIN_DEAGGRESSION_TIME = 600;
@@ -77,9 +77,8 @@ public class EnderMan extends Monster implements NeutralMob {
    private int lastStareSound = -2147483648;
    private int targetChangeTime;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   private int remainingPersistentAngerTime;
-   @Nullable
-   private UUID persistentAngerTarget;
+   private long persistentAngerEndTime;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public EnderMan(EntityType<? extends EnderMan> var1, Level var2) {
       super(var1, var2);
@@ -135,23 +134,22 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    public void startPersistentAngerTimer() {
-      this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
+      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   public void setRemainingPersistentAngerTime(int var1) {
-      this.remainingPersistentAngerTime = var1;
+   public void setPersistentAngerEndTime(long var1) {
+      this.persistentAngerEndTime = var1;
    }
 
-   public int getRemainingPersistentAngerTime() {
-      return this.remainingPersistentAngerTime;
+   public long getPersistentAngerEndTime() {
+      return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(@Nullable UUID var1) {
+   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
       this.persistentAngerTarget = var1;
    }
 
-   @Nullable
-   public UUID getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
@@ -303,8 +301,7 @@ public class EnderMan extends Monster implements NeutralMob {
       this.entityData.set(DATA_CARRY_STATE, Optional.ofNullable(var1));
    }
 
-   @Nullable
-   public BlockState getCarriedBlock() {
+   public @Nullable BlockState getCarriedBlock() {
       return (BlockState)((Optional)this.entityData.get(DATA_CARRY_STATE)).orElse((Object)null);
    }
 
@@ -375,15 +372,14 @@ public class EnderMan extends Monster implements NeutralMob {
 
    static class EndermanLookForPlayerGoal extends NearestAttackableTargetGoal<Player> {
       private final EnderMan enderman;
-      @Nullable
-      private Player pendingTarget;
+      private @Nullable Player pendingTarget;
       private int aggroTime;
       private int teleportTime;
       private final TargetingConditions startAggroTargetConditions;
       private final TargetingConditions continueAggroTargetConditions = TargetingConditions.forCombat().ignoreLineOfSight();
       private final TargetingConditions.Selector isAngerInducing;
 
-      public EndermanLookForPlayerGoal(EnderMan var1, @Nullable TargetingConditions.Selector var2) {
+      public EndermanLookForPlayerGoal(EnderMan var1, TargetingConditions.@Nullable Selector var2) {
          super(var1, Player.class, 10, false, false, var2);
          this.enderman = var1;
          this.isAngerInducing = (var1x, var2x) -> (var1.isBeingStaredBy((Player)var1x) || var1.isAngryAt(var1x, var2x)) && !var1.hasIndirectPassenger(var1x);
@@ -461,8 +457,7 @@ public class EnderMan extends Monster implements NeutralMob {
 
    static class EndermanFreezeWhenLookedAt extends Goal {
       private final EnderMan enderman;
-      @Nullable
-      private LivingEntity target;
+      private @Nullable LivingEntity target;
 
       public EndermanFreezeWhenLookedAt(EnderMan var1) {
          super();
@@ -501,7 +496,7 @@ public class EnderMan extends Monster implements NeutralMob {
       public boolean canUse() {
          if (this.enderman.getCarriedBlock() == null) {
             return false;
-         } else if (!getServerLevel(this.enderman).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         } else if (!(Boolean)getServerLevel(this.enderman).getGameRules().get(GameRules.MOB_GRIEFING)) {
             return false;
          } else {
             return this.enderman.getRandom().nextInt(reducedTickDelay(2000)) == 0;
@@ -546,7 +541,7 @@ public class EnderMan extends Monster implements NeutralMob {
       public boolean canUse() {
          if (this.enderman.getCarriedBlock() != null) {
             return false;
-         } else if (!getServerLevel(this.enderman).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         } else if (!(Boolean)getServerLevel(this.enderman).getGameRules().get(GameRules.MOB_GRIEFING)) {
             return false;
          } else {
             return this.enderman.getRandom().nextInt(reducedTickDelay(20)) == 0;

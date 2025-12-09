@@ -2,11 +2,11 @@ package net.minecraft.world.level.levelgen.structure.templatesystem.rule.blocken
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public class AppendLoot implements RuleBlockEntityModifier {
    public static final MapCodec<AppendLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootTable.KEY_CODEC.fieldOf("loot_table").forGetter((var0x) -> var0x.lootTable)).apply(var0, AppendLoot::new));

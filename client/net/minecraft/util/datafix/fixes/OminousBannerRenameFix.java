@@ -4,7 +4,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class OminousBannerRenameFix extends ItemStackTagFix {
    public OminousBannerRenameFix(Schema var1) {

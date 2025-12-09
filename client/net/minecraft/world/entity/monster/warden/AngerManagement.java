@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ExtraCodecs;
@@ -26,6 +25,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import org.jspecify.annotations.Nullable;
 
 public class AngerManagement {
    @VisibleForTesting
@@ -153,8 +153,7 @@ public class AngerManagement {
       this.sortAndUpdateHighestAnger();
    }
 
-   @Nullable
-   private Entity getTopSuspect() {
+   private @Nullable Entity getTopSuspect() {
       return (Entity)this.suspects.stream().filter(this.filter).findFirst().orElse((Object)null);
    }
 

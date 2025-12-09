@@ -2,12 +2,12 @@ package net.minecraft.client.data.models.model;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class DelegatedModel implements ModelInstance {
-   private final ResourceLocation parent;
+   private final Identifier parent;
 
-   public DelegatedModel(ResourceLocation var1) {
+   public DelegatedModel(Identifier var1) {
       super();
       this.parent = var1;
    }

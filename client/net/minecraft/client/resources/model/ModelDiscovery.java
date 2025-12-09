@@ -15,27 +15,27 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ModelDiscovery {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Object2ObjectMap<ResourceLocation, ModelWrapper> modelWrappers = new Object2ObjectOpenHashMap();
+   private final Object2ObjectMap<Identifier, ModelWrapper> modelWrappers = new Object2ObjectOpenHashMap();
    private final ModelWrapper missingModel;
-   private final Object2ObjectFunction<ResourceLocation, ModelWrapper> uncachedResolver;
+   private final Object2ObjectFunction<Identifier, ModelWrapper> uncachedResolver;
    private final ResolvableModel.Resolver resolver;
    private final Queue<ModelWrapper> parentDiscoveryQueue = new ArrayDeque();
 
-   public ModelDiscovery(Map<ResourceLocation, UnbakedModel> var1, UnbakedModel var2) {
+   public ModelDiscovery(Map<Identifier, UnbakedModel> var1, UnbakedModel var2) {
       super();
       this.missingModel = new ModelWrapper(MissingBlockModel.LOCATION, var2, true);
       this.modelWrappers.put(MissingBlockModel.LOCATION, this.missingModel);
       this.uncachedResolver = (var2x) -> {
-         ResourceLocation var3 = (ResourceLocation)var2x;
+         Identifier var3 = (Identifier)var2x;
          UnbakedModel var4 = (UnbakedModel)var1.get(var3);
          if (var4 == null) {
             LOGGER.warn("Missing block model: {}", var3);
@@ -51,11 +51,11 @@ public class ModelDiscovery {
       return var0.parent() == null;
    }
 
-   private ModelWrapper getOrCreateModel(ResourceLocation var1) {
+   private ModelWrapper getOrCreateModel(Identifier var1) {
       return (ModelWrapper)this.modelWrappers.computeIfAbsent(var1, this.uncachedResolver);
    }
 
-   private ModelWrapper createAndQueueWrapper(ResourceLocation var1, UnbakedModel var2) {
+   private ModelWrapper createAndQueueWrapper(Identifier var1, UnbakedModel var2) {
       boolean var3 = isRoot(var2);
       ModelWrapper var4 = new ModelWrapper(var1, var2, var3);
       if (!var3) {
@@ -69,7 +69,7 @@ public class ModelDiscovery {
       var1.resolveDependencies(this.resolver);
    }
 
-   public void addSpecialModel(ResourceLocation var1, UnbakedModel var2) {
+   public void addSpecialModel(Identifier var1, UnbakedModel var2) {
       if (!isRoot(var2)) {
          LOGGER.warn("Trying to add non-root special model {}, ignoring", var1);
       } else {
@@ -85,7 +85,7 @@ public class ModelDiscovery {
       return this.missingModel;
    }
 
-   public Map<ResourceLocation, ResolvedModel> resolve() {
+   public Map<Identifier, ResolvedModel> resolve() {
       ArrayList var1 = new ArrayList();
       this.discoverDependencies(var1);
       propagateValidity(var1);
@@ -104,7 +104,7 @@ public class ModelDiscovery {
    private void discoverDependencies(List<ModelWrapper> var1) {
       ModelWrapper var2;
       while((var2 = (ModelWrapper)this.parentDiscoveryQueue.poll()) != null) {
-         ResourceLocation var3 = (ResourceLocation)Objects.requireNonNull(var2.wrapped.parent());
+         Identifier var3 = (Identifier)Objects.requireNonNull(var2.wrapped.parent());
          ModelWrapper var4 = this.getOrCreateModel(var3);
          var2.parent = var4;
          if (var4.valid) {
@@ -153,12 +153,11 @@ public class ModelDiscovery {
       private static final Slot<TextureAtlasSprite> KEY_PARTICLE_SPRITE = slot(5);
       private static final Slot<QuadCollection> KEY_DEFAULT_GEOMETRY = slot(6);
       private static final int SLOT_COUNT = 7;
-      private final ResourceLocation id;
+      private final Identifier id;
       boolean valid;
-      @Nullable
-      ModelWrapper parent;
+      @Nullable ModelWrapper parent;
       final UnbakedModel wrapped;
-      private final AtomicReferenceArray<Object> fixedSlots = new AtomicReferenceArray(7);
+      private final AtomicReferenceArray<@Nullable Object> fixedSlots = new AtomicReferenceArray(7);
       private final Map<ModelState, QuadCollection> modelBakeCache = new ConcurrentHashMap();
 
       private static <T> Slot<T> slot(int var0) {
@@ -166,7 +165,7 @@ public class ModelDiscovery {
          return new Slot<T>(var0);
       }
 
-      ModelWrapper(ResourceLocation var1, UnbakedModel var2, boolean var3) {
+      ModelWrapper(Identifier var1, UnbakedModel var2, boolean var3) {
          super();
          this.id = var1;
          this.wrapped = var2;
@@ -177,8 +176,7 @@ public class ModelDiscovery {
          return this.wrapped;
       }
 
-      @Nullable
-      public ResolvedModel parent() {
+      public @Nullable ResolvedModel parent() {
          return this.parent;
       }
 
@@ -186,8 +184,7 @@ public class ModelDiscovery {
          return this.id.toString();
       }
 
-      @Nullable
-      private <T> T getSlot(Slot<T> var1) {
+      private <T> @Nullable T getSlot(Slot<T> var1) {
          return (T)this.fixedSlots.get(var1.index);
       }
 
@@ -232,7 +229,7 @@ public class ModelDiscovery {
       }
 
       public QuadCollection bakeTopGeometry(TextureSlots var1, ModelBaker var2, ModelState var3) {
-         return var3 == BlockModelRotation.X0_Y0 ? this.bakeDefaultState(var1, var2, var3) : (QuadCollection)this.modelBakeCache.computeIfAbsent(var3, (var3x) -> {
+         return var3 == BlockModelRotation.IDENTITY ? this.bakeDefaultState(var1, var2, var3) : (QuadCollection)this.modelBakeCache.computeIfAbsent(var3, (var3x) -> {
             UnbakedGeometry var4 = this.getTopGeometry();
             return var4.bake(var1, var2, var3x, this);
          });

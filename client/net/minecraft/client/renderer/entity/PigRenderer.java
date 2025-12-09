@@ -4,9 +4,9 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import net.minecraft.client.model.AdultAndBabyModelPair;
-import net.minecraft.client.model.ColdPigModel;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.PigModel;
+import net.minecraft.client.model.animal.pig.ColdPigModel;
+import net.minecraft.client.model.animal.pig.PigModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
@@ -16,10 +16,10 @@ import net.minecraft.client.renderer.entity.state.PigRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.animal.Pig;
-import net.minecraft.world.entity.animal.PigVariant;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.pig.PigVariant;
 
 public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
    private final Map<PigVariant.ModelType, AdultAndBabyModelPair<PigModel>> models;
@@ -41,7 +41,7 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
       }
    }
 
-   public ResourceLocation getTextureLocation(PigRenderState var1) {
+   public Identifier getTextureLocation(PigRenderState var1) {
       return var1.variant == null ? MissingTextureAtlasSprite.getLocation() : var1.variant.modelAndTexture().asset().texturePath();
    }
 
@@ -56,7 +56,7 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((PigRenderState)var1);
    }
 

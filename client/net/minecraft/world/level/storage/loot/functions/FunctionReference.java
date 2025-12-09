@@ -42,7 +42,7 @@ public class FunctionReference extends LootItemConditionalFunction {
    protected ItemStack run(ItemStack var1, LootContext var2) {
       LootItemFunction var3 = (LootItemFunction)var2.getResolver().get(this.name).map(Holder::value).orElse((Object)null);
       if (var3 == null) {
-         LOGGER.warn("Unknown function: {}", this.name.location());
+         LOGGER.warn("Unknown function: {}", this.name.identifier());
          return var1;
       } else {
          LootContext.VisitedEntry var4 = LootContext.createVisitedEntry(var3);

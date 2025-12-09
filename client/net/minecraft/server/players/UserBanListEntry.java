@@ -2,8 +2,8 @@ package net.minecraft.server.players;
 
 import com.google.gson.JsonObject;
 import java.util.Date;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class UserBanListEntry extends BanListEntry<NameAndId> {
    private static final Component MESSAGE_UNKNOWN_USER = Component.translatable("commands.banlist.entry.unknown");

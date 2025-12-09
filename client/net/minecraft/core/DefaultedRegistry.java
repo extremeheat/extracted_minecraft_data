@@ -1,18 +1,15 @@
 package net.minecraft.core;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public interface DefaultedRegistry<T> extends Registry<T> {
-   @Nonnull
-   ResourceLocation getKey(T var1);
+   @NonNull Identifier getKey(T var1);
 
-   @Nonnull
-   T getValue(@Nullable ResourceLocation var1);
+   @NonNull T getValue(@Nullable Identifier var1);
 
-   @Nonnull
-   T byId(int var1);
+   @NonNull T byId(int var1);
 
-   ResourceLocation getDefaultKey();
+   Identifier getDefaultKey();
 }

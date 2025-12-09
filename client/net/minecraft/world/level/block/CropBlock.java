@@ -11,7 +11,6 @@ import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -143,7 +143,7 @@ public class CropBlock extends VegetationBlock implements BonemealableBlock {
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (var2 instanceof ServerLevel var7) {
-         if (var4 instanceof Ravager && var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (var4 instanceof Ravager && (Boolean)var7.getGameRules().get(GameRules.MOB_GRIEFING)) {
             var7.destroyBlock(var3, true, var4);
          }
       }

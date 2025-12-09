@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.DelayedException;
@@ -34,6 +33,7 @@ import net.minecraft.util.parsing.packrat.commands.GreedyPredicateParseRule;
 import net.minecraft.util.parsing.packrat.commands.NumberRunParseRule;
 import net.minecraft.util.parsing.packrat.commands.StringReaderTerms;
 import net.minecraft.util.parsing.packrat.commands.UnquotedStringParseRule;
+import org.jspecify.annotations.Nullable;
 
 public class SnbtGrammar {
    private static final DynamicCommandExceptionType ERROR_NUMBER_PARSE_FAILURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("snbt.parser.number_parse_failure", var0));
@@ -71,8 +71,7 @@ public class SnbtGrammar {
       return DelayedException.create(ERROR_NUMBER_PARSE_FAILURE, var0.getMessage());
    }
 
-   @Nullable
-   public static String escapeControlCharacters(char var0) {
+   public static @Nullable String escapeControlCharacters(char var0) {
       String var10000;
       switch (var0) {
          case '\b':
@@ -159,8 +158,7 @@ public class SnbtGrammar {
       }
    }
 
-   @Nullable
-   private static <T> T createFloat(DynamicOps<T> var0, Sign var1, @Nullable String var2, @Nullable String var3, @Nullable Signed<String> var4, @Nullable TypeSuffix var5, ParseState<?> var6) {
+   private static <T> @Nullable T createFloat(DynamicOps<T> var0, Sign var1, @Nullable String var2, @Nullable String var3, @Nullable Signed<String> var4, @Nullable TypeSuffix var5, ParseState<?> var6) {
       StringBuilder var7 = new StringBuilder();
       var1.append(var7);
       if (var2 != null) {
@@ -207,8 +205,7 @@ public class SnbtGrammar {
       }
    }
 
-   @Nullable
-   private static <T> T convertFloat(DynamicOps<T> var0, ParseState<?> var1, String var2) {
+   private static <T> @Nullable T convertFloat(DynamicOps<T> var0, ParseState<?> var1, String var2) {
       float var3 = Float.parseFloat(var2);
       if (!Float.isFinite(var3)) {
          var1.errorCollector().store(var1.mark(), ERROR_INFINITY_NOT_ALLOWED);
@@ -218,8 +215,7 @@ public class SnbtGrammar {
       }
    }
 
-   @Nullable
-   private static <T> T convertDouble(DynamicOps<T> var0, ParseState<?> var1, String var2) {
+   private static <T> @Nullable T convertDouble(DynamicOps<T> var0, ParseState<?> var1, String var2) {
       double var3 = Double.parseDouble(var2);
       if (!Double.isFinite(var3)) {
          var1.errorCollector().store(var1.mark(), ERROR_INFINITY_NOT_ALLOWED);
@@ -632,10 +628,8 @@ public class SnbtGrammar {
    }
 
    static record IntegerSuffix(@Nullable SignedPrefix signed, @Nullable TypeSuffix type) {
-      @Nullable
-      final SignedPrefix signed;
-      @Nullable
-      final TypeSuffix type;
+      final @Nullable SignedPrefix signed;
+      final @Nullable TypeSuffix type;
       public static final IntegerSuffix EMPTY = new IntegerSuffix((SignedPrefix)null, (TypeSuffix)null);
 
       IntegerSuffix(@Nullable SignedPrefix var1, @Nullable TypeSuffix var2) {
@@ -653,8 +647,7 @@ public class SnbtGrammar {
             return (T)var1.createByteList(EMPTY_BUFFER);
          }
 
-         @Nullable
-         public <T> T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3) {
+         public <T> @Nullable T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3) {
             ByteArrayList var4 = new ByteArrayList();
 
             for(IntegerLiteral var6 : var2) {
@@ -674,8 +667,7 @@ public class SnbtGrammar {
             return (T)var1.createIntList(IntStream.empty());
          }
 
-         @Nullable
-         public <T> T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3) {
+         public <T> @Nullable T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3) {
             IntStream.Builder var4 = IntStream.builder();
 
             for(IntegerLiteral var6 : var2) {
@@ -695,8 +687,7 @@ public class SnbtGrammar {
             return (T)var1.createLongList(LongStream.empty());
          }
 
-         @Nullable
-         public <T> T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3) {
+         public <T> @Nullable T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3) {
             LongStream.Builder var4 = LongStream.builder();
 
             for(IntegerLiteral var6 : var2) {
@@ -726,11 +717,9 @@ public class SnbtGrammar {
 
       public abstract <T> T create(DynamicOps<T> var1);
 
-      @Nullable
-      public abstract <T> T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3);
+      public abstract <T> @Nullable T create(DynamicOps<T> var1, List<IntegerLiteral> var2, ParseState<?> var3);
 
-      @Nullable
-      protected Number buildNumber(IntegerLiteral var1, ParseState<?> var2) {
+      protected @Nullable Number buildNumber(IntegerLiteral var1, ParseState<?> var2) {
          TypeSuffix var3 = this.computeType(var1.suffix);
          if (var3 == null) {
             var2.errorCollector().store(var2.mark(), SnbtGrammar.ERROR_INVALID_ARRAY_ELEMENT_TYPE);
@@ -740,8 +729,7 @@ public class SnbtGrammar {
          }
       }
 
-      @Nullable
-      private TypeSuffix computeType(IntegerSuffix var1) {
+      private @Nullable TypeSuffix computeType(IntegerSuffix var1) {
          TypeSuffix var2 = var1.type();
          if (var2 == null) {
             return this.defaultType;
@@ -873,13 +861,11 @@ public class SnbtGrammar {
          }
       }
 
-      @Nullable
-      public <T> T create(DynamicOps<T> var1, ParseState<?> var2) {
+      public <T> @Nullable T create(DynamicOps<T> var1, ParseState<?> var2) {
          return (T)this.create(var1, (TypeSuffix)Objects.requireNonNullElse(this.suffix.type, SnbtGrammar.TypeSuffix.INT), var2);
       }
 
-      @Nullable
-      public <T> T create(DynamicOps<T> var1, TypeSuffix var2, ParseState<?> var3) {
+      public <T> @Nullable T create(DynamicOps<T> var1, TypeSuffix var2, ParseState<?> var3) {
          boolean var4 = this.signedOrDefault() == SnbtGrammar.SignedPrefix.SIGNED;
          if (!var4 && this.sign == SnbtGrammar.Sign.MINUS) {
             var3.errorCollector().store(var3.mark(), SnbtGrammar.ERROR_EXPECTED_NON_NEGATIVE_NUMBER);

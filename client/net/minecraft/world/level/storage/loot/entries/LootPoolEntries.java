@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LootPoolEntries {
    public static final Codec<LootPoolEntryContainer> CODEC;
@@ -13,6 +13,7 @@ public class LootPoolEntries {
    public static final LootPoolEntryType LOOT_TABLE;
    public static final LootPoolEntryType DYNAMIC;
    public static final LootPoolEntryType TAG;
+   public static final LootPoolEntryType SLOTS;
    public static final LootPoolEntryType ALTERNATIVES;
    public static final LootPoolEntryType SEQUENCE;
    public static final LootPoolEntryType GROUP;
@@ -22,7 +23,7 @@ public class LootPoolEntries {
    }
 
    private static LootPoolEntryType register(String var0, MapCodec<? extends LootPoolEntryContainer> var1) {
-      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootPoolEntryType(var1));
+      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootPoolEntryType(var1));
    }
 
    static {
@@ -32,6 +33,7 @@ public class LootPoolEntries {
       LOOT_TABLE = register("loot_table", NestedLootTable.CODEC);
       DYNAMIC = register("dynamic", DynamicLoot.CODEC);
       TAG = register("tag", TagEntry.CODEC);
+      SLOTS = register("slots", SlotLoot.CODEC);
       ALTERNATIVES = register("alternatives", AlternativesEntry.CODEC);
       SEQUENCE = register("sequence", SequentialEntry.CODEC);
       GROUP = register("group", EntryGroup.CODEC);

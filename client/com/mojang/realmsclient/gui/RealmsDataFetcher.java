@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class RealmsDataFetcher {
    public final DataFetcher dataFetcher;
@@ -32,7 +32,7 @@ public class RealmsDataFetcher {
       this.newsManager = new RealmsNewsManager(new RealmsPersistence());
       this.serverListUpdateTask = this.dataFetcher.<ServerListData>createTask("server list", () -> {
          com.mojang.realmsclient.dto.RealmsServerList var1x = var1.listRealms();
-         return RealmsMainScreen.isSnapshot() ? new ServerListData(var1x.servers, var1.listSnapshotEligibleRealms()) : new ServerListData(var1x.servers, List.of());
+         return RealmsMainScreen.isSnapshot() ? new ServerListData(var1x.servers(), var1.listSnapshotEligibleRealms()) : new ServerListData(var1x.servers(), List.of());
       }, Duration.ofSeconds(60L), RepeatedDelayStrategy.CONSTANT);
       DataFetcher var10001 = this.dataFetcher;
       Objects.requireNonNull(var1);

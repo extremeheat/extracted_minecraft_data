@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.boss.enderdragon;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class EndCrystal extends Entity {
    private static final EntityDataAccessor<Optional<BlockPos>> DATA_BEAM_TARGET;
@@ -118,8 +118,7 @@ public class EndCrystal extends Entity {
       this.getEntityData().set(DATA_BEAM_TARGET, Optional.ofNullable(var1));
    }
 
-   @Nullable
-   public BlockPos getBeamTarget() {
+   public @Nullable BlockPos getBeamTarget() {
       return (BlockPos)((Optional)this.getEntityData().get(DATA_BEAM_TARGET)).orElse((Object)null);
    }
 

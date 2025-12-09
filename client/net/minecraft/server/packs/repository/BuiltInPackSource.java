@@ -10,15 +10,15 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class BuiltInPackSource implements RepositorySource {
@@ -28,10 +28,10 @@ public abstract class BuiltInPackSource implements RepositorySource {
    public static final KnownPack CORE_PACK_INFO = KnownPack.vanilla("core");
    private final PackType packType;
    private final VanillaPackResources vanillaPack;
-   private final ResourceLocation packDir;
+   private final Identifier packDir;
    private final DirectoryValidator validator;
 
-   public BuiltInPackSource(PackType var1, VanillaPackResources var2, ResourceLocation var3, DirectoryValidator var4) {
+   public BuiltInPackSource(PackType var1, VanillaPackResources var2, Identifier var3, DirectoryValidator var4) {
       super();
       this.packType = var1;
       this.vanillaPack = var2;
@@ -48,8 +48,7 @@ public abstract class BuiltInPackSource implements RepositorySource {
       this.listBundledPacks(var1);
    }
 
-   @Nullable
-   protected abstract Pack createVanillaPack(PackResources var1);
+   protected abstract @Nullable Pack createVanillaPack(PackResources var1);
 
    protected abstract Component getPackTitle(String var1);
 
@@ -74,7 +73,7 @@ public abstract class BuiltInPackSource implements RepositorySource {
       this.vanillaPack.listRawPaths(this.packType, this.packDir, (var2) -> this.discoverPacksInPath(var2, var1));
    }
 
-   protected void discoverPacksInPath(@Nullable Path var1, BiConsumer<String, Function<String, Pack>> var2) {
+   protected void discoverPacksInPath(@Nullable Path var1, BiConsumer<String, Function<String, @Nullable Pack>> var2) {
       if (var1 != null && Files.isDirectory(var1, new LinkOption[0])) {
          try {
             FolderRepositorySource.discoverPacks(var1, this.validator, (var2x, var3) -> var2.accept(pathToId(var2x), (Function)(var2xx) -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx))));
@@ -89,8 +88,7 @@ public abstract class BuiltInPackSource implements RepositorySource {
       return StringUtils.removeEnd(var0.getFileName().toString(), ".zip");
    }
 
-   @Nullable
-   protected abstract Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3);
+   protected abstract @Nullable Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3);
 
    protected static Pack.ResourcesSupplier fixedResources(final PackResources var0) {
       return new Pack.ResourcesSupplier() {

@@ -2,8 +2,8 @@ package net.minecraft.server.rcon.thread;
 
 import com.mojang.logging.LogUtils;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class GenericThread implements Runnable {
@@ -12,8 +12,7 @@ public abstract class GenericThread implements Runnable {
    private static final int MAX_STOP_WAIT = 5;
    protected volatile boolean running;
    protected final String name;
-   @Nullable
-   protected Thread thread;
+   protected @Nullable Thread thread;
 
    protected GenericThread(String var1) {
       super();

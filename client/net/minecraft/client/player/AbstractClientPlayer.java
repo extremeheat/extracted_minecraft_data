@@ -1,7 +1,6 @@
 package net.minecraft.client.player;
 
 import com.mojang.authlib.GameProfile;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.entity.ClientAvatarState;
@@ -14,7 +13,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.Items;
@@ -23,10 +22,10 @@ import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractClientPlayer extends Player implements ClientAvatarEntity {
-   @Nullable
-   private PlayerInfo playerInfo;
+   private @Nullable PlayerInfo playerInfo;
    private final boolean showExtraEars = "deadmau5".equals(this.getGameProfile().name());
    private final ClientAvatarState clientAvatarState = new ClientAvatarState();
 
@@ -34,14 +33,12 @@ public abstract class AbstractClientPlayer extends Player implements ClientAvata
       super(var1, var2);
    }
 
-   @Nullable
-   public GameType gameMode() {
+   public @Nullable GameType gameMode() {
       PlayerInfo var1 = this.getPlayerInfo();
       return var1 != null ? var1.getGameMode() : null;
    }
 
-   @Nullable
-   protected PlayerInfo getPlayerInfo() {
+   protected @Nullable PlayerInfo getPlayerInfo() {
       if (this.playerInfo == null) {
          this.playerInfo = Minecraft.getInstance().getConnection().getPlayerInfo(this.getUUID());
       }
@@ -62,8 +59,7 @@ public abstract class AbstractClientPlayer extends Player implements ClientAvata
       return this.clientAvatarState;
    }
 
-   @Nullable
-   public Component belowNameDisplay() {
+   public @Nullable Component belowNameDisplay() {
       Scoreboard var1 = this.level().getScoreboard();
       Objective var2 = var1.getDisplayObjective(DisplaySlot.BELOW_NAME);
       if (var2 != null) {
@@ -80,8 +76,7 @@ public abstract class AbstractClientPlayer extends Player implements ClientAvata
       return var1 == null ? DefaultPlayerSkin.get(this.getUUID()) : var1.getSkin();
    }
 
-   @Nullable
-   public Parrot.Variant getParrotVariantOnShoulder(boolean var1) {
+   public Parrot.@Nullable Variant getParrotVariantOnShoulder(boolean var1) {
       return (Parrot.Variant)(var1 ? this.getShoulderParrotLeft() : this.getShoulderParrotRight()).orElse((Object)null);
    }
 

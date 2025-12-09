@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public record DirectoryLister(String sourcePath, String idPrefix) implements SpriteSource {
@@ -20,7 +20,7 @@ public record DirectoryLister(String sourcePath, String idPrefix) implements Spr
    public void run(ResourceManager var1, SpriteSource.Output var2) {
       FileToIdConverter var3 = new FileToIdConverter("textures/" + this.sourcePath, ".png");
       var3.listMatchingResources(var1).forEach((var3x, var4) -> {
-         ResourceLocation var5 = var3.fileToId(var3x).withPrefix(this.idPrefix);
+         Identifier var5 = var3.fileToId(var3x).withPrefix(this.idPrefix);
          var2.add(var5, var4);
       });
    }

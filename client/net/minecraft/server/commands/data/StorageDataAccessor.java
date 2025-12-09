@@ -8,34 +8,34 @@ import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.CommandStorage;
 
 public class StorageDataAccessor implements DataAccessor {
    static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> SharedSuggestionProvider.suggestResource(getGlobalTags(var0).keys(), var1);
    public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) {
-            return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(var1), ResourceLocationArgument.getId(var1, var0));
+            return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(var1), IdentifierArgument.getId(var1, var0));
          }
 
          public ArgumentBuilder<CommandSourceStack, ?> wrap(ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2) {
-            return var1.then(Commands.literal("storage").then((ArgumentBuilder)var2.apply(Commands.argument(var0, ResourceLocationArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
+            return var1.then(Commands.literal("storage").then((ArgumentBuilder)var2.apply(Commands.argument(var0, IdentifierArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
          }
       };
    private final CommandStorage storage;
-   private final ResourceLocation id;
+   private final Identifier id;
 
    static CommandStorage getGlobalTags(CommandContext<CommandSourceStack> var0) {
       return ((CommandSourceStack)var0.getSource()).getServer().getCommandStorage();
    }
 
-   StorageDataAccessor(CommandStorage var1, ResourceLocation var2) {
+   StorageDataAccessor(CommandStorage var1, Identifier var2) {
       super();
       this.storage = var1;
       this.id = var2;

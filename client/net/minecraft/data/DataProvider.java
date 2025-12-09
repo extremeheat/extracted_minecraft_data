@@ -20,11 +20,11 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public interface DataProvider {
@@ -40,7 +40,7 @@ public interface DataProvider {
 
    String getName();
 
-   static <T> CompletableFuture<?> saveAll(CachedOutput var0, Codec<T> var1, PackOutput.PathProvider var2, Map<ResourceLocation, T> var3) {
+   static <T> CompletableFuture<?> saveAll(CachedOutput var0, Codec<T> var1, PackOutput.PathProvider var2, Map<Identifier, T> var3) {
       Objects.requireNonNull(var2);
       return saveAll(var0, var1, var2::json, var3);
    }

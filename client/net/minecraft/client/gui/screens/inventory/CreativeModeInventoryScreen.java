@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.HotbarManager;
 import net.minecraft.client.Minecraft;
@@ -37,7 +37,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
@@ -58,14 +58,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPickerMenu> {
-   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
-   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller_disabled");
-   private static final ResourceLocation[] UNSELECTED_TOP_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
-   private static final ResourceLocation[] SELECTED_TOP_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_7")};
-   private static final ResourceLocation[] UNSELECTED_BOTTOM_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_7")};
-   private static final ResourceLocation[] SELECTED_BOTTOM_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_7")};
+   private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/creative_inventory/scroller");
+   private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/creative_inventory/scroller_disabled");
+   private static final Identifier[] UNSELECTED_TOP_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
+   private static final Identifier[] SELECTED_TOP_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_7")};
+   private static final Identifier[] UNSELECTED_BOTTOM_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_7")};
+   private static final Identifier[] SELECTED_BOTTOM_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_7")};
    private static final int NUM_ROWS = 5;
    private static final int NUM_COLS = 9;
    private static final int TAB_WIDTH = 26;
@@ -78,10 +79,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    private float scrollOffs;
    private boolean scrolling;
    private EditBox searchBox;
-   @Nullable
-   private List<Slot> originalSlots;
-   @Nullable
-   private Slot destroyItemSlot;
+   private @Nullable List<Slot> originalSlots;
+   private @Nullable Slot destroyItemSlot;
    private CreativeInventoryListener listener;
    private boolean ignoreTextInput;
    private boolean hasClickedOutside;
@@ -149,16 +148,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    public void containerTick() {
       super.containerTick();
-      if (this.minecraft != null) {
-         LocalPlayer var1 = this.minecraft.player;
-         if (var1 != null) {
-            this.tryRefreshInvalidatedTabs(var1.connection.enabledFeatures(), this.hasPermissions(var1), var1.level().registryAccess());
-            if (!var1.hasInfiniteMaterials()) {
-               this.minecraft.setScreen(new InventoryScreen(var1));
-            }
+      LocalPlayer var1 = this.minecraft.player;
+      if (var1 != null) {
+         this.tryRefreshInvalidatedTabs(var1.connection.enabledFeatures(), this.hasPermissions(var1), var1.level().registryAccess());
+         if (!var1.hasInfiniteMaterials()) {
+            this.minecraft.setScreen(new InventoryScreen(var1));
          }
-
       }
+
    }
 
    protected void slotClicked(@Nullable Slot var1, int var2, int var3, ClickType var4) {
@@ -305,6 +302,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          this.searchBox.setBordered(false);
          this.searchBox.setVisible(false);
          this.searchBox.setTextColor(-1);
+         this.searchBox.setInvertHighlightedTextColor(false);
          this.addWidget(this.searchBox);
          CreativeModeTab var1 = selectedTab;
          selectedTab = CreativeModeTabs.getDefaultTab();
@@ -321,16 +319,16 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      int var4 = ((ItemPickerMenu)this.menu).getRowIndexForScroll(this.scrollOffs);
-      String var5 = this.searchBox.getValue();
-      this.init(var1, var2, var3);
-      this.searchBox.setValue(var5);
+   public void resize(int var1, int var2) {
+      int var3 = ((ItemPickerMenu)this.menu).getRowIndexForScroll(this.scrollOffs);
+      String var4 = this.searchBox.getValue();
+      this.init(var1, var2);
+      this.searchBox.setValue(var4);
       if (!this.searchBox.getValue().isEmpty()) {
          this.refreshSearchResults();
       }
 
-      this.scrollOffs = ((ItemPickerMenu)this.menu).getScrollForRowIndex(var4);
+      this.scrollOffs = ((ItemPickerMenu)this.menu).getScrollForRowIndex(var3);
       ((ItemPickerMenu)this.menu).scrollTo(this.scrollOffs);
    }
 
@@ -630,9 +628,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.effects.renderEffects(var1, var2, var3);
+      this.effects.render(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.renderTooltip(var1, var2, var3);
 
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (this.checkTabHovering(var1, var6, var2, var3)) {
@@ -688,21 +685,25 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (var6 != selectedTab) {
-            this.renderTabButton(var1, var6);
+            this.renderTabButton(var1, var3, var4, var6);
          }
       }
 
       var1.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      if (this.insideScrollbar((double)var3, (double)var4) && this.canScroll()) {
+         var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      }
+
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
-         ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
+         Identifier var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
-      this.renderTabButton(var1, selectedTab);
+      this.renderTabButton(var1, var3, var4, selectedTab);
       if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
          InventoryScreen.renderEntityInInventoryFollowsMouse(var1, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)var3, (float)var4, this.minecraft.player);
       }
@@ -748,23 +749,27 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   protected void renderTabButton(GuiGraphics var1, CreativeModeTab var2) {
-      boolean var3 = var2 == selectedTab;
-      boolean var4 = var2.row() == CreativeModeTab.Row.TOP;
-      int var5 = var2.column();
-      int var6 = this.leftPos + this.getTabX(var2);
-      int var7 = this.topPos - (var4 ? 28 : -(this.imageHeight - 4));
-      ResourceLocation[] var8;
-      if (var4) {
-         var8 = var3 ? SELECTED_TOP_TABS : UNSELECTED_TOP_TABS;
+   protected void renderTabButton(GuiGraphics var1, int var2, int var3, CreativeModeTab var4) {
+      boolean var5 = var4 == selectedTab;
+      boolean var6 = var4.row() == CreativeModeTab.Row.TOP;
+      int var7 = var4.column();
+      int var8 = this.leftPos + this.getTabX(var4);
+      int var9 = this.topPos - (var6 ? 28 : -(this.imageHeight - 4));
+      Identifier[] var10;
+      if (var6) {
+         var10 = var5 ? SELECTED_TOP_TABS : UNSELECTED_TOP_TABS;
       } else {
-         var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
+         var10 = var5 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
-      int var9 = var6 + 13 - 8;
-      int var10 = var7 + 16 - 8 + (var4 ? 1 : -1);
-      var1.renderItem(var2.getIconItem(), var9, var10);
+      if (!var5 && var2 > var8 && var3 > var9 && var2 < var8 + 26 && var3 < var9 + 32) {
+         var1.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var10[Mth.clamp(var7, 0, var10.length)], var8, var9, 26, 32);
+      int var11 = var8 + 13 - 8;
+      int var12 = var9 + 16 - 8 + (var6 ? 1 : -1);
+      var1.renderItem(var4.getIconItem(), var11, var12);
    }
 
    public boolean isInventoryOpen() {
@@ -929,8 +934,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          return this.target.getMaxStackSize(var1);
       }
 
-      @Nullable
-      public ResourceLocation getNoItemIcon() {
+      public @Nullable Identifier getNoItemIcon() {
          return this.target.getNoItemIcon();
       }
 

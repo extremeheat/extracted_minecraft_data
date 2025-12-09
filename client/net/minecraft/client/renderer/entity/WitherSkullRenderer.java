@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.WitherSkullRenderState;
@@ -15,12 +15,12 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 
 public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkullRenderState> {
-   private static final ResourceLocation WITHER_INVULNERABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
-   private static final ResourceLocation WITHER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither.png");
+   private static final Identifier WITHER_INVULNERABLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
+   private static final Identifier WITHER_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither.png");
    private final SkullModel model;
 
    public WitherSkullRenderer(EntityRendererProvider.Context var1) {
@@ -47,7 +47,7 @@ public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkull
       super.submit(var1, var2, var3, var4);
    }
 
-   private ResourceLocation getTextureLocation(WitherSkullRenderState var1) {
+   private Identifier getTextureLocation(WitherSkullRenderState var1) {
       return var1.isDangerous ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
    }
 

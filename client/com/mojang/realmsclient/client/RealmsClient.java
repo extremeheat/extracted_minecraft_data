@@ -7,6 +7,7 @@ import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
 import com.mojang.realmsclient.dto.GuardedSerializer;
 import com.mojang.realmsclient.dto.Ops;
+import com.mojang.realmsclient.dto.OutboundPlayer;
 import com.mojang.realmsclient.dto.PendingInvite;
 import com.mojang.realmsclient.dto.PendingInvitesList;
 import com.mojang.realmsclient.dto.PingResult;
@@ -29,7 +30,6 @@ import com.mojang.realmsclient.dto.ReflectionBasedSerialization;
 import com.mojang.realmsclient.dto.RegionDataDto;
 import com.mojang.realmsclient.dto.RegionSelectionPreference;
 import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
-import com.mojang.realmsclient.dto.ServerActivityList;
 import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.dto.UploadInfo;
 import com.mojang.realmsclient.dto.WorldDownload;
@@ -48,18 +48,17 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.LenientJsonParser;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsClient {
    public static final Environment ENVIRONMENT;
    private static final Logger LOGGER;
-   @Nullable
-   private static volatile RealmsClient realmsClientInstance;
+   private static volatile @Nullable RealmsClient realmsClientInstance;
    private final CompletableFuture<Set<String>> featureFlags;
    private final String sessionId;
    private final String username;
@@ -79,7 +78,6 @@ public class RealmsClient {
    private static final String PATH_CREATE_SNAPSHOT_REALM = "/$PARENT_WORLD_ID/createPrereleaseRealm";
    private static final String PATH_SNAPSHOT_ELIGIBLE_REALMS = "/listPrereleaseEligibleWorlds";
    private static final String PATH_INITIALIZE = "/$WORLD_ID/initialize";
-   private static final String PATH_GET_ACTIVTIES = "/$WORLD_ID";
    private static final String PATH_GET_LIVESTATS = "/liveplayerlist";
    private static final String PATH_GET_SUBSCRIPTION = "/$WORLD_ID";
    private static final String PATH_OP = "/$WORLD_ID/$PROFILE_UUID";
@@ -90,7 +88,6 @@ public class RealmsClient {
    private static final String PATH_WORLD_GET = "/$ID";
    private static final String PATH_WORLD_INVITES = "/$WORLD_ID";
    private static final String PATH_WORLD_UNINVITE = "/$WORLD_ID/invite/$UUID";
-   private static final String PATH_PENDING_INVITES_COUNT = "/count/pending";
    private static final String PATH_PENDING_INVITES = "/pending";
    private static final String PATH_ACCEPT_INVITE = "/accept/$INVITATION_ID";
    private static final String PATH_REJECT_INVITE = "/reject/$INVITATION_ID";
@@ -184,7 +181,7 @@ public class RealmsClient {
    public List<RealmsServer> listSnapshotEligibleRealms() throws RealmsServiceException {
       String var1 = this.url("worlds/listPrereleaseEligibleWorlds");
       String var2 = this.execute(Request.get(var1));
-      return RealmsServerList.parse(GSON, var2).servers;
+      return RealmsServerList.parse(GSON, var2).servers();
    }
 
    public RealmsServer createSnapshotRealm(Long var1) throws RealmsServiceException {
@@ -247,15 +244,9 @@ public class RealmsClient {
             return var3;
          }
       } catch (Exception var9) {
-         LOGGER.error("Could not parse PreferredRegionSelections: {}", var9.getMessage());
+         LOGGER.error("Could not parse PreferredRegionSelections", var9);
          return PreferredRegionsDto.empty();
       }
-   }
-
-   public ServerActivityList getActivity(long var1) throws RealmsServiceException {
-      String var3 = this.url("activities" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
-      String var4 = this.execute(Request.get(var3));
-      return ServerActivityList.parse(var4);
    }
 
    public RealmsServerPlayerLists getLiveStats() throws RealmsServiceException {
@@ -306,8 +297,8 @@ public class RealmsClient {
    }
 
    public List<PlayerInfo> invite(long var1, String var3) throws RealmsServiceException {
-      PlayerInfo var4 = new PlayerInfo();
-      var4.setName(var3);
+      OutboundPlayer var4 = new OutboundPlayer();
+      var4.name = var3;
       String var5 = this.url("invites" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
       String var6 = this.execute(Request.post(var5, GSON.toJson((ReflectionBasedSerialization)var4)));
       return RealmsServer.parse(GSON, var6).players;
@@ -395,19 +386,19 @@ public class RealmsClient {
    }
 
    public int pendingInvitesCount() throws RealmsServiceException {
-      return this.pendingInvites().pendingInvites.size();
+      return this.pendingInvites().pendingInvites().size();
    }
 
    public PendingInvitesList pendingInvites() throws RealmsServiceException {
       String var1 = this.url("invites/pending");
       String var2 = this.execute(Request.get(var1));
       PendingInvitesList var3 = PendingInvitesList.parse(var2);
-      var3.pendingInvites.removeIf(this::isBlocked);
+      var3.pendingInvites().removeIf(this::isBlocked);
       return var3;
    }
 
    private boolean isBlocked(PendingInvite var1) {
-      return this.minecraft.getPlayerSocialManager().isBlocked(var1.realmOwnerUuid);
+      return this.minecraft.getPlayerSocialManager().isBlocked(var1.realmOwnerUuid());
    }
 
    public void acceptInvitation(String var1) throws RealmsServiceException {
@@ -421,13 +412,12 @@ public class RealmsClient {
       return WorldDownload.parse(var5);
    }
 
-   @Nullable
-   public UploadInfo requestUploadInfo(long var1) throws RealmsServiceException {
+   public @Nullable UploadInfo requestUploadInfo(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/$WORLD_ID/backups/upload".replace("$WORLD_ID", String.valueOf(var1)));
       String var4 = UploadTokenCache.get(var1);
       UploadInfo var5 = UploadInfo.parse(this.execute(Request.put(var3, UploadInfo.createRequest(var4))));
       if (var5 != null) {
-         UploadTokenCache.put(var1, var5.getToken());
+         UploadTokenCache.put(var1, var5.token());
       }
 
       return var5;
@@ -469,7 +459,7 @@ public class RealmsClient {
       return this.url(var1, (String)null);
    }
 
-   private String url(String var1, @Nullable String var2) throws RealmsServiceException {
+   private String url(String var1, @Nullable String var2) {
       return url(var1, var2, this.getFeatureFlags().contains("realms_in_aks"));
    }
 

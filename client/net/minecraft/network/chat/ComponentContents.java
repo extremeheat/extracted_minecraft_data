@@ -3,9 +3,9 @@ package net.minecraft.network.chat;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public interface ComponentContents {
    default <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {

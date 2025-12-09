@@ -1,24 +1,25 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.EndCrystalModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.crystal.EndCrystalModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.phys.Vec3;
 
 public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRenderState> {
-   private static final ResourceLocation END_CRYSTAL_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_crystal/end_crystal.png");
+   private static final Identifier END_CRYSTAL_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal.png");
    private static final RenderType RENDER_TYPE;
    private final EndCrystalModel model;
 
@@ -48,7 +49,7 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
    }
 
    public static float getY(float var0) {
-      float var1 = Mth.sin(var0 * 0.2F) / 2.0F + 0.5F;
+      float var1 = Mth.sin((double)(var0 * 0.2F)) / 2.0F + 0.5F;
       var1 = (var1 * var1 + var1) * 0.4F;
       return var1 - 1.4F;
    }
@@ -80,6 +81,6 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
    }
 
    static {
-      RENDER_TYPE = RenderType.entityCutoutNoCull(END_CRYSTAL_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutoutNoCull(END_CRYSTAL_LOCATION);
    }
 }

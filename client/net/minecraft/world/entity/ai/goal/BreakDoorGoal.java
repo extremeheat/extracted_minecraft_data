@@ -3,8 +3,8 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.function.Predicate;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class BreakDoorGoal extends DoorInteractGoal {
    private static final int DEFAULT_DOOR_BREAK_TIME = 240;
@@ -32,7 +32,7 @@ public class BreakDoorGoal extends DoorInteractGoal {
    public boolean canUse() {
       if (!super.canUse()) {
          return false;
-      } else if (!getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+      } else if (!(Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.MOB_GRIEFING)) {
          return false;
       } else {
          return this.isValidDifficulty(this.mob.level().getDifficulty()) && !this.isOpen();

@@ -17,28 +17,26 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.StrictJsonParser;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PeriodicNotificationManager extends SimplePreparableReloadListener<Map<String, List<Notification>>> implements AutoCloseable {
    private static final Codec<Map<String, List<Notification>>> CODEC;
    private static final Logger LOGGER;
-   private final ResourceLocation notifications;
+   private final Identifier notifications;
    private final Object2BooleanFunction<String> selector;
-   @Nullable
-   private Timer timer;
-   @Nullable
-   private NotificationTask notificationTask;
+   private @Nullable Timer timer;
+   private @Nullable NotificationTask notificationTask;
 
-   public PeriodicNotificationManager(ResourceLocation var1, Object2BooleanFunction<String> var2) {
+   public PeriodicNotificationManager(Identifier var1, Object2BooleanFunction<String> var2) {
       super();
       this.notifications = var1;
       this.selector = var2;

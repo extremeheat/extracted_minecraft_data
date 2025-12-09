@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -36,6 +35,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.world.level.storage.LevelSummary;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploadStatusTracker {
    private static final int BAR_WIDTH = 200;
@@ -46,26 +46,21 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    private static final Component VERIFYING_TEXT = Component.translatable("mco.upload.verifying");
    private final RealmsResetWorldScreen lastScreen;
    private final LevelSummary selectedLevel;
-   @Nullable
-   private final RealmCreationTask realmCreationTask;
+   private final @Nullable RealmCreationTask realmCreationTask;
    private final long realmId;
    private final int slotId;
-   final AtomicReference<RealmsWorldUpload> currentUpload = new AtomicReference();
+   final AtomicReference<@Nullable RealmsWorldUpload> currentUpload = new AtomicReference();
    private final UploadStatus uploadStatus;
    private final RateLimiter narrationRateLimiter;
-   @Nullable
-   private volatile Component[] errorMessage;
+   private volatile Component @Nullable [] errorMessage;
    private volatile Component status = Component.translatable("mco.upload.preparing");
-   @Nullable
-   private volatile String progress;
+   private volatile @Nullable String progress;
    private volatile boolean cancelled;
    private volatile boolean uploadFinished;
    private volatile boolean showDots = true;
    private volatile boolean uploadStarted;
-   @Nullable
-   private Button backButton;
-   @Nullable
-   private Button cancelButton;
+   private @Nullable Button backButton;
+   private @Nullable Button cancelButton;
    private int tickCount;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 

@@ -11,8 +11,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public interface ProblemReporter {
@@ -47,7 +47,7 @@ public interface ProblemReporter {
       }
 
       public String get() {
-         String var10000 = String.valueOf(this.id.location());
+         String var10000 = String.valueOf(this.id.identifier());
          return "{" + var10000 + "@" + String.valueOf(this.id.registry()) + "}";
       }
    }
@@ -93,15 +93,14 @@ public interface ProblemReporter {
       }
 
       public String get() {
-         String var10000 = String.valueOf(this.id.location());
+         String var10000 = String.valueOf(this.id.identifier());
          return "->{" + var10000 + "@" + String.valueOf(this.id.registry()) + "}";
       }
    }
 
    public static class Collector implements ProblemReporter {
       public static final PathElement EMPTY_ROOT = () -> "";
-      @Nullable
-      private final Collector parent;
+      private final @Nullable Collector parent;
       private final PathElement element;
       private final Set<Entry> problems;
 

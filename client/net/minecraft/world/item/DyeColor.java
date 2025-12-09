@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +21,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public enum DyeColor implements StringRepresentable {
    WHITE(0, "white", 16383998, MapColor.SNOW, 15790320, 16777215),
@@ -92,15 +92,13 @@ public enum DyeColor implements StringRepresentable {
       return (DyeColor)BY_ID.apply(var0);
    }
 
-   @Nullable
    @Contract("_,!null->!null;_,null->_")
-   public static DyeColor byName(String var0, @Nullable DyeColor var1) {
+   public static @Nullable DyeColor byName(String var0, @Nullable DyeColor var1) {
       DyeColor var2 = CODEC.byName(var0);
       return var2 != null ? var2 : var1;
    }
 
-   @Nullable
-   public static DyeColor byFireworkColor(int var0) {
+   public static @Nullable DyeColor byFireworkColor(int var0) {
       return (DyeColor)BY_FIREWORK_COLOR.get(var0);
    }
 

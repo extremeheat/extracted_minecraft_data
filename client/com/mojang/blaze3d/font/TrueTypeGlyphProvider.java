@@ -10,11 +10,11 @@ import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.freetype.FT_Bitmap;
@@ -25,10 +25,8 @@ import org.lwjgl.util.freetype.FT_Vector;
 import org.lwjgl.util.freetype.FreeType;
 
 public class TrueTypeGlyphProvider implements GlyphProvider {
-   @Nullable
-   private ByteBuffer fontMemory;
-   @Nullable
-   private FT_Face face;
+   private @Nullable ByteBuffer fontMemory;
+   private @Nullable FT_Face face;
    final float oversample;
    private final CodepointMap<GlyphEntry> glyphs = new CodepointMap<GlyphEntry>((var0) -> new GlyphEntry[var0], (var0) -> new GlyphEntry[var0][]);
 
@@ -83,8 +81,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
    }
 
-   @Nullable
-   public UnbakedGlyph getGlyph(int var1) {
+   public @Nullable UnbakedGlyph getGlyph(int var1) {
       GlyphEntry var2 = this.glyphs.get(var1);
       return var2 != null ? this.getOrLoadGlyphInfo(var1, var2) : null;
    }
@@ -152,8 +149,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
    static class GlyphEntry {
       final int index;
-      @Nullable
-      volatile UnbakedGlyph glyph;
+      volatile @Nullable UnbakedGlyph glyph;
 
       GlyphEntry(int var1) {
          super();

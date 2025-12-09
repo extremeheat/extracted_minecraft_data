@@ -5,21 +5,21 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 
 public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundSetJigsawBlockPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSetJigsawBlockPacket>codec(ServerboundSetJigsawBlockPacket::write, ServerboundSetJigsawBlockPacket::new);
    private final BlockPos pos;
-   private final ResourceLocation name;
-   private final ResourceLocation target;
-   private final ResourceLocation pool;
+   private final Identifier name;
+   private final Identifier target;
+   private final Identifier pool;
    private final String finalState;
    private final JigsawBlockEntity.JointType joint;
    private final int selectionPriority;
    private final int placementPriority;
 
-   public ServerboundSetJigsawBlockPacket(BlockPos var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, String var5, JigsawBlockEntity.JointType var6, int var7, int var8) {
+   public ServerboundSetJigsawBlockPacket(BlockPos var1, Identifier var2, Identifier var3, Identifier var4, String var5, JigsawBlockEntity.JointType var6, int var7, int var8) {
       super();
       this.pos = var1;
       this.name = var2;
@@ -34,9 +34,9 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
    private ServerboundSetJigsawBlockPacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
-      this.name = var1.readResourceLocation();
-      this.target = var1.readResourceLocation();
-      this.pool = var1.readResourceLocation();
+      this.name = var1.readIdentifier();
+      this.target = var1.readIdentifier();
+      this.pool = var1.readIdentifier();
       this.finalState = var1.readUtf();
       this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var1.readUtf(), JigsawBlockEntity.JointType.ALIGNED);
       this.selectionPriority = var1.readVarInt();
@@ -45,9 +45,9 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
 
    private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
-      var1.writeResourceLocation(this.name);
-      var1.writeResourceLocation(this.target);
-      var1.writeResourceLocation(this.pool);
+      var1.writeIdentifier(this.name);
+      var1.writeIdentifier(this.target);
+      var1.writeIdentifier(this.pool);
       var1.writeUtf(this.finalState);
       var1.writeUtf(this.joint.getSerializedName());
       var1.writeVarInt(this.selectionPriority);
@@ -66,15 +66,15 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       return this.pos;
    }
 
-   public ResourceLocation getName() {
+   public Identifier getName() {
       return this.name;
    }
 
-   public ResourceLocation getTarget() {
+   public Identifier getTarget() {
       return this.target;
    }
 
-   public ResourceLocation getPool() {
+   public Identifier getPool() {
       return this.pool;
    }
 

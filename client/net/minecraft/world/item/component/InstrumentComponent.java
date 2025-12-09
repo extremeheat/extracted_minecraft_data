@@ -11,7 +11,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -42,13 +41,10 @@ public record InstrumentComponent(EitherHolder<Instrument> instrument) implement
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       HolderLookup.Provider var5 = var1.registries();
       if (var5 != null) {
-         Optional var6 = this.unwrap(var5);
-         if (var6.isPresent()) {
-            MutableComponent var7 = ((Instrument)((Holder)var6.get()).value()).description().copy();
-            ComponentUtils.mergeStyles(var7, Style.EMPTY.withColor(ChatFormatting.GRAY));
-            var2.accept(var7);
-         }
-
+         this.unwrap(var5).ifPresent((var1x) -> {
+            Component var2x = ComponentUtils.mergeStyles(((Instrument)var1x.value()).description(), Style.EMPTY.withColor(ChatFormatting.GRAY));
+            var2.accept(var2x);
+         });
       }
    }
 

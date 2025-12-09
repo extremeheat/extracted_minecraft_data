@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.sheep;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
@@ -124,7 +124,7 @@ public class Sheep extends Animal implements Shearable {
    public float getHeadEatAngleScale(float var1) {
       if (this.eatAnimationTick > 4 && this.eatAnimationTick <= 36) {
          float var2 = ((float)(this.eatAnimationTick - 4) - var1) / 32.0F;
-         return 0.62831855F + 0.21991149F * Mth.sin(var2 * 28.7F);
+         return 0.62831855F + 0.21991149F * Mth.sin((double)(var2 * 28.7F));
       } else {
          return this.eatAnimationTick > 0 ? 0.62831855F : this.getXRot(var1) * 0.017453292F;
       }
@@ -205,8 +205,7 @@ public class Sheep extends Animal implements Shearable {
       this.entityData.set(DATA_WOOL_ID, (byte)(var2 & 240 | var1.getId() & 15));
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.SHEEP_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
    }
 
@@ -243,8 +242,7 @@ public class Sheep extends Animal implements Shearable {
       return SheepColorSpawnRules.getSheepColor(var2, var0.getRandom());
    }
 
-   @Nullable
-   public Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Sheep var3 = EntityType.SHEEP.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          DyeColor var4 = this.getColor();
@@ -264,15 +262,13 @@ public class Sheep extends Animal implements Shearable {
 
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setColor(getRandomSheepColor(var1, this.blockPosition()));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

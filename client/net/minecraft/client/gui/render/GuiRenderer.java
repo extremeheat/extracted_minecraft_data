@@ -36,7 +36,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -61,10 +60,11 @@ import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -96,26 +96,18 @@ public class GuiRenderer implements AutoCloseable {
    private final SubmitNodeCollector submitNodeCollector;
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private final Map<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> pictureInPictureRenderers;
-   @Nullable
-   private GpuTexture itemsAtlas;
-   @Nullable
-   private GpuTextureView itemsAtlasView;
-   @Nullable
-   private GpuTexture itemsAtlasDepth;
-   @Nullable
-   private GpuTextureView itemsAtlasDepthView;
+   private @Nullable GpuTexture itemsAtlas;
+   private @Nullable GpuTextureView itemsAtlasView;
+   private @Nullable GpuTexture itemsAtlasDepth;
+   private @Nullable GpuTextureView itemsAtlasDepthView;
    private int itemAtlasX;
    private int itemAtlasY;
    private int cachedGuiScale;
    private int frameNumber;
-   @Nullable
-   private ScreenRectangle previousScissorArea = null;
-   @Nullable
-   private RenderPipeline previousPipeline = null;
-   @Nullable
-   private TextureSetup previousTextureSetup = null;
-   @Nullable
-   private BufferBuilder bufferBuilder = null;
+   private @Nullable ScreenRectangle previousScissorArea = null;
+   private @Nullable RenderPipeline previousPipeline = null;
+   private @Nullable TextureSetup previousTextureSetup = null;
+   private @Nullable BufferBuilder bufferBuilder = null;
 
    public GuiRenderer(GuiRenderState var1, MultiBufferSource.BufferSource var2, SubmitNodeCollector var3, FeatureRenderDispatcher var4, List<PictureInPictureRenderer<?>> var5) {
       super();
@@ -213,7 +205,7 @@ public class GuiRenderer implements AutoCloseable {
          RenderSystem.AutoStorageIndexBuffer var10 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
          GpuBuffer var11 = var10.getBuffer(var5);
          VertexFormat.IndexType var8 = var10.type();
-         GpuBufferSlice var9 = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+         GpuBufferSlice var9 = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
          if (this.firstDrawIndexAfterBlur > 0) {
             this.executeDrawRange(() -> "GUI before blur", var4, var1, var9, var11, var8, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
          }
@@ -260,10 +252,10 @@ public class GuiRenderer implements AutoCloseable {
 
    private void prepareText() {
       this.renderState.forEachText((var1) -> {
-         final Matrix3x2f var2 = var1.pose;
+         final Matrix3x2fc var2 = var1.pose;
          final ScreenRectangle var3 = var1.scissor;
          var1.ensurePrepared().visit(new Font.GlyphVisitor() {
-            public void acceptGlyph(TextRenderable var1) {
+            public void acceptGlyph(TextRenderable.Styled var1) {
                this.accept(var1);
             }
 
@@ -339,7 +331,7 @@ public class GuiRenderer implements AutoCloseable {
          });
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
-         if (var6.getValue()) {
+         if (var6.booleanValue()) {
             this.renderState.forEachItem((var2x) -> {
                if (var2x.oversizedItemBounds() != null) {
                   TrackingItemStackRenderState var3 = var2x.itemStackRenderState();
@@ -390,13 +382,12 @@ public class GuiRenderer implements AutoCloseable {
    private void submitBlitFromItemAtlas(GuiItemRenderState var1, float var2, float var3, int var4, int var5) {
       float var6 = var2 + (float)var4 / (float)var5;
       float var7 = var3 + (float)(-var4) / (float)var5;
-      this.renderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
+      this.renderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void createAtlasTextures(int var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.itemsAtlas = var2.createTexture("UI items atlas", 12, TextureFormat.RGBA8, var1, var1, 1, 1);
-      this.itemsAtlas.setTextureFilter(FilterMode.NEAREST, false);
       this.itemsAtlasView = var2.createTextureView(this.itemsAtlas);
       this.itemsAtlasDepth = var2.createTexture("UI items atlas depth", 8, TextureFormat.DEPTH32, var1, var1, 1, 1);
       this.itemsAtlasDepthView = var2.createTextureView(this.itemsAtlasDepth);
@@ -500,7 +491,7 @@ public class GuiRenderer implements AutoCloseable {
          int var10 = var9.remaining();
          int var11 = var2.getInt(var7);
 
-         try (GpuBuffer.MappedView var12 = var1.mapBuffer(var8.currentBuffer().slice(var11, var10), false, true)) {
+         try (GpuBuffer.MappedView var12 = var1.mapBuffer(var8.currentBuffer().slice((long)var11, (long)var10), false, true)) {
             MemoryUtil.memCopy(var9, var12.data());
          }
 
@@ -559,15 +550,15 @@ public class GuiRenderer implements AutoCloseable {
       }
 
       if (var1.textureSetup.texure0() != null) {
-         var2.bindSampler("Sampler0", var1.textureSetup.texure0());
+         var2.bindTexture("Sampler0", var1.textureSetup.texure0(), var1.textureSetup.sampler0());
       }
 
       if (var1.textureSetup.texure1() != null) {
-         var2.bindSampler("Sampler1", var1.textureSetup.texure1());
+         var2.bindTexture("Sampler1", var1.textureSetup.texure1(), var1.textureSetup.sampler1());
       }
 
       if (var1.textureSetup.texure2() != null) {
-         var2.bindSampler("Sampler2", var1.textureSetup.texure2());
+         var2.bindTexture("Sampler2", var1.textureSetup.texure2(), var1.textureSetup.sampler2());
       }
 
       var2.setIndexBuffer(var3, var4);
@@ -578,7 +569,7 @@ public class GuiRenderer implements AutoCloseable {
       return new BufferBuilder(this.byteBufferBuilder, var1.getVertexFormatMode(), var1.getVertexFormat());
    }
 
-   private boolean scissorChanged(ScreenRectangle var1, @Nullable ScreenRectangle var2) {
+   private boolean scissorChanged(@Nullable ScreenRectangle var1, @Nullable ScreenRectangle var2) {
       if (var1 == var2) {
          return false;
       } else if (var1 != null) {
@@ -654,8 +645,7 @@ public class GuiRenderer implements AutoCloseable {
       final MeshData mesh;
       final RenderPipeline pipeline;
       final TextureSetup textureSetup;
-      @Nullable
-      final ScreenRectangle scissorArea;
+      final @Nullable ScreenRectangle scissorArea;
 
       MeshToDraw(MeshData var1, RenderPipeline var2, TextureSetup var3, @Nullable ScreenRectangle var4) {
          super();

@@ -1,10 +1,10 @@
 package net.minecraft.world.scores;
 
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.Nullable;
 
 public enum DisplaySlot implements StringRepresentable {
    LIST(0, "list"),
@@ -45,8 +45,7 @@ public enum DisplaySlot implements StringRepresentable {
       return this.name;
    }
 
-   @Nullable
-   public static DisplaySlot teamColorToSlot(ChatFormatting var0) {
+   public static @Nullable DisplaySlot teamColorToSlot(ChatFormatting var0) {
       DisplaySlot var10000;
       switch (var0) {
          case BLACK:

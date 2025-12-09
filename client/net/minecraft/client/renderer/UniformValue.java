@@ -7,10 +7,10 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import org.joml.Matrix4fc;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
-import org.joml.Vector4f;
+import org.joml.Vector2fc;
+import org.joml.Vector3fc;
+import org.joml.Vector3ic;
+import org.joml.Vector4fc;
 
 public interface UniformValue {
    Codec<UniformValue> CODEC = UniformValue.Type.CODEC.dispatch(UniformValue::type, (var0) -> var0.valueCodec);
@@ -74,10 +74,10 @@ public interface UniformValue {
       }
    }
 
-   public static record IVec3Uniform(Vector3i value) implements UniformValue {
+   public static record IVec3Uniform(Vector3ic value) implements UniformValue {
       public static final Codec<IVec3Uniform> CODEC;
 
-      public IVec3Uniform(Vector3i var1) {
+      public IVec3Uniform(Vector3ic var1) {
          super();
          this.value = var1;
       }
@@ -124,10 +124,10 @@ public interface UniformValue {
       }
    }
 
-   public static record Vec2Uniform(Vector2f value) implements UniformValue {
+   public static record Vec2Uniform(Vector2fc value) implements UniformValue {
       public static final Codec<Vec2Uniform> CODEC;
 
-      public Vec2Uniform(Vector2f var1) {
+      public Vec2Uniform(Vector2fc var1) {
          super();
          this.value = var1;
       }
@@ -149,10 +149,10 @@ public interface UniformValue {
       }
    }
 
-   public static record Vec3Uniform(Vector3f value) implements UniformValue {
+   public static record Vec3Uniform(Vector3fc value) implements UniformValue {
       public static final Codec<Vec3Uniform> CODEC;
 
-      public Vec3Uniform(Vector3f var1) {
+      public Vec3Uniform(Vector3fc var1) {
          super();
          this.value = var1;
       }
@@ -174,10 +174,10 @@ public interface UniformValue {
       }
    }
 
-   public static record Vec4Uniform(Vector4f value) implements UniformValue {
+   public static record Vec4Uniform(Vector4fc value) implements UniformValue {
       public static final Codec<Vec4Uniform> CODEC;
 
-      public Vec4Uniform(Vector4f var1) {
+      public Vec4Uniform(Vector4fc var1) {
          super();
          this.value = var1;
       }

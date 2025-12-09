@@ -41,7 +41,7 @@ public class FlyTowardsPositionParticle extends SingleQuadParticle {
       this.gCol = 0.9F * var17;
       this.bCol = var17;
       this.hasPhysics = false;
-      this.lifetime = (int)(Math.random() * 10.0) + 30;
+      this.lifetime = (int)(this.random.nextFloat() * 10.0F) + 30;
    }
 
    public SingleQuadParticle.Layer getLayer() {

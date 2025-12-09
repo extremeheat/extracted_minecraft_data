@@ -2,12 +2,11 @@ package net.minecraft.world.level.portal;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
-import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -22,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.Nullable;
 
 public class PortalShape {
    private static final int MIN_WIDTH = 2;
@@ -74,13 +74,12 @@ public class PortalShape {
          } else {
             MutableInt var6 = new MutableInt();
             int var7 = calculateHeight(var0, var4, var3, var5, var6);
-            return new PortalShape(var2, var6.getValue(), var3, var4, var5, var7);
+            return new PortalShape(var2, var6.intValue(), var3, var4, var5, var7);
          }
       }
    }
 
-   @Nullable
-   private static BlockPos calculateBottomLeft(BlockGetter var0, Direction var1, BlockPos var2) {
+   private static @Nullable BlockPos calculateBottomLeft(BlockGetter var0, Direction var1, BlockPos var2) {
       for(int var3 = Math.max(var0.getMinY(), var2.getY() - 21); var2.getY() > var3 && isEmpty(var0.getBlockState(var2.below())); var2 = var2.below()) {
       }
 

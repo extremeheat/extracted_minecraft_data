@@ -15,8 +15,8 @@ import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
 
 public class TagNetworkSerialization {
@@ -61,19 +61,19 @@ public class TagNetworkSerialization {
 
    public static final class NetworkPayload {
       public static final NetworkPayload EMPTY = new NetworkPayload(Map.of());
-      final Map<ResourceLocation, IntList> tags;
+      final Map<Identifier, IntList> tags;
 
-      NetworkPayload(Map<ResourceLocation, IntList> var1) {
+      NetworkPayload(Map<Identifier, IntList> var1) {
          super();
          this.tags = var1;
       }
 
       public void write(FriendlyByteBuf var1) {
-         var1.writeMap(this.tags, FriendlyByteBuf::writeResourceLocation, FriendlyByteBuf::writeIntIdList);
+         var1.writeMap(this.tags, FriendlyByteBuf::writeIdentifier, FriendlyByteBuf::writeIntIdList);
       }
 
       public static NetworkPayload read(FriendlyByteBuf var0) {
-         return new NetworkPayload(var0.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readIntIdList));
+         return new NetworkPayload(var0.readMap(FriendlyByteBuf::readIdentifier, FriendlyByteBuf::readIntIdList));
       }
 
       public boolean isEmpty() {

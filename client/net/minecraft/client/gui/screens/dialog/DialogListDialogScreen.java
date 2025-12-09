@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.dialog;
 
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.ClickEvent;
@@ -11,6 +10,7 @@ import net.minecraft.server.dialog.CommonButtonData;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogListDialog;
 import net.minecraft.server.dialog.action.StaticAction;
+import org.jspecify.annotations.Nullable;
 
 public class DialogListDialogScreen extends ButtonListDialogScreen<DialogListDialog> {
    public DialogListDialogScreen(@Nullable Screen var1, DialogListDialog var2, DialogConnectionAccess var3) {

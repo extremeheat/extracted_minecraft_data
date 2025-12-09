@@ -3,18 +3,20 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import org.apache.commons.lang3.mutable.MutableObject;
 
 public class PaleMossDecorator extends TreeDecorator {
    public static final MapCodec<PaleMossDecorator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("leaves_probability").forGetter((var0x) -> var0x.leavesProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("trunk_probability").forGetter((var0x) -> var0x.trunkProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("ground_probability").forGetter((var0x) -> var0x.groundProbability)).apply(var0, PaleMossDecorator::new));
@@ -38,16 +40,9 @@ public class PaleMossDecorator extends TreeDecorator {
       WorldGenLevel var3 = (WorldGenLevel)var1.level();
       List var4 = Util.shuffledCopy(var1.logs(), var2);
       if (!var4.isEmpty()) {
-         MutableObject var5 = new MutableObject((BlockPos)var4.getFirst());
-         var4.forEach((var1x) -> {
-            if (var1x.getY() < ((BlockPos)var5.getValue()).getY()) {
-               var5.setValue(var1x);
-            }
-
-         });
-         BlockPos var6 = (BlockPos)var5.getValue();
+         BlockPos var5 = (BlockPos)Collections.min(var4, Comparator.comparingInt(Vec3i::getY));
          if (var2.nextFloat() < this.groundProbability) {
-            var3.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0) -> var0.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var3, var3.getLevel().getChunkSource().getGenerator(), var2, var6.above()));
+            var3.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0) -> var0.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var3, var3.getLevel().getChunkSource().getGenerator(), var2, var5.above()));
          }
 
          var1.logs().forEach((var3x) -> {

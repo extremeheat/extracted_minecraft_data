@@ -17,12 +17,12 @@ public class CritParticle extends SingleQuadParticle {
       this.xd += var8 * 0.4;
       this.yd += var10 * 0.4;
       this.zd += var12 * 0.4;
-      float var15 = (float)(Math.random() * 0.30000001192092896 + 0.6000000238418579);
+      float var15 = this.random.nextFloat() * 0.3F + 0.6F;
       this.rCol = var15;
       this.gCol = var15;
       this.bCol = var15;
       this.quadSize *= 0.75F;
-      this.lifetime = Math.max((int)(6.0 / (Math.random() * 0.8 + 0.6)), 1);
+      this.lifetime = Math.max((int)(6.0 / ((double)this.random.nextFloat() * 0.8 + 0.6)), 1);
       this.hasPhysics = false;
       this.tick();
    }

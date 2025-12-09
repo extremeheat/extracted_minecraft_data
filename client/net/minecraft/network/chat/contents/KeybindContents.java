@@ -5,17 +5,16 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
+import org.jspecify.annotations.Nullable;
 
 public class KeybindContents implements ComponentContents {
    public static final MapCodec<KeybindContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("keybind").forGetter((var0x) -> var0x.name)).apply(var0, KeybindContents::new));
    private final String name;
-   @Nullable
-   private Supplier<Component> nameResolver;
+   private @Nullable Supplier<Component> nameResolver;
 
    public KeybindContents(String var1) {
       super();

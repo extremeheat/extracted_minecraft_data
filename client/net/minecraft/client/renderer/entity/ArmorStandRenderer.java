@@ -2,11 +2,9 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
-import net.minecraft.client.model.ArmorStandArmorModel;
-import net.minecraft.client.model.ArmorStandModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.armorstand.ArmorStandArmorModel;
+import net.minecraft.client.model.object.armorstand.ArmorStandModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
@@ -15,14 +13,17 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
-   public static final ResourceLocation DEFAULT_SKIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/armorstand/wood.png");
+   public static final Identifier DEFAULT_SKIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/armorstand/wood.png");
    private final ArmorStandArmorModel bigModel = (ArmorStandArmorModel)this.getModel();
    private final ArmorStandArmorModel smallModel;
 
@@ -35,7 +36,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
    }
 
-   public ResourceLocation getTextureLocation(ArmorStandRenderState var1) {
+   public Identifier getTextureLocation(ArmorStandRenderState var1) {
       return DEFAULT_SKIN_LOCATION;
    }
 
@@ -68,7 +69,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
    protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
       if (var1.wiggle < 5.0F) {
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin(var1.wiggle / 1.5F * 3.1415927F) * 3.0F));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin((double)(var1.wiggle / 1.5F * 3.1415927F)) * 3.0F));
       }
 
    }
@@ -77,22 +78,21 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       return var1.isCustomNameVisible();
    }
 
-   @Nullable
-   protected RenderType getRenderType(ArmorStandRenderState var1, boolean var2, boolean var3, boolean var4) {
+   protected @Nullable RenderType getRenderType(ArmorStandRenderState var1, boolean var2, boolean var3, boolean var4) {
       if (!var1.isMarker) {
          return super.getRenderType(var1, var2, var3, var4);
       } else {
-         ResourceLocation var5 = this.getTextureLocation(var1);
+         Identifier var5 = this.getTextureLocation(var1);
          if (var3) {
-            return RenderType.entityTranslucent(var5, false);
+            return RenderTypes.entityTranslucent(var5, false);
          } else {
-            return var2 ? RenderType.entityCutoutNoCull(var5, false) : null;
+            return var2 ? RenderTypes.entityCutoutNoCull(var5, false) : null;
          }
       }
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ArmorStandRenderState)var1);
    }
 

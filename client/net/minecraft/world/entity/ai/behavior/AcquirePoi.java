@@ -9,7 +9,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
@@ -23,6 +22,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.pathfinder.Path;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.jspecify.annotations.Nullable;
 
 public class AcquirePoi {
    public static final int SCAN_RANGE = 48;
@@ -47,10 +47,10 @@ public class AcquirePoi {
       OneShot var10 = BehaviorBuilder.create((Function)((var7x) -> var7x.group(var7x.absent(var2)).apply(var7x, (var6) -> (var7, var8x, var9x) -> {
                if (var3 && var8x.isBaby()) {
                   return false;
-               } else if (var8.getValue() == 0L) {
+               } else if (var8.longValue() == 0L) {
                   var8.setValue(var7.getGameTime() + (long)var7.random.nextInt(20));
                   return false;
-               } else if (var7.getGameTime() < var8.getValue()) {
+               } else if (var7.getGameTime() < var8.longValue()) {
                   return false;
                } else {
                   var8.setValue(var9x + 20L + (long)var7.getRandom().nextInt(20));
@@ -90,8 +90,7 @@ public class AcquirePoi {
       return var2 == var1 ? var10 : BehaviorBuilder.create((Function)((var2x) -> var2x.group(var2x.absent(var1)).apply(var2x, (var1x) -> var10)));
    }
 
-   @Nullable
-   public static Path findPathToPois(Mob var0, Set<Pair<Holder<PoiType>, BlockPos>> var1) {
+   public static @Nullable Path findPathToPois(Mob var0, Set<Pair<Holder<PoiType>, BlockPos>> var1) {
       if (var1.isEmpty()) {
          return null;
       } else {

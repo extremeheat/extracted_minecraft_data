@@ -1,15 +1,14 @@
 package net.minecraft.client.telemetry.events;
 
 import java.time.Duration;
-import javax.annotation.Nullable;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
+import org.jspecify.annotations.Nullable;
 
 public class WorldLoadTimesEvent {
    private final boolean newWorld;
-   @Nullable
-   private final Duration worldLoadDuration;
+   private final @Nullable Duration worldLoadDuration;
 
    public WorldLoadTimesEvent(boolean var1, @Nullable Duration var2) {
       super();

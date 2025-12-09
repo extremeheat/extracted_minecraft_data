@@ -2,35 +2,35 @@ package net.minecraft.client.gui.screens.packs;
 
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.SelectableEntry;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.PackCompatibility;
-import net.minecraft.util.FormattedCharSequence;
 
 public class TransferableSelectionList extends ObjectSelectionList<Entry> {
-   static final ResourceLocation SELECT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/select_highlighted");
-   static final ResourceLocation SELECT_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/select");
-   static final ResourceLocation UNSELECT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/unselect_highlighted");
-   static final ResourceLocation UNSELECT_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/unselect");
-   static final ResourceLocation MOVE_UP_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_up_highlighted");
-   static final ResourceLocation MOVE_UP_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_up");
-   static final ResourceLocation MOVE_DOWN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_down_highlighted");
-   static final ResourceLocation MOVE_DOWN_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_down");
+   static final Identifier SELECT_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/select_highlighted");
+   static final Identifier SELECT_SPRITE = Identifier.withDefaultNamespace("transferable_list/select");
+   static final Identifier UNSELECT_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/unselect_highlighted");
+   static final Identifier UNSELECT_SPRITE = Identifier.withDefaultNamespace("transferable_list/unselect");
+   static final Identifier MOVE_UP_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_up_highlighted");
+   static final Identifier MOVE_UP_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_up");
+   static final Identifier MOVE_DOWN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_down_highlighted");
+   static final Identifier MOVE_DOWN_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_down");
    static final Component INCOMPATIBLE_TITLE = Component.translatable("pack.incompatible");
    static final Component INCOMPATIBLE_CONFIRM_TITLE = Component.translatable("pack.incompatible.confirm.title");
    private static final int ENTRY_PADDING = 2;
@@ -56,7 +56,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
       return this.getSelected() != null ? ((Entry)this.getSelected()).keyPressed(var1) : super.keyPressed(var1);
    }
 
-   public void updateList(Stream<PackSelectionModel.Entry> var1, @Nullable PackSelectionModel.EntryBase var2) {
+   public void updateList(Stream<PackSelectionModel.Entry> var1, PackSelectionModel.EntryBase var2) {
       this.clearEntries();
       MutableComponent var3 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
       HeaderEntry var10001 = new HeaderEntry(this.minecraft.font, var3);
@@ -72,6 +72,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          }
 
       });
+      this.refreshScrollAmount();
    }
 
    public abstract class Entry extends ObjectSelectionList.Entry<Entry> {
@@ -86,41 +87,23 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
       public abstract String getPackId();
    }
 
-   public class PackEntry extends Entry {
+   public class PackEntry extends Entry implements SelectableEntry {
       private static final int MAX_DESCRIPTION_WIDTH_PIXELS = 157;
-      private static final int MAX_NAME_WIDTH_PIXELS = 157;
-      private static final String TOO_LONG_NAME_SUFFIX = "...";
+      public static final int ICON_SIZE = 32;
       private final TransferableSelectionList parent;
       protected final Minecraft minecraft;
       private final PackSelectionModel.Entry pack;
-      private final FormattedCharSequence nameDisplayCache;
-      private final MultiLineLabel descriptionDisplayCache;
-      private final FormattedCharSequence incompatibleNameDisplayCache;
-      private final MultiLineLabel incompatibleDescriptionDisplayCache;
+      private final StringWidget nameWidget;
+      private final MultiLineTextWidget descriptionWidget;
 
       public PackEntry(final Minecraft var2, final TransferableSelectionList var3, final PackSelectionModel.Entry var4) {
          super();
          this.minecraft = var2;
          this.pack = var4;
          this.parent = var3;
-         this.nameDisplayCache = cacheName(var2, var4.getTitle());
-         this.descriptionDisplayCache = cacheDescription(var2, var4.getExtendedDescription());
-         this.incompatibleNameDisplayCache = cacheName(var2, TransferableSelectionList.INCOMPATIBLE_TITLE);
-         this.incompatibleDescriptionDisplayCache = cacheDescription(var2, var4.getCompatibility().getDescription());
-      }
-
-      private static FormattedCharSequence cacheName(Minecraft var0, Component var1) {
-         int var2 = var0.font.width((FormattedText)var1);
-         if (var2 > 157) {
-            FormattedText var3 = FormattedText.composite(var0.font.substrByWidth(var1, 157 - var0.font.width("...")), FormattedText.of("..."));
-            return Language.getInstance().getVisualOrder(var3);
-         } else {
-            return var1.getVisualOrderText();
-         }
-      }
-
-      private static MultiLineLabel cacheDescription(Minecraft var0, Component var1) {
-         return MultiLineLabel.create(var0.font, 157, 2, var1);
+         this.nameWidget = new StringWidget(var4.getTitle(), var2.font);
+         this.descriptionWidget = new MultiLineTextWidget(ComponentUtils.mergeStyles(var4.getExtendedDescription(), Style.EMPTY.withColor(-8355712)), var2.font);
+         this.descriptionWidget.setMaxRows(2);
       }
 
       public Component getNarration() {
@@ -138,60 +121,94 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          }
 
          var1.blit(RenderPipelines.GUI_TEXTURED, this.pack.getIconTexture(), this.getContentX(), this.getContentY(), 0.0F, 0.0F, 32, 32, 32, 32);
-         FormattedCharSequence var11 = this.nameDisplayCache;
-         MultiLineLabel var12 = this.descriptionDisplayCache;
+         if (!this.nameWidget.getMessage().equals(this.pack.getTitle())) {
+            this.nameWidget.setMessage(this.pack.getTitle());
+         }
+
+         if (!this.descriptionWidget.getMessage().getContents().equals(this.pack.getExtendedDescription().getContents())) {
+            this.descriptionWidget.setMessage(ComponentUtils.mergeStyles(this.pack.getExtendedDescription(), Style.EMPTY.withColor(-8355712)));
+         }
+
          if (this.showHoverOverlay() && ((Boolean)this.minecraft.options.touchscreen().get() || var4 || this.parent.getSelected() == this && this.parent.isFocused())) {
             var1.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
-            int var13 = var2 - this.getContentX();
-            int var14 = var3 - this.getContentY();
+            int var11 = var2 - this.getContentX();
+            int var12 = var3 - this.getContentY();
             if (!this.pack.getCompatibility().isCompatible()) {
-               var11 = this.incompatibleNameDisplayCache;
-               var12 = this.incompatibleDescriptionDisplayCache;
+               this.nameWidget.setMessage(TransferableSelectionList.INCOMPATIBLE_TITLE);
+               this.descriptionWidget.setMessage(this.pack.getCompatibility().getDescription());
             }
 
             if (this.pack.canSelect()) {
-               if (var13 < 32) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               if (this.mouseOverIcon(var11, var12, 32)) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  TransferableSelectionList.this.handleCursor(var1);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.SELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.SELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             } else {
                if (this.pack.canUnselect()) {
-                  if (var13 < 16) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  if (this.mouseOverLeftHalf(var11, var12, 32)) {
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     TransferableSelectionList.this.handleCursor(var1);
                   } else {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.UNSELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.UNSELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   }
                }
 
                if (this.pack.canMoveUp()) {
-                  if (var13 < 32 && var13 > 16 && var14 < 16) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  if (this.mouseOverTopRightQuarter(var11, var12, 32)) {
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     TransferableSelectionList.this.handleCursor(var1);
                   } else {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   }
                }
 
                if (this.pack.canMoveDown()) {
-                  if (var13 < 32 && var13 > 16 && var14 > 16) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  if (this.mouseOverBottomRightQuarter(var11, var12, 32)) {
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     TransferableSelectionList.this.handleCursor(var1);
                   } else {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   }
                }
             }
          }
 
-         var1.drawString(this.minecraft.font, (FormattedCharSequence)var11, this.getContentX() + 32 + 2, this.getContentY() + 1, -1);
-         var12.render(var1, MultiLineLabel.Align.LEFT, this.getContentX() + 32 + 2, this.getContentY() + 12, 10, true, -8355712);
+         this.nameWidget.setMaxWidth(157 - (TransferableSelectionList.this.scrollbarVisible() ? 6 : 0));
+         this.nameWidget.setPosition(this.getContentX() + 32 + 2, this.getContentY() + 1);
+         this.nameWidget.render(var1, var2, var3, var5);
+         this.descriptionWidget.setMaxWidth(157 - (TransferableSelectionList.this.scrollbarVisible() ? 6 : 0));
+         this.descriptionWidget.setPosition(this.getContentX() + 32 + 2, this.getContentY() + 12);
+         this.descriptionWidget.render(var1, var2, var3, var5);
       }
 
-      public String getPackId() {
-         return this.pack.getId();
-      }
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         if (this.showHoverOverlay()) {
+            int var3 = (int)var1.x() - this.getContentX();
+            int var4 = (int)var1.y() - this.getContentY();
+            if (this.pack.canSelect() && this.mouseOverIcon(var3, var4, 32)) {
+               this.handlePackSelection();
+               return true;
+            }
 
-      private boolean showHoverOverlay() {
-         return !this.pack.isFixedPosition() || !this.pack.isRequired();
+            if (this.pack.canUnselect() && this.mouseOverLeftHalf(var3, var4, 32)) {
+               this.pack.unselect();
+               return true;
+            }
+
+            if (this.pack.canMoveUp() && this.mouseOverTopRightQuarter(var3, var4, 32)) {
+               this.pack.moveUp();
+               return true;
+            }
+
+            if (this.pack.canMoveDown() && this.mouseOverBottomRightQuarter(var3, var4, 32)) {
+               this.pack.moveDown();
+               return true;
+            }
+         }
+
+         return super.mouseClicked(var1, var2);
       }
 
       public boolean keyPressed(KeyEvent var1) {
@@ -213,6 +230,10 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
 
             return super.keyPressed(var1);
          }
+      }
+
+      private boolean showHoverOverlay() {
+         return !this.pack.isFixedPosition() || !this.pack.isRequired();
       }
 
       public void keyboardSelection() {
@@ -254,37 +275,12 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
 
       }
 
-      public boolean shouldTakeFocusAfterInteraction() {
-         return TransferableSelectionList.this.children().stream().anyMatch((var1) -> var1.getPackId().equals(this.getPackId()));
+      public String getPackId() {
+         return this.pack.getId();
       }
 
-      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-         double var3 = var1.x() - (double)this.getX();
-         double var5 = var1.y() - (double)this.getY();
-         if (this.showHoverOverlay() && var3 <= 32.0) {
-            this.parent.screen.clearSelected();
-            if (this.pack.canSelect()) {
-               this.handlePackSelection();
-               return true;
-            }
-
-            if (var3 < 16.0 && this.pack.canUnselect()) {
-               this.pack.unselect();
-               return true;
-            }
-
-            if (var3 > 16.0 && var5 < 16.0 && this.pack.canMoveUp()) {
-               this.pack.moveUp();
-               return true;
-            }
-
-            if (var3 > 16.0 && var5 > 16.0 && this.pack.canMoveDown()) {
-               this.pack.moveDown();
-               return true;
-            }
-         }
-
-         return super.mouseClicked(var1, var2);
+      public boolean shouldTakeFocusAfterInteraction() {
+         return TransferableSelectionList.this.children().stream().anyMatch((var1) -> var1.getPackId().equals(this.getPackId()));
       }
    }
 

@@ -1,12 +1,12 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    private static final int INVENTORY_SLOTS_PER_ROW = 9;
@@ -93,7 +93,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    public boolean stillValid(Player var1) {
-      return (Boolean)this.access.evaluate((var2, var3) -> !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.canInteractWithBlock(var3, 4.0), true);
+      return (Boolean)this.access.evaluate((var2, var3) -> !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.isWithinBlockInteractionRange(var3, 4.0), true);
    }
 
    public ItemStack quickMoveStack(Player var1, int var2) {

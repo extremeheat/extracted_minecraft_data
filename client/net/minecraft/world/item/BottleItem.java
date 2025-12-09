@@ -28,7 +28,7 @@ public class BottleItem extends Item {
    }
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      List var4 = var1.getEntitiesOfClass(AreaEffectCloud.class, var2.getBoundingBox().inflate(2.0), (var0) -> var0 != null && var0.isAlive() && var0.getOwner() instanceof EnderDragon);
+      List var4 = var1.getEntitiesOfClass(AreaEffectCloud.class, var2.getBoundingBox().inflate(2.0), (var0) -> var0.isAlive() && var0.getOwner() instanceof EnderDragon);
       ItemStack var5 = var2.getItemInHand(var3);
       if (!var4.isEmpty()) {
          AreaEffectCloud var8 = (AreaEffectCloud)var4.get(0);

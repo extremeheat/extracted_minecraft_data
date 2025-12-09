@@ -6,7 +6,6 @@ import com.mojang.realmsclient.dto.ServiceQuality;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -15,11 +14,13 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsPreferredRegionSelectionScreen extends Screen {
    private static final Component REGION_SELECTION_LABEL = Component.translatable("mco.configure.world.region_preference.title");
@@ -28,11 +29,9 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    private final Screen parent;
    private final BiConsumer<RegionSelectionPreference, RealmsRegion> applySettings;
    final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
-   @Nullable
-   private RegionSelectionList list;
+   private @Nullable RegionSelectionList list;
    RealmsSettingsTab.RegionSelection selection;
-   @Nullable
-   private Button doneButton;
+   private @Nullable Button doneButton;
 
    public RealmsPreferredRegionSelectionScreen(Screen var1, BiConsumer<RegionSelectionPreference, RealmsRegion> var2, Map<RealmsRegion, ServiceQuality> var3, RealmsSettingsTab.RegionSelection var4) {
       super(REGION_SELECTION_LABEL);
@@ -52,10 +51,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
       var1.addChild(new StringWidget(this.getTitle(), this.font));
       this.list = (RegionSelectionList)this.layout.addToContents(new RegionSelectionList());
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.applySettings.accept(this.selection.preference(), this.selection.region());
-         this.onClose();
-      }).build());
+      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).build());
       var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
       this.list.setSelected((RegionSelectionList.Entry)this.list.children().stream().filter((var1x) -> Objects.equals(var1x.regionSelection, this.selection)).findFirst().orElse((Object)null));
       this.layout.visitWidgets((var1x) -> {
@@ -66,11 +62,25 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
 
    protected void repositionElements() {
       this.layout.arrangeElements();
-      this.list.updateSize(this.width, this.layout);
+      if (this.list != null) {
+         this.list.updateSize(this.width, this.layout);
+      }
+
+   }
+
+   void onDone() {
+      if (this.selection.region() != null) {
+         this.applySettings.accept(this.selection.preference(), this.selection.region());
+      }
+
+      this.onClose();
    }
 
    void updateButtonValidity() {
-      this.doneButton.active = this.list.getSelected() != null;
+      if (this.doneButton != null && this.list != null) {
+         this.doneButton.active = this.list.getSelected() != null;
+      }
+
    }
 
    class RegionSelectionList extends ObjectSelectionList<Entry> {
@@ -81,7 +91,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.keySet().stream().map((var1x) -> new Entry(RegionSelectionPreference.MANUAL, var1x)).forEach((var1x) -> this.addEntry(var1x));
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          if (var1 != null) {
             RealmsPreferredRegionSelectionScreen.this.selection = var1.regionSelection;
@@ -94,7 +104,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          final RealmsSettingsTab.RegionSelection regionSelection;
          private final Component name;
 
-         public Entry(final RegionSelectionPreference var2, @Nullable final RealmsRegion var3) {
+         public Entry(final @Nullable RegionSelectionPreference var2, final RealmsRegion var3) {
             this(new RealmsSettingsTab.RegionSelection(var2, var3));
          }
 
@@ -121,14 +131,30 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
             var1.drawString(RealmsPreferredRegionSelectionScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
             if (this.regionSelection.region() != null && RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.containsKey(this.regionSelection.region())) {
                ServiceQuality var6 = (ServiceQuality)RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.getOrDefault(this.regionSelection.region(), ServiceQuality.UNKNOWN);
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var6.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);
             }
 
          }
 
          public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             RegionSelectionList.this.setSelected(this);
-            return super.mouseClicked(var1, var2);
+            if (var2) {
+               RegionSelectionList.this.playDownSound(RegionSelectionList.this.minecraft.getSoundManager());
+               RealmsPreferredRegionSelectionScreen.this.onDone();
+               return true;
+            } else {
+               return super.mouseClicked(var1, var2);
+            }
+         }
+
+         public boolean keyPressed(KeyEvent var1) {
+            if (var1.isSelection()) {
+               RegionSelectionList.this.playDownSound(RegionSelectionList.this.minecraft.getSoundManager());
+               RealmsPreferredRegionSelectionScreen.this.onDone();
+               return true;
+            } else {
+               return super.keyPressed(var1);
+            }
          }
       }
    }

@@ -43,7 +43,7 @@ public class EndFlashState {
 
    private float calculateIntensity(long var1) {
       long var3 = var1 % 600L;
-      return var3 >= (long)this.offset && var3 <= (long)(this.offset + this.duration) ? Mth.sin((float)(var3 - (long)this.offset) * 3.1415927F / (float)this.duration) : 0.0F;
+      return var3 >= (long)this.offset && var3 <= (long)(this.offset + this.duration) ? Mth.sin((double)((float)(var3 - (long)this.offset) * 3.1415927F / (float)this.duration)) : 0.0F;
    }
 
    public float getXAngle() {

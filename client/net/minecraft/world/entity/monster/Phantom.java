@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -31,7 +30,7 @@ import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -40,14 +39,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Phantom extends Mob implements Enemy {
    public static final float FLAP_DEGREES_PER_TICK = 7.448451F;
    public static final int TICKS_PER_FLAP = Mth.ceil(24.166098F);
    private static final EntityDataAccessor<Integer> ID_SIZE;
    Vec3 moveTargetPoint;
-   @Nullable
-   BlockPos anchorPoint;
+   @Nullable BlockPos anchorPoint;
    AttackPhase attackPhase;
 
    public Phantom(EntityType<? extends Phantom> var1, Level var2) {
@@ -107,28 +106,20 @@ public class Phantom extends Mob implements Enemy {
    public void tick() {
       super.tick();
       if (this.level().isClientSide()) {
-         float var1 = Mth.cos((float)(this.getUniqueFlapTickOffset() + this.tickCount) * 7.448451F * 0.017453292F + 3.1415927F);
-         float var2 = Mth.cos((float)(this.getUniqueFlapTickOffset() + this.tickCount + 1) * 7.448451F * 0.017453292F + 3.1415927F);
+         float var1 = Mth.cos((double)((float)(this.getUniqueFlapTickOffset() + this.tickCount) * 7.448451F * 0.017453292F + 3.1415927F));
+         float var2 = Mth.cos((double)((float)(this.getUniqueFlapTickOffset() + this.tickCount + 1) * 7.448451F * 0.017453292F + 3.1415927F));
          if (var1 > 0.0F && var2 <= 0.0F) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.PHANTOM_FLAP, this.getSoundSource(), 0.95F + this.random.nextFloat() * 0.05F, 0.95F + this.random.nextFloat() * 0.05F, false);
          }
 
          float var3 = this.getBbWidth() * 1.48F;
-         float var4 = Mth.cos(this.getYRot() * 0.017453292F) * var3;
-         float var5 = Mth.sin(this.getYRot() * 0.017453292F) * var3;
+         float var4 = Mth.cos((double)(this.getYRot() * 0.017453292F)) * var3;
+         float var5 = Mth.sin((double)(this.getYRot() * 0.017453292F)) * var3;
          float var6 = (0.3F + var1 * 0.45F) * this.getBbHeight() * 2.5F;
          this.level().addParticle(ParticleTypes.MYCELIUM, this.getX() + (double)var4, this.getY() + (double)var6, this.getZ() + (double)var5, 0.0, 0.0, 0.0);
          this.level().addParticle(ParticleTypes.MYCELIUM, this.getX() - (double)var4, this.getY() + (double)var6, this.getZ() - (double)var5, 0.0, 0.0, 0.0);
       }
 
-   }
-
-   public void aiStep() {
-      if (this.isAlive() && this.isSunBurnTick()) {
-         this.igniteForSeconds(8.0F);
-      }
-
-      super.aiStep();
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
@@ -253,9 +244,9 @@ public class Phantom extends Mob implements Enemy {
             float var17 = (float)(-(Mth.atan2(-var3, var7) * 57.2957763671875));
             Phantom.this.setXRot(var17);
             float var18 = Phantom.this.getYRot() + 90.0F;
-            double var19 = (double)(this.speed * Mth.cos(var18 * 0.017453292F)) * Math.abs(var1 / var11);
-            double var21 = (double)(this.speed * Mth.sin(var18 * 0.017453292F)) * Math.abs(var5 / var11);
-            double var23 = (double)(this.speed * Mth.sin(var17 * 0.017453292F)) * Math.abs(var3 / var11);
+            double var19 = (double)(this.speed * Mth.cos((double)(var18 * 0.017453292F))) * Math.abs(var1 / var11);
+            double var21 = (double)(this.speed * Mth.sin((double)(var18 * 0.017453292F))) * Math.abs(var5 / var11);
+            double var23 = (double)(this.speed * Mth.sin((double)(var17 * 0.017453292F))) * Math.abs(var3 / var11);
             Vec3 var25 = Phantom.this.getDeltaMovement();
             Phantom.this.setDeltaMovement(var25.add((new Vec3(var19, var23, var21)).subtract(var25).scale(0.2)));
          }
@@ -355,7 +346,7 @@ public class Phantom extends Mob implements Enemy {
          }
 
          this.angle += this.clockwise * 15.0F * 0.017453292F;
-         Phantom.this.moveTargetPoint = Vec3.atLowerCornerOf(Phantom.this.anchorPoint).add((double)(this.distance * Mth.cos(this.angle)), (double)(-4.0F + this.height), (double)(this.distance * Mth.sin(this.angle)));
+         Phantom.this.moveTargetPoint = Vec3.atLowerCornerOf(Phantom.this.anchorPoint).add((double)(this.distance * Mth.cos((double)this.angle)), (double)(-4.0F + this.height), (double)(this.distance * Mth.sin((double)this.angle)));
       }
    }
 

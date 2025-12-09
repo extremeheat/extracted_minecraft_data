@@ -3,9 +3,7 @@ package net.minecraft.world.entity.animal.goat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
-import java.util.function.Predicate;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
@@ -31,8 +29,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class GoatAi {
    public static final int RAM_PREPARE_TIME = 20;
@@ -49,7 +46,7 @@ public class GoatAi {
    public static final float MAX_JUMP_VELOCITY_MULTIPLIER = 3.5714288F;
    private static final UniformInt TIME_BETWEEN_RAMS = UniformInt.of(600, 6000);
    private static final UniformInt TIME_BETWEEN_RAMS_SCREAMER = UniformInt.of(100, 300);
-   private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0, var1) -> !var0.getType().equals(EntityType.GOAT) && (var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || !var0.getType().equals(EntityType.ARMOR_STAND)) && var1.getWorldBorder().isWithinBounds(var0.getBoundingBox()));
+   private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0, var1) -> !var0.getType().equals(EntityType.GOAT) && ((Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) || !var0.getType().equals(EntityType.ARMOR_STAND)) && var1.getWorldBorder().isWithinBounds(var0.getBoundingBox()));
    private static final float SPEED_MULTIPLIER_WHEN_RAMMING = 3.0F;
    public static final int RAM_MIN_DISTANCE = 4;
    public static final float ADULT_RAM_KNOCKBACK_FORCE = 2.5F;
@@ -93,9 +90,5 @@ public class GoatAi {
 
    public static void updateActivity(Goat var0) {
       var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.RAM, Activity.LONG_JUMP, Activity.IDLE));
-   }
-
-   public static Predicate<ItemStack> getTemptations() {
-      return (var0) -> var0.is(ItemTags.GOAT_FOOD);
    }
 }

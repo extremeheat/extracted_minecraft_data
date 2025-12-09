@@ -1,6 +1,5 @@
 package net.minecraft.client.telemetry.events;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.telemetry.TelemetryEventSender;
@@ -8,15 +7,13 @@ import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.client.telemetry.TelemetryPropertyMap;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class WorldLoadEvent {
    private boolean eventSent;
-   @Nullable
-   private TelemetryProperty.GameMode gameMode;
-   @Nullable
-   private String serverBrand;
-   @Nullable
-   private final String minigameName;
+   private TelemetryProperty.@Nullable GameMode gameMode;
+   private @Nullable String serverBrand;
+   private final @Nullable String minigameName;
 
    public WorldLoadEvent(@Nullable String var1) {
       super();

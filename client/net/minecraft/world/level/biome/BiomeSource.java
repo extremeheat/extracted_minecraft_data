@@ -14,7 +14,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,6 +23,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BiomeSource implements BiomeResolver {
    public static final Codec<BiomeSource> CODEC;
@@ -67,13 +67,11 @@ public abstract class BiomeSource implements BiomeResolver {
       return var15;
    }
 
-   @Nullable
-   public Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, RandomSource var6, Climate.Sampler var7) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, RandomSource var6, Climate.Sampler var7) {
       return this.findBiomeHorizontal(var1, var2, var3, var4, 1, var5, var6, false, var7);
    }
 
-   @Nullable
-   public Pair<BlockPos, Holder<Biome>> findClosestBiome3d(BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7) {
       Set var8 = (Set)this.possibleBiomes().stream().filter(var5).collect(Collectors.toUnmodifiableSet());
       if (var8.isEmpty()) {
          return null;
@@ -100,8 +98,7 @@ public abstract class BiomeSource implements BiomeResolver {
       }
    }
 
-   @Nullable
-   public Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, int var5, Predicate<Holder<Biome>> var6, RandomSource var7, boolean var8, Climate.Sampler var9) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, int var5, Predicate<Holder<Biome>> var6, RandomSource var7, boolean var8, Climate.Sampler var9) {
       int var10 = QuartPos.fromBlock(var1);
       int var11 = QuartPos.fromBlock(var3);
       int var12 = QuartPos.fromBlock(var4);

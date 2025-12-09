@@ -4,8 +4,6 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -18,14 +16,16 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FileUtil;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelSummary;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SelectWorldScreen extends Screen {
@@ -33,18 +33,12 @@ public class SelectWorldScreen extends Screen {
    public static final WorldOptions TEST_OPTIONS = new WorldOptions((long)"test1".hashCode(), true, false);
    protected final Screen lastScreen;
    private final HeaderAndFooterLayout layout;
-   @Nullable
-   private Button deleteButton;
-   @Nullable
-   private Button selectButton;
-   @Nullable
-   private Button renameButton;
-   @Nullable
-   private Button copyButton;
-   @Nullable
-   protected EditBox searchBox;
-   @Nullable
-   private WorldSelectionList list;
+   private @Nullable Button deleteButton;
+   private @Nullable Button selectButton;
+   private @Nullable Button renameButton;
+   private @Nullable Button copyButton;
+   protected @Nullable EditBox searchBox;
+   private @Nullable WorldSelectionList list;
 
    public SelectWorldScreen(Screen var1) {
       super(Component.translatable("selectWorld.title"));
@@ -69,6 +63,7 @@ public class SelectWorldScreen extends Screen {
          }
 
       });
+      this.searchBox.setHint(Component.translatable("gui.selectWorld.search").setStyle(EditBox.SEARCH_HINT_STYLE));
       Consumer var3 = WorldSelectionList.WorldListEntry::joinWorld;
       this.list = (WorldSelectionList)this.layout.addToContents((new WorldSelectionList.Builder(this.minecraft, this)).width(this.width).height(this.layout.getContentHeight()).filter(this.searchBox.getValue()).oldList(this.list).onEntrySelect(this::updateButtonStatus).onEntryInteract(var3).build());
       this.createFooterButtons(var3, this.list);

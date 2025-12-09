@@ -3,7 +3,6 @@ package net.minecraft.world.entity.animal.frog;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -31,9 +30,9 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
-import net.minecraft.world.entity.animal.AbstractFish;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Bucketable;
+import net.minecraft.world.entity.animal.fish.AbstractFish;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,6 +40,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Tadpole extends AbstractFish {
    private static final int DEFAULT_AGE = 0;
@@ -111,18 +111,15 @@ public class Tadpole extends AbstractFish {
       this.setAge(var1.getIntOr("Age", 0));
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return null;
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.TADPOLE_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.TADPOLE_DEATH;
    }
 
@@ -195,7 +192,7 @@ public class Tadpole extends AbstractFish {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
          this.convertTo(EntityType.FROG, ConversionParams.single(this, false, false), (var2x) -> {
-            var2x.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var2x.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
+            var2x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2x.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
             var2x.setPersistenceRequired();
             var2x.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
             this.playSound(SoundEvents.TADPOLE_GROW_UP, 0.15F, 1.0F);

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -38,18 +37,16 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import net.minecraft.world.ticks.TickContainerAccess;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ProtoChunk extends ChunkAccess {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private volatile LevelLightEngine lightEngine;
+   private volatile @Nullable LevelLightEngine lightEngine;
    private volatile ChunkStatus status;
    private final List<CompoundTag> entities;
-   @Nullable
-   private CarvingMask carvingMask;
-   @Nullable
-   private BelowZeroRetrogen belowZeroRetrogen;
+   private @Nullable CarvingMask carvingMask;
+   private @Nullable BelowZeroRetrogen belowZeroRetrogen;
    private final ProtoChunkTicks<Block> blockTicks;
    private final ProtoChunkTicks<Fluid> fluidTicks;
 
@@ -57,7 +54,7 @@ public class ProtoChunk extends ChunkAccess {
       this(var1, var2, (LevelChunkSection[])null, new ProtoChunkTicks(), new ProtoChunkTicks(), var3, var4, var5);
    }
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, @Nullable LevelChunkSection[] var3, ProtoChunkTicks<Block> var4, ProtoChunkTicks<Fluid> var5, LevelHeightAccessor var6, PalettedContainerFactory var7, @Nullable BlendingData var8) {
+   public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelChunkSection @Nullable [] var3, ProtoChunkTicks<Block> var4, ProtoChunkTicks<Fluid> var5, LevelHeightAccessor var6, PalettedContainerFactory var7, @Nullable BlendingData var8) {
       super(var1, var2, var6, var7, 0L, var3, var8);
       this.status = ChunkStatus.EMPTY;
       this.entities = Lists.newArrayList();
@@ -97,8 +94,7 @@ public class ProtoChunk extends ChunkAccess {
       }
    }
 
-   @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
+   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       int var4 = var1.getX();
       int var5 = var1.getY();
       int var6 = var1.getZ();
@@ -159,8 +155,7 @@ public class ProtoChunk extends ChunkAccess {
       this.blockEntities.put(var1.getBlockPos(), var1);
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       return (BlockEntity)this.blockEntities.get(var1);
    }
 
@@ -253,8 +248,7 @@ public class ProtoChunk extends ChunkAccess {
       return Collections.unmodifiableMap(this.pendingBlockEntities);
    }
 
-   @Nullable
-   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
+   public @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
       BlockEntity var3 = this.getBlockEntity(var1);
       return var3 != null ? var3.saveWithFullMetadata(var2) : (CompoundTag)this.pendingBlockEntities.get(var1);
    }
@@ -264,8 +258,7 @@ public class ProtoChunk extends ChunkAccess {
       this.pendingBlockEntities.remove(var1);
    }
 
-   @Nullable
-   public CarvingMask getCarvingMask() {
+   public @Nullable CarvingMask getCarvingMask() {
       return this.carvingMask;
    }
 
@@ -289,8 +282,7 @@ public class ProtoChunk extends ChunkAccess {
       this.belowZeroRetrogen = var1;
    }
 
-   @Nullable
-   public BelowZeroRetrogen getBelowZeroRetrogen() {
+   public @Nullable BelowZeroRetrogen getBelowZeroRetrogen() {
       return this.belowZeroRetrogen;
    }
 

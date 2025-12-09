@@ -67,6 +67,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.UNSTABLE_BOTTOM_CENTER).addTag(BlockTags.FENCE_GATES);
       this.tag(BlockTags.MUSHROOM_GROW_BLOCK).add(Blocks.MYCELIUM).add(Blocks.PODZOL).add(Blocks.CRIMSON_NYLIUM).add(Blocks.WARPED_NYLIUM);
       this.tag(BlockTags.EDIBLE_FOR_SHEEP).add(Blocks.SHORT_GRASS).add(Blocks.SHORT_DRY_GRASS).add(Blocks.TALL_DRY_GRASS).add(Blocks.FERN);
+      this.tag(BlockTags.CAN_GLIDE_THROUGH).add(Blocks.VINE).add(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT).add(Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT).addTag(BlockTags.CAVE_VINES);
       this.tag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.NETHERRACK, Blocks.MAGMA_BLOCK);
       this.tag(BlockTags.INFINIBURN_NETHER).addTag(BlockTags.INFINIBURN_OVERWORLD);
       this.tag(BlockTags.INFINIBURN_END).addTag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.BEDROCK);

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import java.util.List;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class HopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper {
    public static final int MOVE_ITEM_SPEED = 8;
@@ -368,13 +368,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return var2;
    }
 
-   @Nullable
-   private static Container getAttachedContainer(Level var0, BlockPos var1, HopperBlockEntity var2) {
+   private static @Nullable Container getAttachedContainer(Level var0, BlockPos var1, HopperBlockEntity var2) {
       return getContainerAt(var0, var1.relative(var2.facing));
    }
 
-   @Nullable
-   private static Container getSourceContainer(Level var0, Hopper var1, BlockPos var2, BlockState var3) {
+   private static @Nullable Container getSourceContainer(Level var0, Hopper var1, BlockPos var2, BlockState var3) {
       return getContainerAt(var0, var2, var3, var1.getLevelX(), var1.getLevelY() + 1.0, var1.getLevelZ());
    }
 
@@ -383,13 +381,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return var0.getEntitiesOfClass(ItemEntity.class, var2, EntitySelector.ENTITY_STILL_ALIVE);
    }
 
-   @Nullable
-   public static Container getContainerAt(Level var0, BlockPos var1) {
+   public static @Nullable Container getContainerAt(Level var0, BlockPos var1) {
       return getContainerAt(var0, var1, var0.getBlockState(var1), (double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5);
    }
 
-   @Nullable
-   private static Container getContainerAt(Level var0, BlockPos var1, BlockState var2, double var3, double var5, double var7) {
+   private static @Nullable Container getContainerAt(Level var0, BlockPos var1, BlockState var2, double var3, double var5, double var7) {
       Container var9 = getBlockContainer(var0, var1, var2);
       if (var9 == null) {
          var9 = getEntityContainer(var0, var3, var5, var7);
@@ -398,8 +394,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return var9;
    }
 
-   @Nullable
-   private static Container getBlockContainer(Level var0, BlockPos var1, BlockState var2) {
+   private static @Nullable Container getBlockContainer(Level var0, BlockPos var1, BlockState var2) {
       Block var3 = var2.getBlock();
       if (var3 instanceof WorldlyContainerHolder) {
          return ((WorldlyContainerHolder)var3).getContainer(var2, var0, var1);
@@ -420,8 +415,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       }
    }
 
-   @Nullable
-   private static Container getEntityContainer(Level var0, double var1, double var3, double var5) {
+   private static @Nullable Container getEntityContainer(Level var0, double var1, double var3, double var5) {
       List var7 = var0.getEntities((Entity)null, new AABB(var1 - 0.5, var3 - 0.5, var5 - 0.5, var1 + 0.5, var3 + 0.5, var5 + 0.5), EntitySelector.CONTAINER_ENTITY_SELECTOR);
       return !var7.isEmpty() ? (Container)var7.get(var0.random.nextInt(var7.size())) : null;
    }

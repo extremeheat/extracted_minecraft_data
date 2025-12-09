@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components.events;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
@@ -9,6 +8,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import org.jspecify.annotations.Nullable;
 
 public interface GuiEventListener extends TabOrderedElement {
    default void mouseMoved(double var1, double var3) {
@@ -42,8 +42,7 @@ public interface GuiEventListener extends TabOrderedElement {
       return false;
    }
 
-   @Nullable
-   default ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   default @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 
@@ -59,8 +58,7 @@ public interface GuiEventListener extends TabOrderedElement {
       return true;
    }
 
-   @Nullable
-   default ComponentPath getCurrentFocusPath() {
+   default @Nullable ComponentPath getCurrentFocusPath() {
       return this.isFocused() ? ComponentPath.leaf(this) : null;
    }
 

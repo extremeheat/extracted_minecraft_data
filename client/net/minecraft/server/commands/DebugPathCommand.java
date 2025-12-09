@@ -25,7 +25,7 @@ public class DebugPathCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugpath").requires(Commands.hasPermission(2))).then(Commands.argument("to", BlockPosArgument.blockPos()).executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "to")))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugpath").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("to", BlockPosArgument.blockPos()).executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "to")))));
    }
 
    private static int fillBlocks(CommandSourceStack var0, BlockPos var1) throws CommandSyntaxException {

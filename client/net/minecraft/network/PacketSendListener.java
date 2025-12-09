@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.netty.channel.ChannelFutureListener;
 import java.util.function.Supplier;
 import net.minecraft.network.protocol.Packet;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PacketSendListener {
@@ -23,7 +24,7 @@ public class PacketSendListener {
       };
    }
 
-   public static ChannelFutureListener exceptionallySend(Supplier<Packet<?>> var0) {
+   public static ChannelFutureListener exceptionallySend(Supplier<@Nullable Packet<?>> var0) {
       return (var1) -> {
          if (!var1.isSuccess()) {
             Packet var2 = (Packet)var0.get();

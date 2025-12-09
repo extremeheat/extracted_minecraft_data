@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -9,11 +8,11 @@ import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jspecify.annotations.Nullable;
 
 public class BegGoal extends Goal {
    private final Wolf wolf;
-   @Nullable
-   private Player player;
+   private @Nullable Player player;
    private final ServerLevel level;
    private final float lookDistance;
    private int lookTime;

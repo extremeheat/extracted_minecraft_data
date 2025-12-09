@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CsvOutput;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
@@ -74,7 +74,7 @@ public class MetricsPersister {
 
    private void saveCategory(MetricCategory var1, List<MetricSampler> var2, Path var3) {
       String var10001 = var1.getDescription();
-      Path var4 = var3.resolve(Util.sanitizeName(var10001, ResourceLocation::validPathChar) + ".csv");
+      Path var4 = var3.resolve(Util.sanitizeName(var10001, Identifier::validPathChar) + ".csv");
       BufferedWriter var5 = null;
 
       try {
@@ -111,7 +111,7 @@ public class MetricsPersister {
       DateTimeFormatter var3 = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS", Locale.UK).withZone(ZoneId.systemDefault());
       var1.forEach((var2x, var3x) -> var3x.forEach((var3xx) -> {
             String var4 = var3.format(var3xx.timestamp);
-            Path var5 = var2.resolve(Util.sanitizeName(var2x.getName(), ResourceLocation::validPathChar)).resolve(String.format(Locale.ROOT, "%d@%s.txt", var3xx.tick, var4));
+            Path var5 = var2.resolve(Util.sanitizeName(var2x.getName(), Identifier::validPathChar)).resolve(String.format(Locale.ROOT, "%d@%s.txt", var3xx.tick, var4));
             var3xx.profilerResultAtTick.saveResults(var5);
          }));
    }

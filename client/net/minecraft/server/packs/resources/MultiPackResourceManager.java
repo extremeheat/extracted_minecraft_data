@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MultiPackResourceManager implements CloseableResourceManager {
@@ -56,8 +56,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       this.namespacedManagers = var3;
    }
 
-   @Nullable
-   private ResourceFilterSection getPackFilterSection(PackResources var1) {
+   private @Nullable ResourceFilterSection getPackFilterSection(PackResources var1) {
       try {
          return (ResourceFilterSection)var1.getMetadataSection(ResourceFilterSection.TYPE);
       } catch (IOException var3) {
@@ -70,17 +69,17 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       return this.namespacedManagers.keySet();
    }
 
-   public Optional<Resource> getResource(ResourceLocation var1) {
+   public Optional<Resource> getResource(Identifier var1) {
       ResourceManager var2 = (ResourceManager)this.namespacedManagers.get(var1.getNamespace());
       return var2 != null ? var2.getResource(var1) : Optional.empty();
    }
 
-   public List<Resource> getResourceStack(ResourceLocation var1) {
+   public List<Resource> getResourceStack(Identifier var1) {
       ResourceManager var2 = (ResourceManager)this.namespacedManagers.get(var1.getNamespace());
       return var2 != null ? var2.getResourceStack(var1) : List.of();
    }
 
-   public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
+   public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
       checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
 
@@ -91,7 +90,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       return var3;
    }
 
-   public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
+   public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
       checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
 

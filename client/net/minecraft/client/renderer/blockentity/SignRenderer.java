@@ -14,10 +14,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.util.Unit;
@@ -87,7 +87,7 @@ public class SignRenderer extends AbstractSignRenderer {
 
    public static Model.Simple createSignModel(EntityModelSet var0, WoodType var1, boolean var2) {
       ModelLayerLocation var3 = var2 ? ModelLayers.createStandingSignModelName(var1) : ModelLayers.createWallSignModelName(var1);
-      return new Model.Simple(var0.bakeLayer(var3), RenderType::entityCutoutNoCull);
+      return new Model.Simple(var0.bakeLayer(var3), RenderTypes::entityCutoutNoCull);
    }
 
    public static LayerDefinition createSignLayer(boolean var0) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.level;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -8,14 +7,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public interface Explosion {
    static DamageSource getDefaultDamageSource(Level var0, @Nullable Entity var1) {
       return var0.damageSources().explosion(var1, getIndirectSourceEntity(var1));
    }
 
-   @Nullable
-   static LivingEntity getIndirectSourceEntity(@Nullable Entity var0) {
+   static @Nullable LivingEntity getIndirectSourceEntity(@Nullable Entity var0) {
       Entity var1 = var0;
       byte var2 = 0;
 
@@ -55,11 +54,9 @@ public interface Explosion {
 
    BlockInteraction getBlockInteraction();
 
-   @Nullable
-   LivingEntity getIndirectSourceEntity();
+   @Nullable LivingEntity getIndirectSourceEntity();
 
-   @Nullable
-   Entity getDirectSourceEntity();
+   @Nullable Entity getDirectSourceEntity();
 
    float radius();
 

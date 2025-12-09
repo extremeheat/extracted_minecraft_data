@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -15,6 +17,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwingAnimationType;
+import net.minecraft.world.item.component.SwingAnimation;
 
 public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRenderState, M extends HumanoidModel<S>> extends AgeableMobRenderer<T, S, M> {
    public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
@@ -33,7 +37,13 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
    }
 
    protected HumanoidModel.ArmPose getArmPose(T var1, HumanoidArm var2) {
-      return HumanoidModel.ArmPose.EMPTY;
+      ItemStack var3 = var1.getItemHeldByArm(var2);
+      SwingAnimation var4 = (SwingAnimation)var3.get(DataComponents.SWING_ANIMATION);
+      if (var4 != null && var4.type() == SwingAnimationType.STAB && var1.swinging) {
+         return HumanoidModel.ArmPose.SPEAR;
+      } else {
+         return var3.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.EMPTY;
+      }
    }
 
    public void extractRenderState(T var1, S var2, float var3) {
@@ -44,7 +54,7 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
    }
 
    public static void extractHumanoidRenderState(LivingEntity var0, HumanoidRenderState var1, float var2, ItemModelResolver var3) {
-      ArmedEntityRenderState.extractArmedEntityRenderState(var0, var1, var3);
+      ArmedEntityRenderState.extractArmedEntityRenderState(var0, var1, var3, var2);
       var1.isCrouching = var0.isCrouching();
       var1.isFallFlying = var0.isFallFlying();
       var1.isVisuallySwimming = var0.isVisuallySwimming();
@@ -60,12 +70,11 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
          var1.speedValue = 1.0F;
       }
 
-      var1.attackTime = var0.getAttackAnim(var2);
       var1.swimAmount = var0.getSwimAmount(var2);
       var1.attackArm = getAttackArm(var0);
       var1.useItemHand = var0.getUsedItemHand();
       var1.maxCrossbowChargeDuration = (float)CrossbowItem.getChargeDuration(var0.getUseItem(), var0);
-      var1.ticksUsingItem = var0.getTicksUsingItem();
+      var1.ticksUsingItem = var0.getTicksUsingItem(var2);
       var1.isUsingItem = var0.isUsingItem();
       var1.elytraRotX = var0.elytraAnimationState.getRotX(var2);
       var1.elytraRotY = var0.elytraAnimationState.getRotY(var2);

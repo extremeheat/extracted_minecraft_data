@@ -1,13 +1,13 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotPatterns {
    public static final ResourceKey<DecoratedPotPattern> BLANK = create("blank");
@@ -40,13 +40,12 @@ public class DecoratedPotPatterns {
       super();
    }
 
-   @Nullable
-   public static ResourceKey<DecoratedPotPattern> getPatternFromItem(Item var0) {
+   public static @Nullable ResourceKey<DecoratedPotPattern> getPatternFromItem(Item var0) {
       return (ResourceKey)ITEM_TO_POT_TEXTURE.get(var0);
    }
 
    private static ResourceKey<DecoratedPotPattern> create(String var0) {
-      return ResourceKey.create(Registries.DECORATED_POT_PATTERN, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.DECORATED_POT_PATTERN, Identifier.withDefaultNamespace(var0));
    }
 
    public static DecoratedPotPattern bootstrap(Registry<DecoratedPotPattern> var0) {
@@ -77,7 +76,7 @@ public class DecoratedPotPatterns {
    }
 
    private static DecoratedPotPattern register(Registry<DecoratedPotPattern> var0, ResourceKey<DecoratedPotPattern> var1, String var2) {
-      return (DecoratedPotPattern)Registry.register(var0, (ResourceKey)var1, new DecoratedPotPattern(ResourceLocation.withDefaultNamespace(var2)));
+      return (DecoratedPotPattern)Registry.register(var0, (ResourceKey)var1, new DecoratedPotPattern(Identifier.withDefaultNamespace(var2)));
    }
 
    static {

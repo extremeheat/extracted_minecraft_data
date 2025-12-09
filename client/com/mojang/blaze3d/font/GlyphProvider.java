@@ -1,8 +1,8 @@
 package com.mojang.blaze3d.font;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.FontOption;
+import org.jspecify.annotations.Nullable;
 
 public interface GlyphProvider extends AutoCloseable {
    float BASELINE = 7.0F;
@@ -10,8 +10,7 @@ public interface GlyphProvider extends AutoCloseable {
    default void close() {
    }
 
-   @Nullable
-   default UnbakedGlyph getGlyph(int var1) {
+   default @Nullable UnbakedGlyph getGlyph(int var1) {
       return null;
    }
 

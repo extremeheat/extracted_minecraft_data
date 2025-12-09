@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -74,9 +73,8 @@ public class StructureBlockEditScreen extends Screen {
       this.initialMirror = Mirror.NONE;
       this.initialRotation = Rotation.NONE;
       this.initialMode = StructureMode.DATA;
-      this.decimalFormat = new DecimalFormat("0.0###");
+      this.decimalFormat = new DecimalFormat("0.0###", DecimalFormatSymbols.getInstance(Locale.ROOT));
       this.structure = var1;
-      this.decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
    }
 
    private void onDone() {
@@ -121,7 +119,7 @@ public class StructureBlockEditScreen extends Screen {
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
-      this.addRenderableWidget(CycleButton.builder((var0) -> Component.translatable("structure_block.mode." + var0.getSerializedName())).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().withInitialValue(this.initialMode).create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (var1x, var2x) -> {
+      this.addRenderableWidget(CycleButton.builder((var0) -> Component.translatable("structure_block.mode." + var0.getSerializedName()), this.initialMode).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (var1x, var2x) -> {
          this.structure.setMode(var2x);
          this.updateMode(var2x);
       }));
@@ -134,7 +132,7 @@ public class StructureBlockEditScreen extends Screen {
       }).bounds(this.width / 2 + 4 + 100, 120, 50, 20).build());
       this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (var1x, var2x) -> this.structure.setIgnoreEntities(!var2x)));
       this.strictButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.isStrict()).displayOnlyValue().create(this.width / 2 + 4 + 100, 120, 50, 20, STRICT_LABEL, (var1x, var2x) -> this.structure.setStrict(var2x)));
-      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol).withValues(Mirror.values()).displayOnlyValue().withInitialValue(this.initialMirror).create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (var1x, var2x) -> this.structure.setMirror(var2x)));
+      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol, this.initialMirror).withValues(Mirror.values()).displayOnlyValue().create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (var1x, var2x) -> this.structure.setMirror(var2x)));
       this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (var1x, var2x) -> this.structure.setShowAir(var2x)));
       this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (var1x, var2x) -> this.structure.setShowBoundingBox(var2x)));
       this.rot0Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("0"), (var1x) -> {
@@ -207,28 +205,28 @@ public class StructureBlockEditScreen extends Screen {
       this.setInitialFocus(this.nameEdit);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.nameEdit.getValue();
-      String var5 = this.posXEdit.getValue();
-      String var6 = this.posYEdit.getValue();
-      String var7 = this.posZEdit.getValue();
-      String var8 = this.sizeXEdit.getValue();
-      String var9 = this.sizeYEdit.getValue();
-      String var10 = this.sizeZEdit.getValue();
-      String var11 = this.integrityEdit.getValue();
-      String var12 = this.seedEdit.getValue();
-      String var13 = this.dataEdit.getValue();
-      this.init(var1, var2, var3);
-      this.nameEdit.setValue(var4);
-      this.posXEdit.setValue(var5);
-      this.posYEdit.setValue(var6);
-      this.posZEdit.setValue(var7);
-      this.sizeXEdit.setValue(var8);
-      this.sizeYEdit.setValue(var9);
-      this.sizeZEdit.setValue(var10);
-      this.integrityEdit.setValue(var11);
-      this.seedEdit.setValue(var12);
-      this.dataEdit.setValue(var13);
+   public void resize(int var1, int var2) {
+      String var3 = this.nameEdit.getValue();
+      String var4 = this.posXEdit.getValue();
+      String var5 = this.posYEdit.getValue();
+      String var6 = this.posZEdit.getValue();
+      String var7 = this.sizeXEdit.getValue();
+      String var8 = this.sizeYEdit.getValue();
+      String var9 = this.sizeZEdit.getValue();
+      String var10 = this.integrityEdit.getValue();
+      String var11 = this.seedEdit.getValue();
+      String var12 = this.dataEdit.getValue();
+      this.init(var1, var2);
+      this.nameEdit.setValue(var3);
+      this.posXEdit.setValue(var4);
+      this.posYEdit.setValue(var5);
+      this.posZEdit.setValue(var6);
+      this.sizeXEdit.setValue(var7);
+      this.sizeYEdit.setValue(var8);
+      this.sizeZEdit.setValue(var9);
+      this.integrityEdit.setValue(var10);
+      this.seedEdit.setValue(var11);
+      this.dataEdit.setValue(var12);
    }
 
    private void updateDirectionButtons() {

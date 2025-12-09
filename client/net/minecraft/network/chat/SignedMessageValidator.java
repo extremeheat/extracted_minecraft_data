@@ -2,8 +2,8 @@ package net.minecraft.network.chat;
 
 import com.mojang.logging.LogUtils;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.util.SignatureValidator;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 @FunctionalInterface
@@ -15,14 +15,12 @@ public interface SignedMessageValidator {
       return null;
    };
 
-   @Nullable
-   PlayerChatMessage updateAndValidate(PlayerChatMessage var1);
+   @Nullable PlayerChatMessage updateAndValidate(PlayerChatMessage var1);
 
    public static class KeyBased implements SignedMessageValidator {
       private final SignatureValidator validator;
       private final BooleanSupplier expired;
-      @Nullable
-      private PlayerChatMessage lastMessage;
+      private @Nullable PlayerChatMessage lastMessage;
       private boolean isChainValid = true;
 
       public KeyBased(SignatureValidator var1, BooleanSupplier var2) {
@@ -54,8 +52,7 @@ public interface SignedMessageValidator {
          }
       }
 
-      @Nullable
-      public PlayerChatMessage updateAndValidate(PlayerChatMessage var1) {
+      public @Nullable PlayerChatMessage updateAndValidate(PlayerChatMessage var1) {
          this.isChainValid = this.isChainValid && this.validate(var1);
          if (!this.isChainValid) {
             return null;

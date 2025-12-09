@@ -7,7 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.apache.commons.io.IOUtils;
 
 public class Ping {

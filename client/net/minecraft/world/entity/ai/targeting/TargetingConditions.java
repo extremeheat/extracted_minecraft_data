@@ -1,10 +1,10 @@
 package net.minecraft.world.entity.ai.targeting;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import org.jspecify.annotations.Nullable;
 
 public class TargetingConditions {
    public static final TargetingConditions DEFAULT = forCombat();
@@ -13,8 +13,7 @@ public class TargetingConditions {
    private double range = -1.0;
    private boolean checkLineOfSight = true;
    private boolean testInvisible = true;
-   @Nullable
-   private Selector selector;
+   private @Nullable Selector selector;
 
    private TargetingConditions(boolean var1) {
       super();

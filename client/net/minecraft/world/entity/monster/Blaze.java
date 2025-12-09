@@ -22,7 +22,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.SmallFireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
@@ -109,7 +109,7 @@ public class Blaze extends Monster {
       if (var2 != null && var2.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(var2)) {
          Vec3 var3 = this.getDeltaMovement();
          this.setDeltaMovement(this.getDeltaMovement().add(0.0, (0.30000001192092896 - var3.y) * 0.30000001192092896, 0.0));
-         this.hasImpulse = true;
+         this.needsSync = true;
       }
 
       super.customServerAiStep(var1);

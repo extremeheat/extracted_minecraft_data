@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -20,24 +21,23 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nullable;
 import jdk.jfr.Configuration;
 import jdk.jfr.Event;
 import jdk.jfr.FlightRecorder;
 import jdk.jfr.FlightRecorderListener;
 import jdk.jfr.Recording;
-import jdk.jfr.RecordingState;
-import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.FileUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.util.profiling.jfr.event.ChunkGenerationEvent;
 import net.minecraft.util.profiling.jfr.event.ChunkRegionReadEvent;
 import net.minecraft.util.profiling.jfr.event.ChunkRegionWriteEvent;
+import net.minecraft.util.profiling.jfr.event.ClientFpsEvent;
 import net.minecraft.util.profiling.jfr.event.NetworkSummaryEvent;
 import net.minecraft.util.profiling.jfr.event.PacketReceivedEvent;
 import net.minecraft.util.profiling.jfr.event.PacketSentEvent;
@@ -49,6 +49,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class JfrProfiler implements JvmProfiler {
@@ -58,28 +59,54 @@ public class JfrProfiler implements JvmProfiler {
    public static final String TICK_CATEGORY = "Ticking";
    public static final String NETWORK_CATEGORY = "Network";
    public static final String STORAGE_CATEGORY = "Storage";
-   private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, StructureGenerationEvent.class, WorldLoadFinishedEvent.class);
+   private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, ClientFpsEvent.class, StructureGenerationEvent.class, WorldLoadFinishedEvent.class);
    private static final String FLIGHT_RECORDER_CONFIG = "/flightrecorder-config.jfc";
-   private static final DateTimeFormatter DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder()).appendPattern("yyyy-MM-dd-HHmmss").toFormatter().withZone(ZoneId.systemDefault());
-   private static final JfrProfiler INSTANCE = new JfrProfiler();
-   @Nullable
-   Recording recording;
-   private float currentAverageTickTime;
+   private static final DateTimeFormatter DATE_TIME_FORMATTER;
+   private static final JfrProfiler INSTANCE;
+   @Nullable Recording recording;
+   private int currentFPS;
+   private float currentAverageTickTimeServer;
    private final Map<String, NetworkSummaryEvent.SumAggregation> networkTrafficByAddress = new ConcurrentHashMap();
+   private final Runnable periodicClientFps = () -> (new ClientFpsEvent(this.currentFPS)).commit();
+   private final Runnable periodicServerTickTime = () -> (new ServerTickTimeEvent(this.currentAverageTickTimeServer)).commit();
+   private final Runnable periodicNetworkSummary = () -> {
+      Iterator var1 = this.networkTrafficByAddress.values().iterator();
+
+      while(var1.hasNext()) {
+         ((NetworkSummaryEvent.SumAggregation)var1.next()).commitEvent();
+         var1.remove();
+      }
+
+   };
 
    private JfrProfiler() {
       super();
       CUSTOM_EVENTS.forEach(FlightRecorder::register);
-      FlightRecorder.addPeriodicEvent(ServerTickTimeEvent.class, () -> (new ServerTickTimeEvent(this.currentAverageTickTime)).commit());
-      FlightRecorder.addPeriodicEvent(NetworkSummaryEvent.class, () -> {
-         Iterator var1 = this.networkTrafficByAddress.values().iterator();
-
-         while(var1.hasNext()) {
-            ((NetworkSummaryEvent.SumAggregation)var1.next()).commitEvent();
-            var1.remove();
+      this.registerPeriodicEvents();
+      FlightRecorder.addListener(new FlightRecorderListener() {
+         public void recordingStateChanged(Recording var1) {
+            switch (var1.getState()) {
+               case STOPPED:
+                  JfrProfiler.this.registerPeriodicEvents();
+               case NEW:
+               case DELAYED:
+               case RUNNING:
+               case CLOSED:
+               default:
+            }
          }
-
       });
+   }
+
+   void registerPeriodicEvents() {
+      addPeriodicEvent(ClientFpsEvent.class, this.periodicClientFps);
+      addPeriodicEvent(ServerTickTimeEvent.class, this.periodicServerTickTime);
+      addPeriodicEvent(NetworkSummaryEvent.class, this.periodicNetworkSummary);
+   }
+
+   private static void addPeriodicEvent(Class<? extends Event> var0, Runnable var1) {
+      FlightRecorder.removePeriodicEvent(var1);
+      FlightRecorder.addPeriodicEvent(var0, var1);
    }
 
    public static JfrProfiler getInstance() {
@@ -93,7 +120,7 @@ public class JfrProfiler implements JvmProfiler {
          return false;
       } else {
          try {
-            BufferedReader var3 = new BufferedReader(new InputStreamReader(var2.openStream()));
+            BufferedReader var3 = new BufferedReader(new InputStreamReader(var2.openStream(), StandardCharsets.UTF_8));
 
             boolean var4;
             try {
@@ -172,17 +199,32 @@ public class JfrProfiler implements JvmProfiler {
          final SummaryReporter summaryReporter = new SummaryReporter(() -> JfrProfiler.this.recording = null);
 
          public void recordingStateChanged(Recording var1) {
-            if (var1 == JfrProfiler.this.recording && var1.getState() == RecordingState.STOPPED) {
-               this.summaryReporter.recordingStopped(var1.getDestination());
-               FlightRecorder.removeListener(this);
+            if (var1 == JfrProfiler.this.recording) {
+               switch (var1.getState()) {
+                  case STOPPED:
+                     this.summaryReporter.recordingStopped(var1.getDestination());
+                     FlightRecorder.removeListener(this);
+                  case NEW:
+                  case DELAYED:
+                  case RUNNING:
+                  case CLOSED:
+                  default:
+               }
             }
          }
       });
    }
 
+   public void onClientTick(int var1) {
+      if (ClientFpsEvent.TYPE.isEnabled()) {
+         this.currentFPS = var1;
+      }
+
+   }
+
    public void onServerTick(float var1) {
       if (ServerTickTimeEvent.TYPE.isEnabled()) {
-         this.currentAverageTickTime = var1;
+         this.currentAverageTickTimeServer = var1;
       }
 
    }
@@ -227,8 +269,7 @@ public class JfrProfiler implements JvmProfiler {
 
    }
 
-   @Nullable
-   public ProfiledDuration onWorldLoadedStarted() {
+   public @Nullable ProfiledDuration onWorldLoadedStarted() {
       if (!WorldLoadFinishedEvent.TYPE.isEnabled()) {
          return null;
       } else {
@@ -238,8 +279,7 @@ public class JfrProfiler implements JvmProfiler {
       }
    }
 
-   @Nullable
-   public ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
+   public @Nullable ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
       if (!ChunkGenerationEvent.TYPE.isEnabled()) {
          return null;
       } else {
@@ -249,8 +289,7 @@ public class JfrProfiler implements JvmProfiler {
       }
    }
 
-   @Nullable
-   public ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
+   public @Nullable ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
       if (!StructureGenerationEvent.TYPE.isEnabled()) {
          return null;
       } else {
@@ -261,5 +300,10 @@ public class JfrProfiler implements JvmProfiler {
             var4.commit();
          };
       }
+   }
+
+   static {
+      DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder()).appendPattern("yyyy-MM-dd-HHmmss").toFormatter(Locale.ROOT).withZone(ZoneId.systemDefault());
+      INSTANCE = new JfrProfiler();
    }
 }

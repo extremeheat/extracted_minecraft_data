@@ -2,13 +2,12 @@ package com.mojang.blaze3d.audio;
 
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import javax.sound.sampled.AudioFormat;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL10;
 
 public class SoundBuffer {
-   @Nullable
-   private ByteBuffer data;
+   private @Nullable ByteBuffer data;
    private final AudioFormat format;
    private boolean hasAlBuffer;
    private int alBuffer;

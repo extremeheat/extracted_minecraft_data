@@ -11,8 +11,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction8;
@@ -22,6 +20,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.jspecify.annotations.Nullable;
 
 public class BlendingData {
    private static final double BLENDING_DENSITY_FACTOR = 0.1;
@@ -51,7 +51,7 @@ public class BlendingData {
    protected static final double NO_VALUE = 1.7976931348623157E308;
    private boolean hasCalculatedData;
    private final double[] heights;
-   private final List<List<Holder<Biome>>> biomes;
+   private final List<@Nullable List<@Nullable Holder<Biome>>> biomes;
    private final transient double[][] densities;
 
    private BlendingData(int var1, int var2, Optional<double[]> var3) {
@@ -66,8 +66,7 @@ public class BlendingData {
       this.areaWithOldGeneration = LevelHeightAccessor.create(var5, var6);
    }
 
-   @Nullable
-   public static BlendingData unpack(@Nullable Packed var0) {
+   public static @Nullable BlendingData unpack(@Nullable Packed var0) {
       return var0 == null ? null : new BlendingData(var0.minSection(), var0.maxSection(), var0.heights());
    }
 
@@ -84,8 +83,7 @@ public class BlendingData {
       return new Packed(this.areaWithOldGeneration.getMinSectionY(), this.areaWithOldGeneration.getMaxSectionY() + 1, var1 ? Optional.of(DoubleArrays.copy(this.heights)) : Optional.empty());
    }
 
-   @Nullable
-   public static BlendingData getOrUpdateBlendingData(WorldGenRegion var0, int var1, int var2) {
+   public static @Nullable BlendingData getOrUpdateBlendingData(WorldGenRegion var0, int var1, int var2) {
       ChunkAccess var3 = var0.getChunk(var1, var2);
       BlendingData var4 = var3.getBlendingData();
       if (var4 != null && !var3.getHighestGeneratedStatus().isBefore(ChunkStatus.BIOMES)) {
@@ -257,7 +255,7 @@ public class BlendingData {
       }
    }
 
-   private double getDensity(@Nullable double[] var1, int var2) {
+   private double getDensity(double @Nullable [] var1, int var2) {
       if (var1 == null) {
          return 1.7976931348623157E308;
       } else {
@@ -281,10 +279,11 @@ public class BlendingData {
          int var5 = var2 - QuartPos.fromBlock(this.areaWithOldGeneration.getMinY());
 
          for(int var6 = 0; var6 < this.biomes.size(); ++var6) {
-            if (this.biomes.get(var6) != null) {
-               Holder var7 = (Holder)((List)this.biomes.get(var6)).get(var5);
-               if (var7 != null) {
-                  var4.consume(var1 + getX(var6), var3 + getZ(var6), var7);
+            List var7 = (List)this.biomes.get(var6);
+            if (var7 != null) {
+               Holder var8 = (Holder)var7.get(var5);
+               if (var8 != null) {
+                  var4.consume(var1 + getX(var6), var3 + getZ(var6), var8);
                }
             }
          }

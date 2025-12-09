@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
@@ -26,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class BehaviorUtils {
    private BehaviorUtils() {
@@ -104,7 +104,7 @@ public class BehaviorUtils {
    public static boolean isWithinAttackRange(Mob var0, LivingEntity var1, int var2) {
       Item var4 = var0.getMainHandItem().getItem();
       if (var4 instanceof ProjectileWeaponItem var3) {
-         if (var0.canFireProjectileWeapon(var3)) {
+         if (var0.canUseNonMeleeWeapon(var0.getMainHandItem())) {
             int var5 = var3.getDefaultProjectileRange() - var2;
             return var0.closerThan(var1, (double)var5);
          }
@@ -141,7 +141,7 @@ public class BehaviorUtils {
 
    public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(LivingEntity var0, MemoryModuleType<UUID> var1) {
       Optional var2 = var0.getBrain().getMemory(var1);
-      return var2.map((var1x) -> ((ServerLevel)var0.level()).getEntity(var1x)).map((var0x) -> {
+      return var2.map((var1x) -> var0.level().getEntity(var1x)).map((var0x) -> {
          LivingEntity var10000;
          if (var0x instanceof LivingEntity var1) {
             var10000 = var1;
@@ -153,8 +153,7 @@ public class BehaviorUtils {
       });
    }
 
-   @Nullable
-   public static Vec3 getRandomSwimmablePos(PathfinderMob var0, int var1, int var2) {
+   public static @Nullable Vec3 getRandomSwimmablePos(PathfinderMob var0, int var1, int var2) {
       Vec3 var3 = DefaultRandomPos.getPos(var0, var1, var2);
 
       for(int var4 = 0; var3 != null && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(PathComputationType.WATER) && var4++ < 10; var3 = DefaultRandomPos.getPos(var0, var1, var2)) {

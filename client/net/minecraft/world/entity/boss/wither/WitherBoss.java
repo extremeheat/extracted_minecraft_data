@@ -3,7 +3,6 @@ package net.minecraft.world.entity.boss.wither;
 import com.google.common.collect.ImmutableList;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -45,16 +44,17 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.WitherSkull;
-import net.minecraft.world.entity.projectile.windcharge.WindCharge;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
+import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class WitherBoss extends Monster implements RangedAttackMob {
    private static final EntityDataAccessor<Integer> DATA_TARGET_A;
@@ -284,7 +284,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
          if (this.destroyBlocksTick > 0) {
             --this.destroyBlocksTick;
-            if (this.destroyBlocksTick == 0 && var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (this.destroyBlocksTick == 0 && (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING)) {
                boolean var11 = false;
                int var14 = Mth.floor(this.getBbWidth() / 2.0F + 1.0F);
                int var17 = Mth.floor(this.getBbHeight());
@@ -338,7 +338,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
          return this.getX();
       } else {
          float var2 = (this.yBodyRot + (float)(180 * (var1 - 1))) * 0.017453292F;
-         float var3 = Mth.cos(var2);
+         float var3 = Mth.cos((double)var2);
          return this.getX() + (double)var3 * 1.3 * (double)this.getScale();
       }
    }
@@ -353,7 +353,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
          return this.getZ();
       } else {
          float var2 = (this.yBodyRot + (float)(180 * (var1 - 1))) * 0.017453292F;
-         float var3 = Mth.sin(var2);
+         float var3 = Mth.sin((double)var2);
          return this.getZ() + (double)var3 * 1.3 * (double)this.getScale();
       }
    }

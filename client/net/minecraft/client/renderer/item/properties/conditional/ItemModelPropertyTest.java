@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.item.properties.conditional;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface ItemModelPropertyTest {

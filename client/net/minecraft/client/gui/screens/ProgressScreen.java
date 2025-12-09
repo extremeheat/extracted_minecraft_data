@@ -1,16 +1,14 @@
 package net.minecraft.client.gui.screens;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ProgressListener;
+import org.jspecify.annotations.Nullable;
 
 public class ProgressScreen extends Screen implements ProgressListener {
-   @Nullable
-   private Component header;
-   @Nullable
-   private Component stage;
+   private @Nullable Component header;
+   private @Nullable Component stage;
    private int progress;
    private boolean stop;
    private final boolean clearScreenAfterStop;

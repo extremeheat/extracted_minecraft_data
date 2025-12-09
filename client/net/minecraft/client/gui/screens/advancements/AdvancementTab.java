@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
@@ -13,9 +13,10 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementTab {
    private final Minecraft minecraft;
@@ -71,8 +72,14 @@ public class AdvancementTab {
       return this.display;
    }
 
-   public void drawTab(GuiGraphics var1, int var2, int var3, boolean var4) {
-      this.type.draw(var1, var2, var3, var4, this.index);
+   public void drawTab(GuiGraphics var1, int var2, int var3, int var4, int var5, boolean var6) {
+      int var7 = var2 + this.type.getX(this.index);
+      int var8 = var3 + this.type.getY(this.index);
+      this.type.draw(var1, var7, var8, var6, this.index);
+      if (!var6 && var4 > var7 && var5 > var8 && var4 < var7 + this.type.getWidth() && var5 < var8 + this.type.getHeight()) {
+         var1.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
    }
 
    public void drawIcon(GuiGraphics var1, int var2, int var3) {
@@ -89,7 +96,7 @@ public class AdvancementTab {
       var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
       var1.pose().pushMatrix();
       var1.pose().translate((float)var2, (float)var3);
-      ResourceLocation var4 = (ResourceLocation)this.display.getBackground().map(ClientAsset.ResourceTexture::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+      Identifier var4 = (Identifier)this.display.getBackground().map(ClientAsset.ResourceTexture::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
       int var5 = Mth.floor(this.scrollX);
       int var6 = Mth.floor(this.scrollY);
       int var7 = var5 % 16;
@@ -135,8 +142,7 @@ public class AdvancementTab {
       return this.type.isMouseOver(var1, var2, this.index, var3, var5);
    }
 
-   @Nullable
-   public static AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, AdvancementNode var3) {
+   public static @Nullable AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, AdvancementNode var3) {
       Optional var4 = var3.advancement().display();
       if (var4.isEmpty()) {
          return null;
@@ -154,14 +160,22 @@ public class AdvancementTab {
    }
 
    public void scroll(double var1, double var3) {
-      if (this.maxX - this.minX > 234) {
+      if (this.canScrollHorizontally()) {
          this.scrollX = Mth.clamp(this.scrollX + var1, (double)(-(this.maxX - 234)), 0.0);
       }
 
-      if (this.maxY - this.minY > 113) {
+      if (this.canScrollVertically()) {
          this.scrollY = Mth.clamp(this.scrollY + var3, (double)(-(this.maxY - 113)), 0.0);
       }
 
+   }
+
+   public boolean canScrollHorizontally() {
+      return this.maxX - this.minX > 234;
+   }
+
+   public boolean canScrollVertically() {
+      return this.maxY - this.minY > 113;
    }
 
    public void addAdvancement(AdvancementNode var1) {
@@ -189,8 +203,7 @@ public class AdvancementTab {
 
    }
 
-   @Nullable
-   public AdvancementWidget getWidget(AdvancementHolder var1) {
+   public @Nullable AdvancementWidget getWidget(AdvancementHolder var1) {
       return (AdvancementWidget)this.widgets.get(var1);
    }
 

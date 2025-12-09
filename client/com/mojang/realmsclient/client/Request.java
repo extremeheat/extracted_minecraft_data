@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Request<T extends Request<T>> {
    protected HttpURLConnection connection;
@@ -264,7 +264,7 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setDoInput(true);
             this.connection.setRequestMethod("PUT");
             OutputStream var1 = this.connection.getOutputStream();
-            OutputStreamWriter var2 = new OutputStreamWriter(var1, "UTF-8");
+            OutputStreamWriter var2 = new OutputStreamWriter(var1, StandardCharsets.UTF_8);
             var2.write(this.content);
             var2.close();
             var1.flush();
@@ -299,7 +299,7 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setUseCaches(false);
             this.connection.setRequestMethod("POST");
             OutputStream var1 = this.connection.getOutputStream();
-            OutputStreamWriter var2 = new OutputStreamWriter(var1, "UTF-8");
+            OutputStreamWriter var2 = new OutputStreamWriter(var1, StandardCharsets.UTF_8);
             var2.write(this.content);
             var2.close();
             var1.flush();

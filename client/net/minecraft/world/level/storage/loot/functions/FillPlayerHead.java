@@ -27,12 +27,12 @@ public class FillPlayerHead extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(this.entityTarget.getParam());
+      return Set.of(this.entityTarget.contextParam());
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.is(Items.PLAYER_HEAD)) {
-         Object var4 = var2.getOptionalParameter(this.entityTarget.getParam());
+         Object var4 = var2.getOptionalParameter(this.entityTarget.contextParam());
          if (var4 instanceof Player) {
             Player var3 = (Player)var4;
             var1.set(DataComponents.PROFILE, ResolvableProfile.createResolved(var3.getGameProfile()));

@@ -5,17 +5,16 @@ import com.mojang.logging.LogUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.server.packs.PackResources;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ResourceLoadStateTracker {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private ReloadState reloadState;
+   private @Nullable ReloadState reloadState;
    private int reloadCount;
 
    public ResourceLoadStateTracker() {
@@ -79,8 +78,7 @@ public class ResourceLoadStateTracker {
    static class ReloadState {
       private final ReloadReason reloadReason;
       private final List<String> packs;
-      @Nullable
-      RecoveryInfo recoveryReloadInfo;
+      @Nullable RecoveryInfo recoveryReloadInfo;
       boolean finished;
 
       ReloadState(ReloadReason var1, List<String> var2) {

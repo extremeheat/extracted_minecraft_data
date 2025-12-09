@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -14,15 +13,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BaseCommandBlock {
    private static final Component DEFAULT_NAME = Component.literal("@");
@@ -31,11 +28,9 @@ public abstract class BaseCommandBlock {
    private boolean updateLastExecution = true;
    private int successCount;
    private boolean trackOutput = true;
-   @Nullable
-   Component lastOutput;
+   @Nullable Component lastOutput;
    private String command = "";
-   @Nullable
-   private Component customName;
+   private @Nullable Component customName;
 
    public BaseCommandBlock() {
       super();
@@ -98,62 +93,57 @@ public abstract class BaseCommandBlock {
       return this.command;
    }
 
-   public boolean performCommand(Level var1) {
-      if (!var1.isClientSide() && var1.getGameTime() != this.lastExecution) {
-         if ("Searge".equalsIgnoreCase(this.command)) {
-            this.lastOutput = Component.literal("#itzlipofutzli");
-            this.successCount = 1;
-            return true;
-         } else {
-            this.successCount = 0;
-            MinecraftServer var2 = this.getLevel().getServer();
-            if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
-               try {
-                  this.lastOutput = null;
-
-                  try (CloseableCommandBlockSource var3 = this.createSource()) {
-                     CommandSource var9 = (CommandSource)Objects.requireNonNullElse(var3, CommandSource.NULL);
-                     CommandSourceStack var10 = this.createCommandSourceStack(var9).withCallback((var1x, var2x) -> {
-                        if (var1x) {
-                           ++this.successCount;
-                        }
-
-                     });
-                     var2.getCommands().performPrefixedCommand(var10, this.command);
-                  }
-               } catch (Throwable var8) {
-                  CrashReport var4 = CrashReport.forThrowable(var8, "Executing command block");
-                  CrashReportCategory var5 = var4.addCategory("Command to be executed");
-                  var5.setDetail("Command", this::getCommand);
-                  var5.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
-                  throw new ReportedException(var4);
-               }
-            }
-
-            if (this.updateLastExecution) {
-               this.lastExecution = var1.getGameTime();
-            } else {
-               this.lastExecution = -1L;
-            }
-
-            return true;
-         }
-      } else {
+   public boolean performCommand(ServerLevel var1) {
+      if (var1.getGameTime() == this.lastExecution) {
          return false;
+      } else if ("Searge".equalsIgnoreCase(this.command)) {
+         this.lastOutput = Component.literal("#itzlipofutzli");
+         this.successCount = 1;
+         return true;
+      } else {
+         this.successCount = 0;
+         if (var1.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
+            try {
+               this.lastOutput = null;
+
+               try (CloseableCommandBlockSource var2 = this.createSource(var1)) {
+                  CommandSource var8 = (CommandSource)Objects.requireNonNullElse(var2, CommandSource.NULL);
+                  CommandSourceStack var9 = this.createCommandSourceStack(var1, var8).withCallback((var1x, var2x) -> {
+                     if (var1x) {
+                        ++this.successCount;
+                     }
+
+                  });
+                  var1.getServer().getCommands().performPrefixedCommand(var9, this.command);
+               }
+            } catch (Throwable var7) {
+               CrashReport var3 = CrashReport.forThrowable(var7, "Executing command block");
+               CrashReportCategory var4 = var3.addCategory("Command to be executed");
+               var4.setDetail("Command", this::getCommand);
+               var4.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
+               throw new ReportedException(var3);
+            }
+         }
+
+         if (this.updateLastExecution) {
+            this.lastExecution = var1.getGameTime();
+         } else {
+            this.lastExecution = -1L;
+         }
+
+         return true;
       }
    }
 
-   @Nullable
-   private CloseableCommandBlockSource createSource() {
-      return this.trackOutput ? new CloseableCommandBlockSource() : null;
+   private @Nullable CloseableCommandBlockSource createSource(ServerLevel var1) {
+      return this.trackOutput ? new CloseableCommandBlockSource(var1) : null;
    }
 
    public Component getName() {
       return this.customName != null ? this.customName : DEFAULT_NAME;
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return this.customName;
    }
 
@@ -161,9 +151,7 @@ public abstract class BaseCommandBlock {
       this.customName = var1;
    }
 
-   public abstract ServerLevel getLevel();
-
-   public abstract void onUpdated();
+   public abstract void onUpdated(ServerLevel var1);
 
    public void setLastOutput(@Nullable Component var1) {
       this.lastOutput = var1;
@@ -177,34 +165,22 @@ public abstract class BaseCommandBlock {
       return this.trackOutput;
    }
 
-   public InteractionResult usedBy(Player var1) {
-      if (!var1.canUseGameMasterBlocks()) {
-         return InteractionResult.PASS;
-      } else {
-         if (var1.level().isClientSide()) {
-            var1.openMinecartCommandBlock(this);
-         }
-
-         return InteractionResult.SUCCESS;
-      }
-   }
-
-   public abstract Vec3 getPosition();
-
-   public abstract CommandSourceStack createCommandSourceStack(CommandSource var1);
+   public abstract CommandSourceStack createCommandSourceStack(ServerLevel var1, CommandSource var2);
 
    public abstract boolean isValid();
 
    protected class CloseableCommandBlockSource implements CommandSource, AutoCloseable {
+      private final ServerLevel level;
       private static final DateTimeFormatter TIME_FORMAT;
       private boolean closed;
 
-      protected CloseableCommandBlockSource() {
+      protected CloseableCommandBlockSource(final ServerLevel var2) {
          super();
+         this.level = var2;
       }
 
       public boolean acceptsSuccess() {
-         return !this.closed && BaseCommandBlock.this.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+         return !this.closed && (Boolean)this.level.getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK);
       }
 
       public boolean acceptsFailure() {
@@ -212,14 +188,14 @@ public abstract class BaseCommandBlock {
       }
 
       public boolean shouldInformAdmins() {
-         return !this.closed && BaseCommandBlock.this.getLevel().getGameRules().getBoolean(GameRules.RULE_COMMANDBLOCKOUTPUT);
+         return !this.closed && (Boolean)this.level.getGameRules().get(GameRules.COMMAND_BLOCK_OUTPUT);
       }
 
       public void sendSystemMessage(Component var1) {
          if (!this.closed) {
             DateTimeFormatter var10001 = TIME_FORMAT;
             BaseCommandBlock.this.lastOutput = Component.literal("[" + var10001.format(ZonedDateTime.now()) + "] ").append(var1);
-            BaseCommandBlock.this.onUpdated();
+            BaseCommandBlock.this.onUpdated(this.level);
          }
 
       }

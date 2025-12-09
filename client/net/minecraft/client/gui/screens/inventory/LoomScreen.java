@@ -1,14 +1,14 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.object.banner.BannerFlagModel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -16,7 +16,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,18 +28,19 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import org.jspecify.annotations.Nullable;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
-   private static final ResourceLocation BANNER_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/banner");
-   private static final ResourceLocation DYE_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/dye");
-   private static final ResourceLocation PATTERN_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/banner_pattern");
-   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/scroller");
-   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/scroller_disabled");
-   private static final ResourceLocation PATTERN_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/pattern_selected");
-   private static final ResourceLocation PATTERN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/pattern_highlighted");
-   private static final ResourceLocation PATTERN_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/pattern");
-   private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/error");
-   private static final ResourceLocation BG_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/loom.png");
+   private static final Identifier BANNER_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/banner");
+   private static final Identifier DYE_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/dye");
+   private static final Identifier PATTERN_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/banner_pattern");
+   private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/loom/scroller");
+   private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/loom/scroller_disabled");
+   private static final Identifier PATTERN_SELECTED_SPRITE = Identifier.withDefaultNamespace("container/loom/pattern_selected");
+   private static final Identifier PATTERN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/loom/pattern_highlighted");
+   private static final Identifier PATTERN_SPRITE = Identifier.withDefaultNamespace("container/loom/pattern");
+   private static final Identifier ERROR_SPRITE = Identifier.withDefaultNamespace("container/loom/error");
+   private static final Identifier BG_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/loom.png");
    private static final int PATTERN_COLUMNS = 4;
    private static final int PATTERN_ROWS = 4;
    private static final int SCROLLER_WIDTH = 12;
@@ -52,8 +53,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final float BANNER_PATTERN_WIDTH = 21.0F;
    private static final float BANNER_PATTERN_HEIGHT = 40.0F;
    private BannerFlagModel flag;
-   @Nullable
-   private BannerPatternLayers resultBannerPatterns;
+   private @Nullable BannerPatternLayers resultBannerPatterns;
    private ItemStack bannerStack;
    private ItemStack dyeStack;
    private ItemStack patternStack;
@@ -96,62 +96,69 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       Slot var9 = ((LoomMenu)this.menu).getPatternSlot();
       Slot var10 = ((LoomMenu)this.menu).getResultSlot();
       if (!var7.hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
       }
 
       if (!var8.hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DYE_SLOT_SPRITE, var5 + var8.x, var6 + var8.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DYE_SLOT_SPRITE, var5 + var8.x, var6 + var8.y, 16, 16);
       }
 
       if (!var9.hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PATTERN_SLOT_SPRITE, var5 + var9.x, var6 + var9.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PATTERN_SLOT_SPRITE, var5 + var9.x, var6 + var9.y, 16, 16);
       }
 
       int var11 = (int)(41.0F * this.scrollOffs);
-      ResourceLocation var12 = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var5 + 119, var6 + 13 + var11, 12, 15);
+      Identifier var12 = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      int var13 = var5 + 119;
+      int var14 = var6 + 13 + var11;
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, var13, var14, 12, 15);
+      if (var3 >= var13 && var3 < var13 + 12 && var4 >= var14 && var4 < var14 + 15) {
+         var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      }
+
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
-         DyeColor var13 = ((BannerItem)var10.getItem().getItem()).getColor();
-         int var14 = var5 + 141;
-         int var15 = var6 + 8;
-         var1.submitBannerPatternRenderState(this.flag, var13, this.resultBannerPatterns, var14, var15, var14 + 20, var15 + 40);
+         DyeColor var15 = ((BannerItem)var10.getItem().getItem()).getColor();
+         int var16 = var5 + 141;
+         int var17 = var6 + 8;
+         var1.submitBannerPatternRenderState(this.flag, var15, this.resultBannerPatterns, var16, var17, var16 + 20, var17 + 40);
       } else if (this.hasMaxPatterns) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
       }
 
       if (this.displayPatterns) {
-         int var26 = var5 + 60;
-         int var27 = var6 + 13;
-         List var28 = (this.menu).getSelectablePatterns();
+         int var28 = var5 + 60;
+         int var29 = var6 + 13;
+         List var30 = (this.menu).getSelectablePatterns();
 
-         label64:
-         for(int var16 = 0; var16 < 4; ++var16) {
-            for(int var17 = 0; var17 < 4; ++var17) {
-               int var18 = var16 + this.startRow;
-               int var19 = var18 * 4 + var17;
-               if (var19 >= var28.size()) {
-                  break label64;
+         label79:
+         for(int var18 = 0; var18 < 4; ++var18) {
+            for(int var19 = 0; var19 < 4; ++var19) {
+               int var20 = var18 + this.startRow;
+               int var21 = var20 * 4 + var19;
+               if (var21 >= var30.size()) {
+                  break label79;
                }
 
-               int var20 = var26 + var17 * 14;
-               int var21 = var27 + var16 * 14;
-               Holder var22 = (Holder)var28.get(var19);
-               boolean var23 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
-               ResourceLocation var24;
-               if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
-                  var24 = PATTERN_SELECTED_SPRITE;
-               } else if (var23) {
-                  var24 = PATTERN_HIGHLIGHTED_SPRITE;
-                  DyeColor var25 = ((DyeItem)this.dyeStack.getItem()).getDyeColor();
-                  String var10001 = ((BannerPattern)var22.value()).translationKey();
-                  var1.setTooltipForNextFrame(Component.translatable(var10001 + "." + var25.getName()), var3, var4);
+               int var22 = var28 + var19 * 14;
+               int var23 = var29 + var18 * 14;
+               Holder var24 = (Holder)var30.get(var21);
+               boolean var25 = var3 >= var22 && var4 >= var23 && var3 < var22 + 14 && var4 < var23 + 14;
+               Identifier var26;
+               if (var21 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
+                  var26 = PATTERN_SELECTED_SPRITE;
+               } else if (var25) {
+                  var26 = PATTERN_HIGHLIGHTED_SPRITE;
+                  DyeColor var27 = ((DyeItem)this.dyeStack.getItem()).getDyeColor();
+                  String var10001 = ((BannerPattern)var24.value()).translationKey();
+                  var1.setTooltipForNextFrame(Component.translatable(var10001 + "." + var27.getName()), var3, var4);
+                  var1.requestCursor(CursorTypes.POINTING_HAND);
                } else {
-                  var24 = PATTERN_SPRITE;
+                  var26 = PATTERN_SPRITE;
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var24, var20, var21, 14, 14);
-               TextureAtlasSprite var29 = var1.getSprite(Sheets.getBannerMaterial(var22));
-               this.renderBannerOnButton(var1, var20, var21, var29);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var26, var22, var23, 14, 14);
+               TextureAtlasSprite var31 = var1.getSprite(Sheets.getBannerMaterial(var24));
+               this.renderBannerOnButton(var1, var22, var23, var31);
             }
          }
       }
@@ -175,7 +182,6 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    }
 
    public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      this.scrolling = false;
       if (this.displayPatterns) {
          int var3 = this.leftPos + 60;
          int var4 = this.topPos + 13;
@@ -216,6 +222,11 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       } else {
          return super.mouseDragged(var1, var2, var4);
       }
+   }
+
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      this.scrolling = false;
+      return super.mouseReleased(var1);
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {

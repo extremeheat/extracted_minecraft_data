@@ -12,12 +12,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class LocalTime implements SelectItemModelProperty<String> {
    public static final String ROOT_LOCALE = "";
@@ -59,8 +59,7 @@ public class LocalTime implements SelectItemModelProperty<String> {
       return DataResult.success(new LocalTime(var0, var3));
    }
 
-   @Nullable
-   public String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+   public @Nullable String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
       long var6 = Util.getMillis();
       if (var6 > this.nextUpdateTimeMs) {
          this.lastResult = this.update();
@@ -83,8 +82,7 @@ public class LocalTime implements SelectItemModelProperty<String> {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
+   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
       return this.get(var1, var2, var3, var4, var5);
    }
 

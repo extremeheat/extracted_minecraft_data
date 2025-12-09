@@ -8,8 +8,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.util.AbortableIterationConsumer;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EntityLookup<T extends EntityAccess> {
@@ -53,13 +53,11 @@ public class EntityLookup<T extends EntityAccess> {
       this.byId.remove(var1.getId());
    }
 
-   @Nullable
-   public T getEntity(int var1) {
+   public @Nullable T getEntity(int var1) {
       return (T)(this.byId.get(var1));
    }
 
-   @Nullable
-   public T getEntity(UUID var1) {
+   public @Nullable T getEntity(UUID var1) {
       return (T)(this.byUuid.get(var1));
    }
 

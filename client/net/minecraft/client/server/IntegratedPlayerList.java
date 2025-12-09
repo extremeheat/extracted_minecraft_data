@@ -2,7 +2,6 @@ package net.minecraft.client.server;
 
 import com.mojang.logging.LogUtils;
 import java.net.SocketAddress;
-import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -14,12 +13,12 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import net.minecraft.world.level.storage.TagValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class IntegratedPlayerList extends PlayerList {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private CompoundTag playerData;
+   private @Nullable CompoundTag playerData;
 
    public IntegratedPlayerList(IntegratedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
       super(var1, var2, var3, var1.notificationManager());
@@ -46,8 +45,7 @@ public class IntegratedPlayerList extends PlayerList {
       return (IntegratedServer)super.getServer();
    }
 
-   @Nullable
-   public CompoundTag getSingleplayerData() {
+   public @Nullable CompoundTag getSingleplayerData() {
       return this.playerData;
    }
 

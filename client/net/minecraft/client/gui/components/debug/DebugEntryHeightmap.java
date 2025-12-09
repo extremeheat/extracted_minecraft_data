@@ -3,18 +3,18 @@ package net.minecraft.client.gui.components.debug;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryHeightmap implements DebugScreenEntry {
    private static final Map<Heightmap.Types, String> HEIGHTMAP_NAMES;
-   private static final ResourceLocation GROUP;
+   private static final Identifier GROUP;
 
    public DebugEntryHeightmap() {
       super();
@@ -56,6 +56,6 @@ public class DebugEntryHeightmap implements DebugScreenEntry {
 
    static {
       HEIGHTMAP_NAMES = Maps.newEnumMap(Map.of(Heightmap.Types.WORLD_SURFACE_WG, "SW", Heightmap.Types.WORLD_SURFACE, "S", Heightmap.Types.OCEAN_FLOOR_WG, "OW", Heightmap.Types.OCEAN_FLOOR, "O", Heightmap.Types.MOTION_BLOCKING, "M", Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "ML"));
-      GROUP = ResourceLocation.withDefaultNamespace("heightmaps");
+      GROUP = Identifier.withDefaultNamespace("heightmaps");
    }
 }

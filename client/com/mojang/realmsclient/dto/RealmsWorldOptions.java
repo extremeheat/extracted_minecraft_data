@@ -1,12 +1,12 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.SerializedName;
-import javax.annotation.Nullable;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSerialization {
    @SerializedName("spawnProtection")
@@ -25,9 +25,9 @@ public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSe
    public RealmsServer.Compatibility compatibility;
    @SerializedName("worldTemplateId")
    public long templateId;
-   @Nullable
    @SerializedName("worldTemplateImage")
-   public String templateImage;
+   public @Nullable String templateImage;
+   @Exclude
    public boolean empty;
 
    private RealmsWorldOptions() {
@@ -115,12 +115,7 @@ public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSe
       return I18n.get("mco.configure.world.slot", var1);
    }
 
-   public RealmsWorldOptions clone() {
+   public RealmsWorldOptions copy() {
       return new RealmsWorldOptions(this.spawnProtection, this.difficulty, this.gameMode, this.forceGameMode, this.slotName, this.version, this.compatibility);
-   }
-
-   // $FF: synthetic method
-   public Object clone() throws CloneNotSupportedException {
-      return this.clone();
    }
 }

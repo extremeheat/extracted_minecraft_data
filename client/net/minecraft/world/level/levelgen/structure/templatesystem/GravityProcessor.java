@@ -3,11 +3,11 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.jspecify.annotations.Nullable;
 
 public class GravityProcessor extends StructureProcessor {
    public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((var0x) -> var0x.heightmap), Codec.INT.fieldOf("offset").orElse(0).forGetter((var0x) -> var0x.offset)).apply(var0, GravityProcessor::new));
@@ -20,8 +20,7 @@ public class GravityProcessor extends StructureProcessor {
       this.offset = var2;
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
       Heightmap.Types var7;
       if (var1 instanceof ServerLevel) {
          if (this.heightmap == Heightmap.Types.WORLD_SURFACE_WG) {

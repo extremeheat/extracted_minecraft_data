@@ -4,63 +4,26 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.util.UUIDTypeAdapter;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 public class PlayerInfo extends ValueObject implements ReflectionBasedSerialization {
    @SerializedName("name")
-   @Nullable
-   private String name;
+   public final String name;
    @SerializedName("uuid")
    @JsonAdapter(UUIDTypeAdapter.class)
-   private UUID uuid;
+   public final UUID uuid;
    @SerializedName("operator")
-   private boolean operator;
+   public boolean operator;
    @SerializedName("accepted")
-   private boolean accepted;
+   public final boolean accepted;
    @SerializedName("online")
-   private boolean online;
+   public final boolean online;
 
-   public PlayerInfo() {
+   public PlayerInfo(String var1, UUID var2, boolean var3, boolean var4, boolean var5) {
       super();
-   }
-
-   public String getName() {
-      return this.name == null ? "" : this.name;
-   }
-
-   public void setName(String var1) {
       this.name = var1;
-   }
-
-   public UUID getUuid() {
-      return this.uuid;
-   }
-
-   public void setUuid(UUID var1) {
-      this.uuid = var1;
-   }
-
-   public boolean isOperator() {
-      return this.operator;
-   }
-
-   public void setOperator(boolean var1) {
-      this.operator = var1;
-   }
-
-   public boolean getAccepted() {
-      return this.accepted;
-   }
-
-   public void setAccepted(boolean var1) {
-      this.accepted = var1;
-   }
-
-   public boolean getOnline() {
-      return this.online;
-   }
-
-   public void setOnline(boolean var1) {
-      this.online = var1;
+      this.uuid = var2;
+      this.operator = var3;
+      this.accepted = var4;
+      this.online = var5;
    }
 }

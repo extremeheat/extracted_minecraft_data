@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -19,6 +18,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.FilteredText;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -32,6 +32,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SignBlockEntity extends BlockEntity {
@@ -39,8 +40,7 @@ public class SignBlockEntity extends BlockEntity {
    private static final int MAX_TEXT_LINE_WIDTH = 90;
    private static final int TEXT_LINE_HEIGHT = 10;
    private static final boolean DEFAULT_IS_WAXED = false;
-   @Nullable
-   private UUID playerWhoMayEdit;
+   private @Nullable UUID playerWhoMayEdit;
    private SignText frontText;
    private SignText backText;
    private boolean isWaxed;
@@ -225,7 +225,7 @@ public class SignBlockEntity extends BlockEntity {
    private static CommandSourceStack createCommandSourceStack(@Nullable Player var0, ServerLevel var1, BlockPos var2) {
       String var3 = var0 == null ? "Sign" : var0.getPlainTextName();
       Object var4 = var0 == null ? Component.literal("Sign") : var0.getDisplayName();
-      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var1, 2, var3, (Component)var4, var1.getServer(), var0);
+      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var1, LevelBasedPermissionSet.GAMEMASTER, var3, (Component)var4, var1.getServer(), var0);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -240,8 +240,7 @@ public class SignBlockEntity extends BlockEntity {
       this.playerWhoMayEdit = var1;
    }
 
-   @Nullable
-   public UUID getPlayerWhoMayEdit() {
+   public @Nullable UUID getPlayerWhoMayEdit() {
       return this.playerWhoMayEdit;
    }
 
@@ -266,7 +265,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean playerIsTooFarAwayToEdit(UUID var1) {
       Player var2 = this.level.getPlayerByUUID(var1);
-      return var2 == null || !var2.canInteractWithBlock(this.getBlockPos(), 4.0);
+      return var2 == null || !var2.isWithinBlockInteractionRange(this.getBlockPos(), 4.0);
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, SignBlockEntity var3) {

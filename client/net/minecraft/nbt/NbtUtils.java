@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -38,6 +37,7 @@ import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class NbtUtils {
@@ -565,6 +565,10 @@ public final class NbtUtils {
 
    public static void addDataVersion(ValueOutput var0, int var1) {
       var0.putInt("DataVersion", var1);
+   }
+
+   public static int getDataVersion(CompoundTag var0) {
+      return getDataVersion(var0, -1);
    }
 
    public static int getDataVersion(CompoundTag var0, int var1) {

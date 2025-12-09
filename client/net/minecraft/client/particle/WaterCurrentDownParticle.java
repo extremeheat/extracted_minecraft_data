@@ -13,7 +13,7 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
 
    WaterCurrentDownParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
       super(var1, var2, var4, var6, var8);
-      this.lifetime = (int)(Math.random() * 60.0) + 30;
+      this.lifetime = (int)(this.random.nextFloat() * 60.0F) + 30;
       this.hasPhysics = false;
       this.xd = 0.0;
       this.yd = -0.05;
@@ -35,8 +35,8 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
          this.remove();
       } else {
          float var1 = 0.6F;
-         this.xd += (double)(0.6F * Mth.cos(this.angle));
-         this.zd += (double)(0.6F * Mth.sin(this.angle));
+         this.xd += (double)(0.6F * Mth.cos((double)this.angle));
+         this.zd += (double)(0.6F * Mth.sin((double)this.angle));
          this.xd *= 0.07;
          this.zd *= 0.07;
          this.move(this.xd, this.yd, this.zd);

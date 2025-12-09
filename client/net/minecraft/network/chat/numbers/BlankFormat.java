@@ -26,7 +26,7 @@ public class BlankFormat implements NumberFormat {
       }
    };
 
-   public BlankFormat() {
+   private BlankFormat() {
       super();
    }
 

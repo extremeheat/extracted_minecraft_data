@@ -12,10 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
@@ -24,11 +21,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -39,6 +38,7 @@ import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import org.jspecify.annotations.Nullable;
 
 public class TrialSpawnerStateData {
    private static final String TAG_SPAWN_DATA = "spawn_data";
@@ -52,10 +52,8 @@ public class TrialSpawnerStateData {
    int totalMobsSpawned;
    Optional<SpawnData> nextSpawnData = Optional.empty();
    Optional<ResourceKey<LootTable>> ejectingLootTable = Optional.empty();
-   @Nullable
-   private Entity displayEntity;
-   @Nullable
-   private WeightedList<ItemStack> dispensing;
+   private @Nullable Entity displayEntity;
+   private @Nullable WeightedList<ItemStack> dispensing;
    double spin;
    double oSpin;
 
@@ -236,15 +234,14 @@ public class TrialSpawnerStateData {
       }
    }
 
-   @Nullable
-   public Entity getOrCreateDisplayEntity(TrialSpawner var1, Level var2, TrialSpawnerState var3) {
+   public @Nullable Entity getOrCreateDisplayEntity(TrialSpawner var1, Level var2, TrialSpawnerState var3) {
       if (!var3.hasSpinningMob()) {
          return null;
       } else {
          if (this.displayEntity == null) {
             CompoundTag var4 = this.getOrCreateNextSpawnData(var1, var2.getRandom()).getEntityToSpawn();
             if (var4.getString("id").isPresent()) {
-               this.displayEntity = EntityType.loadEntityRecursive(var4, var2, EntitySpawnReason.TRIAL_SPAWNER, Function.identity());
+               this.displayEntity = EntityType.loadEntityRecursive(var4, var2, EntitySpawnReason.TRIAL_SPAWNER, EntityProcessor.NOP);
             }
          }
 

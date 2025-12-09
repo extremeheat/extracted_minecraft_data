@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.item.properties.conditional;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public record IsUsingItem() implements ConditionalItemModelProperty {
    public static final MapCodec<IsUsingItem> MAP_CODEC = MapCodec.unit(new IsUsingItem());

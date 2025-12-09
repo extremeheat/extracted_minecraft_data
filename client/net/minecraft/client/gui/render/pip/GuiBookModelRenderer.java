@@ -6,10 +6,10 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.state.pip.GuiBookModelRenderState;
-import net.minecraft.client.model.BookModel;
+import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionfc;
 
@@ -35,7 +35,7 @@ public class GuiBookModelRenderer extends PictureInPictureRenderer<GuiBookModelR
       float var6 = Mth.clamp(Mth.frac(var4 + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       BookModel var7 = var1.bookModel();
       var7.setupAnim(new BookModel.State(0.0F, var5, var6, var3));
-      ResourceLocation var8 = var1.texture();
+      Identifier var8 = var1.texture();
       VertexConsumer var9 = this.bufferSource.getBuffer(var7.renderType(var8));
       var7.renderToBuffer(var2, var9, 15728880, OverlayTexture.NO_OVERLAY);
    }

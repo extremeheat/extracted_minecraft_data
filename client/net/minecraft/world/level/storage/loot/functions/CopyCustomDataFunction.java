@@ -51,14 +51,14 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       } else {
          MutableObject var4 = new MutableObject();
          Supplier var5 = () -> {
-            if (var4.getValue() == null) {
+            if (var4.get() == null) {
                var4.setValue(((CustomData)var1.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)).copyTag());
             }
 
-            return (Tag)var4.getValue();
+            return (Tag)var4.get();
          };
          this.operations.forEach((var2x) -> var2x.apply(var5, var3));
-         CompoundTag var6 = (CompoundTag)var4.getValue();
+         CompoundTag var6 = (CompoundTag)var4.get();
          if (var6 != null) {
             CustomData.set(DataComponents.CUSTOM_DATA, var1, var6);
          }

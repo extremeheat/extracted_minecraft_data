@@ -28,6 +28,7 @@ public interface LevelBasedValue {
       Registry.register(var0, (String)"fraction", LevelBasedValue.Fraction.CODEC);
       Registry.register(var0, (String)"levels_squared", LevelBasedValue.LevelsSquared.CODEC);
       Registry.register(var0, (String)"linear", LevelBasedValue.Linear.CODEC);
+      Registry.register(var0, (String)"exponent", LevelBasedValue.Exponent.CODEC);
       return (MapCodec)Registry.register(var0, (String)"lookup", LevelBasedValue.Lookup.CODEC);
    }
 
@@ -144,6 +145,24 @@ public interface LevelBasedValue {
       }
 
       public MapCodec<Fraction> codec() {
+         return CODEC;
+      }
+   }
+
+   public static record Exponent(LevelBasedValue base, LevelBasedValue power) implements LevelBasedValue {
+      public static final MapCodec<Exponent> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("base").forGetter(Exponent::base), LevelBasedValue.CODEC.fieldOf("power").forGetter(Exponent::power)).apply(var0, Exponent::new));
+
+      public Exponent(LevelBasedValue var1, LevelBasedValue var2) {
+         super();
+         this.base = var1;
+         this.power = var2;
+      }
+
+      public float calculate(int var1) {
+         return (float)Math.pow((double)this.base.calculate(var1), (double)this.power.calculate(var1));
+      }
+
+      public MapCodec<Exponent> codec() {
          return CODEC;
       }
    }

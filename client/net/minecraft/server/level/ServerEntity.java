@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -36,16 +35,17 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartBehavior;
-import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerEntity {
@@ -69,8 +69,7 @@ public class ServerEntity {
    private List<Entity> lastPassengers = Collections.emptyList();
    private boolean wasRiding;
    private boolean wasOnGround;
-   @Nullable
-   private List<SynchedEntityData.DataValue<?>> trackedDataValues;
+   private @Nullable List<SynchedEntityData.DataValue<?>> trackedDataValues;
 
    public ServerEntity(ServerLevel var1, Entity var2, int var3, boolean var4, Synchronizer var5) {
       super();
@@ -89,6 +88,7 @@ public class ServerEntity {
    }
 
    public void sendChanges() {
+      this.entity.updateDataBeforeSync();
       List var1 = this.entity.getPassengers();
       if (!var1.equals(this.lastPassengers)) {
          this.synchronizer.sendToTrackingPlayersFiltered(new ClientboundSetPassengersPacket(this.entity), (var2x) -> var1.contains(var2x) == this.lastPassengers.contains(var2x));
@@ -117,7 +117,7 @@ public class ServerEntity {
          }
       }
 
-      if (this.tickCount % this.updateInterval == 0 || this.entity.hasImpulse || this.entity.getEntityData().isDirty()) {
+      if (this.tickCount % this.updateInterval == 0 || this.entity.needsSync || this.entity.getEntityData().isDirty()) {
          byte var25 = Mth.packDegrees(this.entity.getYRot());
          byte var27 = Mth.packDegrees(this.entity.getXRot());
          boolean var28 = Math.abs(var25 - this.lastSentYRot) >= 1 || Math.abs(var27 - this.lastSentXRot) >= 1;
@@ -177,7 +177,7 @@ public class ServerEntity {
                   var12 = true;
                }
 
-               if (this.entity.hasImpulse || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
+               if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
                   Vec3 var20 = this.entity.getDeltaMovement();
                   double var21 = var20.distanceToSqr(this.lastSentMovement);
                   if (var21 > 1.0E-7 || var21 > 0.0 && var20.lengthSqr() == 0.0) {
@@ -216,7 +216,7 @@ public class ServerEntity {
             this.lastSentYHeadRot = var30;
          }
 
-         this.entity.hasImpulse = false;
+         this.entity.needsSync = false;
       }
 
       ++this.tickCount;
@@ -262,6 +262,7 @@ public class ServerEntity {
    }
 
    public void sendPairingData(ServerPlayer var1, Consumer<Packet<ClientGamePacketListener>> var2) {
+      this.entity.updateDataBeforeSync();
       if (this.entity.isRemoved()) {
          LOGGER.warn("Fetching packet for removed entity {}", this.entity);
       }

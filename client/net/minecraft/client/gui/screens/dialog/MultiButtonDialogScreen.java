@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.screens.dialog;
 
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.server.dialog.ActionButton;
 import net.minecraft.server.dialog.MultiActionDialog;
+import org.jspecify.annotations.Nullable;
 
 public class MultiButtonDialogScreen extends ButtonListDialogScreen<MultiActionDialog> {
    public MultiButtonDialogScreen(@Nullable Screen var1, MultiActionDialog var2, DialogConnectionAccess var3) {

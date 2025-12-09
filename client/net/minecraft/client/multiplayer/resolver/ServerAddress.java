@@ -3,6 +3,7 @@ package net.minecraft.client.multiplayer.resolver;
 import com.google.common.net.HostAndPort;
 import com.mojang.logging.LogUtils;
 import java.net.IDN;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class ServerAddress {
@@ -31,7 +32,7 @@ public final class ServerAddress {
       return this.hostAndPort.getPort();
    }
 
-   public static ServerAddress parseString(String var0) {
+   public static ServerAddress parseString(@Nullable String var0) {
       if (var0 == null) {
          return INVALID;
       } else {

@@ -4,13 +4,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public interface EquipmentUser {
    void setItemSlot(EquipmentSlot var1, ItemStack var2);
@@ -50,8 +50,7 @@ public interface EquipmentUser {
       }
    }
 
-   @Nullable
-   default EquipmentSlot resolveSlot(ItemStack var1, List<EquipmentSlot> var2) {
+   default @Nullable EquipmentSlot resolveSlot(ItemStack var1, List<EquipmentSlot> var2) {
       if (var1.isEmpty()) {
          return null;
       } else {

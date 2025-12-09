@@ -10,16 +10,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.function.Consumer;
-import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.TimeUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.EmptyProfileResults;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
@@ -36,7 +36,7 @@ public class PerfCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(4))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int startProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {

@@ -51,6 +51,9 @@ import net.minecraft.world.entity.ai.behavior.SetLookAndInteract;
 import net.minecraft.world.entity.ai.behavior.SetWalkTargetAwayFrom;
 import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromAttackTargetIfTargetOutOfReach;
 import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromLookTarget;
+import net.minecraft.world.entity.ai.behavior.SpearApproach;
+import net.minecraft.world.entity.ai.behavior.SpearAttack;
+import net.minecraft.world.entity.ai.behavior.SpearRetreat;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StartCelebratingIfTargetDead;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
@@ -67,7 +70,7 @@ import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -145,7 +148,7 @@ public class PiglinAi {
    }
 
    private static void initFightActivity(Piglin var0, Brain<Piglin> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((var1x, var2) -> !isNearestValidAttackTarget(var1x, var0, var2))), BehaviorBuilder.triggerIf(PiglinAi::hasCrossbow, BackUpIfTooClose.create(5, 0.75F)), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20), new CrossbowAttack(), RememberIfHoglinWasKilled.create(), EraseMemoryIf.create(PiglinAi::isNearZombified, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
+      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((var1x, var2) -> !isNearestValidAttackTarget(var1x, var0, var2))), BehaviorBuilder.triggerIf(PiglinAi::hasCrossbow, BackUpIfTooClose.create(5, 0.75F)), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), new SpearApproach(1.0, 10.0F), new SpearAttack(1.0, 1.0, 10.0F, 2.0F), new SpearRetreat(1.0), MeleeAttack.create(20), new CrossbowAttack(), RememberIfHoglinWasKilled.create(), EraseMemoryIf.create(PiglinAi::isNearZombified, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
    }
 
    private static void initCelebrateActivity(Brain<Piglin> var0) {
@@ -430,7 +433,7 @@ public class PiglinAi {
    public static void angerNearbyPiglins(ServerLevel var0, Player var1, boolean var2) {
       List var3 = var1.level().getEntitiesOfClass(Piglin.class, var1.getBoundingBox().inflate(16.0));
       var3.stream().filter(PiglinAi::isIdle).filter((var2x) -> !var2 || BehaviorUtils.canSee(var2x, var1)).forEach((var2x) -> {
-         if (var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if ((Boolean)var0.getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             setAngerTargetToNearestTargetablePlayerIfFound(var0, var2x, var1);
          } else {
             setAngerTarget(var0, var2x, var1);
@@ -495,7 +498,7 @@ public class PiglinAi {
       if (!var1.getBrain().isActive(Activity.AVOID)) {
          if (Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, var2)) {
             if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(var1, var2, 4.0)) {
-               if (var2.getType() == EntityType.PLAYER && var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+               if (var2.getType() == EntityType.PLAYER && (Boolean)var0.getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
                   setAngerTargetToNearestTargetablePlayerIfFound(var0, var1, var2);
                   broadcastUniversalAnger(var0, var1);
                } else {
@@ -583,7 +586,7 @@ public class PiglinAi {
             dontKillAnyMoreHoglinsForAWhile(var1);
          }
 
-         if (var2.getType() == EntityType.PLAYER && var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if (var2.getType() == EntityType.PLAYER && (Boolean)var0.getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             var1.getBrain().setMemoryWithExpiry(MemoryModuleType.UNIVERSAL_ANGER, true, 600L);
          }
 

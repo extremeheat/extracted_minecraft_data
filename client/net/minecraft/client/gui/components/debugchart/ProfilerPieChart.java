@@ -5,19 +5,18 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ResultField;
+import org.jspecify.annotations.Nullable;
 
 public class ProfilerPieChart {
    public static final int RADIUS = 105;
    public static final int PIE_CHART_THICKNESS = 10;
    private static final int MARGIN = 5;
    private final Font font;
-   @Nullable
-   private ProfileResults profilerPieChartResults;
+   private @Nullable ProfileResults profilerPieChartResults;
    private String profilerTreePath = "root";
    private int bottomOffset = 0;
 
@@ -50,8 +49,7 @@ public class ProfilerPieChart {
          int var11 = var9 - 62 - 5;
          var1.fill(var5 - 5, var11 - 62 - 5, var6 + 5, var8 + 5, -1873784752);
          var1.submitProfilerChartRenderState(var2, var5, var11 - 62 + 10, var6, var11 + 62);
-         DecimalFormat var12 = new DecimalFormat("##0.00");
-         var12.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+         DecimalFormat var12 = new DecimalFormat("##0.00", DecimalFormatSymbols.getInstance(Locale.ROOT));
          String var13 = ProfileResults.demanglePath(var3.name);
          String var14 = "";
          if (!"unspecified".equals(var13)) {

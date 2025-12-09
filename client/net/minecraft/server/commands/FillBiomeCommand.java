@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -26,11 +25,11 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -43,15 +42,7 @@ public class FillBiomeCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fillbiome").requires(Commands.hasPermission(2))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("biome", ResourceArgument.resource(var1, Registries.BIOME)).executes((var0x) -> fill((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to"), ResourceArgument.getResource(var0x, "biome", Registries.BIOME), (var0) -> true))).then(Commands.literal("replace").then(Commands.argument("filter", ResourceOrTagArgument.resourceOrTag(var1, Registries.BIOME)).executes((var0x) -> {
-         CommandSourceStack var10000 = (CommandSourceStack)var0x.getSource();
-         BlockPos var10001 = BlockPosArgument.getLoadedBlockPos(var0x, "from");
-         BlockPos var10002 = BlockPosArgument.getLoadedBlockPos(var0x, "to");
-         Holder.Reference var10003 = ResourceArgument.getResource(var0x, "biome", Registries.BIOME);
-         ResourceOrTagArgument.Result var10004 = ResourceOrTagArgument.getResourceOrTag(var0x, "filter", Registries.BIOME);
-         Objects.requireNonNull(var10004);
-         return fill(var10000, var10001, var10002, var10003, var10004::test);
-      })))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fillbiome").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("biome", ResourceArgument.resource(var1, Registries.BIOME)).executes((var0x) -> fill((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to"), ResourceArgument.getResource(var0x, "biome", Registries.BIOME), (var0) -> true))).then(Commands.literal("replace").then(Commands.argument("filter", ResourceOrTagArgument.resourceOrTag(var1, Registries.BIOME)).executes((var0x) -> fill((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to"), ResourceArgument.getResource(var0x, "biome", Registries.BIOME), ResourceOrTagArgument.getResourceOrTag(var0x, "filter", Registries.BIOME)))))))));
    }
 
    private static int quantize(int var0) {
@@ -87,7 +78,7 @@ public class FillBiomeCommand {
       BlockPos var7 = quantize(var2);
       BoundingBox var8 = BoundingBox.fromCorners(var6, var7);
       int var9 = var8.getXSpan() * var8.getYSpan() * var8.getZSpan();
-      int var10 = var0.getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+      int var10 = (Integer)var0.getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
       if (var9 > var10) {
          return Either.right(ERROR_VOLUME_TOO_LARGE.create(var10, var9));
       } else {
@@ -112,8 +103,8 @@ public class FillBiomeCommand {
          }
 
          var0.getChunkSource().chunkMap.resendBiomesForChunks(var11);
-         var5.accept((Supplier)() -> Component.translatable("commands.fillbiome.success.count", var15.getValue(), var8.minX(), var8.minY(), var8.minZ(), var8.maxX(), var8.maxY(), var8.maxZ()));
-         return Either.left(var15.getValue());
+         var5.accept((Supplier)() -> Component.translatable("commands.fillbiome.success.count", var15.intValue(), var8.minX(), var8.minY(), var8.minZ(), var8.maxX(), var8.maxY(), var8.maxZ()));
+         return Either.left(var15.intValue());
       }
    }
 

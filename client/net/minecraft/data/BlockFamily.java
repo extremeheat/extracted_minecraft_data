@@ -3,19 +3,17 @@ package net.minecraft.data;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.block.Block;
+import org.jspecify.annotations.Nullable;
 
 public class BlockFamily {
    private final Block baseBlock;
    final Map<Variant, Block> variants = Maps.newHashMap();
    boolean generateModel = true;
    boolean generateRecipe = true;
-   @Nullable
-   String recipeGroupPrefix;
-   @Nullable
-   String recipeUnlockedBy;
+   @Nullable String recipeGroupPrefix;
+   @Nullable String recipeUnlockedBy;
 
    BlockFamily(Block var1) {
       super();

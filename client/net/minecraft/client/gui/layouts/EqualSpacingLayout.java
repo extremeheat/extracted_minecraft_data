@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class EqualSpacingLayout extends AbstractLayout {
    private final Orientation orientation;

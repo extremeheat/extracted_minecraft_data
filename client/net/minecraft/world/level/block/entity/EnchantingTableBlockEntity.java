@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class EnchantingTableBlockEntity extends BlockEntity implements Nameable {
    private static final Component DEFAULT_NAME = Component.translatable("container.enchant");
@@ -29,8 +29,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
    public float oRot;
    public float tRot;
    private static final RandomSource RANDOM = RandomSource.create();
-   @Nullable
-   private Component name;
+   private @Nullable Component name;
 
    public EnchantingTableBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.ENCHANTING_TABLE, var1, var2);
@@ -110,8 +109,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
       this.name = var1;
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return this.name;
    }
 

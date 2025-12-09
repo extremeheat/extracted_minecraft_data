@@ -1,8 +1,8 @@
 package net.minecraft.world.level.biome;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public abstract class Biomes {
    public static final ResourceKey<Biome> THE_VOID = register("the_void");
@@ -76,6 +76,6 @@ public abstract class Biomes {
    }
 
    private static ResourceKey<Biome> register(String var0) {
-      return ResourceKey.create(Registries.BIOME, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace(var0));
    }
 }

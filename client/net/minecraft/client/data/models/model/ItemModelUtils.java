@@ -1,9 +1,13 @@
 package net.minecraft.client.data.models.model;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import net.minecraft.client.color.item.Constant;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.renderer.item.BlockModelWrapper;
@@ -23,7 +27,8 @@ import net.minecraft.client.renderer.item.properties.select.LocalTime;
 import net.minecraft.client.renderer.item.properties.select.SelectItemModelProperty;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.Property;
 
@@ -32,11 +37,11 @@ public class ItemModelUtils {
       super();
    }
 
-   public static ItemModel.Unbaked plainModel(ResourceLocation var0) {
+   public static ItemModel.Unbaked plainModel(Identifier var0) {
       return new BlockModelWrapper.Unbaked(var0, List.of());
    }
 
-   public static ItemModel.Unbaked tintedModel(ResourceLocation var0, ItemTintSource... var1) {
+   public static ItemModel.Unbaked tintedModel(Identifier var0, ItemTintSource... var1) {
       return new BlockModelWrapper.Unbaked(var0, List.of(var1));
    }
 
@@ -48,7 +53,7 @@ public class ItemModelUtils {
       return new CompositeModel.Unbaked(List.of(var0));
    }
 
-   public static ItemModel.Unbaked specialModel(ResourceLocation var0, SpecialModelRenderer.Unbaked var1) {
+   public static ItemModel.Unbaked specialModel(Identifier var0, SpecialModelRenderer.Unbaked var1) {
       return new SpecialModelWrapper.Unbaked(var0, var1);
    }
 
@@ -127,6 +132,10 @@ public class ItemModelUtils {
    }
 
    public static ItemModel.Unbaked isXmas(ItemModel.Unbaked var0, ItemModel.Unbaked var1) {
-      return select(LocalTime.create("MM-dd", "", Optional.empty()), var1, List.of(when(List.of("12-24", "12-25", "12-26"), var0)));
+      DateTimeFormatter var2 = DateTimeFormatter.ofPattern("MM-dd", Locale.ROOT);
+      Stream var10000 = SpecialDates.CHRISTMAS_RANGE.stream();
+      Objects.requireNonNull(var2);
+      List var3 = var10000.map(var2::format).toList();
+      return select(LocalTime.create("MM-dd", "", Optional.empty()), var1, List.of(when(var3, var0)));
    }
 }

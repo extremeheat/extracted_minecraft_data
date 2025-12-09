@@ -2,28 +2,28 @@ package net.minecraft.network.chat;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.component.ResolvableProfile;
 
 public interface FontDescription {
-   Codec<FontDescription> CODEC = ResourceLocation.CODEC.flatComapMap(Resource::new, (var0) -> {
+   Codec<FontDescription> CODEC = Identifier.CODEC.flatComapMap(Resource::new, (var0) -> {
       if (var0 instanceof Resource var1) {
          return DataResult.success(var1.id());
       } else {
          return DataResult.error(() -> "Unsupported font description type: " + String.valueOf(var0));
       }
    });
-   Resource DEFAULT = new Resource(ResourceLocation.withDefaultNamespace("default"));
+   Resource DEFAULT = new Resource(Identifier.withDefaultNamespace("default"));
 
-   public static record Resource(ResourceLocation id) implements FontDescription {
-      public Resource(ResourceLocation var1) {
+   public static record Resource(Identifier id) implements FontDescription {
+      public Resource(Identifier var1) {
          super();
          this.id = var1;
       }
    }
 
-   public static record AtlasSprite(ResourceLocation atlasId, ResourceLocation spriteId) implements FontDescription {
-      public AtlasSprite(ResourceLocation var1, ResourceLocation var2) {
+   public static record AtlasSprite(Identifier atlasId, Identifier spriteId) implements FontDescription {
+      public AtlasSprite(Identifier var1, Identifier var2) {
          super();
          this.atlasId = var1;
          this.spriteId = var2;

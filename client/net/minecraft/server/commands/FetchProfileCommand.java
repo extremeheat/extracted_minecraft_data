@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.UuidArgument;
@@ -23,6 +22,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.objects.PlayerSprite;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.ProfileResolver;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
 
 public class FetchProfileCommand {
@@ -31,7 +31,7 @@ public class FetchProfileCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(2))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((var0x) -> resolveName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((var0x) -> resolveId((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "id"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((var0x) -> resolveName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((var0x) -> resolveId((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "id"))))));
    }
 
    private static void reportResolvedProfile(CommandSourceStack var0, GameProfile var1, String var2, Component var3) {

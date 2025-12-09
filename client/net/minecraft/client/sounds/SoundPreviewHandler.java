@@ -1,17 +1,15 @@
 package net.minecraft.client.sounds;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import org.jspecify.annotations.Nullable;
 
 public final class SoundPreviewHandler {
-   @Nullable
-   private static SoundInstance activePreview;
-   @Nullable
-   private static SoundSource previousCategory;
+   private static @Nullable SoundInstance activePreview;
+   private static @Nullable SoundSource previousCategory;
 
    public SoundPreviewHandler() {
       super();

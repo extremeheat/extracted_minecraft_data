@@ -9,12 +9,13 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
+import javax.annotation.CheckReturnValue;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class ComponentUtils {
    public static final String DEFAULT_SEPARATOR_TEXT = ", ";
@@ -25,6 +26,7 @@ public class ComponentUtils {
       super();
    }
 
+   @CheckReturnValue
    public static MutableComponent mergeStyles(MutableComponent var0, Style var1) {
       if (var1.isEmpty()) {
          return var0;
@@ -34,6 +36,20 @@ public class ComponentUtils {
             return var0.setStyle(var1);
          } else {
             return var2.equals(var1) ? var0 : var0.setStyle(var2.applyTo(var1));
+         }
+      }
+   }
+
+   @CheckReturnValue
+   public static Component mergeStyles(Component var0, Style var1) {
+      if (var1.isEmpty()) {
+         return var0;
+      } else {
+         Style var2 = var0.getStyle();
+         if (var2.isEmpty()) {
+            return var0.copy().setStyle(var1);
+         } else {
+            return (Component)(var2.equals(var1) ? var0 : var0.copy().setStyle(var2.applyTo(var1)));
          }
       }
    }

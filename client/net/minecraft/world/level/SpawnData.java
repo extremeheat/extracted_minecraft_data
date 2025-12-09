@@ -7,7 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.random.WeightedList;
@@ -24,9 +24,9 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> cu
 
    public SpawnData(CompoundTag var1, Optional<CustomSpawnRules> var2, Optional<EquipmentTable> var3) {
       super();
-      Optional var4 = var1.read("id", ResourceLocation.CODEC);
+      Optional var4 = var1.read("id", Identifier.CODEC);
       if (var4.isPresent()) {
-         var1.store("id", ResourceLocation.CODEC, (ResourceLocation)var4.get());
+         var1.store("id", Identifier.CODEC, (Identifier)var4.get());
       } else {
          var1.remove("id");
       }

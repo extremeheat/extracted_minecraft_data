@@ -3,14 +3,12 @@ package com.mojang.blaze3d.pipeline;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MainTarget extends RenderTarget {
    public static final int DEFAULT_WIDTH = 854;
@@ -25,10 +23,6 @@ public class MainTarget extends RenderTarget {
    private void createFrameBuffer(int var1, int var2) {
       Dimension var3 = this.allocateAttachments(var1, var2);
       if (this.colorTexture != null && this.depthTexture != null) {
-         this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
-         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-         this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
-         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          this.width = var3.width;
          this.height = var3.height;
       } else {
@@ -73,8 +67,7 @@ public class MainTarget extends RenderTarget {
       throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (" + var10002 + ", " + (this.depthTexture == null ? "missing depth" : "have depth") + ")");
    }
 
-   @Nullable
-   private GpuTexture allocateColorAttachment(Dimension var1) {
+   private @Nullable GpuTexture allocateColorAttachment(Dimension var1) {
       try {
          return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1.width, var1.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
@@ -82,8 +75,7 @@ public class MainTarget extends RenderTarget {
       }
    }
 
-   @Nullable
-   private GpuTexture allocateDepthAttachment(Dimension var1) {
+   private @Nullable GpuTexture allocateDepthAttachment(Dimension var1) {
       try {
          return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1.width, var1.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {

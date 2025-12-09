@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -23,6 +22,7 @@ import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private static final int PANIC_MIN_DURATION = 100;
@@ -81,8 +81,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
 
    }
 
-   @Nullable
-   private Vec3 getPanicPos(E var1, ServerLevel var2) {
+   private @Nullable Vec3 getPanicPos(E var1, ServerLevel var2) {
       if (var1.isOnFire()) {
          Optional var3 = this.lookForWater(var2, var1).map(Vec3::atBottomCenterOf);
          if (var3.isPresent()) {

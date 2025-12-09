@@ -1,22 +1,28 @@
 package net.minecraft.world.entity.projectile;
 
+import com.mojang.datafixers.util.Either;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public final class ProjectileUtil {
    public static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
@@ -30,6 +36,15 @@ public final class ProjectileUtil {
       Level var3 = var0.level();
       Vec3 var4 = var0.position();
       return getHitResult(var4, var0, var1, var2, var3, computeMargin(var0), ClipContext.Block.COLLIDER);
+   }
+
+   public static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Entity var0, AttackRange var1, Predicate<Entity> var2, ClipContext.Block var3) {
+      Vec3 var4 = var0.getHeadLookAngle();
+      Vec3 var5 = var0.getEyePosition();
+      Vec3 var6 = var5.add(var4.scale((double)var1.effectiveMinRange(var0)));
+      double var7 = var0.getKnownMovement().dot(var4);
+      Vec3 var9 = var5.add(var4.scale((double)var1.effectiveMaxRange(var0) + Math.max(0.0, var7)));
+      return getHitEntitiesAlong(var0, var5, var6, var2, var9, var1.hitboxMargin(), var3);
    }
 
    public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {
@@ -61,8 +76,22 @@ public final class ProjectileUtil {
       return (HitResult)var8;
    }
 
-   @Nullable
-   public static EntityHitResult getEntityHitResult(Entity var0, Vec3 var1, Vec3 var2, AABB var3, Predicate<Entity> var4, double var5) {
+   private static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Entity var0, Vec3 var1, Vec3 var2, Predicate<Entity> var3, Vec3 var4, float var5, ClipContext.Block var6) {
+      Level var7 = var0.level();
+      BlockHitResult var8 = var7.clipIncludingBorder(new ClipContext(var1, var4, var6, ClipContext.Fluid.NONE, var0));
+      if (var8.getType() != HitResult.Type.MISS) {
+         var4 = var8.getLocation();
+         if (var1.distanceToSqr(var4) < var1.distanceToSqr(var2)) {
+            return Either.left(var8);
+         }
+      }
+
+      AABB var9 = AABB.ofSize(var2, (double)var5, (double)var5, (double)var5).expandTowards(var4.subtract(var2)).inflate(1.0);
+      Collection var10 = getManyEntityHitResult(var7, var0, var2, var4, var9, var3, var5, var6, true);
+      return !var10.isEmpty() ? Either.right(var10) : Either.left(var8);
+   }
+
+   public static @Nullable EntityHitResult getEntityHitResult(Entity var0, Vec3 var1, Vec3 var2, AABB var3, Predicate<Entity> var4, double var5) {
       Level var7 = var0.level();
       double var8 = var5;
       Entity var10 = null;
@@ -102,8 +131,7 @@ public final class ProjectileUtil {
       }
    }
 
-   @Nullable
-   public static EntityHitResult getEntityHitResult(Level var0, Projectile var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
+   public static @Nullable EntityHitResult getEntityHitResult(Level var0, Projectile var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
       return getEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1));
    }
 
@@ -111,8 +139,7 @@ public final class ProjectileUtil {
       return Math.max(0.0F, Math.min(0.3F, (float)(var0.tickCount - 2) / 20.0F));
    }
 
-   @Nullable
-   public static EntityHitResult getEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6) {
+   public static @Nullable EntityHitResult getEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6) {
       double var7 = 1.7976931348623157E308;
       Optional var9 = Optional.empty();
       Entity var10 = null;
@@ -135,6 +162,43 @@ public final class ProjectileUtil {
       } else {
          return new EntityHitResult(var10, (Vec3)var9.get());
       }
+   }
+
+   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, boolean var6) {
+      return getManyEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1), ClipContext.Block.COLLIDER, var6);
+   }
+
+   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6, ClipContext.Block var7, boolean var8) {
+      ArrayList var9 = new ArrayList();
+
+      for(Entity var11 : var0.getEntities(var1, var4, var5)) {
+         AABB var12 = var11.getBoundingBox();
+         if (var8 && var12.contains(var2)) {
+            var9.add(new EntityHitResult(var11, var2));
+         } else {
+            Optional var13 = var12.clip(var2, var3);
+            if (var13.isPresent()) {
+               var9.add(new EntityHitResult(var11, (Vec3)var13.get()));
+            } else if (!((double)var6 <= 0.0)) {
+               Optional var14 = var12.inflate((double)var6).clip(var2, var3);
+               if (!var14.isEmpty()) {
+                  Vec3 var15 = (Vec3)var14.get();
+                  Vec3 var16 = var12.getCenter();
+                  BlockHitResult var17 = var0.clipIncludingBorder(new ClipContext(var15, var16, var7, ClipContext.Fluid.NONE, var1));
+                  if (var17.getType() != HitResult.Type.MISS) {
+                     var16 = var17.getLocation();
+                  }
+
+                  Optional var18 = var11.getBoundingBox().clip(var15, var16);
+                  if (var18.isPresent()) {
+                     var9.add(new EntityHitResult(var11, (Vec3)var18.get()));
+                  }
+               }
+            }
+         }
+      }
+
+      return var9;
    }
 
    public static void rotateTowardsMovement(Entity var0, float var1) {

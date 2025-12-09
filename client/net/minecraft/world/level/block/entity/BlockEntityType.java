@@ -2,13 +2,12 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
 import java.util.Set;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BlockEntityType<T extends BlockEntity> {
@@ -74,8 +74,7 @@ public class BlockEntityType<T extends BlockEntity> {
    private final Set<Block> validBlocks;
    private final Holder.Reference<BlockEntityType<?>> builtInRegistryHolder;
 
-   @Nullable
-   public static ResourceLocation getKey(BlockEntityType<?> var0) {
+   public static @Nullable Identifier getKey(BlockEntityType<?> var0) {
       return BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var0);
    }
 
@@ -109,8 +108,7 @@ public class BlockEntityType<T extends BlockEntity> {
       return this.builtInRegistryHolder;
    }
 
-   @Nullable
-   public T getBlockEntity(BlockGetter var1, BlockPos var2) {
+   public @Nullable T getBlockEntity(BlockGetter var1, BlockPos var2) {
       BlockEntity var3 = var1.getBlockEntity(var2);
       return (T)(var3 != null && var3.getType() == this ? var3 : null);
    }

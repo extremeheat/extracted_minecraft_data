@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public final class Scope {
    private static final int NOT_FOUND = -1;
@@ -15,7 +15,7 @@ public final class Scope {
       }
    };
    private static final int ENTRY_STRIDE = 2;
-   private Object[] stack = new Object[128];
+   private @Nullable Object[] stack = new Object[128];
    private int topEntryKeyIndex = 0;
    private int topMarkerKeyIndex = 0;
 
@@ -179,8 +179,7 @@ public final class Scope {
 
    }
 
-   @Nullable
-   public <T> T get(Atom<T> var1) {
+   public <T> @Nullable T get(Atom<T> var1) {
       int var2 = this.valueIndex(var1);
       return (T)(var2 != -1 ? this.stack[var2] : null);
    }
@@ -199,9 +198,8 @@ public final class Scope {
       return var3 != -1 ? this.stack[var3] : var2;
    }
 
-   @Nullable
    @SafeVarargs
-   public final <T> T getAny(Atom<? extends T>... var1) {
+   public final <T> @Nullable T getAny(Atom<? extends T>... var1) {
       int var2 = this.valueIndexForAny(var1);
       return (T)(var2 != -1 ? this.stack[var2] : null);
    }

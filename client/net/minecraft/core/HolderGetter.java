@@ -26,7 +26,7 @@ public interface HolderGetter<T> {
       <T> Optional<? extends HolderGetter<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
 
       default <T> HolderGetter<T> lookupOrThrow(ResourceKey<? extends Registry<? extends T>> var1) {
-         return (HolderGetter)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Registry " + String.valueOf(var1.location()) + " not found"));
+         return (HolderGetter)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Registry " + String.valueOf(var1.identifier()) + " not found"));
       }
 
       default <T> Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {

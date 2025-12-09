@@ -10,12 +10,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.gui.ComponentPath;
@@ -41,58 +39,69 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.Music;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   public static final ResourceLocation MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
-   public static final ResourceLocation HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
-   public static final ResourceLocation FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
-   private static final ResourceLocation INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
-   public static final ResourceLocation INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
-   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
+   public static final Identifier MENU_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/menu_background.png");
+   public static final Identifier HEADER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/header_separator.png");
+   public static final Identifier FOOTER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/footer_separator.png");
+   private static final Identifier INWORLD_MENU_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/inworld_menu_background.png");
+   public static final Identifier INWORLD_HEADER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/inworld_header_separator.png");
+   public static final Identifier INWORLD_FOOTER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
    protected static final float FADE_IN_TIME = 2000.0F;
    protected final Component title;
-   private final List<GuiEventListener> children = Lists.newArrayList();
-   private final List<NarratableEntry> narratables = Lists.newArrayList();
-   @Nullable
-   protected Minecraft minecraft;
+   private final List<GuiEventListener> children;
+   private final List<NarratableEntry> narratables;
+   protected final Minecraft minecraft;
    private boolean initialized;
    public int width;
    public int height;
-   private final List<Renderable> renderables = Lists.newArrayList();
-   protected Font font;
+   private final List<Renderable> renderables;
+   protected final Font font;
    private static final long NARRATE_SUPPRESS_AFTER_INIT_TIME;
    private static final long NARRATE_DELAY_NARRATOR_ENABLED;
    private static final long NARRATE_DELAY_MOUSE_MOVE = 750L;
    private static final long NARRATE_DELAY_MOUSE_ACTION = 200L;
    private static final long NARRATE_DELAY_KEYBOARD_ACTION = 200L;
-   private final ScreenNarrationCollector narrationState = new ScreenNarrationCollector();
-   private long narrationSuppressTime = -9223372036854775808L;
-   private long nextNarrationTime = 9223372036854775807L;
-   @Nullable
-   protected CycleButton<NarratorStatus> narratorButton;
-   @Nullable
-   private NarratableEntry lastNarratable;
-   protected final Executor screenExecutor = (var1x) -> this.minecraft.execute(() -> {
-         if (this.minecraft.screen == this) {
-            var1x.run();
-         }
-
-      });
+   private final ScreenNarrationCollector narrationState;
+   private long narrationSuppressTime;
+   private long nextNarrationTime;
+   protected @Nullable CycleButton<NarratorStatus> narratorButton;
+   private @Nullable NarratableEntry lastNarratable;
+   protected final Executor screenExecutor;
 
    protected Screen(Component var1) {
+      this(Minecraft.getInstance(), Minecraft.getInstance().font, var1);
+   }
+
+   protected Screen(Minecraft var1, Font var2, Component var3) {
       super();
-      this.title = var1;
+      this.children = Lists.newArrayList();
+      this.narratables = Lists.newArrayList();
+      this.renderables = Lists.newArrayList();
+      this.narrationState = new ScreenNarrationCollector();
+      this.narrationSuppressTime = -9223372036854775808L;
+      this.nextNarrationTime = 9223372036854775807L;
+      this.minecraft = var1;
+      this.font = var2;
+      this.title = var3;
+      this.screenExecutor = (var2x) -> var1.execute(() -> {
+            if (var1.screen == this) {
+               var2x.run();
+            }
+
+         });
    }
 
    public Component getTitle() {
@@ -260,24 +269,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    protected void insertText(String var1, boolean var2) {
    }
 
-   public boolean handleComponentClicked(Style var1) {
-      ClickEvent var2 = var1.getClickEvent();
-      if (this.minecraft.hasShiftDown()) {
-         if (var1.getInsertion() != null) {
-            this.insertText(var1.getInsertion(), false);
-         }
-      } else if (var2 != null) {
-         this.handleClickEvent(this.minecraft, var2);
-         return true;
-      }
-
-      return false;
-   }
-
-   protected void handleClickEvent(Minecraft var1, ClickEvent var2) {
-      defaultHandleGameClickEvent(var2, var1, this);
-   }
-
    protected static void defaultHandleGameClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
       LocalPlayer var3 = (LocalPlayer)Objects.requireNonNull(var1.player, "Player not available");
       Objects.requireNonNull(var0);
@@ -413,11 +404,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       var0.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(var1), var2);
    }
 
-   public final void init(Minecraft var1, int var2, int var3) {
-      this.minecraft = var1;
-      this.font = var1.font;
-      this.width = var2;
-      this.height = var3;
+   public final void init(int var1, int var2) {
+      this.width = var1;
+      this.height = var2;
       if (!this.initialized) {
          this.init();
          this.setInitialFocus();
@@ -427,7 +416,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
       this.initialized = true;
       this.triggerImmediateNarration(false);
-      if (var1.getLastInputType().isKeyboard()) {
+      if (this.minecraft.getLastInputType().isKeyboard()) {
          this.setNarrationSuppressTime(9223372036854775807L);
       } else {
          this.suppressNarration(NARRATE_SUPPRESS_AFTER_INIT_TIME);
@@ -502,7 +491,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       renderMenuBackgroundTexture(var1, this.minecraft.level == null ? MENU_BACKGROUND : INWORLD_MENU_BACKGROUND, var2, var3, 0.0F, 0.0F, var4, var5);
    }
 
-   public static void renderMenuBackgroundTexture(GuiGraphics var0, ResourceLocation var1, int var2, int var3, float var4, float var5, int var6, int var7) {
+   public static void renderMenuBackgroundTexture(GuiGraphics var0, Identifier var1, int var2, int var3, float var4, float var5, int var6, int var7) {
       boolean var8 = true;
       var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, var4, var5, var6, var7, 32, 32);
    }
@@ -531,9 +520,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.rebuildWidgets();
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      this.width = var2;
-      this.height = var3;
+   public void resize(int var1, int var2) {
+      this.width = var1;
+      this.height = var2;
       this.repositionElements();
    }
 
@@ -657,8 +646,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return Component.translatable("narration.component_list.usage");
    }
 
-   @Nullable
-   public static NarratableSearchResult findNarratableWidget(List<? extends NarratableEntry> var0, @Nullable NarratableEntry var1) {
+   public static @Nullable NarratableSearchResult findNarratableWidget(List<? extends NarratableEntry> var0, @Nullable NarratableEntry var1) {
       NarratableSearchResult var2 = null;
       NarratableSearchResult var3 = null;
       int var4 = 0;
@@ -707,8 +695,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return new ScreenRectangle(0, 0, this.width, this.height);
    }
 
-   @Nullable
-   public Music getBackgroundMusic() {
+   public @Nullable Music getBackgroundMusic() {
       return null;
    }
 

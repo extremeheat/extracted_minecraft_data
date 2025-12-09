@@ -1,6 +1,6 @@
 package com.mojang.realmsclient.client;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class UploadStatus {
    private volatile long bytesWritten;
@@ -17,6 +17,13 @@ public class UploadStatus {
       this.totalBytes = var1;
    }
 
+   public void restart() {
+      this.bytesWritten = 0L;
+      this.previousTimeSnapshot = Util.getMillis();
+      this.previousBytesWritten = 0L;
+      this.bytesPerSecond = 0L;
+   }
+
    public long getTotalBytes() {
       return this.totalBytes;
    }
@@ -26,15 +33,15 @@ public class UploadStatus {
    }
 
    public void onWrite(long var1) {
-      this.bytesWritten += var1;
+      this.bytesWritten = var1;
    }
 
    public boolean uploadStarted() {
-      return this.bytesWritten != 0L;
+      return this.bytesWritten > 0L;
    }
 
    public boolean uploadCompleted() {
-      return this.bytesWritten == this.getTotalBytes();
+      return this.bytesWritten >= this.totalBytes;
    }
 
    public double getPercentage() {

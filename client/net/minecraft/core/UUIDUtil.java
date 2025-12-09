@@ -16,9 +16,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
-import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Util;
 
 public final class UUIDUtil {
    public static final Codec<UUID> CODEC;

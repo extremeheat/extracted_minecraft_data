@@ -25,7 +25,7 @@ public class DataComponentPredicates {
    }
 
    private static <T extends DataComponentPredicate> DataComponentPredicate.Type<T> register(String var0, Codec<T> var1) {
-      return (DataComponentPredicate.Type)Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, (String)var0, new DataComponentPredicate.Type(var1));
+      return (DataComponentPredicate.Type)Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, (String)var0, new DataComponentPredicate.ConcreteType(var1));
    }
 
    public static DataComponentPredicate.Type<?> bootstrap(Registry<DataComponentPredicate.Type<?>> var0) {

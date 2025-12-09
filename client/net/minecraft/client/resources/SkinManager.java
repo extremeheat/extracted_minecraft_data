@@ -20,15 +20,15 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SkinTextureDownloader;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Services;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SkinManager {
@@ -147,12 +147,12 @@ public class SkinManager {
 
       private CompletableFuture<ClientAsset.Texture> registerTexture(MinecraftProfileTexture var1) {
          String var2 = Hashing.sha1().hashUnencodedChars(var1.getHash()).toString();
-         ResourceLocation var3 = this.getTextureLocation(var2);
+         Identifier var3 = this.getTextureLocation(var2);
          Path var4 = this.root.resolve(var2.length() > 2 ? var2.substring(0, 2) : "xx").resolve(var2);
          return SkinManager.this.skinTextureDownloader.downloadAndRegisterSkin(var3, var4, var1.getUrl(), this.type == Type.SKIN);
       }
 
-      private ResourceLocation getTextureLocation(String var1) {
+      private Identifier getTextureLocation(String var1) {
          String var10000;
          switch (this.type) {
             case SKIN -> var10000 = "skins";
@@ -162,7 +162,7 @@ public class SkinManager {
          }
 
          String var2 = var10000;
-         return ResourceLocation.withDefaultNamespace(var2 + "/" + var1);
+         return Identifier.withDefaultNamespace(var2 + "/" + var1);
       }
    }
 

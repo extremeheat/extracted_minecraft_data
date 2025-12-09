@@ -11,8 +11,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gamerules.GameRules;
 
 class WeavingMobEffect extends MobEffect {
    private final ToIntFunction<RandomSource> maxCobwebs;
@@ -23,7 +23,7 @@ class WeavingMobEffect extends MobEffect {
    }
 
    public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
-      if (var4 == Entity.RemovalReason.KILLED && (var2 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) {
+      if (var4 == Entity.RemovalReason.KILLED && (var2 instanceof Player || (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING))) {
          this.spawnCobwebsRandomlyAround(var1, var2.getRandom(), var2.blockPosition());
       }
 

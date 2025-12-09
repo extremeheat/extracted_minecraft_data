@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BrushableBlockEntity extends BlockEntity {
@@ -47,10 +47,8 @@ public class BrushableBlockEntity extends BlockEntity {
    private long brushCountResetsAtTick;
    private long coolDownEndsAtTick;
    private ItemStack item;
-   @Nullable
-   private Direction hitDirection;
-   @Nullable
-   private ResourceKey<LootTable> lootTable;
+   private @Nullable Direction hitDirection;
+   private @Nullable ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
    public BrushableBlockEntity(BlockPos var1, BlockState var2) {
@@ -106,7 +104,7 @@ public class BrushableBlockEntity extends BlockEntity {
                var10001 = (ItemStack)var6.getFirst();
                break;
             default:
-               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var6.size());
+               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.identifier(), var6.size());
                var10001 = (ItemStack)var6.getFirst();
          }
 
@@ -241,8 +239,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   @Nullable
-   public Direction getHitDirection() {
+   public @Nullable Direction getHitDirection() {
       return this.hitDirection;
    }
 

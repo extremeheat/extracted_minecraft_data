@@ -1,13 +1,13 @@
 package net.minecraft.util.profiling.jfr.parse;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,19 +15,20 @@ import java.util.NoSuchElementException;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
 import net.minecraft.util.profiling.jfr.stats.ChunkGenStat;
 import net.minecraft.util.profiling.jfr.stats.ChunkIdentification;
 import net.minecraft.util.profiling.jfr.stats.CpuLoadStat;
 import net.minecraft.util.profiling.jfr.stats.FileIOStat;
+import net.minecraft.util.profiling.jfr.stats.FpsStat;
 import net.minecraft.util.profiling.jfr.stats.GcHeapStat;
 import net.minecraft.util.profiling.jfr.stats.IoSummary;
 import net.minecraft.util.profiling.jfr.stats.PacketIdentification;
 import net.minecraft.util.profiling.jfr.stats.StructureGenStat;
 import net.minecraft.util.profiling.jfr.stats.ThreadAllocationStat;
 import net.minecraft.util.profiling.jfr.stats.TickTimeStat;
+import org.jspecify.annotations.Nullable;
 
 public class JfrStatsParser {
    private Instant recordingStarted;
@@ -45,27 +46,28 @@ public class JfrStatsParser {
    private Duration gcTotalDuration;
    private final List<GcHeapStat> gcHeapStats;
    private final List<ThreadAllocationStat> threadAllocationStats;
-   private final List<TickTimeStat> tickTimes;
-   @Nullable
-   private Duration worldCreationDuration;
+   private final List<FpsStat> fps;
+   private final List<TickTimeStat> serverTickTimes;
+   private @Nullable Duration worldCreationDuration;
 
    private JfrStatsParser(Stream<RecordedEvent> var1) {
       super();
       this.recordingStarted = Instant.EPOCH;
       this.recordingEnded = Instant.EPOCH;
-      this.chunkGenStats = Lists.newArrayList();
-      this.structureGenStats = Lists.newArrayList();
-      this.cpuLoadStat = Lists.newArrayList();
-      this.receivedPackets = Maps.newHashMap();
-      this.sentPackets = Maps.newHashMap();
-      this.readChunks = Maps.newHashMap();
-      this.writtenChunks = Maps.newHashMap();
-      this.fileWrites = Lists.newArrayList();
-      this.fileReads = Lists.newArrayList();
+      this.chunkGenStats = new ArrayList();
+      this.structureGenStats = new ArrayList();
+      this.cpuLoadStat = new ArrayList();
+      this.receivedPackets = new HashMap();
+      this.sentPackets = new HashMap();
+      this.readChunks = new HashMap();
+      this.writtenChunks = new HashMap();
+      this.fileWrites = new ArrayList();
+      this.fileReads = new ArrayList();
       this.gcTotalDuration = Duration.ZERO;
-      this.gcHeapStats = Lists.newArrayList();
-      this.threadAllocationStats = Lists.newArrayList();
-      this.tickTimes = Lists.newArrayList();
+      this.gcHeapStats = new ArrayList();
+      this.threadAllocationStats = new ArrayList();
+      this.fps = new ArrayList();
+      this.serverTickTimes = new ArrayList();
       this.worldCreationDuration = null;
       this.capture(var1);
    }
@@ -119,7 +121,7 @@ public class JfrStatsParser {
 
    private JfrStatsResult results() {
       Duration var1 = Duration.between(this.recordingStarted, this.recordingEnded);
-      return new JfrStatsResult(this.recordingStarted, this.recordingEnded, var1, this.worldCreationDuration, this.tickTimes, this.cpuLoadStat, GcHeapStat.summary(var1, this.gcHeapStats, this.gcTotalDuration, this.garbageCollections), ThreadAllocationStat.summary(this.threadAllocationStats), collectIoStats(var1, this.receivedPackets), collectIoStats(var1, this.sentPackets), collectIoStats(var1, this.writtenChunks), collectIoStats(var1, this.readChunks), FileIOStat.summary(var1, this.fileWrites), FileIOStat.summary(var1, this.fileReads), this.chunkGenStats, this.structureGenStats);
+      return new JfrStatsResult(this.recordingStarted, this.recordingEnded, var1, this.worldCreationDuration, this.fps, this.serverTickTimes, this.cpuLoadStat, GcHeapStat.summary(var1, this.gcHeapStats, this.gcTotalDuration, this.garbageCollections), ThreadAllocationStat.summary(this.threadAllocationStats), collectIoStats(var1, this.receivedPackets), collectIoStats(var1, this.sentPackets), collectIoStats(var1, this.writtenChunks), collectIoStats(var1, this.readChunks), FileIOStat.summary(var1, this.fileWrites), FileIOStat.summary(var1, this.fileReads), this.chunkGenStats, this.structureGenStats);
    }
 
    private void capture(Stream<RecordedEvent> var1) {
@@ -142,8 +144,11 @@ public class JfrStatsParser {
             case "minecraft.LoadWorld":
                this.worldCreationDuration = var1x.getDuration();
                break;
+            case "minecraft.ClientFps":
+               this.fps.add(FpsStat.from(var1x, "fps"));
+               break;
             case "minecraft.ServerTickTime":
-               this.tickTimes.add(TickTimeStat.from(var1x));
+               this.serverTickTimes.add(TickTimeStat.from(var1x));
                break;
             case "minecraft.PacketReceived":
                this.incrementPacket(var1x, var1x.getInt("bytes"), this.receivedPackets);

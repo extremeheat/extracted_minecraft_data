@@ -30,8 +30,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.util.datafix.PackedBitStorage;
+import org.jspecify.annotations.Nullable;
 
 public class LeavesFix extends DataFix {
    private static final int NORTH_WEST_MASK = 128;
@@ -200,8 +200,7 @@ public class LeavesFix extends DataFix {
       protected final OpticFinder<java.util.List<Pair<String, Dynamic<?>>>> paletteFinder;
       protected final java.util.List<Dynamic<?>> palette;
       protected final int index;
-      @Nullable
-      protected PackedBitStorage storage;
+      protected @Nullable PackedBitStorage storage;
 
       public Section(Typed<?> var1, Schema var2) {
          super();
@@ -256,12 +255,9 @@ public class LeavesFix extends DataFix {
       private static final String PERSISTENT = "persistent";
       private static final String DECAYABLE = "decayable";
       private static final String DISTANCE = "distance";
-      @Nullable
-      private IntSet leaveIds;
-      @Nullable
-      private IntSet logIds;
-      @Nullable
-      private Int2IntMap stateToIdMap;
+      private @Nullable IntSet leaveIds;
+      private @Nullable IntSet logIds;
+      private @Nullable Int2IntMap stateToIdMap;
 
       public LeavesSection(Typed<?> var1, Schema var2) {
          super(var1, var2);

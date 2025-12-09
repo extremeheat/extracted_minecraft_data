@@ -4,8 +4,8 @@ import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.ScreenManager;
 import com.mojang.blaze3d.platform.Window;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import org.jspecify.annotations.Nullable;
 
 public final class VirtualScreen implements AutoCloseable {
    private final Minecraft minecraft;

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import org.joml.Matrix4f;
 
 public interface TextRenderable {
@@ -23,4 +23,22 @@ public interface TextRenderable {
    float right();
 
    float bottom();
+
+   public interface Styled extends ActiveArea, TextRenderable {
+      default float activeLeft() {
+         return this.left();
+      }
+
+      default float activeTop() {
+         return this.top();
+      }
+
+      default float activeRight() {
+         return this.right();
+      }
+
+      default float activeBottom() {
+         return this.bottom();
+      }
+   }
 }

@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -24,6 +25,7 @@ public class GlConst {
    public static final int GL_TRIANGLE_STRIP = 5;
    public static final int GL_TRIANGLE_FAN = 6;
    public static final int GL_TRIANGLES = 4;
+   public static final int GL_POINTS = 0;
    public static final int GL_WRITE_ONLY = 35001;
    public static final int GL_READ_ONLY = 35000;
    public static final int GL_READ_WRITE = 35002;
@@ -216,9 +218,9 @@ public class GlConst {
       byte var10000;
       switch (var0) {
          case LINES -> var10000 = 4;
-         case LINE_STRIP -> var10000 = 5;
          case DEBUG_LINES -> var10000 = 1;
          case DEBUG_LINE_STRIP -> var10000 = 3;
+         case POINTS -> var10000 = 0;
          case TRIANGLES -> var10000 = 4;
          case TRIANGLE_STRIP -> var10000 = 5;
          case TRIANGLE_FAN -> var10000 = 6;
@@ -330,7 +332,7 @@ public class GlConst {
       return var10000;
    }
 
-   public static int bufferUsageToGlFlag(int var0) {
+   public static int bufferUsageToGlFlag(@GpuBuffer.Usage int var0) {
       int var1 = 0;
       if ((var0 & 1) != 0) {
          var1 |= 65;
@@ -351,7 +353,7 @@ public class GlConst {
       return var1;
    }
 
-   public static int bufferUsageToGlEnum(int var0) {
+   public static int bufferUsageToGlEnum(@GpuBuffer.Usage int var0) {
       boolean var1 = (var0 & 4) != 0;
       if ((var0 & 2) != 0) {
          return var1 ? '\u88e0' : '\u88e4';

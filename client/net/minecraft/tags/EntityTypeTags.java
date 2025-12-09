@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 
 public interface EntityTypeTags {
@@ -9,6 +9,7 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> ZOMBIES = create("zombies");
    TagKey<EntityType<?>> RAIDERS = create("raiders");
    TagKey<EntityType<?>> UNDEAD = create("undead");
+   TagKey<EntityType<?>> BURN_IN_DAYLIGHT = create("burn_in_daylight");
    TagKey<EntityType<?>> BEEHIVE_INHABITORS = create("beehive_inhabitors");
    TagKey<EntityType<?>> ARROWS = create("arrows");
    TagKey<EntityType<?>> IMPACT_PROJECTILES = create("impact_projectiles");
@@ -43,12 +44,15 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> CAN_EQUIP_SADDLE = create("can_equip_saddle");
    TagKey<EntityType<?>> CAN_EQUIP_HARNESS = create("can_equip_harness");
    TagKey<EntityType<?>> CAN_WEAR_HORSE_ARMOR = create("can_wear_horse_armor");
+   TagKey<EntityType<?>> CAN_WEAR_NAUTILUS_ARMOR = create("can_wear_nautilus_armor");
    TagKey<EntityType<?>> FOLLOWABLE_FRIENDLY_MOBS = create("followable_friendly_mobs");
    TagKey<EntityType<?>> CANNOT_BE_PUSHED_ONTO_BOATS = create("cannot_be_pushed_onto_boats");
    TagKey<EntityType<?>> ACCEPTS_IRON_GOLEM_GIFT = create("accepts_iron_golem_gift");
    TagKey<EntityType<?>> CANDIDATE_FOR_IRON_GOLEM_GIFT = create("candidate_for_iron_golem_gift");
+   TagKey<EntityType<?>> NAUTILUS_HOSTILES = create("nautilus_hostiles");
+   TagKey<EntityType<?>> CAN_FLOAT_WHILE_RIDDEN = create("can_float_while_ridden");
 
    private static TagKey<EntityType<?>> create(String var0) {
-      return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(var0));
    }
 }

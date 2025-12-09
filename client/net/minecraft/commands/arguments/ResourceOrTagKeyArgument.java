@@ -21,8 +21,8 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 
 public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
@@ -50,14 +50,14 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
 
          try {
             var1.skip();
-            ResourceLocation var3 = ResourceLocation.read(var1);
+            Identifier var3 = Identifier.read(var1);
             return new TagResult<T>(TagKey.create(this.registryKey, var3));
          } catch (CommandSyntaxException var4) {
             var1.setCursor(var5);
             throw var4;
          }
       } else {
-         ResourceLocation var2 = ResourceLocation.read(var1);
+         Identifier var2 = Identifier.read(var1);
          return new ResourceResult<T>(ResourceKey.create(this.registryKey, var2));
       }
    }
@@ -94,7 +94,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
       }
 
       public String asPrintable() {
-         return this.key.location().toString();
+         return this.key.identifier().toString();
       }
 
       // $FF: synthetic method
@@ -145,7 +145,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
       }
 
       public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.location().toString());
+         var2.addProperty("registry", var1.registryKey.identifier().toString());
       }
 
       public Info<T>.Template unpack(ResourceOrTagKeyArgument<T> var1) {

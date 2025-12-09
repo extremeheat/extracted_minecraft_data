@@ -7,7 +7,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.StreamCodec;
 
-public class FixedFormat implements NumberFormat {
+public record FixedFormat(Component value) implements NumberFormat {
    public static final NumberFormatType<FixedFormat> TYPE = new NumberFormatType<FixedFormat>() {
       private static final MapCodec<FixedFormat> CODEC;
       private static final StreamCodec<RegistryFriendlyByteBuf, FixedFormat> STREAM_CODEC;
@@ -21,11 +21,10 @@ public class FixedFormat implements NumberFormat {
       }
 
       static {
-         CODEC = ComponentSerialization.CODEC.fieldOf("value").xmap(FixedFormat::new, (var0) -> var0.value);
-         STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, (var0) -> var0.value, FixedFormat::new);
+         CODEC = ComponentSerialization.CODEC.fieldOf("value").xmap(FixedFormat::new, FixedFormat::value);
+         STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, FixedFormat::value, FixedFormat::new);
       }
    };
-   final Component value;
 
    public FixedFormat(Component var1) {
       super();

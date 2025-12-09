@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -24,7 +24,7 @@ public class MapTextureManager implements AutoCloseable {
       this.getOrCreateMapInstance(var1, var2).forceUpload();
    }
 
-   public ResourceLocation prepareMapTexture(MapId var1, MapItemSavedData var2) {
+   public Identifier prepareMapTexture(MapId var1, MapItemSavedData var2) {
       MapInstance var3 = this.getOrCreateMapInstance(var1, var2);
       var3.updateTextureIfNeeded();
       return var3.location;
@@ -60,13 +60,13 @@ public class MapTextureManager implements AutoCloseable {
       private MapItemSavedData data;
       private final DynamicTexture texture;
       private boolean requiresUpload = true;
-      final ResourceLocation location;
+      final Identifier location;
 
       MapInstance(final int var2, final MapItemSavedData var3) {
          super();
          this.data = var3;
          this.texture = new DynamicTexture(() -> "Map " + var2, 128, 128, true);
-         this.location = ResourceLocation.withDefaultNamespace("map/" + var2);
+         this.location = Identifier.withDefaultNamespace("map/" + var2);
          MapTextureManager.this.textureManager.register(this.location, this.texture);
       }
 

@@ -12,9 +12,7 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
@@ -22,7 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -33,6 +31,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.function.TriConsumer;
+import org.jspecify.annotations.Nullable;
 
 public record ItemAttributeModifiers(List<Entry> modifiers) {
    public static final ItemAttributeModifiers EMPTY = new ItemAttributeModifiers(List.of());
@@ -89,31 +88,31 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
 
    }
 
-   public double compute(double var1, EquipmentSlot var3) {
-      double var4 = var1;
+   public double compute(Holder<Attribute> var1, double var2, EquipmentSlot var4) {
+      double var5 = var2;
 
-      for(Entry var7 : this.modifiers) {
-         if (var7.slot.test(var3)) {
-            double var8 = var7.modifier.amount();
+      for(Entry var8 : this.modifiers) {
+         if (var8.slot.test(var4) && var8.attribute == var1) {
+            double var9 = var8.modifier.amount();
             double var10001;
-            switch (var7.modifier.operation()) {
-               case ADD_VALUE -> var10001 = var8;
-               case ADD_MULTIPLIED_BASE -> var10001 = var8 * var1;
-               case ADD_MULTIPLIED_TOTAL -> var10001 = var8 * var4;
+            switch (var8.modifier.operation()) {
+               case ADD_VALUE -> var10001 = var9;
+               case ADD_MULTIPLIED_BASE -> var10001 = var9 * var2;
+               case ADD_MULTIPLIED_TOTAL -> var10001 = var9 * var5;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var4 += var10001;
+            var5 += var10001;
          }
       }
 
-      return var4;
+      return var5;
    }
 
    static {
       CODEC = ItemAttributeModifiers.Entry.CODEC.listOf().xmap(ItemAttributeModifiers::new, ItemAttributeModifiers::modifiers);
       STREAM_CODEC = StreamCodec.composite(ItemAttributeModifiers.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), ItemAttributeModifiers::modifiers, ItemAttributeModifiers::new);
-      ATTRIBUTE_MODIFIER_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("#.##"), (var0) -> var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
+      ATTRIBUTE_MODIFIER_FORMAT = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
    }
 
    public interface Display {
@@ -292,7 +291,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
          this.display = var4;
       }
 
-      public boolean matches(Holder<Attribute> var1, ResourceLocation var2) {
+      public boolean matches(Holder<Attribute> var1, Identifier var2) {
          return var1.equals(this.attribute) && this.modifier.is(var2);
       }
 

@@ -1,13 +1,14 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -15,7 +16,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -25,13 +26,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
-   private static final ResourceLocation[] ENABLED_LEVEL_SPRITES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3")};
-   private static final ResourceLocation[] DISABLED_LEVEL_SPRITES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1_disabled"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2_disabled"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3_disabled")};
-   private static final ResourceLocation ENCHANTMENT_SLOT_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot_disabled");
-   private static final ResourceLocation ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot_highlighted");
-   private static final ResourceLocation ENCHANTMENT_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot");
-   private static final ResourceLocation ENCHANTING_TABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/enchanting_table.png");
-   private static final ResourceLocation ENCHANTING_BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enchanting_table_book.png");
+   private static final Identifier[] ENABLED_LEVEL_SPRITES = new Identifier[]{Identifier.withDefaultNamespace("container/enchanting_table/level_1"), Identifier.withDefaultNamespace("container/enchanting_table/level_2"), Identifier.withDefaultNamespace("container/enchanting_table/level_3")};
+   private static final Identifier[] DISABLED_LEVEL_SPRITES = new Identifier[]{Identifier.withDefaultNamespace("container/enchanting_table/level_1_disabled"), Identifier.withDefaultNamespace("container/enchanting_table/level_2_disabled"), Identifier.withDefaultNamespace("container/enchanting_table/level_3_disabled")};
+   private static final Identifier ENCHANTMENT_SLOT_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/enchanting_table/enchantment_slot_disabled");
+   private static final Identifier ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/enchanting_table/enchantment_slot_highlighted");
+   private static final Identifier ENCHANTMENT_SLOT_SPRITE = Identifier.withDefaultNamespace("container/enchanting_table/enchantment_slot");
+   private static final Identifier ENCHANTING_TABLE_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/enchanting_table.png");
+   private static final Identifier ENCHANTING_BOOK_LOCATION = Identifier.withDefaultNamespace("textures/entity/enchanting_table_book.png");
    private final RandomSource random = RandomSource.create();
    private BookModel bookModel;
    public float flip;
@@ -87,28 +88,29 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          int var10 = var9 + 20;
          int var11 = (this.menu).costs[var8];
          if (var11 == 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
          } else {
             String var12 = "" + var11;
             int var13 = 86 - this.font.width(var12);
             FormattedText var14 = EnchantmentNames.getInstance().getRandomName(this.font, var13);
             int var15 = -9937334;
             if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.hasInfiniteMaterials()) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, ARGB.opaque((var15 & 16711422) >> 1), false);
                var15 = -12550384;
             } else {
                int var16 = var3 - (var5 + 60);
                int var17 = var4 - (var6 + 14 + 19 * var8);
                if (var16 >= 0 && var17 >= 0 && var16 < 108 && var17 < 19) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+                  var1.requestCursor(CursorTypes.POINTING_HAND);
                   var15 = -128;
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENCHANTMENT_SLOT_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15, false);
                var15 = -8323296;
             }
@@ -143,7 +145,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          if (!var10.isEmpty()) {
             int var11 = (this.menu).levelClue[var8];
             int var12 = var8 + 1;
-            if (this.isHovering(60, 14 + 19 * var8, 108, 17, (double)var2, (double)var3) && var9 > 0 && var11 >= 0 && var10 != null) {
+            if (this.isHovering(60, 14 + 19 * var8, 108, 17, (double)var2, (double)var3) && var9 > 0 && var11 >= 0) {
                ArrayList var13 = Lists.newArrayList();
                var13.add(Component.translatable("container.enchant.clue", Enchantment.getFullname((Holder)var10.get(), var11)).withStyle(ChatFormatting.WHITE));
                if (!var6) {
@@ -195,6 +197,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       for(int var3 = 0; var3 < 3; ++var3) {
          if ((this.menu).costs[var3] != 0) {
             var2 = true;
+            break;
          }
       }
 

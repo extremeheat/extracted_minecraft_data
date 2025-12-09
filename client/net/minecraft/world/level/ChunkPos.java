@@ -7,14 +7,15 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.chunk.status.ChunkPyramid;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkPos {
    public static final Codec<ChunkPos> CODEC;
@@ -60,6 +61,14 @@ public class ChunkPos {
 
    public static ChunkPos maxFromRegion(int var0, int var1) {
       return new ChunkPos((var0 << 5) + 31, (var1 << 5) + 31);
+   }
+
+   public boolean isValid() {
+      return isValid(this.x, this.z);
+   }
+
+   public static boolean isValid(int var0, int var1) {
+      return Mth.absMax(var0, var1) <= MAX_COORDINATE_VALUE;
    }
 
    public long toLong() {
@@ -176,7 +185,7 @@ public class ChunkPos {
    }
 
    public int getChessboardDistance(int var1, int var2) {
-      return Math.max(Math.abs(this.x - var1), Math.abs(this.z - var2));
+      return Mth.chessboardDistance(var1, var2, this.x, this.z);
    }
 
    public int distanceSquared(ChunkPos var1) {
@@ -203,8 +212,7 @@ public class ChunkPos {
       final int var4 = var0.x < var1.x ? 1 : -1;
       final int var5 = var0.z < var1.z ? 1 : -1;
       return StreamSupport.stream(new Spliterators.AbstractSpliterator<ChunkPos>((long)(var2 * var3), 64) {
-         @Nullable
-         private ChunkPos pos;
+         private @Nullable ChunkPos pos;
 
          public boolean tryAdvance(Consumer<? super ChunkPos> var1x) {
             if (this.pos == null) {

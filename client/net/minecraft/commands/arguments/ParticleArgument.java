@@ -23,9 +23,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class ParticleArgument implements ArgumentType<ParticleOptions> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "particle{foo:bar}");
@@ -61,7 +61,7 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    }
 
    private static ParticleType<?> readParticleType(StringReader var0, HolderLookup<ParticleType<?>> var1) throws CommandSyntaxException {
-      ResourceLocation var2 = ResourceLocation.read(var0);
+      Identifier var2 = Identifier.read(var0);
       ResourceKey var3 = ResourceKey.create(Registries.PARTICLE_TYPE, var2);
       return (ParticleType)((Holder.Reference)var1.get(var3).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.createWithContext(var0, var2))).value();
    }
@@ -83,7 +83,7 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.PARTICLE_TYPE);
-      return SharedSuggestionProvider.suggestResource(var3.listElementIds().map(ResourceKey::location), var2);
+      return SharedSuggestionProvider.suggestResource(var3.listElementIds().map(ResourceKey::identifier), var2);
    }
 
    // $FF: synthetic method

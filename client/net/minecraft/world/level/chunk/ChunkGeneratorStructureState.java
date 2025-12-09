@@ -14,14 +14,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChunkGeneratorStructureState {
@@ -163,8 +163,7 @@ public class ChunkGeneratorStructureState {
 
    }
 
-   @Nullable
-   public List<ChunkPos> getRingPositionsFor(ConcentricRingsStructurePlacement var1) {
+   public @Nullable List<ChunkPos> getRingPositionsFor(ConcentricRingsStructurePlacement var1) {
       this.ensureStructuresGenerated();
       CompletableFuture var2 = (CompletableFuture)this.ringPositions.get(var1);
       return var2 != null ? (List)var2.join() : null;

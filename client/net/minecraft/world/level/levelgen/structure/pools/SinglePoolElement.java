@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
@@ -41,15 +41,15 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 public class SinglePoolElement extends StructurePoolElement {
    private static final Comparator<StructureTemplate.JigsawBlockInfo> HIGHEST_SELECTION_PRIORITY_FIRST = Comparator.comparingInt(StructureTemplate.JigsawBlockInfo::selectionPriority).reversed();
-   private static final Codec<Either<ResourceLocation, StructureTemplate>> TEMPLATE_CODEC;
+   private static final Codec<Either<Identifier, StructureTemplate>> TEMPLATE_CODEC;
    public static final MapCodec<SinglePoolElement> CODEC;
-   protected final Either<ResourceLocation, StructureTemplate> template;
+   protected final Either<Identifier, StructureTemplate> template;
    protected final Holder<StructureProcessorList> processors;
    protected final Optional<LiquidSettings> overrideLiquidSettings;
 
-   private static <T> DataResult<T> encodeTemplate(Either<ResourceLocation, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
+   private static <T> DataResult<T> encodeTemplate(Either<Identifier, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
       Optional var3 = var0.left();
-      return var3.isEmpty() ? DataResult.error(() -> "Can not serialize a runtime pool element") : ResourceLocation.CODEC.encode((ResourceLocation)var3.get(), var1, var2);
+      return var3.isEmpty() ? DataResult.error(() -> "Can not serialize a runtime pool element") : Identifier.CODEC.encode((Identifier)var3.get(), var1, var2);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Holder<StructureProcessorList>> processorsCodec() {
@@ -60,11 +60,11 @@ public class SinglePoolElement extends StructurePoolElement {
       return LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter((var0) -> var0.overrideLiquidSettings);
    }
 
-   protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Either<ResourceLocation, StructureTemplate>> templateCodec() {
+   protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Either<Identifier, StructureTemplate>> templateCodec() {
       return TEMPLATE_CODEC.fieldOf("location").forGetter((var0) -> var0.template);
    }
 
-   protected SinglePoolElement(Either<ResourceLocation, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
+   protected SinglePoolElement(Either<Identifier, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
       super(var3);
       this.template = var1;
       this.processors = var2;
@@ -162,12 +162,12 @@ public class SinglePoolElement extends StructurePoolElement {
    }
 
    @VisibleForTesting
-   public ResourceLocation getTemplateLocation() {
-      return (ResourceLocation)this.template.orThrow();
+   public Identifier getTemplateLocation() {
+      return (Identifier)this.template.orThrow();
    }
 
    static {
-      TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, ResourceLocation.CODEC.map(Either::left));
+      TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, Identifier.CODEC.map(Either::left));
       CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, SinglePoolElement::new));
    }
 }

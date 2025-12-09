@@ -18,7 +18,7 @@ public class AddFieldFix extends DataFix {
 
    public AddFieldFix(Schema var1, DSL.TypeReference var2, String var3, Function<Dynamic<?>, Dynamic<?>> var4, String... var5) {
       super(var1, false);
-      this.name = String.format(Locale.ROOT, "Adding field `%s` to type `%s`", var3, var2.typeName().toLowerCase());
+      this.name = "Adding field `" + var3 + "` to type `" + var2.typeName().toLowerCase(Locale.ROOT) + "`";
       this.type = var2;
       this.fieldName = var3;
       this.path = var5;

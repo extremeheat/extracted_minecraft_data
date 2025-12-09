@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -23,17 +22,17 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.InfestedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.jspecify.annotations.Nullable;
 
 public class Silverfish extends Monster {
-   @Nullable
-   private SilverfishWakeUpFriendsGoal friendsGoal;
+   private @Nullable SilverfishWakeUpFriendsGoal friendsGoal;
 
    public Silverfish(EntityType<? extends Silverfish> var1, Level var2) {
       super(var1, var2);
@@ -145,7 +144,7 @@ public class Silverfish extends Monster {
                      BlockState var8 = var1.getBlockState(var7);
                      Block var9 = var8.getBlock();
                      if (var9 instanceof InfestedBlock) {
-                        if (getServerLevel(var1).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                        if ((Boolean)getServerLevel(var1).getGameRules().get(GameRules.MOB_GRIEFING)) {
                            var1.destroyBlock(var7, true, this.silverfish);
                         } else {
                            var1.setBlock(var7, ((InfestedBlock)var9).hostStateByInfested(var1.getBlockState(var7)), 3);
@@ -164,8 +163,7 @@ public class Silverfish extends Monster {
    }
 
    static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {
-      @Nullable
-      private Direction selectedDirection;
+      private @Nullable Direction selectedDirection;
       private boolean doMerge;
 
       public SilverfishMergeWithStoneGoal(Silverfish var1) {
@@ -180,7 +178,7 @@ public class Silverfish extends Monster {
             return false;
          } else {
             RandomSource var1 = this.mob.getRandom();
-            if (getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
+            if ((Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.MOB_GRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
                this.selectedDirection = Direction.getRandom(var1);
                BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
                BlockState var3 = this.mob.level().getBlockState(var2);

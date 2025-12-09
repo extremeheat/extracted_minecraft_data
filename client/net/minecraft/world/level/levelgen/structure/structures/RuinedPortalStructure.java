@@ -7,14 +7,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.biome.Biome;
@@ -79,11 +79,11 @@ public class RuinedPortalStructure extends Structure {
          var2.overgrown = var4.overgrown();
          var2.vines = var4.vines();
          var2.replaceWithBlackstone = var4.replaceWithBlackstone();
-         ResourceLocation var21;
+         Identifier var21;
          if (var3.nextFloat() < 0.05F) {
-            var21 = ResourceLocation.withDefaultNamespace(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
+            var21 = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
          } else {
-            var21 = ResourceLocation.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
+            var21 = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
          }
 
          StructureTemplate var23 = var1.structureTemplateManager().getOrCreate(var21);

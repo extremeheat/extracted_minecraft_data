@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components.debug;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryNoop implements DebugScreenEntry {
    private final boolean isAllowedWithReducedDebugInfo;

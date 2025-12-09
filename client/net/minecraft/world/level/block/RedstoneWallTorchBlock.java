@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    public static final MapCodec<RedstoneWallTorchBlock> CODEC = simpleCodec(RedstoneWallTorchBlock::new);
@@ -47,8 +47,7 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
       return var5.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : var1;
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = Blocks.WALL_TORCH.getStateForPlacement(var1);
       return var2 == null ? null : (BlockState)this.defaultBlockState().setValue(FACING, (Direction)var2.getValue(FACING));
    }
@@ -85,8 +84,7 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
       var1.add(FACING, LIT);
    }
 
-   @Nullable
-   protected Orientation randomOrientation(Level var1, BlockState var2) {
+   protected @Nullable Orientation randomOrientation(Level var1, BlockState var2) {
       return ExperimentalRedstoneUtils.initialOrientation(var1, ((Direction)var2.getValue(FACING)).getOpposite(), Direction.UP);
    }
 

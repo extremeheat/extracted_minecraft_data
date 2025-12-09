@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
@@ -27,16 +26,17 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry> {
-   private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
+   private static final Identifier DRAFT_REPORT_SPRITE = Identifier.withDefaultNamespace("icon/draft_report");
    private static final Duration TOOLTIP_DELAY = Duration.ofMillis(500L);
-   private static final WidgetSprites REPORT_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("social_interactions/report_button"), ResourceLocation.withDefaultNamespace("social_interactions/report_button_disabled"), ResourceLocation.withDefaultNamespace("social_interactions/report_button_highlighted"));
-   private static final WidgetSprites MUTE_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("social_interactions/mute_button"), ResourceLocation.withDefaultNamespace("social_interactions/mute_button_highlighted"));
-   private static final WidgetSprites UNMUTE_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("social_interactions/unmute_button"), ResourceLocation.withDefaultNamespace("social_interactions/unmute_button_highlighted"));
+   private static final WidgetSprites REPORT_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("social_interactions/report_button"), Identifier.withDefaultNamespace("social_interactions/report_button_disabled"), Identifier.withDefaultNamespace("social_interactions/report_button_highlighted"));
+   private static final WidgetSprites MUTE_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("social_interactions/mute_button"), Identifier.withDefaultNamespace("social_interactions/mute_button_highlighted"));
+   private static final WidgetSprites UNMUTE_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("social_interactions/unmute_button"), Identifier.withDefaultNamespace("social_interactions/unmute_button_highlighted"));
    private final Minecraft minecraft;
    private final List<AbstractWidget> children;
    private final UUID id;
@@ -47,12 +47,9 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    private final boolean reportingEnabled;
    private boolean hasDraftReport;
    private final boolean chatReportable;
-   @Nullable
-   private Button hideButton;
-   @Nullable
-   private Button showButton;
-   @Nullable
-   private Button reportButton;
+   private @Nullable Button hideButton;
+   private @Nullable Button showButton;
+   private @Nullable Button reportButton;
    private float tooltipHoverTime;
    private static final Component HIDDEN;
    private static final Component BLOCKED;
@@ -179,7 +176,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       }
 
       if (this.hasDraftReport && this.reportButton != null) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
       }
 
    }

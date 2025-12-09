@@ -3,7 +3,7 @@ package net.minecraft.client.resources;
 import com.mojang.authlib.GameProfile;
 import java.util.UUID;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
 
@@ -14,7 +14,7 @@ public class DefaultPlayerSkin {
       super();
    }
 
-   public static ResourceLocation getDefaultTexture() {
+   public static Identifier getDefaultTexture() {
       return getDefaultSkin().body().texturePath();
    }
 
@@ -31,7 +31,7 @@ public class DefaultPlayerSkin {
    }
 
    private static PlayerSkin create(String var0, PlayerModelType var1) {
-      return new PlayerSkin(new ClientAsset.ResourceTexture(ResourceLocation.withDefaultNamespace(var0)), (ClientAsset.Texture)null, (ClientAsset.Texture)null, var1, true);
+      return new PlayerSkin(new ClientAsset.ResourceTexture(Identifier.withDefaultNamespace(var0)), (ClientAsset.Texture)null, (ClientAsset.Texture)null, var1, true);
    }
 
    static {

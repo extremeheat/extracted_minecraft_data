@@ -2,21 +2,21 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.PufferfishBigModel;
-import net.minecraft.client.model.PufferfishMidModel;
-import net.minecraft.client.model.PufferfishSmallModel;
+import net.minecraft.client.model.animal.fish.PufferfishBigModel;
+import net.minecraft.client.model.animal.fish.PufferfishMidModel;
+import net.minecraft.client.model.animal.fish.PufferfishSmallModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PufferfishRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Pufferfish;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
 
 public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRenderState, EntityModel<EntityRenderState>> {
-   private static final ResourceLocation PUFFER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fish/pufferfish.png");
+   private static final Identifier PUFFER_LOCATION = Identifier.withDefaultNamespace("textures/entity/fish/pufferfish.png");
    private final EntityModel<EntityRenderState> small;
    private final EntityModel<EntityRenderState> mid;
    private final EntityModel<EntityRenderState> big = this.getModel();
@@ -27,7 +27,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       this.small = new PufferfishSmallModel(var1.bakeLayer(ModelLayers.PUFFERFISH_SMALL));
    }
 
-   public ResourceLocation getTextureLocation(PufferfishRenderState var1) {
+   public Identifier getTextureLocation(PufferfishRenderState var1) {
       return PUFFER_LOCATION;
    }
 
@@ -57,7 +57,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
    }
 
    protected void setupRotations(PufferfishRenderState var1, PoseStack var2, float var3, float var4) {
-      var2.translate(0.0F, Mth.cos(var1.ageInTicks * 0.05F) * 0.08F, 0.0F);
+      var2.translate(0.0F, Mth.cos((double)(var1.ageInTicks * 0.05F)) * 0.08F, 0.0F);
       super.setupRotations(var1, var2, var3, var4);
    }
 
@@ -67,7 +67,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((PufferfishRenderState)var1);
    }
 

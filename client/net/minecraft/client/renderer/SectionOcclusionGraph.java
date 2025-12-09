@@ -20,8 +20,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionMesh;
@@ -33,11 +31,13 @@ import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ChunkTrackingView;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SectionOcclusionGraph {
@@ -47,12 +47,10 @@ public class SectionOcclusionGraph {
    private static final int MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE = SectionPos.blockToSectionCoord(60);
    private static final double CEILED_SECTION_DIAGONAL = Math.ceil(Math.sqrt(3.0) * 16.0);
    private boolean needsFullUpdate = true;
-   @Nullable
-   private Future<?> fullUpdateTask;
-   @Nullable
-   private ViewArea viewArea;
-   private final AtomicReference<GraphState> currentGraph = new AtomicReference();
-   private final AtomicReference<GraphEvents> nextGraphEvents = new AtomicReference();
+   private @Nullable Future<?> fullUpdateTask;
+   private @Nullable ViewArea viewArea;
+   private final AtomicReference<@Nullable GraphState> currentGraph = new AtomicReference();
+   private final AtomicReference<@Nullable GraphEvents> nextGraphEvents = new AtomicReference();
    private final AtomicBoolean needsFrustumUpdate = new AtomicBoolean(false);
 
    public SectionOcclusionGraph() {
@@ -127,7 +125,7 @@ public class SectionOcclusionGraph {
    }
 
    public void update(boolean var1, Camera var2, Frustum var3, List<SectionRenderDispatcher.RenderSection> var4, LongOpenHashSet var5) {
-      Vec3 var6 = var2.getPosition();
+      Vec3 var6 = var2.position();
       if (this.needsFullUpdate && (this.fullUpdateTask == null || this.fullUpdateTask.isDone())) {
          this.scheduleFullUpdate(var1, var2, var6, var5);
       }
@@ -205,7 +203,7 @@ public class SectionOcclusionGraph {
    }
 
    private void initializeQueueForFullUpdate(Camera var1, Queue<Node> var2) {
-      BlockPos var3 = var1.getBlockPosition();
+      BlockPos var3 = var1.blockPosition();
       long var4 = SectionPos.asLong(var3);
       int var6 = SectionPos.y(var4);
       SectionRenderDispatcher.RenderSection var7 = this.viewArea.getRenderSection(var4);
@@ -343,8 +341,7 @@ public class SectionOcclusionGraph {
       return ChunkTrackingView.isInViewDistance(SectionPos.x(var1), SectionPos.z(var1), this.viewArea.getViewDistance(), SectionPos.x(var3), SectionPos.z(var3));
    }
 
-   @Nullable
-   private SectionRenderDispatcher.RenderSection getRelativeFrom(long var1, SectionRenderDispatcher.RenderSection var3, Direction var4) {
+   private SectionRenderDispatcher.@Nullable RenderSection getRelativeFrom(long var1, SectionRenderDispatcher.RenderSection var3, Direction var4) {
       long var5 = var3.getNeighborSectionNode(var4);
       if (!this.isInViewDistance(var1, var5)) {
          return null;
@@ -353,9 +350,8 @@ public class SectionOcclusionGraph {
       }
    }
 
-   @Nullable
    @VisibleForDebug
-   public Node getNode(SectionRenderDispatcher.RenderSection var1) {
+   public @Nullable Node getNode(SectionRenderDispatcher.RenderSection var1) {
       return ((GraphState)this.currentGraph.get()).storage.sectionToNodeMap.get(var1);
    }
 
@@ -418,8 +414,7 @@ public class SectionOcclusionGraph {
          this.nodes[var1.index] = var2;
       }
 
-      @Nullable
-      public Node get(SectionRenderDispatcher.RenderSection var1) {
+      public @Nullable Node get(SectionRenderDispatcher.RenderSection var1) {
          int var2 = var1.index;
          return var2 >= 0 && var2 < this.nodes.length ? this.nodes[var2] : null;
       }

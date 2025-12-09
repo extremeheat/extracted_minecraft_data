@@ -2,14 +2,13 @@ package net.minecraft.client.renderer.state;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public class MapRenderState {
-   @Nullable
-   public ResourceLocation texture;
+   public @Nullable Identifier texture;
    public final List<MapDecorationRenderState> decorations = new ArrayList();
 
    public MapRenderState() {
@@ -17,14 +16,12 @@ public class MapRenderState {
    }
 
    public static class MapDecorationRenderState {
-      @Nullable
-      public TextureAtlasSprite atlasSprite;
+      public @Nullable TextureAtlasSprite atlasSprite;
       public byte x;
       public byte y;
       public byte rot;
       public boolean renderOnFrame;
-      @Nullable
-      public Component name;
+      public @Nullable Component name;
 
       public MapDecorationRenderState() {
          super();

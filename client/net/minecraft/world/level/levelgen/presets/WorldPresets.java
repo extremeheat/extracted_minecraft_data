@@ -8,8 +8,8 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Biomes;
@@ -48,7 +48,7 @@ public class WorldPresets {
    }
 
    private static ResourceKey<WorldPreset> register(String var0) {
-      return ResourceKey.create(Registries.WORLD_PRESET, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.WORLD_PRESET, Identifier.withDefaultNamespace(var0));
    }
 
    public static Optional<ResourceKey<WorldPreset>> fromSettings(WorldDimensions var0) {

@@ -10,8 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
@@ -19,6 +17,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanListEntry;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class BanlistService {
    private static final String BAN_SOURCE = "Management server";
@@ -73,7 +73,7 @@ public class BanlistService {
             Objects.requireNonNull(var1x);
             return var1.map(var1x::toUserBan);
          })).toList();
-      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
+      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().flatMap(Optional::stream).collect(Collectors.toSet());
       Set var5 = (Set)var0.banListService().getUserBanEntries().stream().filter((var0x) -> var0x.getUser() != null).map(UserBan::from).collect(Collectors.toSet());
       var5.stream().filter((var1x) -> !var4.contains(var1x)).forEach((var2x) -> var0.banListService().removeUserBan(var2x.player(), var2));
       var4.stream().filter((var1x) -> !var5.contains(var1x)).forEach((var2x) -> {

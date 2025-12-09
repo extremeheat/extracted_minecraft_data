@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JavaOps;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
+import org.jspecify.annotations.Nullable;
 
 public class Cloner<T> {
    private final Codec<T> directCodec;
@@ -35,8 +35,7 @@ public class Cloner<T> {
          return this;
       }
 
-      @Nullable
-      public <T> Cloner<T> cloner(ResourceKey<? extends Registry<? extends T>> var1) {
+      public <T> @Nullable Cloner<T> cloner(ResourceKey<? extends Registry<? extends T>> var1) {
          return (Cloner)this.codecs.get(var1);
       }
    }

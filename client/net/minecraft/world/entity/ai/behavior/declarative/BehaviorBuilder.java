@@ -16,12 +16,12 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.OneShot;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import org.jspecify.annotations.Nullable;
 
 public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M> {
    private final TriggerWithResult<E, M> trigger;
@@ -93,7 +93,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
    static final class PureMemory<E extends LivingEntity, F extends K1, Value> extends BehaviorBuilder<E, MemoryAccessor<F, Value>> {
       PureMemory(final MemoryCondition<F, Value> var1) {
          super(new TriggerWithResult<E, MemoryAccessor<F, Value>>() {
-            public MemoryAccessor<F, Value> tryTrigger(ServerLevel var1x, E var2, long var3) {
+            public @Nullable MemoryAccessor<F, Value> tryTrigger(ServerLevel var1x, E var2, long var3) {
                Brain var5 = var2.getBrain();
                Optional var6 = var5.getMemoryInternal(var1.memory());
                return var6 == null ? null : var1.createAccessor(var5, var6);
@@ -108,7 +108,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
             }
 
             // $FF: synthetic method
-            public Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
+            public @Nullable Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
                return this.tryTrigger(var1x, var2, var3);
             }
          });
@@ -140,8 +140,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
    static final class TriggerWrapper<E extends LivingEntity> extends BehaviorBuilder<E, Unit> {
       TriggerWrapper(final Trigger<? super E> var1) {
          super(new TriggerWithResult<E, Unit>() {
-            @Nullable
-            public Unit tryTrigger(ServerLevel var1x, E var2, long var3) {
+            public @Nullable Unit tryTrigger(ServerLevel var1x, E var2, long var3) {
                return var1.trigger(var1x, var2, var3) ? Unit.INSTANCE : null;
             }
 
@@ -150,8 +149,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
             }
 
             // $FF: synthetic method
-            @Nullable
-            public Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
+            public @Nullable Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
                return this.tryTrigger(var1x, var2, var3);
             }
          });
@@ -385,8 +383,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
    }
 
    interface TriggerWithResult<E extends LivingEntity, R> {
-      @Nullable
-      R tryTrigger(ServerLevel var1, E var2, long var3);
+      @Nullable R tryTrigger(ServerLevel var1, E var2, long var3);
 
       String debugString();
    }

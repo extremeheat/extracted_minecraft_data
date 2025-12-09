@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.util.Util;
 
 public record StaticAction(ClickEvent value) implements Action {
    public static final Map<ClickEvent.Action, MapCodec<StaticAction>> WRAPPED_CODECS = (Map)Util.make(() -> {

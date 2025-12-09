@@ -3,8 +3,8 @@ package net.minecraft.world.phys.shapes;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
-import net.minecraft.Util;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Util;
 
 public class ArrayVoxelShape extends VoxelShape {
    private final DoubleList xs;

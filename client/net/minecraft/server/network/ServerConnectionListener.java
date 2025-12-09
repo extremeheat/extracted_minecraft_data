@@ -1,8 +1,6 @@
 package net.minecraft.server.network;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -13,14 +11,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.local.LocalAddress;
-import io.netty.channel.local.LocalServerChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -32,8 +23,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
@@ -46,12 +35,11 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.server.MinecraftServer;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerConnectionListener {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Supplier<NioEventLoopGroup> SERVER_EVENT_GROUP = Suppliers.memoize(() -> new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Server IO #%d").setDaemon(true).build()));
-   public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(() -> new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build()));
    final MinecraftServer server;
    public volatile boolean running;
    private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
@@ -65,19 +53,8 @@ public class ServerConnectionListener {
 
    public void startTcpServerListener(@Nullable InetAddress var1, int var2) throws IOException {
       synchronized(this.channels) {
-         Class var4;
-         EventLoopGroup var5;
-         if (Epoll.isAvailable() && this.server.isEpollEnabled()) {
-            var4 = EpollServerSocketChannel.class;
-            var5 = (EventLoopGroup)SERVER_EPOLL_EVENT_GROUP.get();
-            LOGGER.info("Using epoll channel type");
-         } else {
-            var4 = NioServerSocketChannel.class;
-            var5 = (EventLoopGroup)SERVER_EVENT_GROUP.get();
-            LOGGER.info("Using default channel type");
-         }
-
-         this.channels.add(((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).channel(var4)).childHandler(new ChannelInitializer<Channel>() {
+         EventLoopGroupHolder var4 = EventLoopGroupHolder.remote(this.server.useNativeTransport());
+         this.channels.add(((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).channel(var4.serverChannelCls())).childHandler(new ChannelInitializer<Channel>() {
             protected void initChannel(Channel var1) {
                try {
                   var1.config().setOption(ChannelOption.TCP_NODELAY, true);
@@ -96,14 +73,14 @@ public class ServerConnectionListener {
                ((Connection)var4).configurePacketHandler(var2);
                ((Connection)var4).setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, (Connection)var4));
             }
-         }).group(var5).localAddress(var1, var2)).bind().syncUninterruptibly());
+         }).group(var4.eventLoopGroup()).localAddress(var1, var2)).bind().syncUninterruptibly());
       }
    }
 
    public SocketAddress startMemoryChannel() {
       ChannelFuture var1;
       synchronized(this.channels) {
-         var1 = ((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).channel(LocalServerChannel.class)).childHandler(new ChannelInitializer<Channel>() {
+         var1 = ((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).channel(EventLoopGroupHolder.local().serverChannelCls())).childHandler(new ChannelInitializer<Channel>() {
             protected void initChannel(Channel var1) {
                Connection var2 = new Connection(PacketFlow.SERVERBOUND);
                var2.setListenerForServerboundHandshake(new MemoryServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, var2));
@@ -116,7 +93,7 @@ public class ServerConnectionListener {
 
                var2.configurePacketHandler(var3);
             }
-         }).group((EventLoopGroup)SERVER_EVENT_GROUP.get()).localAddress(LocalAddress.ANY)).bind().syncUninterruptibly();
+         }).group(EventLoopGroupHolder.local().eventLoopGroup()).localAddress(LocalAddress.ANY)).bind().syncUninterruptibly();
          this.channels.add(var1);
       }
 

@@ -59,10 +59,10 @@ public abstract class Particle {
 
    public Particle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       this(var1, var2, var4, var6);
-      this.xd = var8 + (Math.random() * 2.0 - 1.0) * 0.4000000059604645;
-      this.yd = var10 + (Math.random() * 2.0 - 1.0) * 0.4000000059604645;
-      this.zd = var12 + (Math.random() * 2.0 - 1.0) * 0.4000000059604645;
-      double var14 = (Math.random() + Math.random() + 1.0) * 0.15000000596046448;
+      this.xd = var8 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
+      this.yd = var10 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
+      this.zd = var12 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F);
+      double var14 = (double)((this.random.nextFloat() + this.random.nextFloat() + 1.0F) * 0.15F);
       double var16 = Math.sqrt(this.xd * this.xd + this.yd * this.yd + this.zd * this.zd);
       this.xd = this.xd / var16 * var14 * 0.4000000059604645;
       this.yd = this.yd / var16 * var14 * 0.4000000059604645 + 0.10000000149011612;
@@ -233,7 +233,7 @@ public abstract class Particle {
             return this.startAlpha;
          } else {
             float var4 = Mth.inverseLerp(((float)var1 + var3) / (float)var2, this.startAtNormalizedAge, this.endAtNormalizedAge);
-            return Mth.clampedLerp(this.startAlpha, this.endAlpha, var4);
+            return Mth.clampedLerp(var4, this.startAlpha, this.endAlpha);
          }
       }
    }

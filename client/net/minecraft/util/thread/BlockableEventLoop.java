@@ -90,10 +90,11 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    }
 
    public void execute(Runnable var1) {
+      Runnable var2 = this.wrapRunnable(var1);
       if (this.scheduleExecutables()) {
-         this.schedule(this.wrapRunnable(var1));
+         this.schedule(var2);
       } else {
-         var1.run();
+         this.doRunTask(var2);
       }
 
    }

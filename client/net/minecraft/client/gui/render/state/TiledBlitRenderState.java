@@ -2,11 +2,11 @@ package net.minecraft.client.gui.render.state;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
+import org.jspecify.annotations.Nullable;
 
 public record TiledBlitRenderState(RenderPipeline pipeline, TextureSetup textureSetup, Matrix3x2f pose, int tileWidth, int tileHeight, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
    public TiledBlitRenderState(RenderPipeline var1, TextureSetup var2, Matrix3x2f var3, int var4, int var5, int var6, int var7, int var8, int var9, float var10, float var11, float var12, float var13, int var14, @Nullable ScreenRectangle var15) {
@@ -74,8 +74,7 @@ public record TiledBlitRenderState(RenderPipeline pipeline, TextureSetup texture
 
    }
 
-   @Nullable
-   private static ScreenRectangle getBounds(int var0, int var1, int var2, int var3, Matrix3x2f var4, @Nullable ScreenRectangle var5) {
+   private static @Nullable ScreenRectangle getBounds(int var0, int var1, int var2, int var3, Matrix3x2f var4, @Nullable ScreenRectangle var5) {
       ScreenRectangle var6 = (new ScreenRectangle(var0, var1, var2 - var0, var3 - var1)).transformMaxBounds(var4);
       return var5 != null ? var5.intersection(var6) : var6;
    }

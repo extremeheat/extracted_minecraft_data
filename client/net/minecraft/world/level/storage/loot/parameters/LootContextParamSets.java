@@ -8,11 +8,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextKeySet;
 
 public class LootContextParamSets {
-   private static final BiMap<ResourceLocation, ContextKeySet> REGISTRY = HashBiMap.create();
+   private static final BiMap<Identifier, ContextKeySet> REGISTRY = HashBiMap.create();
    public static final Codec<ContextKeySet> CODEC;
    public static final ContextKeySet EMPTY;
    public static final ContextKeySet CHEST;
@@ -48,7 +48,7 @@ public class LootContextParamSets {
       ContextKeySet.Builder var2 = new ContextKeySet.Builder();
       var1.accept(var2);
       ContextKeySet var3 = var2.build();
-      ResourceLocation var4 = ResourceLocation.withDefaultNamespace(var0);
+      Identifier var4 = Identifier.withDefaultNamespace(var0);
       ContextKeySet var5 = (ContextKeySet)REGISTRY.put(var4, var3);
       if (var5 != null) {
          throw new IllegalStateException("Loot table parameter set " + String.valueOf(var4) + " is already registered");
@@ -58,7 +58,7 @@ public class LootContextParamSets {
    }
 
    static {
-      Codec var10000 = ResourceLocation.CODEC;
+      Codec var10000 = Identifier.CODEC;
       Function var10001 = (var0) -> (DataResult)Optional.ofNullable((ContextKeySet)REGISTRY.get(var0)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "No parameter set exists with id: '" + String.valueOf(var0) + "'"));
       BiMap var10002 = REGISTRY.inverse();
       Objects.requireNonNull(var10002);

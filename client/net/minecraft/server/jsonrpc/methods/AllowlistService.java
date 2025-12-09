@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.StoredUserEntry;
 import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.util.Util;
 
 public class AllowlistService {
    public AllowlistService() {
@@ -48,7 +48,7 @@ public class AllowlistService {
 
    public static List<PlayerDto> set(MinecraftApi var0, List<PlayerDto> var1, ClientInfo var2) {
       List var3 = var1.stream().map((var1x) -> var0.playerListService().getUser(var1x.id(), var1x.name())).toList();
-      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
+      Set var4 = (Set)((List)Util.sequence(var3).join()).stream().flatMap(Optional::stream).collect(Collectors.toSet());
       Set var5 = (Set)var0.allowListService().getEntries().stream().map(StoredUserEntry::getUser).collect(Collectors.toSet());
       var5.stream().filter((var1x) -> !var4.contains(var1x)).forEach((var2x) -> var0.allowListService().remove(var2x, var2));
       var4.stream().filter((var1x) -> !var5.contains(var1x)).forEach((var2x) -> var0.allowListService().add(new UserWhiteListEntry(var2x), var2));

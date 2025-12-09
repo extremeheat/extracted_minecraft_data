@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -21,13 +20,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -35,19 +35,18 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Projectile extends Entity implements TraceableEntity {
    private static final boolean DEFAULT_LEFT_OWNER = false;
    private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
-   @Nullable
-   protected EntityReference<Entity> owner;
+   protected @Nullable EntityReference<Entity> owner;
    private boolean leftOwner = false;
    private boolean leftOwnerChecked;
    private boolean hasBeenShot = false;
-   @Nullable
-   private Entity lastDeflectedBy;
+   private @Nullable Entity lastDeflectedBy;
 
-   Projectile(EntityType<? extends Projectile> var1, Level var2) {
+   protected Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
    }
 
@@ -59,8 +58,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setOwner(EntityReference.of(var1));
    }
 
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return EntityReference.getEntity(this.owner, this.level());
    }
 
@@ -131,7 +129,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public void shoot(double var1, double var3, double var5, float var7, float var8) {
       Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
-      this.hasImpulse = true;
+      this.needsSync = true;
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
       this.setXRot((float)(Mth.atan2(var9.y, var10) * 57.2957763671875));
@@ -140,9 +138,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public void shootFromRotation(Entity var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = -Mth.sin(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
-      float var8 = -Mth.sin((var2 + var4) * 0.017453292F);
-      float var9 = Mth.cos(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
+      float var7 = -Mth.sin((double)(var3 * 0.017453292F)) * Mth.cos((double)(var2 * 0.017453292F));
+      float var8 = -Mth.sin((double)((var2 + var4) * 0.017453292F));
+      float var9 = Mth.cos((double)(var3 * 0.017453292F)) * Mth.cos((double)(var2 * 0.017453292F));
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
       Vec3 var10 = var1.getKnownMovement();
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
@@ -320,12 +318,12 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       if (var3 instanceof Player) {
          return var3.mayInteract(var1, var2);
       } else {
-         return var3 == null || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+         return var3 == null || (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING);
       }
    }
 
    public boolean mayBreak(ServerLevel var1) {
-      return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
+      return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)var1.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS);
    }
 
    public boolean isPickable() {

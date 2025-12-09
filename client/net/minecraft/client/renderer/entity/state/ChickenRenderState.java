@@ -1,13 +1,12 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
-import net.minecraft.world.entity.animal.ChickenVariant;
+import net.minecraft.world.entity.animal.chicken.ChickenVariant;
+import org.jspecify.annotations.Nullable;
 
 public class ChickenRenderState extends LivingEntityRenderState {
    public float flap;
    public float flapSpeed;
-   @Nullable
-   public ChickenVariant variant;
+   public @Nullable ChickenVariant variant;
 
    public ChickenRenderState() {
       super();

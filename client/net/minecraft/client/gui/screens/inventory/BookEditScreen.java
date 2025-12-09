@@ -7,7 +7,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,7 +18,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.world.InteractionHand;
@@ -31,7 +32,15 @@ public class BookEditScreen extends Screen {
    public static final int IMAGE_HEIGHT = 192;
    public static final int BACKGROUND_TEXTURE_WIDTH = 256;
    public static final int BACKGROUND_TEXTURE_HEIGHT = 256;
+   private static final int MENU_BUTTON_MARGIN = 4;
+   private static final int MENU_BUTTON_SIZE = 98;
+   private static final int PAGE_BUTTON_Y = 157;
+   private static final int PAGE_BACK_BUTTON_X = 43;
+   private static final int PAGE_FORWARD_BUTTON_X = 116;
+   private static final int PAGE_INDICATOR_TEXT_Y_OFFSET = 16;
+   private static final int PAGE_INDICATOR_X_OFFSET = 148;
    private static final Component TITLE = Component.translatable("book.edit.title");
+   private static final Component SIGN_BOOK_LABEL = Component.translatable("book.signButton");
    private final Player owner;
    private final ItemStack book;
    private final BookSignScreen signScreen;
@@ -65,8 +74,8 @@ public class BookEditScreen extends Screen {
    }
 
    protected void init() {
-      int var1 = (this.width - 192) / 2;
-      boolean var2 = true;
+      int var1 = this.backgroundLeft();
+      int var2 = this.backgroundTop();
       boolean var3 = true;
       this.page = MultiLineEditBox.builder().setShowDecorations(false).setTextColor(-16777216).setCursorColor(-16777216).setShowBackground(false).setTextShadow(false).setX((this.width - 114) / 2 - 8).setY(28).build(this.font, 122, 134, CommonComponents.EMPTY);
       this.page.setCharacterLimit(1024);
@@ -77,14 +86,26 @@ public class BookEditScreen extends Screen {
       this.addRenderableWidget(this.page);
       this.updatePageContent();
       this.numberOfPages = this.getPageNumberMessage();
-      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, 159, false, (var1x) -> this.pageBack(), true));
-      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, 159, true, (var1x) -> this.pageForward(), true));
-      this.addRenderableWidget(Button.builder(Component.translatable("book.signButton"), (var1x) -> this.minecraft.setScreen(this.signScreen)).bounds(this.width / 2 - 100, 196, 98, 20).build());
+      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, var2 + 157, false, (var1x) -> this.pageBack(), true));
+      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, var2 + 157, true, (var1x) -> this.pageForward(), true));
+      this.addRenderableWidget(Button.builder(SIGN_BOOK_LABEL, (var1x) -> this.minecraft.setScreen(this.signScreen)).pos(this.width / 2 - 98 - 2, this.menuControlsTop()).width(98).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          this.minecraft.setScreen((Screen)null);
          this.saveChanges();
-      }).bounds(this.width / 2 + 2, 196, 98, 20).build());
+      }).pos(this.width / 2 + 2, this.menuControlsTop()).width(98).build());
       this.updateButtonVisibility();
+   }
+
+   private int backgroundLeft() {
+      return (this.width - 192) / 2;
+   }
+
+   private int backgroundTop() {
+      return 2;
+   }
+
+   private int menuControlsTop() {
+      return this.backgroundTop() + 192 + 2;
    }
 
    protected void setInitialFocus() {
@@ -96,7 +117,7 @@ public class BookEditScreen extends Screen {
    }
 
    private Component getPageNumberMessage() {
-      return Component.translatable("book.pageIndicator", this.currentPage + 1, this.getNumPages());
+      return Component.translatable("book.pageIndicator", this.currentPage + 1, this.getNumPages()).withColor(-16777216).withoutShadow();
    }
 
    private void pageBack() {
@@ -176,14 +197,17 @@ public class BookEditScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      int var5 = (this.width - 192) / 2;
-      boolean var6 = true;
-      int var7 = this.font.width((FormattedText)this.numberOfPages);
-      var1.drawString(this.font, (Component)this.numberOfPages, var5 - var7 + 192 - 44, 18, -16777216, false);
+      this.visitText(var1.textRenderer());
+   }
+
+   private void visitText(ActiveTextCollector var1) {
+      int var2 = this.backgroundLeft();
+      int var3 = this.backgroundTop();
+      var1.accept(TextAlignment.RIGHT, var2 + 148, var3 + 16, this.numberOfPages);
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderBackground(var1, var2, var3, var4);
-      var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, this.backgroundLeft(), this.backgroundTop(), 0.0F, 0.0F, 192, 192, 256, 256);
    }
 }

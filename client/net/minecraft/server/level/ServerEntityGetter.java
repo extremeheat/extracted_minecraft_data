@@ -2,7 +2,6 @@ package net.minecraft.server.level;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,32 +9,28 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.EntityGetter;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public interface ServerEntityGetter extends EntityGetter {
    ServerLevel getLevel();
 
-   @Nullable
-   default Player getNearestPlayer(TargetingConditions var1, LivingEntity var2) {
+   default @Nullable Player getNearestPlayer(TargetingConditions var1, LivingEntity var2) {
       return (Player)this.getNearestEntity(this.players(), var1, var2, var2.getX(), var2.getY(), var2.getZ());
    }
 
-   @Nullable
-   default Player getNearestPlayer(TargetingConditions var1, LivingEntity var2, double var3, double var5, double var7) {
+   default @Nullable Player getNearestPlayer(TargetingConditions var1, LivingEntity var2, double var3, double var5, double var7) {
       return (Player)this.getNearestEntity(this.players(), var1, var2, var3, var5, var7);
    }
 
-   @Nullable
-   default Player getNearestPlayer(TargetingConditions var1, double var2, double var4, double var6) {
+   default @Nullable Player getNearestPlayer(TargetingConditions var1, double var2, double var4, double var6) {
       return (Player)this.getNearestEntity(this.players(), var1, (LivingEntity)null, var2, var4, var6);
    }
 
-   @Nullable
-   default <T extends LivingEntity> T getNearestEntity(Class<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
+   default <T extends LivingEntity> @Nullable T getNearestEntity(Class<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
       return (T)this.getNearestEntity(this.getEntitiesOfClass(var1, var10, (var0) -> true), var2, var3, var4, var6, var8);
    }
 
-   @Nullable
-   default LivingEntity getNearestEntity(TagKey<EntityType<?>> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
+   default @Nullable LivingEntity getNearestEntity(TagKey<EntityType<?>> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
       double var11 = 1.7976931348623157E308;
       LivingEntity var13 = null;
 
@@ -52,8 +47,7 @@ public interface ServerEntityGetter extends EntityGetter {
       return var13;
    }
 
-   @Nullable
-   default <T extends LivingEntity> T getNearestEntity(List<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8) {
+   default <T extends LivingEntity> @Nullable T getNearestEntity(List<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8) {
       double var10 = -1.0;
       LivingEntity var12 = null;
 

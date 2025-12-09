@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.DisplayInfo;
@@ -19,12 +18,13 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementWidget {
-   private static final ResourceLocation TITLE_BOX_SPRITE = ResourceLocation.withDefaultNamespace("advancements/title_box");
+   private static final Identifier TITLE_BOX_SPRITE = Identifier.withDefaultNamespace("advancements/title_box");
    private static final int HEIGHT = 26;
    private static final int BOX_X = 0;
    private static final int BOX_WIDTH = 200;
@@ -47,11 +47,9 @@ public class AdvancementWidget {
    private final int width;
    private final List<FormattedCharSequence> description;
    private final Minecraft minecraft;
-   @Nullable
-   private AdvancementWidget parent;
+   private @Nullable AdvancementWidget parent;
    private final List<AdvancementWidget> children = Lists.newArrayList();
-   @Nullable
-   private AdvancementProgress progress;
+   private @Nullable AdvancementProgress progress;
    private final int x;
    private final int y;
 
@@ -70,7 +68,7 @@ public class AdvancementWidget {
       int var5 = Math.max(var10000.mapToInt(var10001::width).max().orElse(0), 80);
       int var6 = this.getMaxProgressWidth();
       int var7 = 29 + var5 + var6;
-      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var7));
+      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription(), Style.EMPTY.withColor(var4.getType().getChatColor())), var7));
 
       for(FormattedCharSequence var9 : this.description) {
          var7 = Math.max(var7, var2.font.width(var9));
@@ -117,8 +115,7 @@ public class AdvancementWidget {
       return var4;
    }
 
-   @Nullable
-   private AdvancementWidget getFirstVisibleParent(AdvancementNode var1) {
+   private @Nullable AdvancementWidget getFirstVisibleParent(AdvancementNode var1) {
       do {
          var1 = var1.parent();
       } while(var1 != null && var1.advancement().display().isEmpty());
@@ -170,7 +167,7 @@ public class AdvancementWidget {
             var5 = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
@@ -256,7 +253,7 @@ public class AdvancementWidget {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), var23, var9, this.width, var8);
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       int var25 = var23 + 5;
       if (var13) {
          this.drawMultilineText(var1, this.titleLines, var25, var9 + 9, -1);

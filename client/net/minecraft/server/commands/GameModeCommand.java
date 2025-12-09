@@ -13,18 +13,20 @@ import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class GameModeCommand {
-   public static final int PERMISSION_LEVEL = 2;
+   public static final PermissionCheck PERMISSION_CHECK;
 
    public GameModeCommand() {
       super();
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> setMode(var0x, Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("target", EntityArgument.players()).executes((var0x) -> setMode(var0x, EntityArgument.getPlayers(var0x, "target"), GameModeArgument.getGameMode(var0x, "gamemode"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires(Commands.hasPermission(PERMISSION_CHECK))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> setMode(var0x, Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("target", EntityArgument.players()).executes((var0x) -> setMode(var0x, EntityArgument.getPlayers(var0x, "target"), GameModeArgument.getGameMode(var0x, "gamemode"))))));
    }
 
    private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
@@ -32,7 +34,7 @@ public class GameModeCommand {
       if (var0.getEntity() == var1) {
          var0.sendSuccess(() -> Component.translatable("commands.gamemode.success.self", var3), true);
       } else {
-         if (var0.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
+         if ((Boolean)var0.getLevel().getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK)) {
             var1.sendSystemMessage(Component.translatable("gameMode.changed", var3));
          }
 
@@ -64,5 +66,9 @@ public class GameModeCommand {
       } else {
          return false;
       }
+   }
+
+   static {
+      PERMISSION_CHECK = new PermissionCheck.Require(Permissions.COMMANDS_GAMEMASTER);
    }
 }

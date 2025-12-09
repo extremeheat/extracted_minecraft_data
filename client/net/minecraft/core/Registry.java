@@ -13,13 +13,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, IdMap<T> {
    ResourceKey<? extends Registry<T>> key();
@@ -33,10 +33,10 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
    }
 
    private Codec<Holder.Reference<T>> referenceHolderWithLifecycle() {
-      Codec var1 = ResourceLocation.CODEC.comapFlatMap((var1x) -> (DataResult)this.get(var1x).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
+      Codec var1 = Identifier.CODEC.comapFlatMap((var1x) -> (DataResult)this.get(var1x).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
                String var10000 = String.valueOf(this.key());
                return "Unknown registry key in " + var10000 + ": " + String.valueOf(var1x);
-            })), (var0) -> var0.key().location());
+            })), (var0) -> var0.key().identifier());
       return ExtraCodecs.<Holder.Reference<T>>overrideLifecycle(var1, (var1x) -> (Lifecycle)this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse(Lifecycle.experimental()));
    }
 
@@ -58,22 +58,19 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       return this.keySet().stream().map((var1x) -> var1.createString(var1x.toString()));
    }
 
-   @Nullable
-   ResourceLocation getKey(T var1);
+   @Nullable Identifier getKey(T var1);
 
    Optional<ResourceKey<T>> getResourceKey(T var1);
 
    int getId(@Nullable T var1);
 
-   @Nullable
-   T getValue(@Nullable ResourceKey<T> var1);
+   @Nullable T getValue(@Nullable ResourceKey<T> var1);
 
-   @Nullable
-   T getValue(@Nullable ResourceLocation var1);
+   @Nullable T getValue(@Nullable Identifier var1);
 
    Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1);
 
-   default Optional<T> getOptional(@Nullable ResourceLocation var1) {
+   default Optional<T> getOptional(@Nullable Identifier var1) {
       return Optional.ofNullable(this.getValue(var1));
    }
 
@@ -93,7 +90,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       }
    }
 
-   Set<ResourceLocation> keySet();
+   Set<Identifier> keySet();
 
    Set<Map.Entry<ResourceKey<T>, T>> entrySet();
 
@@ -105,15 +102,15 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       return StreamSupport.stream(this.spliterator(), false);
    }
 
-   boolean containsKey(ResourceLocation var1);
+   boolean containsKey(Identifier var1);
 
    boolean containsKey(ResourceKey<T> var1);
 
    static <T> T register(Registry<? super T> var0, String var1, T var2) {
-      return (T)register(var0, (ResourceLocation)ResourceLocation.parse(var1), var2);
+      return (T)register(var0, (Identifier)Identifier.parse(var1), var2);
    }
 
-   static <V, T extends V> T register(Registry<V> var0, ResourceLocation var1, T var2) {
+   static <V, T extends V> T register(Registry<V> var0, Identifier var1, T var2) {
       return (T)register(var0, (ResourceKey)ResourceKey.create(var0.key(), var1), var2);
    }
 
@@ -126,7 +123,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       return ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
    }
 
-   static <R, T extends R> Holder.Reference<T> registerForHolder(Registry<R> var0, ResourceLocation var1, T var2) {
+   static <R, T extends R> Holder.Reference<T> registerForHolder(Registry<R> var0, Identifier var1, T var2) {
       return registerForHolder(var0, ResourceKey.create(var0.key(), var1), var2);
    }
 
@@ -136,7 +133,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
 
    Optional<Holder.Reference<T>> get(int var1);
 
-   Optional<Holder.Reference<T>> get(ResourceLocation var1);
+   Optional<Holder.Reference<T>> get(Identifier var1);
 
    Holder<T> wrapAsHolder(T var1);
 
@@ -152,8 +149,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
             return Registry.this.getId(var1.value());
          }
 
-         @Nullable
-         public Holder<T> byId(int var1) {
+         public @Nullable Holder<T> byId(int var1) {
             return (Holder)Registry.this.get(var1).orElse((Object)null);
          }
 
@@ -166,8 +162,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
          }
 
          // $FF: synthetic method
-         @Nullable
-         public Object byId(final int var1) {
+         public @Nullable Object byId(final int var1) {
             return this.byId(var1);
          }
       };

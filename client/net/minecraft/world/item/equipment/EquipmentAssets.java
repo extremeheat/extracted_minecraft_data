@@ -1,14 +1,14 @@
 package net.minecraft.world.item.equipment;
 
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.DyeColor;
 
 public interface EquipmentAssets {
-   ResourceKey<? extends Registry<EquipmentAsset>> ROOT_ID = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace("equipment_asset"));
+   ResourceKey<? extends Registry<EquipmentAsset>> ROOT_ID = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("equipment_asset"));
    ResourceKey<EquipmentAsset> LEATHER = createId("leather");
    ResourceKey<EquipmentAsset> COPPER = createId("copper");
    ResourceKey<EquipmentAsset> CHAINMAIL = createId("chainmail");
@@ -25,6 +25,6 @@ public interface EquipmentAssets {
    Map<DyeColor, ResourceKey<EquipmentAsset>> HARNESSES = Util.<DyeColor, ResourceKey<EquipmentAsset>>makeEnumMap(DyeColor.class, (var0) -> createId(var0.getSerializedName() + "_harness"));
 
    static ResourceKey<EquipmentAsset> createId(String var0) {
-      return ResourceKey.create(ROOT_ID, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(ROOT_ID, Identifier.withDefaultNamespace(var0));
    }
 }

@@ -11,16 +11,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.SelectableEntry;
 import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -33,29 +32,32 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerSelectionList extends ObjectSelectionList<Entry> {
-   static final ResourceLocation INCOMPATIBLE_SPRITE = ResourceLocation.withDefaultNamespace("server_list/incompatible");
-   static final ResourceLocation UNREACHABLE_SPRITE = ResourceLocation.withDefaultNamespace("server_list/unreachable");
-   static final ResourceLocation PING_1_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_1");
-   static final ResourceLocation PING_2_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_2");
-   static final ResourceLocation PING_3_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_3");
-   static final ResourceLocation PING_4_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_4");
-   static final ResourceLocation PING_5_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_5");
-   static final ResourceLocation PINGING_1_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_1");
-   static final ResourceLocation PINGING_2_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_2");
-   static final ResourceLocation PINGING_3_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_3");
-   static final ResourceLocation PINGING_4_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_4");
-   static final ResourceLocation PINGING_5_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_5");
-   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("server_list/join_highlighted");
-   static final ResourceLocation JOIN_SPRITE = ResourceLocation.withDefaultNamespace("server_list/join");
-   static final ResourceLocation MOVE_UP_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_up_highlighted");
-   static final ResourceLocation MOVE_UP_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_up");
-   static final ResourceLocation MOVE_DOWN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_down_highlighted");
-   static final ResourceLocation MOVE_DOWN_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_down");
+   static final Identifier INCOMPATIBLE_SPRITE = Identifier.withDefaultNamespace("server_list/incompatible");
+   static final Identifier UNREACHABLE_SPRITE = Identifier.withDefaultNamespace("server_list/unreachable");
+   static final Identifier PING_1_SPRITE = Identifier.withDefaultNamespace("server_list/ping_1");
+   static final Identifier PING_2_SPRITE = Identifier.withDefaultNamespace("server_list/ping_2");
+   static final Identifier PING_3_SPRITE = Identifier.withDefaultNamespace("server_list/ping_3");
+   static final Identifier PING_4_SPRITE = Identifier.withDefaultNamespace("server_list/ping_4");
+   static final Identifier PING_5_SPRITE = Identifier.withDefaultNamespace("server_list/ping_5");
+   static final Identifier PINGING_1_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_1");
+   static final Identifier PINGING_2_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_2");
+   static final Identifier PINGING_3_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_3");
+   static final Identifier PINGING_4_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_4");
+   static final Identifier PINGING_5_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_5");
+   static final Identifier JOIN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("server_list/join_highlighted");
+   static final Identifier JOIN_SPRITE = Identifier.withDefaultNamespace("server_list/join");
+   static final Identifier MOVE_UP_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("server_list/move_up_highlighted");
+   static final Identifier MOVE_UP_SPRITE = Identifier.withDefaultNamespace("server_list/move_up");
+   static final Identifier MOVE_DOWN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("server_list/move_down_highlighted");
+   static final Identifier MOVE_DOWN_SPRITE = Identifier.withDefaultNamespace("server_list/move_down");
    static final Logger LOGGER = LogUtils.getLogger();
    static final ThreadPoolExecutor THREAD_POOL;
    static final Component SCANNING_LABEL;
@@ -255,9 +257,8 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
    }
 
-   public class OnlineServerEntry extends Entry {
-      private static final int ICON_WIDTH = 32;
-      private static final int ICON_HEIGHT = 32;
+   public class OnlineServerEntry extends Entry implements SelectableEntry {
+      private static final int ICON_SIZE = 32;
       private static final int SPACING = 5;
       private static final int STATUS_ICON_WIDTH = 10;
       private static final int STATUS_ICON_HEIGHT = 8;
@@ -265,14 +266,10 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final Minecraft minecraft;
       private final ServerData serverData;
       private final FaviconTexture icon;
-      @Nullable
-      private byte[] lastIconBytes;
-      @Nullable
-      private List<Component> onlinePlayersTooltip;
-      @Nullable
-      private ResourceLocation statusIcon;
-      @Nullable
-      private Component statusIconTooltip;
+      private byte @Nullable [] lastIconBytes;
+      private @Nullable List<Component> onlinePlayersTooltip;
+      private @Nullable Identifier statusIcon;
+      private @Nullable Component statusIconTooltip;
 
       protected OnlineServerEntry(final JoinMultiplayerScreen var2, final ServerData var3) {
          super();
@@ -293,7 +290,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
                   this.screen.getPinger().pingServer(this.serverData, () -> this.minecraft.execute(this::updateServerList), () -> {
                      this.serverData.setState(this.serverData.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE);
                      this.minecraft.execute(this::refreshStatus);
-                  });
+                  }, EventLoopGroupHolder.remote(this.minecraft.options.useNativeTransport()));
                } catch (UnknownHostException var2) {
                   this.serverData.setState(ServerData.State.UNREACHABLE);
                   this.serverData.motd = ServerSelectionList.CANT_RESOLVE_TEXT;
@@ -327,7 +324,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
                var8 = 8 - var8;
             }
 
-            ResourceLocation var17;
+            Identifier var17;
             switch (var8) {
                case 1 -> var17 = ServerSelectionList.PINGING_2_SPRITE;
                case 2 -> var17 = ServerSelectionList.PINGING_3_SPRITE;
@@ -341,7 +338,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
          int var16 = this.getContentRight() - 10 - 5;
          if (this.statusIcon != null) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var16, this.getContentY(), 10, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.statusIcon, var16, this.getContentY(), 10, 8);
          }
 
          byte[] var9 = this.serverData.getIconBytes();
@@ -372,27 +369,28 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             var1.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
             int var13 = var2 - this.getContentX();
             int var14 = var3 - this.getContentY();
-            if (this.canJoin()) {
-               if (var13 < 32 && var13 > 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
-               } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
-               }
+            if (this.mouseOverRightHalf(var13, var14, 32)) {
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               ServerSelectionList.this.handleCursor(var1);
+            } else {
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
             }
 
             if (var15 > 0) {
-               if (var13 < 16 && var14 < 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               if (this.mouseOverTopLeftQuarter(var13, var14, 32)) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  ServerSelectionList.this.handleCursor(var1);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
 
             if (var15 < this.screen.getServers().size() - 1) {
-               if (var13 < 16 && var14 > 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               if (this.mouseOverBottomLeftQuarter(var13, var14, 32)) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  ServerSelectionList.this.handleCursor(var1);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
          }
@@ -439,15 +437,11 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.screen.getServers().save();
       }
 
-      protected void drawIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
+      protected void drawIcon(GuiGraphics var1, int var2, int var3, Identifier var4) {
          var1.blit(RenderPipelines.GUI_TEXTURED, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 
-      private boolean canJoin() {
-         return true;
-      }
-
-      private boolean uploadServerIcon(@Nullable byte[] var1) {
+      private boolean uploadServerIcon(byte @Nullable [] var1) {
          if (var1 == null) {
             this.icon.clear();
          } else {
@@ -494,31 +488,27 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-         double var3 = var1.x() - (double)this.getX();
-         double var5 = var1.y() - (double)this.getY();
-         if (var3 <= 32.0) {
-            if (var3 < 32.0 && var3 > 16.0 && this.canJoin()) {
-               this.join();
-               return true;
-            }
-
-            int var7 = this.screen.serverSelectionList.children().indexOf(this);
-            if (var3 < 16.0 && var5 < 16.0 && var7 > 0) {
-               this.swap(var7, var7 - 1);
-               return true;
-            }
-
-            if (var3 < 16.0 && var5 > 16.0 && var7 < this.screen.getServers().size() - 1) {
-               this.swap(var7, var7 + 1);
-               return true;
-            }
-         }
-
-         if (var2) {
+         int var3 = (int)var1.x() - this.getContentX();
+         int var4 = (int)var1.y() - this.getContentY();
+         if (this.mouseOverRightHalf(var3, var4, 32)) {
             this.join();
-         }
+            return true;
+         } else {
+            int var5 = this.screen.serverSelectionList.children().indexOf(this);
+            if (var5 > 0 && this.mouseOverTopLeftQuarter(var3, var4, 32)) {
+               this.swap(var5, var5 - 1);
+               return true;
+            } else if (var5 < this.screen.getServers().size() - 1 && this.mouseOverBottomLeftQuarter(var3, var4, 32)) {
+               this.swap(var5, var5 + 1);
+               return true;
+            } else {
+               if (var2) {
+                  this.join();
+               }
 
-         return super.mouseClicked(var1, var2);
+               return super.mouseClicked(var1, var2);
+            }
+         }
       }
 
       public ServerData getServerData() {

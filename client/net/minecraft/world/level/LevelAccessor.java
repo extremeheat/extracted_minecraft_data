@@ -1,6 +1,5 @@
 package net.minecraft.world.level;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -12,7 +11,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,28 +21,26 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
+import org.jspecify.annotations.Nullable;
 
-public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, ScheduledTickAccess {
-   default long dayTime() {
-      return this.getLevelData().getDayTime();
-   }
-
+public interface LevelAccessor extends CommonLevelAccessor, LevelReader, ScheduledTickAccess {
    long nextSubTickCount();
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
-      return new ScheduledTick<T>(var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
+      return new ScheduledTick<T>(var2, var1, this.getGameTime() + (long)var3, var4, this.nextSubTickCount());
    }
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
-      return new ScheduledTick<T>(var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
+      return new ScheduledTick<T>(var2, var1, this.getGameTime() + (long)var3, this.nextSubTickCount());
    }
 
    LevelData getLevelData();
 
-   DifficultyInstance getCurrentDifficultyAt(BlockPos var1);
+   default long getGameTime() {
+      return this.getLevelData().getGameTime();
+   }
 
-   @Nullable
-   MinecraftServer getServer();
+   @Nullable MinecraftServer getServer();
 
    default Difficulty getDifficulty() {
       return this.getLevelData().getDifficulty();
@@ -61,7 +57,7 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
    default void updateNeighborsAt(BlockPos var1, Block var2) {
    }
 
-   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this, var1, var2, var3, var4, var5, var6 - 1);
    }
 

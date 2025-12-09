@@ -2,15 +2,14 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
-import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.EnchantTableRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
@@ -19,9 +18,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity, EnchantTableRenderState> {
-   public static final Material BOOK_LOCATION;
+   public static final Material BOOK_TEXTURE;
    private final MaterialSet materials;
    private final BookModel bookModel;
 
@@ -35,7 +35,7 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       return new EnchantTableRenderState();
    }
 
-   public void extractRenderState(EnchantingTableBlockEntity var1, EnchantTableRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(EnchantingTableBlockEntity var1, EnchantTableRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.flip = Mth.lerp(var3, var1.oFlip, var1.flip);
       var2.open = Mth.lerp(var3, var1.oOpen, var1.open);
@@ -55,14 +55,14 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
    public void submit(EnchantTableRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.5F, 0.75F, 0.5F);
-      var2.translate(0.0F, 0.1F + Mth.sin(var1.time * 0.1F) * 0.01F, 0.0F);
+      var2.translate(0.0F, 0.1F + Mth.sin((double)(var1.time * 0.1F)) * 0.01F, 0.0F);
       float var5 = var1.yRot;
       var2.mulPose((Quaternionfc)Axis.YP.rotation(-var5));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));
       float var6 = Mth.frac(var1.flip + 0.25F) * 1.6F - 0.3F;
       float var7 = Mth.frac(var1.flip + 0.75F) * 1.6F - 0.3F;
       BookModel.State var8 = new BookModel.State(var1.time, Mth.clamp(var6, 0.0F, 1.0F), Mth.clamp(var7, 0.0F, 1.0F), var1.open);
-      var3.submitModel(this.bookModel, var8, var2, BOOK_LOCATION.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_LOCATION), 0, var1.breakProgress);
+      var3.submitModel(this.bookModel, var8, var2, BOOK_TEXTURE.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_TEXTURE), 0, var1.breakProgress);
       var2.popPose();
    }
 
@@ -72,6 +72,6 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
    }
 
    static {
-      BOOK_LOCATION = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("enchanting_table_book");
+      BOOK_TEXTURE = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("enchanting_table_book");
    }
 }

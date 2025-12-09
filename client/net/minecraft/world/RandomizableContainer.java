@@ -1,6 +1,5 @@
 package net.minecraft.world;
 
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -18,13 +17,13 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public interface RandomizableContainer extends Container {
    String LOOT_TABLE_TAG = "LootTable";
    String LOOT_TABLE_SEED_TAG = "LootTableSeed";
 
-   @Nullable
-   ResourceKey<LootTable> getLootTable();
+   @Nullable ResourceKey<LootTable> getLootTable();
 
    void setLootTable(@Nullable ResourceKey<LootTable> var1);
 
@@ -39,8 +38,7 @@ public interface RandomizableContainer extends Container {
 
    BlockPos getBlockPos();
 
-   @Nullable
-   Level getLevel();
+   @Nullable Level getLevel();
 
    static void setBlockEntityLootTable(BlockGetter var0, RandomSource var1, BlockPos var2, ResourceKey<LootTable> var3) {
       BlockEntity var4 = var0.getBlockEntity(var2);

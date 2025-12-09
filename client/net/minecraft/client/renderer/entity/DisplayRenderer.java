@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BlockDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
@@ -19,6 +18,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -124,8 +124,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       var2.entityYRot = entityYRot(var1, var3);
       var2.entityXRot = entityXRot(var1, var3);
       Camera var4 = this.entityRenderDispatcher.camera;
-      var2.cameraXRot = var4.getXRot();
-      var2.cameraYRot = var4.getYRot();
+      var2.cameraXRot = var4.xRot();
+      var2.cameraYRot = var4.yRot();
    }
 
    // $FF: synthetic method
@@ -293,7 +293,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          int var20 = var16.lines().size() * var18 - 1;
          var15.translate(1.0F - (float)var19 / 2.0F, (float)(-var20), 0.0F);
          if (var13 != 0) {
-            var3.submitCustomGeometry(var2, var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground(), (var4x, var5x) -> {
+            var3.submitCustomGeometry(var2, var8 ? RenderTypes.textBackgroundSeeThrough() : RenderTypes.textBackground(), (var4x, var5x) -> {
                var5x.addVertex(var4x, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var4);
                var5x.addVertex(var4x, -1.0F, (float)var20, 0.0F).setColor(var13).setLight(var4);
                var5x.addVertex(var4x, (float)var19, (float)var20, 0.0F).setColor(var13).setLight(var4);

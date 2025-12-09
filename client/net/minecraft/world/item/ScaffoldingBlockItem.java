@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,14 +11,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ScaffoldingBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class ScaffoldingBlockItem extends BlockItem {
    public ScaffoldingBlockItem(Block var1, Item.Properties var2) {
       super(var1, var2);
    }
 
-   @Nullable
-   public BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
+   public @Nullable BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
       BlockState var4 = var3.getBlockState(var2);

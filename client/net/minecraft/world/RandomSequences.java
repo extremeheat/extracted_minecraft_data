@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.levelgen.PositionalRandomFactory;
@@ -14,46 +14,40 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
 public class RandomSequences extends SavedData {
+   public static final Codec<RandomSequences> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("salt").forGetter(RandomSequences::salt), Codec.BOOL.optionalFieldOf("include_world_seed", true).forGetter(RandomSequences::includeWorldSeed), Codec.BOOL.optionalFieldOf("include_sequence_id", true).forGetter(RandomSequences::includeSequenceId), Codec.unboundedMap(Identifier.CODEC, RandomSequence.CODEC).fieldOf("sequences").forGetter((var0x) -> var0x.sequences)).apply(var0, RandomSequences::new));
    public static final SavedDataType<RandomSequences> TYPE;
-   private final long worldSeed;
    private int salt;
    private boolean includeWorldSeed = true;
    private boolean includeSequenceId = true;
-   private final Map<ResourceLocation, RandomSequence> sequences = new Object2ObjectOpenHashMap();
+   private final Map<Identifier, RandomSequence> sequences = new Object2ObjectOpenHashMap();
 
-   public RandomSequences(long var1) {
+   public RandomSequences() {
       super();
-      this.worldSeed = var1;
    }
 
-   private RandomSequences(long var1, int var3, boolean var4, boolean var5, Map<ResourceLocation, RandomSequence> var6) {
+   private RandomSequences(int var1, boolean var2, boolean var3, Map<Identifier, RandomSequence> var4) {
       super();
-      this.worldSeed = var1;
-      this.salt = var3;
-      this.includeWorldSeed = var4;
-      this.includeSequenceId = var5;
-      this.sequences.putAll(var6);
+      this.salt = var1;
+      this.includeWorldSeed = var2;
+      this.includeSequenceId = var3;
+      this.sequences.putAll(var4);
    }
 
-   public static Codec<RandomSequences> codec(long var0) {
-      return RecordCodecBuilder.create((var2) -> var2.group(RecordCodecBuilder.point(var0), Codec.INT.fieldOf("salt").forGetter((var0x) -> var0x.salt), Codec.BOOL.optionalFieldOf("include_world_seed", true).forGetter((var0x) -> var0x.includeWorldSeed), Codec.BOOL.optionalFieldOf("include_sequence_id", true).forGetter((var0x) -> var0x.includeSequenceId), Codec.unboundedMap(ResourceLocation.CODEC, RandomSequence.CODEC).fieldOf("sequences").forGetter((var0x) -> var0x.sequences)).apply(var2, RandomSequences::new));
+   public RandomSource get(Identifier var1, long var2) {
+      RandomSource var4 = ((RandomSequence)this.sequences.computeIfAbsent(var1, (var3) -> this.createSequence(var3, var2))).random();
+      return new DirtyMarkingRandomSource(var4);
    }
 
-   public RandomSource get(ResourceLocation var1) {
-      RandomSource var2 = ((RandomSequence)this.sequences.computeIfAbsent(var1, this::createSequence)).random();
-      return new DirtyMarkingRandomSource(var2);
+   private RandomSequence createSequence(Identifier var1, long var2) {
+      return this.createSequence(var1, var2, this.salt, this.includeWorldSeed, this.includeSequenceId);
    }
 
-   private RandomSequence createSequence(ResourceLocation var1) {
-      return this.createSequence(var1, this.salt, this.includeWorldSeed, this.includeSequenceId);
+   private RandomSequence createSequence(Identifier var1, long var2, int var4, boolean var5, boolean var6) {
+      long var7 = (var5 ? var2 : 0L) ^ (long)var4;
+      return new RandomSequence(var7, var6 ? Optional.of(var1) : Optional.empty());
    }
 
-   private RandomSequence createSequence(ResourceLocation var1, int var2, boolean var3, boolean var4) {
-      long var5 = (var3 ? this.worldSeed : 0L) ^ (long)var2;
-      return new RandomSequence(var5, var4 ? Optional.of(var1) : Optional.empty());
-   }
-
-   public void forAllSequences(BiConsumer<ResourceLocation, RandomSequence> var1) {
+   public void forAllSequences(BiConsumer<Identifier, RandomSequence> var1) {
       this.sequences.forEach(var1);
    }
 
@@ -69,16 +63,28 @@ public class RandomSequences extends SavedData {
       return var1;
    }
 
-   public void reset(ResourceLocation var1) {
-      this.sequences.put(var1, this.createSequence(var1));
+   public void reset(Identifier var1, long var2) {
+      this.sequences.put(var1, this.createSequence(var1, var2));
    }
 
-   public void reset(ResourceLocation var1, int var2, boolean var3, boolean var4) {
-      this.sequences.put(var1, this.createSequence(var1, var2, var3, var4));
+   public void reset(Identifier var1, long var2, int var4, boolean var5, boolean var6) {
+      this.sequences.put(var1, this.createSequence(var1, var2, var4, var5, var6));
+   }
+
+   private int salt() {
+      return this.salt;
+   }
+
+   private boolean includeWorldSeed() {
+      return this.includeWorldSeed;
+   }
+
+   private boolean includeSequenceId() {
+      return this.includeSequenceId;
    }
 
    static {
-      TYPE = new SavedDataType<RandomSequences>("random_sequences", (var0) -> new RandomSequences(var0.worldSeed()), (var0) -> codec(var0.worldSeed()), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
+      TYPE = new SavedDataType<RandomSequences>("random_sequences", RandomSequences::new, CODEC, DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
    }
 
    class DirtyMarkingRandomSource implements RandomSource {

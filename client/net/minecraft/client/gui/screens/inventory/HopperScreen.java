@@ -3,12 +3,12 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.HopperMenu;
 
 public class HopperScreen extends AbstractContainerScreen<HopperMenu> {
-   private static final ResourceLocation HOPPER_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/hopper.png");
+   private static final Identifier HOPPER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/hopper.png");
 
    public HopperScreen(HopperMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);

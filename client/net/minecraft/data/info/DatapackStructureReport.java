@@ -15,9 +15,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 
 public class DatapackStructureReport implements DataProvider {
@@ -48,7 +48,7 @@ public class DatapackStructureReport implements DataProvider {
    private void putIfNotPresent(Map<ResourceKey<? extends Registry<?>>, Entry> var1, ResourceKey<? extends Registry<?>> var2, Entry var3) {
       Entry var4 = (Entry)var1.putIfAbsent(var2, var3);
       if (var4 != null) {
-         throw new IllegalStateException("Duplicate entry for key " + String.valueOf(var2.location()));
+         throw new IllegalStateException("Duplicate entry for key " + String.valueOf(var2.identifier()));
       }
    }
 
@@ -64,7 +64,7 @@ public class DatapackStructureReport implements DataProvider {
    static {
       MANUAL_ENTRIES = Map.of(Registries.RECIPE, PSEUDO_REGISTRY, Registries.ADVANCEMENT, PSEUDO_REGISTRY, Registries.LOOT_TABLE, STABLE_DYNAMIC_REGISTRY, Registries.ITEM_MODIFIER, STABLE_DYNAMIC_REGISTRY, Registries.PREDICATE, STABLE_DYNAMIC_REGISTRY);
       NON_REGISTRY_ENTRIES = Map.of("structure", new CustomPackEntry(DatapackStructureReport.Format.STRUCTURE, new Entry(true, false, true)), "function", new CustomPackEntry(DatapackStructureReport.Format.MCFUNCTION, new Entry(true, true, true)));
-      REGISTRY_KEY_CODEC = ResourceLocation.CODEC.xmap(ResourceKey::createRegistryKey, ResourceKey::location);
+      REGISTRY_KEY_CODEC = Identifier.CODEC.xmap(ResourceKey::createRegistryKey, ResourceKey::identifier);
    }
 
    static record Report(Map<ResourceKey<? extends Registry<?>>, Entry> registries, Map<String, CustomPackEntry> others) {

@@ -1,10 +1,10 @@
 package net.minecraft.world.scores;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
+import org.jspecify.annotations.Nullable;
 
 public record PlayerScoreEntry(String owner, int value, @Nullable Component display, @Nullable NumberFormat numberFormatOverride) {
    public PlayerScoreEntry(String var1, int var2, @Nullable Component var3, @Nullable NumberFormat var4) {

@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -32,6 +31,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.biome.Biome;
@@ -55,7 +55,7 @@ public class LocateCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("locate").requires(Commands.hasPermission(2))).then(Commands.literal("structure").then(Commands.argument("structure", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.STRUCTURE)).executes((var0x) -> locateStructure((CommandSourceStack)var0x.getSource(), ResourceOrTagKeyArgument.getResourceOrTagKey(var0x, "structure", Registries.STRUCTURE, ERROR_STRUCTURE_INVALID)))))).then(Commands.literal("biome").then(Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var1, Registries.BIOME)).executes((var0x) -> locateBiome((CommandSourceStack)var0x.getSource(), ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)))))).then(Commands.literal("poi").then(Commands.argument("poi", ResourceOrTagArgument.resourceOrTag(var1, Registries.POINT_OF_INTEREST_TYPE)).executes((var0x) -> locatePoi((CommandSourceStack)var0x.getSource(), ResourceOrTagArgument.getResourceOrTag(var0x, "poi", Registries.POINT_OF_INTEREST_TYPE))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("locate").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("structure").then(Commands.argument("structure", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.STRUCTURE)).executes((var0x) -> locateStructure((CommandSourceStack)var0x.getSource(), ResourceOrTagKeyArgument.getResourceOrTagKey(var0x, "structure", Registries.STRUCTURE, ERROR_STRUCTURE_INVALID)))))).then(Commands.literal("biome").then(Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var1, Registries.BIOME)).executes((var0x) -> locateBiome((CommandSourceStack)var0x.getSource(), ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)))))).then(Commands.literal("poi").then(Commands.argument("poi", ResourceOrTagArgument.resourceOrTag(var1, Registries.POINT_OF_INTEREST_TYPE)).executes((var0x) -> locatePoi((CommandSourceStack)var0x.getSource(), ResourceOrTagArgument.getResourceOrTag(var0x, "poi", Registries.POINT_OF_INTEREST_TYPE))))));
    }
 
    private static Optional<? extends HolderSet.ListBacked<Structure>> getHolders(ResourceOrTagKeyArgument.Result<Structure> var0, Registry<Structure> var1) {
@@ -114,7 +114,7 @@ public class LocateCommand {
    }
 
    public static int showLocateResult(CommandSourceStack var0, ResourceOrTagKeyArgument.Result<?> var1, BlockPos var2, Pair<BlockPos, ? extends Holder<?>> var3, String var4, boolean var5, Duration var6) {
-      String var7 = (String)var1.unwrap().map((var0x) -> var0x.location().toString(), (var1x) -> {
+      String var7 = (String)var1.unwrap().map((var0x) -> var0x.identifier().toString(), (var1x) -> {
          String var10000 = String.valueOf(var1x.location());
          return "#" + var10000 + " (" + ((Holder)var3.getSecond()).getRegisteredName() + ")";
       });

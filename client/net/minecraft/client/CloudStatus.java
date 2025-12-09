@@ -1,35 +1,29 @@
 package net.minecraft.client;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.util.OptionEnum;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
-public enum CloudStatus implements OptionEnum, StringRepresentable {
-   OFF(0, "false", "options.off"),
-   FAST(1, "fast", "options.clouds.fast"),
-   FANCY(2, "true", "options.clouds.fancy");
+public enum CloudStatus implements StringRepresentable {
+   OFF("false", "options.off"),
+   FAST("fast", "options.clouds.fast"),
+   FANCY("true", "options.clouds.fancy");
 
    public static final Codec<CloudStatus> CODEC = StringRepresentable.<CloudStatus>fromEnum(CloudStatus::values);
-   private final int id;
    private final String legacyName;
-   private final String key;
+   private final Component caption;
 
-   private CloudStatus(final int var3, final String var4, final String var5) {
-      this.id = var3;
-      this.legacyName = var4;
-      this.key = var5;
+   private CloudStatus(final String var3, final String var4) {
+      this.legacyName = var3;
+      this.caption = Component.translatable(var4);
+   }
+
+   public Component caption() {
+      return this.caption;
    }
 
    public String getSerializedName() {
       return this.legacyName;
-   }
-
-   public int getId() {
-      return this.id;
-   }
-
-   public String getKey() {
-      return this.key;
    }
 
    // $FF: synthetic method

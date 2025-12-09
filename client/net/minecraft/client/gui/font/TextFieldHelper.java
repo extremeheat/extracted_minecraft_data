@@ -4,12 +4,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 
 public class TextFieldHelper {
    private final Supplier<String> getMessageFn;
@@ -68,7 +68,7 @@ public class TextFieldHelper {
          this.cut();
          return true;
       } else {
-         CursorStep var2 = var1.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
+         CursorStep var2 = var1.hasControlDownWithQuirk() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
          if (var1.key() == 259) {
             this.removeFromCursor(-1, var2);
             return true;

@@ -12,6 +12,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -54,7 +55,7 @@ public interface LevelData {
       }
 
       public static RespawnData of(ResourceKey<Level> var0, BlockPos var1, float var2, float var3) {
-         return new RespawnData(GlobalPos.of(var0, var1.immutable()), var2, var3);
+         return new RespawnData(GlobalPos.of(var0, var1.immutable()), Mth.wrapDegrees(var2), Mth.clamp(var3, -90.0F, 90.0F));
       }
 
       public ResourceKey<Level> dimension() {

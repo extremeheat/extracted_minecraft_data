@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
@@ -23,23 +22,22 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogAction;
 import net.minecraft.server.dialog.Input;
 import net.minecraft.server.dialog.body.DialogBody;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public abstract class DialogScreen<T extends Dialog> extends Screen {
    public static final Component DISCONNECT = Component.translatable("menu.custom_screen_info.disconnect");
    private static final int WARNING_BUTTON_SIZE = 20;
-   private static final WidgetSprites WARNING_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("dialog/warning_button"), ResourceLocation.withDefaultNamespace("dialog/warning_button_disabled"), ResourceLocation.withDefaultNamespace("dialog/warning_button_highlighted"));
+   private static final WidgetSprites WARNING_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("dialog/warning_button"), Identifier.withDefaultNamespace("dialog/warning_button_disabled"), Identifier.withDefaultNamespace("dialog/warning_button_highlighted"));
    private final T dialog;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-   @Nullable
-   private final Screen previousScreen;
-   @Nullable
-   private ScrollableLayout bodyScroll;
+   private final @Nullable Screen previousScreen;
+   private @Nullable ScrollableLayout bodyScroll;
    private Button warningButton;
    private final DialogConnectionAccess connectionAccess;
    private Supplier<Optional<ClickEvent>> onClose;
@@ -194,8 +192,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
 
    }
 
-   @Nullable
-   public Screen previousScreen() {
+   public @Nullable Screen previousScreen() {
       return this.previousScreen;
    }
 
@@ -226,7 +223,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    }
 
    public static class WarningScreen extends ConfirmScreen {
-      private final MutableObject<Screen> returnScreen;
+      private final MutableObject<@Nullable Screen> returnScreen;
 
       public static Screen create(Minecraft var0, DialogConnectionAccess var1, Screen var2) {
          return new WarningScreen(var0, var1, new MutableObject(var2));
@@ -237,16 +234,15 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
             if (var3x) {
                var2.disconnect(DialogScreen.DISCONNECT);
             } else {
-               var1.setScreen((Screen)var3.getValue());
+               var1.setScreen((Screen)var3.get());
             }
 
          }, Component.translatable("menu.custom_screen_info.title"), Component.translatable("menu.custom_screen_info.contents"), CommonComponents.disconnectButtonLabel(var1.isLocalServer()), CommonComponents.GUI_BACK);
          this.returnScreen = var3;
       }
 
-      @Nullable
-      public Screen returnScreen() {
-         return (Screen)this.returnScreen.getValue();
+      public @Nullable Screen returnScreen() {
+         return (Screen)this.returnScreen.get();
       }
 
       public void updateReturnScreen(@Nullable Screen var1) {

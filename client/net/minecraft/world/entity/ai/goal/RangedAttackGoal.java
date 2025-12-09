@@ -1,18 +1,17 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.RangedAttackMob;
+import org.jspecify.annotations.Nullable;
 
 public class RangedAttackGoal extends Goal {
    private final Mob mob;
    private final RangedAttackMob rangedAttackMob;
-   @Nullable
-   private LivingEntity target;
+   private @Nullable LivingEntity target;
    private int attackTime;
    private final double speedModifier;
    private int seeTime;

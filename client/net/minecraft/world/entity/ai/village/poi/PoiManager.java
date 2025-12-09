@@ -17,8 +17,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -27,6 +25,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.SectionTracker;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.debug.DebugPoiInfo;
@@ -40,6 +39,7 @@ import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SectionStorage;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
+import org.jspecify.annotations.Nullable;
 
 public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    public static final int MAX_VILLAGE_DISTANCE = 6;
@@ -51,8 +51,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
       super(new SimpleRegionStorage(var1, var2, var3, var4, DataFixTypes.POI_CHUNK), PoiSection.Packed.CODEC, PoiSection::pack, PoiSection.Packed::unpack, PoiSection::new, var5, var6, var7);
    }
 
-   @Nullable
-   public PoiRecord add(BlockPos var1, Holder<PoiType> var2) {
+   public @Nullable PoiRecord add(BlockPos var1, Holder<PoiType> var2) {
       return ((PoiSection)this.getOrCreate(SectionPos.asLong(var1))).add(var1, var2);
    }
 
@@ -138,9 +137,8 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
       return this.getOrLoad(SectionPos.asLong(var1)).flatMap((var1x) -> var1x.getType(var1));
    }
 
-   @Nullable
    @VisibleForDebug
-   public DebugPoiInfo getDebugPoiInfo(BlockPos var1) {
+   public @Nullable DebugPoiInfo getDebugPoiInfo(BlockPos var1) {
       return (DebugPoiInfo)this.getOrLoad(SectionPos.asLong(var1)).flatMap((var1x) -> var1x.getDebugPoiInfo(var1)).orElse((Object)null);
    }
 

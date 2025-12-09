@@ -5,6 +5,9 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.EnumMap;
 import java.util.List;
@@ -14,37 +17,38 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 
-public record ChunkSectionsToRender(EnumMap<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> drawsPerLayer, int maxIndicesRequired, GpuBufferSlice[] dynamicTransforms) {
-   public ChunkSectionsToRender(EnumMap<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> var1, int var2, GpuBufferSlice[] var3) {
+public record ChunkSectionsToRender(GpuTextureView textureView, EnumMap<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> drawsPerLayer, int maxIndicesRequired, GpuBufferSlice[] chunkSectionInfos) {
+   public ChunkSectionsToRender(GpuTextureView var1, EnumMap<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> var2, int var3, GpuBufferSlice[] var4) {
       super();
-      this.drawsPerLayer = var1;
-      this.maxIndicesRequired = var2;
-      this.dynamicTransforms = var3;
+      this.textureView = var1;
+      this.drawsPerLayer = var2;
+      this.maxIndicesRequired = var3;
+      this.chunkSectionInfos = var4;
    }
 
-   public void renderGroup(ChunkSectionLayerGroup var1) {
-      RenderSystem.AutoStorageIndexBuffer var2 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      GpuBuffer var3 = this.maxIndicesRequired == 0 ? null : var2.getBuffer(this.maxIndicesRequired);
-      VertexFormat.IndexType var4 = this.maxIndicesRequired == 0 ? null : var2.type();
-      ChunkSectionLayer[] var5 = var1.layers();
-      Minecraft var6 = Minecraft.getInstance();
-      boolean var7 = SharedConstants.DEBUG_HOTKEYS && var6.wireframe;
-      RenderTarget var8 = var1.outputTarget();
+   public void renderGroup(ChunkSectionLayerGroup var1, GpuSampler var2) {
+      RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      GpuBuffer var4 = this.maxIndicesRequired == 0 ? null : var3.getBuffer(this.maxIndicesRequired);
+      VertexFormat.IndexType var5 = this.maxIndicesRequired == 0 ? null : var3.type();
+      ChunkSectionLayer[] var6 = var1.layers();
+      Minecraft var7 = Minecraft.getInstance();
+      boolean var8 = SharedConstants.DEBUG_HOTKEYS && var7.wireframe;
+      RenderTarget var9 = var1.outputTarget();
 
-      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var8.getColorTextureView(), OptionalInt.empty(), var8.getDepthTextureView(), OptionalDouble.empty())) {
-         RenderSystem.bindDefaultUniforms(var9);
-         var9.bindSampler("Sampler2", var6.gameRenderer.lightTexture().getTextureView());
+      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var9.getColorTextureView(), OptionalInt.empty(), var9.getDepthTextureView(), OptionalDouble.empty())) {
+         RenderSystem.bindDefaultUniforms(var10);
+         var10.bindTexture("Sampler2", var7.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
 
-         for(ChunkSectionLayer var13 : var5) {
-            List var14 = (List)this.drawsPerLayer.get(var13);
-            if (!var14.isEmpty()) {
-               if (var13 == ChunkSectionLayer.TRANSLUCENT) {
-                  var14 = var14.reversed();
+         for(ChunkSectionLayer var14 : var6) {
+            List var15 = (List)this.drawsPerLayer.get(var14);
+            if (!var15.isEmpty()) {
+               if (var14 == ChunkSectionLayer.TRANSLUCENT) {
+                  var15 = var15.reversed();
                }
 
-               var9.setPipeline(var7 ? RenderPipelines.WIREFRAME : var13.pipeline());
-               var9.bindSampler("Sampler0", var13.textureView());
-               var9.drawMultipleIndexed(var14, var3, var4, List.of("DynamicTransforms"), this.dynamicTransforms);
+               var10.setPipeline(var8 ? RenderPipelines.WIREFRAME : var14.pipeline());
+               var10.bindTexture("Sampler0", this.textureView, var2);
+               var10.drawMultipleIndexed(var15, var4, var5, List.of("ChunkSection"), this.chunkSectionInfos);
             }
          }
       }

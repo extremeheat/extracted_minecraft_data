@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.chunk;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -17,11 +16,11 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
+import org.jspecify.annotations.Nullable;
 
 class SectionCopy {
    private final Map<BlockPos, BlockEntity> blockEntities;
-   @Nullable
-   private final PalettedContainer<BlockState> section;
+   private final @Nullable PalettedContainer<BlockState> section;
    private final boolean debug;
    private final LevelHeightAccessor levelHeightAccessor;
 
@@ -44,8 +43,7 @@ class SectionCopy {
 
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       return (BlockEntity)this.blockEntities.get(var1);
    }
 

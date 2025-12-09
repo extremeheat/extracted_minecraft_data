@@ -21,6 +21,7 @@ import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.NameAndId;
 
 public class GameProfileArgument implements ArgumentType<Result> {
@@ -78,7 +79,7 @@ public class GameProfileArgument implements ArgumentType<Result> {
       if (var4 instanceof SharedSuggestionProvider var3) {
          StringReader var8 = new StringReader(var2.getInput());
          var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, EntitySelectorParser.allowSelectors(var3));
+         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
 
          try {
             var5.parse();

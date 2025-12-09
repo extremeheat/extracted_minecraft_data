@@ -8,10 +8,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ThreadingDetector {
@@ -19,10 +19,8 @@ public class ThreadingDetector {
    private final String name;
    private final Semaphore lock = new Semaphore(1);
    private final Lock stackTraceLock = new ReentrantLock();
-   @Nullable
-   private volatile Thread threadThatFailedToAcquire;
-   @Nullable
-   private volatile ReportedException fullException;
+   private volatile @Nullable Thread threadThatFailedToAcquire;
+   private volatile @Nullable ReportedException fullException;
 
    public ThreadingDetector(String var1) {
       super();

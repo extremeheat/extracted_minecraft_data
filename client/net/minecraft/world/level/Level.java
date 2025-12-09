@@ -12,7 +12,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -28,8 +27,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.sounds.SoundEvent;
@@ -41,14 +40,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.random.WeightedList;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
@@ -87,6 +88,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
@@ -97,7 +99,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final int LONG_PARTICLE_CLIP_RANGE = 512;
    public static final int SHORT_PARTICLE_CLIP_RANGE = 32;
    public static final int MAX_BRIGHTNESS = 15;
-   public static final int TICKS_PER_DAY = 24000;
    public static final int MAX_ENTITY_SPAWN_Y = 20000000;
    public static final int MIN_ENTITY_SPAWN_Y = -20000000;
    private static final WeightedList<ExplosionParticleInfo> DEFAULT_EXPLOSION_BLOCK_PARTICLES;
@@ -132,7 +133,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       super();
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      DimensionType var10 = (DimensionType)var4.value();
       this.dimension = var2;
       this.isClientSide = var5;
       this.thread = Thread.currentThread();
@@ -148,13 +148,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.isClientSide;
    }
 
-   @Nullable
-   public MinecraftServer getServer() {
+   public @Nullable MinecraftServer getServer() {
       return null;
    }
 
    public boolean isInWorldBounds(BlockPos var1) {
       return !this.isOutsideBuildHeight(var1) && isInWorldBoundsHorizontal(var1);
+   }
+
+   public boolean isInValidBounds(BlockPos var1) {
+      return !this.isOutsideBuildHeight(var1) && isInValidBoundsHorizontal(var1);
    }
 
    public static boolean isInSpawnableBounds(BlockPos var0) {
@@ -163,6 +166,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    private static boolean isInWorldBoundsHorizontal(BlockPos var0) {
       return var0.getX() >= -30000000 && var0.getZ() >= -30000000 && var0.getX() < 30000000 && var0.getZ() < 30000000;
+   }
+
+   private static boolean isInValidBoundsHorizontal(BlockPos var0) {
+      int var1 = SectionPos.blockToSectionCoord(var0.getX());
+      int var2 = SectionPos.blockToSectionCoord(var0.getZ());
+      return ChunkPos.isValid(var1, var2);
    }
 
    private static boolean isOutsideSpawnableHeight(int var0) {
@@ -177,8 +186,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return (LevelChunk)this.getChunk(var1, var2, ChunkStatus.FULL);
    }
 
-   @Nullable
-   public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       ChunkAccess var5 = this.getChunkSource().getChunk(var1, var2, var3, var4);
       if (var5 == null && var4) {
          throw new IllegalStateException("Should always be able to create a chunk!");
@@ -187,12 +195,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       return this.setBlock(var1, var2, var3, 512);
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
-      if (this.isOutsideBuildHeight(var1)) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
+      if (!this.isInValidBounds(var1)) {
          return false;
       } else if (!this.isClientSide() && this.isDebug()) {
          return false;
@@ -274,7 +282,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.setBlock(var1, var2, 3);
    }
 
-   public abstract void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, int var4);
+   public abstract void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, @Block.UpdateFlags int var4);
 
    public void setBlocksDirty(BlockPos var1, BlockState var2, BlockState var3) {
    }
@@ -291,7 +299,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
    }
 
-   public void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+   public void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
       this.neighborUpdater.shapeUpdate(var1, var4, var2, var3, var5, var6);
    }
 
@@ -315,7 +323,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public BlockState getBlockState(BlockPos var1) {
-      if (this.isOutsideBuildHeight(var1)) {
+      if (!this.isInValidBounds(var1)) {
          return Blocks.VOID_AIR.defaultBlockState();
       } else {
          LevelChunk var2 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
@@ -324,7 +332,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public FluidState getFluidState(BlockPos var1) {
-      if (this.isOutsideBuildHeight(var1)) {
+      if (!this.isInValidBounds(var1)) {
          return Fluids.EMPTY.defaultFluidState();
       } else {
          LevelChunk var2 = this.getChunkAt(var1);
@@ -338,15 +346,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public boolean isDarkOutside() {
       return !this.dimensionType().hasFixedTime() && !this.isBrightOutside();
-   }
-
-   public boolean isMoonVisible() {
-      if (!this.dimensionType().natural()) {
-         return false;
-      } else {
-         int var1 = (int)(this.getDayTime() % 24000L);
-         return var1 >= 12600 && var1 <= 23400;
-      }
    }
 
    public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
@@ -400,11 +399,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-   }
-
-   public float getSunAngle(float var1) {
-      float var2 = this.getTimeOfDay(var1);
-      return var2 * 6.2831855F;
    }
 
    public void addBlockEntityTicker(TickingBlockEntity var1) {
@@ -476,9 +470,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract String gatherChunkSourceStats();
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
-      if (this.isOutsideBuildHeight(var1)) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
+      if (!this.isInValidBounds(var1)) {
          return null;
       } else {
          return !this.isClientSide() && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
@@ -487,23 +480,23 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public void setBlockEntity(BlockEntity var1) {
       BlockPos var2 = var1.getBlockPos();
-      if (!this.isOutsideBuildHeight(var2)) {
+      if (this.isInValidBounds(var2)) {
          this.getChunkAt(var2).addAndRegisterBlockEntity(var1);
       }
    }
 
    public void removeBlockEntity(BlockPos var1) {
-      if (!this.isOutsideBuildHeight(var1)) {
+      if (this.isInValidBounds(var1)) {
          this.getChunkAt(var1).removeBlockEntity(var1);
       }
    }
 
    public boolean isLoaded(BlockPos var1) {
-      return this.isOutsideBuildHeight(var1) ? false : this.getChunkSource().hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
+      return !this.isInValidBounds(var1) ? false : this.getChunkSource().hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
    }
 
    public boolean loadedAndEntityCanStandOnFace(BlockPos var1, Entity var2, Direction var3) {
-      if (this.isOutsideBuildHeight(var1)) {
+      if (!this.isInValidBounds(var1)) {
          return false;
       } else {
          ChunkAccess var4 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ChunkStatus.FULL, false);
@@ -516,10 +509,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void updateSkyBrightness() {
-      double var1 = 1.0 - (double)(this.getRainLevel(1.0F) * 5.0F) / 16.0;
-      double var3 = 1.0 - (double)(this.getThunderLevel(1.0F) * 5.0F) / 16.0;
-      double var5 = 0.5 + 2.0 * Mth.clamp((double)Mth.cos(this.getTimeOfDay(1.0F) * 6.2831855F), -0.25, 0.25);
-      this.skyDarken = (int)((1.0 - var5 * var1 * var3) * 11.0);
+      this.skyDarken = (int)(15.0F - (Float)this.environmentAttributes().getDimensionValue(EnvironmentAttributes.SKY_LIGHT_LEVEL));
    }
 
    public void setSpawnSettings(boolean var1) {
@@ -554,8 +544,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.getChunkSource().close();
    }
 
-   @Nullable
-   public BlockGetter getChunkForCollisions(int var1, int var2) {
+   public @Nullable BlockGetter getChunkForCollisions(int var1, int var2) {
       return this.getChunk(var1, var2, ChunkStatus.FULL, false);
    }
 
@@ -644,21 +633,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.getEntities(var1, var2, EntitySelector.pushableBy(var1));
    }
 
-   @Nullable
-   public abstract Entity getEntity(int var1);
+   public abstract @Nullable Entity getEntity(int var1);
 
-   @Nullable
-   public Entity getEntity(UUID var1) {
+   public @Nullable Entity getEntity(UUID var1) {
       return (Entity)this.getEntities().get(var1);
    }
 
-   @Nullable
-   public Entity getEntityInAnyDimension(UUID var1) {
+   public @Nullable Entity getEntityInAnyDimension(UUID var1) {
       return this.getEntity(var1);
    }
 
-   @Nullable
-   public Player getPlayerInAnyDimension(UUID var1) {
+   public @Nullable Player getPlayerInAnyDimension(UUID var1) {
       return this.getPlayerByUUID(var1);
    }
 
@@ -672,10 +657,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void onBlockEntityAdded(BlockEntity var1) {
-   }
-
-   public long getGameTime() {
-      return this.levelData.getGameTime();
    }
 
    public long getDayTime() {
@@ -722,8 +703,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.rainLevel = var2;
    }
 
-   private boolean canHaveWeather() {
-      return this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling();
+   public boolean canHaveWeather() {
+      return this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling() && this.dimension() != END;
    }
 
    public boolean isThundering() {
@@ -751,8 +732,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   @Nullable
-   public abstract MapItemSavedData getMapData(MapId var1);
+   public abstract @Nullable MapItemSavedData getMapData(MapId var1);
 
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
    }
@@ -767,7 +747,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       ChunkSource var10002 = this.getChunkSource();
       Objects.requireNonNull(var10002);
       var2.setDetail("Chunk stats", var10002::gatherStats);
-      var2.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().location().toString()));
+      var2.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().identifier().toString()));
 
       try {
          this.levelData.fillCrashReportCategory(var2, this);
@@ -802,17 +782,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          }
       }
 
-   }
-
-   public DifficultyInstance getCurrentDifficultyAt(BlockPos var1) {
-      long var2 = 0L;
-      float var4 = 0.0F;
-      if (this.hasChunkAt(var1)) {
-         var4 = this.getMoonBrightness();
-         var2 = this.getChunkAt(var1).getInhabitedTime();
-      }
-
-      return new DifficultyInstance(this.getDifficulty(), this.getDayTime(), var2, var4);
    }
 
    public int getSkyDarken() {
@@ -884,6 +853,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.damageSources;
    }
 
+   public abstract EnvironmentAttributeSystem environmentAttributes();
+
    public abstract PotionBrewing potionBrewing();
 
    public abstract FuelValues fuelValues();
@@ -897,15 +868,20 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    // $FF: synthetic method
+   public EnvironmentAttributeReader environmentAttributes() {
+      return this.environmentAttributes();
+   }
+
+   // $FF: synthetic method
    public ChunkAccess getChunk(final int var1, final int var2) {
       return this.getChunk(var1, var2);
    }
 
    static {
       RESOURCE_KEY_CODEC = ResourceKey.codec(Registries.DIMENSION);
-      OVERWORLD = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("overworld"));
-      NETHER = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_nether"));
-      END = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_end"));
+      OVERWORLD = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("overworld"));
+      NETHER = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("the_nether"));
+      END = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("the_end"));
       DEFAULT_EXPLOSION_BLOCK_PARTICLES = WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build();
    }
 

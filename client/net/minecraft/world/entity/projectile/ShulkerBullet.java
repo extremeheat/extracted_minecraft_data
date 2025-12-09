@@ -3,7 +3,6 @@ package net.minecraft.world.entity.projectile;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
@@ -32,13 +31,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ShulkerBullet extends Projectile {
    private static final double SPEED = 0.15;
-   @Nullable
-   private EntityReference<Entity> finalTarget;
-   @Nullable
-   private Direction currentMoveDirection;
+   private @Nullable EntityReference<Entity> finalTarget;
+   private @Nullable Direction currentMoveDirection;
    private int flightSteps;
    private double targetDeltaX;
    private double targetDeltaY;
@@ -89,8 +87,7 @@ public class ShulkerBullet extends Projectile {
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
-   @Nullable
-   private Direction getMoveDirection() {
+   private @Nullable Direction getMoveDirection() {
       return this.currentMoveDirection;
    }
 
@@ -98,7 +95,7 @@ public class ShulkerBullet extends Projectile {
       this.currentMoveDirection = var1;
    }
 
-   private void selectNextMoveDirection(@Nullable Direction.Axis var1, @Nullable Entity var2) {
+   private void selectNextMoveDirection(Direction.@Nullable Axis var1, @Nullable Entity var2) {
       double var4 = 0.5;
       BlockPos var3;
       if (var2 == null) {
@@ -168,7 +165,7 @@ public class ShulkerBullet extends Projectile {
          this.targetDeltaZ = var17 / var19 * 0.15;
       }
 
-      this.hasImpulse = true;
+      this.needsSync = true;
       this.flightSteps = 10 + this.random.nextInt(5) * 10;
    }
 

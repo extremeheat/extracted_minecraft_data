@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,6 +34,7 @@ import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketListenerImpl implements ClientConfigurationPacketListener, TickablePacketListener {
@@ -45,10 +45,8 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    private FeatureFlagSet enabledFeatures;
    private final RegistryAccess.Frozen receivedRegistries;
    private final RegistryDataCollector registryDataCollector = new RegistryDataCollector();
-   @Nullable
-   private KnownPacksManager knownPacks;
-   @Nullable
-   protected ChatComponent.State chatState;
+   private @Nullable KnownPacksManager knownPacks;
+   protected ChatComponent.@Nullable State chatState;
    private boolean seenCodeOfConduct;
 
    public ClientConfigurationPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {

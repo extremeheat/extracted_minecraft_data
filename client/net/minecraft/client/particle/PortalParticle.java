@@ -26,7 +26,7 @@ public class PortalParticle extends SingleQuadParticle {
       this.rCol = var15 * 0.9F;
       this.gCol = var15 * 0.3F;
       this.bCol = var15;
-      this.lifetime = (int)(Math.random() * 10.0) + 40;
+      this.lifetime = (int)(this.random.nextFloat() * 10.0F) + 40;
    }
 
    public SingleQuadParticle.Layer getLayer() {

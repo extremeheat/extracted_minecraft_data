@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
@@ -15,7 +14,8 @@ import net.minecraft.client.gui.components.toasts.AdvancementToast;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientAdvancements {
@@ -24,10 +24,8 @@ public class ClientAdvancements {
    private final WorldSessionTelemetryManager telemetryManager;
    private final AdvancementTree tree = new AdvancementTree();
    private final Map<AdvancementHolder, AdvancementProgress> progress = new Object2ObjectOpenHashMap();
-   @Nullable
-   private Listener listener;
-   @Nullable
-   private AdvancementHolder selectedTab;
+   private @Nullable Listener listener;
+   private @Nullable AdvancementHolder selectedTab;
 
    public ClientAdvancements(Minecraft var1, WorldSessionTelemetryManager var2) {
       super();
@@ -45,7 +43,7 @@ public class ClientAdvancements {
       this.tree.addAll(var1.getAdded());
 
       for(Map.Entry var3 : var1.getProgress().entrySet()) {
-         AdvancementNode var4 = this.tree.get((ResourceLocation)var3.getKey());
+         AdvancementNode var4 = this.tree.get((Identifier)var3.getKey());
          if (var4 != null) {
             AdvancementProgress var5 = (AdvancementProgress)var3.getValue();
             var5.update(var4.advancement().requirements());
@@ -106,8 +104,7 @@ public class ClientAdvancements {
 
    }
 
-   @Nullable
-   public AdvancementHolder get(ResourceLocation var1) {
+   public @Nullable AdvancementHolder get(Identifier var1) {
       AdvancementNode var2 = this.tree.get(var1);
       return var2 != null ? var2.holder() : null;
    }

@@ -6,9 +6,10 @@ import java.util.List;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
+import org.jspecify.annotations.Nullable;
 
 public class PerlinSimplexNoise {
-   private final SimplexNoise[] noiseLevels;
+   private final @Nullable SimplexNoise[] noiseLevels;
    private final double highestFreqValueFactor;
    private final double highestFreqInputFactor;
 

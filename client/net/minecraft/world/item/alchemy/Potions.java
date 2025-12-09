@@ -3,7 +3,7 @@ package net.minecraft.world.item.alchemy;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 
@@ -60,7 +60,7 @@ public class Potions {
    }
 
    private static Holder<Potion> register(String var0, Potion var1) {
-      return Registry.registerForHolder(BuiltInRegistries.POTION, ResourceLocation.withDefaultNamespace(var0), var1);
+      return Registry.registerForHolder(BuiltInRegistries.POTION, Identifier.withDefaultNamespace(var0), var1);
    }
 
    public static Holder<Potion> bootstrap(Registry<Potion> var0) {

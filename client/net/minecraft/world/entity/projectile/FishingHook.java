@@ -3,8 +3,6 @@ package net.minecraft.world.entity.projectile;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collections;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -47,6 +45,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FishingHook extends Projectile {
@@ -63,8 +62,7 @@ public class FishingHook extends Projectile {
    private int timeUntilHooked;
    private float fishAngle;
    private boolean openWater;
-   @Nullable
-   private Entity hookedIn;
+   private @Nullable Entity hookedIn;
    private FishHookState currentState;
    private final int luck;
    private final int lureSpeed;
@@ -89,10 +87,10 @@ public class FishingHook extends Projectile {
       this.setOwner(var1);
       float var5 = var1.getXRot();
       float var6 = var1.getYRot();
-      float var7 = Mth.cos(-var6 * 0.017453292F - 3.1415927F);
-      float var8 = Mth.sin(-var6 * 0.017453292F - 3.1415927F);
-      float var9 = -Mth.cos(-var5 * 0.017453292F);
-      float var10 = Mth.sin(-var5 * 0.017453292F);
+      float var7 = Mth.cos((double)(-var6 * 0.017453292F - 3.1415927F));
+      float var8 = Mth.sin((double)(-var6 * 0.017453292F - 3.1415927F));
+      float var9 = -Mth.cos((double)(-var5 * 0.017453292F));
+      float var10 = Mth.sin((double)(-var5 * 0.017453292F));
       double var11 = var1.getX() - (double)var8 * 0.3;
       double var13 = var1.getEyeY();
       double var15 = var1.getZ() - (double)var7 * 0.3;
@@ -107,7 +105,6 @@ public class FishingHook extends Projectile {
       this.xRotO = this.getXRot();
    }
 
-   @Nonnull
    public InterpolationHandler getInterpolation() {
       return this.interpolationHandler;
    }
@@ -308,8 +305,8 @@ public class FishingHook extends Projectile {
          if (this.timeUntilHooked > 0) {
             this.fishAngle += (float)this.random.triangle(0.0, 9.188);
             float var5 = this.fishAngle * 0.017453292F;
-            float var6 = Mth.sin(var5);
-            float var7 = Mth.cos(var5);
+            float var6 = Mth.sin((double)var5);
+            float var7 = Mth.cos((double)var5);
             double var8 = this.getX() + (double)(var6 * (float)this.timeUntilHooked * 0.1F);
             double var10 = (double)((float)Mth.floor(this.getY()) + 1.0F);
             double var12 = this.getZ() + (double)(var7 * (float)this.timeUntilHooked * 0.1F);
@@ -346,9 +343,9 @@ public class FishingHook extends Projectile {
          if (this.random.nextFloat() < var18) {
             float var19 = Mth.nextFloat(this.random, 0.0F, 360.0F) * 0.017453292F;
             float var20 = Mth.nextFloat(this.random, 25.0F, 60.0F);
-            double var21 = this.getX() + (double)(Mth.sin(var19) * var20) * 0.1;
+            double var21 = this.getX() + (double)(Mth.sin((double)var19) * var20) * 0.1;
             double var22 = (double)((float)Mth.floor(this.getY()) + 1.0F);
-            double var23 = this.getZ() + (double)(Mth.cos(var19) * var20) * 0.1;
+            double var23 = this.getZ() + (double)(Mth.cos((double)var19) * var20) * 0.1;
             BlockState var24 = var2.getBlockState(BlockPos.containing(var21, var22 - 1.0, var23));
             if (var24.is(Blocks.WATER)) {
                var2.sendParticles(ParticleTypes.SPLASH, var21, var22, var23, 2 + this.random.nextInt(2), 0.10000000149011612, 0.0, 0.10000000149011612, 0.0);
@@ -507,8 +504,7 @@ public class FishingHook extends Projectile {
 
    }
 
-   @Nullable
-   public Player getPlayerOwner() {
+   public @Nullable Player getPlayerOwner() {
       Entity var1 = this.getOwner();
       Player var10000;
       if (var1 instanceof Player var2) {
@@ -520,8 +516,7 @@ public class FishingHook extends Projectile {
       return var10000;
    }
 
-   @Nullable
-   public Entity getHookedIn() {
+   public @Nullable Entity getHookedIn() {
       return this.hookedIn;
    }
 

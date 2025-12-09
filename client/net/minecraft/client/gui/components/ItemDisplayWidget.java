@@ -32,7 +32,7 @@ public class ItemDisplayWidget extends AbstractWidget {
       }
 
       if (this.isFocused()) {
-         var1.submitOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
+         var1.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
       }
 
       if (this.tooltip && this.isHoveredOrFocused()) {

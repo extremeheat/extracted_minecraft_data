@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui.screens;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
@@ -15,16 +14,17 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class AddRealmPopupScreen extends RealmsScreen {
    private static final Component POPUP_TEXT = Component.translatable("mco.selectServer.popup");
    private static final Component CLOSE_TEXT = Component.translatable("mco.selectServer.close");
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("popup/background");
-   private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = ResourceLocation.withDefaultNamespace("icon/trial_available");
-   private static final WidgetSprites CROSS_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/cross_button"), ResourceLocation.withDefaultNamespace("widget/cross_button_highlighted"));
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("popup/background");
+   private static final Identifier TRIAL_AVAILABLE_SPRITE = Identifier.withDefaultNamespace("icon/trial_available");
+   private static final WidgetSprites CROSS_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/cross_button"), Identifier.withDefaultNamespace("widget/cross_button_highlighted"));
    private static final int IMAGE_WIDTH = 195;
    private static final int IMAGE_HEIGHT = 152;
    private static final int BG_BORDER_SIZE = 6;
@@ -35,11 +35,10 @@ public class AddRealmPopupScreen extends RealmsScreen {
    private static final int TEXT_WIDTH = 100;
    private static final int BUTTON_WIDTH = 99;
    private static final int CAROUSEL_SWITCH_INTERVAL = 100;
-   private static List<ResourceLocation> carouselImages = List.of();
+   private static List<Identifier> carouselImages = List.of();
    private final Screen backgroundScreen;
    private final boolean trialAvailable;
-   @Nullable
-   private Button createTrialButton;
+   private @Nullable Button createTrialButton;
    private int carouselIndex;
    private int carouselTick;
 
@@ -55,7 +54,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
    }
 
    protected void init() {
-      this.backgroundScreen.resize(this.minecraft, this.width, this.height);
+      this.backgroundScreen.resize(this.width, this.height);
       if (this.trialAvailable) {
          this.createTrialButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.START_REALMS_TRIAL)).bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20).build());
       }
@@ -91,7 +90,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
 
    public static void renderDiamond(GuiGraphics var0, Button var1) {
       boolean var2 = true;
-      var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
+      var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
@@ -100,9 +99,9 @@ public class AddRealmPopupScreen extends RealmsScreen {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.nextStratum();
       this.renderTransparentBackground(var1);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
-         var1.blit(RenderPipelines.GUI_TEXTURED, (ResourceLocation)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
+         var1.blit(RenderPipelines.GUI_TEXTURED, (Identifier)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
       }
 
    }

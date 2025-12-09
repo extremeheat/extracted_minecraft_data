@@ -13,9 +13,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public abstract class VehicleEntity extends Entity {
    protected static final EntityDataAccessor<Integer> DATA_ID_HURT;
@@ -68,17 +68,17 @@ public abstract class VehicleEntity extends Entity {
       }
    }
 
-   boolean shouldSourceDestroy(DamageSource var1) {
+   protected boolean shouldSourceDestroy(DamageSource var1) {
       return false;
    }
 
    public boolean ignoreExplosion(Explosion var1) {
-      return var1.getIndirectSourceEntity() instanceof Mob && !var1.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+      return var1.getIndirectSourceEntity() instanceof Mob && !(Boolean)var1.level().getGameRules().get(GameRules.MOB_GRIEFING);
    }
 
    public void destroy(ServerLevel var1, Item var2) {
       this.kill(var1);
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
          ItemStack var3 = new ItemStack(var2);
          var3.set(DataComponents.CUSTOM_NAME, this.getCustomName());
          this.spawnAtLocation(var1, var3);

@@ -5,37 +5,27 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.Nullable;
 
 public final class Style {
    public static final Style EMPTY = new Style((TextColor)null, (Integer)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (FontDescription)null);
-   @Nullable
-   final TextColor color;
-   @Nullable
-   final Integer shadowColor;
-   @Nullable
-   final Boolean bold;
-   @Nullable
-   final Boolean italic;
-   @Nullable
-   final Boolean underlined;
-   @Nullable
-   final Boolean strikethrough;
-   @Nullable
-   final Boolean obfuscated;
-   @Nullable
-   final ClickEvent clickEvent;
-   @Nullable
-   final HoverEvent hoverEvent;
-   @Nullable
-   final String insertion;
-   @Nullable
-   final FontDescription font;
+   public static final int NO_SHADOW = 0;
+   final @Nullable TextColor color;
+   final @Nullable Integer shadowColor;
+   final @Nullable Boolean bold;
+   final @Nullable Boolean italic;
+   final @Nullable Boolean underlined;
+   final @Nullable Boolean strikethrough;
+   final @Nullable Boolean obfuscated;
+   final @Nullable ClickEvent clickEvent;
+   final @Nullable HoverEvent hoverEvent;
+   final @Nullable String insertion;
+   final @Nullable FontDescription font;
 
    private static Style create(Optional<TextColor> var0, Optional<Integer> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<ClickEvent> var7, Optional<HoverEvent> var8, Optional<String> var9, Optional<FontDescription> var10) {
       Style var11 = new Style((TextColor)var0.orElse((Object)null), (Integer)var1.orElse((Object)null), (Boolean)var2.orElse((Object)null), (Boolean)var3.orElse((Object)null), (Boolean)var4.orElse((Object)null), (Boolean)var5.orElse((Object)null), (Boolean)var6.orElse((Object)null), (ClickEvent)var7.orElse((Object)null), (HoverEvent)var8.orElse((Object)null), (String)var9.orElse((Object)null), (FontDescription)var10.orElse((Object)null));
@@ -57,13 +47,11 @@ public final class Style {
       this.font = var11;
    }
 
-   @Nullable
-   public TextColor getColor() {
+   public @Nullable TextColor getColor() {
       return this.color;
    }
 
-   @Nullable
-   public Integer getShadowColor() {
+   public @Nullable Integer getShadowColor() {
       return this.shadowColor;
    }
 
@@ -91,18 +79,15 @@ public final class Style {
       return this == EMPTY;
    }
 
-   @Nullable
-   public ClickEvent getClickEvent() {
+   public @Nullable ClickEvent getClickEvent() {
       return this.clickEvent;
    }
 
-   @Nullable
-   public HoverEvent getHoverEvent() {
+   public @Nullable HoverEvent getHoverEvent() {
       return this.hoverEvent;
    }
 
-   @Nullable
-   public String getInsertion() {
+   public @Nullable String getInsertion() {
       return this.insertion;
    }
 
@@ -128,6 +113,10 @@ public final class Style {
 
    public Style withShadowColor(int var1) {
       return Objects.equals(this.shadowColor, var1) ? this : checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
+   }
+
+   public Style withoutShadow() {
+      return this.withShadowColor(0);
    }
 
    public Style withBold(@Nullable Boolean var1) {

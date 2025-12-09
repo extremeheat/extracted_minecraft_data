@@ -3,20 +3,20 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.GuardianModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.monster.guardian.GuardianModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,10 +24,11 @@ import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState, GuardianModel> {
-   private static final ResourceLocation GUARDIAN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/guardian.png");
-   private static final ResourceLocation GUARDIAN_BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/guardian_beam.png");
+   private static final Identifier GUARDIAN_LOCATION = Identifier.withDefaultNamespace("textures/entity/guardian.png");
+   private static final Identifier GUARDIAN_BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/guardian_beam.png");
    private static final RenderType BEAM_RENDER_TYPE;
 
    public GuardianRenderer(EntityRendererProvider.Context var1) {
@@ -89,22 +90,22 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       int var13 = 128 - (int)(var10 * 64.0F);
       float var14 = 0.2F;
       float var15 = 0.282F;
-      float var16 = Mth.cos(var9 + 2.3561945F) * 0.282F;
-      float var17 = Mth.sin(var9 + 2.3561945F) * 0.282F;
-      float var18 = Mth.cos(var9 + 0.7853982F) * 0.282F;
-      float var19 = Mth.sin(var9 + 0.7853982F) * 0.282F;
-      float var20 = Mth.cos(var9 + 3.926991F) * 0.282F;
-      float var21 = Mth.sin(var9 + 3.926991F) * 0.282F;
-      float var22 = Mth.cos(var9 + 5.4977875F) * 0.282F;
-      float var23 = Mth.sin(var9 + 5.4977875F) * 0.282F;
-      float var24 = Mth.cos(var9 + 3.1415927F) * 0.2F;
-      float var25 = Mth.sin(var9 + 3.1415927F) * 0.2F;
-      float var26 = Mth.cos(var9 + 0.0F) * 0.2F;
-      float var27 = Mth.sin(var9 + 0.0F) * 0.2F;
-      float var28 = Mth.cos(var9 + 1.5707964F) * 0.2F;
-      float var29 = Mth.sin(var9 + 1.5707964F) * 0.2F;
-      float var30 = Mth.cos(var9 + 4.712389F) * 0.2F;
-      float var31 = Mth.sin(var9 + 4.712389F) * 0.2F;
+      float var16 = Mth.cos((double)(var9 + 2.3561945F)) * 0.282F;
+      float var17 = Mth.sin((double)(var9 + 2.3561945F)) * 0.282F;
+      float var18 = Mth.cos((double)(var9 + 0.7853982F)) * 0.282F;
+      float var19 = Mth.sin((double)(var9 + 0.7853982F)) * 0.282F;
+      float var20 = Mth.cos((double)(var9 + 3.926991F)) * 0.282F;
+      float var21 = Mth.sin((double)(var9 + 3.926991F)) * 0.282F;
+      float var22 = Mth.cos((double)(var9 + 5.4977875F)) * 0.282F;
+      float var23 = Mth.sin((double)(var9 + 5.4977875F)) * 0.282F;
+      float var24 = Mth.cos((double)(var9 + 3.1415927F)) * 0.2F;
+      float var25 = Mth.sin((double)(var9 + 3.1415927F)) * 0.2F;
+      float var26 = Mth.cos((double)(var9 + 0.0F)) * 0.2F;
+      float var27 = Mth.sin((double)(var9 + 0.0F)) * 0.2F;
+      float var28 = Mth.cos((double)(var9 + 1.5707964F)) * 0.2F;
+      float var29 = Mth.sin((double)(var9 + 1.5707964F)) * 0.2F;
+      float var30 = Mth.cos((double)(var9 + 4.712389F)) * 0.2F;
+      float var31 = Mth.sin((double)(var9 + 4.712389F)) * 0.2F;
       float var33 = 0.0F;
       float var34 = 0.4999F;
       float var35 = -1.0F + var5;
@@ -130,7 +131,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       var0.addVertex(var1, var2, var3, var4).setColor(var5, var6, var7, 255).setUv(var8, var9).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(var1, 0.0F, 1.0F, 0.0F);
    }
 
-   public ResourceLocation getTextureLocation(GuardianRenderState var1) {
+   public Identifier getTextureLocation(GuardianRenderState var1) {
       return GUARDIAN_LOCATION;
    }
 
@@ -163,14 +164,13 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
 
    }
 
-   @Nullable
-   private static Entity getEntityToLookAt(Guardian var0) {
+   private static @Nullable Entity getEntityToLookAt(Guardian var0) {
       Entity var1 = Minecraft.getInstance().getCameraEntity();
       return (Entity)(var0.hasActiveAttackTarget() ? var0.getActiveAttackTarget() : var1);
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((GuardianRenderState)var1);
    }
 
@@ -180,6 +180,6 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
    }
 
    static {
-      BEAM_RENDER_TYPE = RenderType.entityCutoutNoCull(GUARDIAN_BEAM_LOCATION);
+      BEAM_RENDER_TYPE = RenderTypes.entityCutoutNoCull(GUARDIAN_BEAM_LOCATION);
    }
 }

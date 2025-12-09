@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure.structures;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class StrongholdPieces {
    private static final int SMALL_DOOR_WIDTH = 3;
@@ -53,7 +53,7 @@ public class StrongholdPieces {
       }
    }};
    private static List<PieceWeight> currentPieces;
-   static Class<? extends StrongholdPiece> imposedPiece;
+   static @Nullable Class<? extends StrongholdPiece> imposedPiece;
    private static int totalWeight;
    static final SmoothStoneSelector SMOOTH_STONE_SELECTOR = new SmoothStoneSelector();
 
@@ -87,7 +87,7 @@ public class StrongholdPieces {
       return var0;
    }
 
-   private static StrongholdPiece findAndCreatePieceFactory(Class<? extends StrongholdPiece> var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, @Nullable Direction var6, int var7) {
+   private static @Nullable StrongholdPiece findAndCreatePieceFactory(Class<? extends StrongholdPiece> var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
       Object var8 = null;
       if (var0 == Straight.class) {
          var8 = StrongholdPieces.Straight.createPiece(var1, var2, var3, var4, var5, var6, var7);
@@ -116,7 +116,7 @@ public class StrongholdPieces {
       return (StrongholdPiece)var8;
    }
 
-   private static StrongholdPiece generatePieceFromSmallDoor(StartPiece var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
+   private static @Nullable StrongholdPiece generatePieceFromSmallDoor(StartPiece var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
       if (!updatePieceWeight()) {
          return null;
       } else {
@@ -164,7 +164,7 @@ public class StrongholdPieces {
       }
    }
 
-   static StructurePiece generateAndAddPiece(StartPiece var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, @Nullable Direction var6, int var7) {
+   static @Nullable StructurePiece generateAndAddPiece(StartPiece var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
       if (var7 > 50) {
          return null;
       } else if (Math.abs(var3 - var0.getBoundingBox().minX()) <= 112 && Math.abs(var5 - var0.getBoundingBox().minZ()) <= 112) {
@@ -279,8 +279,7 @@ public class StrongholdPieces {
          }
       }
 
-      @Nullable
-      protected StructurePiece generateSmallDoorChildForward(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
+      protected @Nullable StructurePiece generateSmallDoorChildForward(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
             switch (var6) {
@@ -302,8 +301,7 @@ public class StrongholdPieces {
          return null;
       }
 
-      @Nullable
-      protected StructurePiece generateSmallDoorChildLeft(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
+      protected @Nullable StructurePiece generateSmallDoorChildLeft(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
             switch (var6) {
@@ -325,8 +323,7 @@ public class StrongholdPieces {
          return null;
       }
 
-      @Nullable
-      protected StructurePiece generateSmallDoorChildRight(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
+      protected @Nullable StructurePiece generateSmallDoorChildRight(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
             switch (var6) {
@@ -349,7 +346,7 @@ public class StrongholdPieces {
       }
 
       protected static boolean isOkBox(BoundingBox var0) {
-         return var0 != null && var0.minY() > 10;
+         return var0.minY() > 10;
       }
 
       protected static enum SmallDoorType {
@@ -391,7 +388,7 @@ public class StrongholdPieces {
          var2.putInt("Steps", this.steps);
       }
 
-      public static BoundingBox findPieceBox(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
+      public static @Nullable BoundingBox findPieceBox(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
          boolean var6 = true;
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, 4, var5);
          StructurePiece var8 = var0.findCollisionPiece(var7);
@@ -479,7 +476,7 @@ public class StrongholdPieces {
          this.generateSmallDoorChildForward((StartPiece)var1, var2, var3, 1, 1);
       }
 
-      public static StairsDown createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable StairsDown createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -7, 0, 5, 11, 5, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new StairsDown(var6, var1, var7, var5) : null;
       }
@@ -509,9 +506,8 @@ public class StrongholdPieces {
    }
 
    public static class StartPiece extends StairsDown {
-      public PieceWeight previousPiece;
-      @Nullable
-      public PortalRoom portalRoomPiece;
+      public @Nullable PieceWeight previousPiece;
+      public @Nullable PortalRoom portalRoomPiece;
       public final List<StructurePiece> pendingChildren = Lists.newArrayList();
 
       public StartPiece(RandomSource var1, int var2, int var3) {
@@ -566,7 +562,7 @@ public class StrongholdPieces {
 
       }
 
-      public static Straight createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable Straight createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, 7, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new Straight(var6, var1, var7, var5) : null;
       }
@@ -618,7 +614,7 @@ public class StrongholdPieces {
          this.generateSmallDoorChildForward((StartPiece)var1, var2, var3, 1, 1);
       }
 
-      public static ChestCorridor createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable ChestCorridor createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, 7, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new ChestCorridor(var6, var1, var7, var5) : null;
       }
@@ -664,7 +660,7 @@ public class StrongholdPieces {
          this.generateSmallDoorChildForward((StartPiece)var1, var2, var3, 1, 1);
       }
 
-      public static StraightStairsDown createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable StraightStairsDown createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -7, 0, 5, 11, 8, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new StraightStairsDown(var6, var1, var7, var5) : null;
       }
@@ -724,7 +720,7 @@ public class StrongholdPieces {
 
       }
 
-      public static LeftTurn createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable LeftTurn createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, 5, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new LeftTurn(var6, var1, var7, var5) : null;
       }
@@ -763,7 +759,7 @@ public class StrongholdPieces {
 
       }
 
-      public static RightTurn createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable RightTurn createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, 5, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new RightTurn(var6, var1, var7, var5) : null;
       }
@@ -810,7 +806,7 @@ public class StrongholdPieces {
          this.generateSmallDoorChildRight((StartPiece)var1, var2, var3, 1, 4);
       }
 
-      public static RoomCrossing createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable RoomCrossing createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -4, -1, 0, 11, 7, 11, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new RoomCrossing(var6, var1, var7, var5) : null;
       }
@@ -923,7 +919,7 @@ public class StrongholdPieces {
          this.generateSmallDoorChildForward((StartPiece)var1, var2, var3, 1, 1);
       }
 
-      public static PrisonHall createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable PrisonHall createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 9, 5, 11, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new PrisonHall(var6, var1, var7, var5) : null;
       }
@@ -981,7 +977,7 @@ public class StrongholdPieces {
          var2.putBoolean("Tall", this.isTall);
       }
 
-      public static Library createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable Library createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -4, -1, 0, 14, 11, 15, var5);
          if (!isOkBox(var7) || var0.findCollisionPiece(var7) != null) {
             var7 = BoundingBox.orientBox(var2, var3, var4, -4, -1, 0, 14, 6, 15, var5);
@@ -1162,7 +1158,7 @@ public class StrongholdPieces {
 
       }
 
-      public static FiveCrossing createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable FiveCrossing createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -4, -3, 0, 10, 9, 11, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new FiveCrossing(var6, var1, var7, var5) : null;
       }
@@ -1232,7 +1228,7 @@ public class StrongholdPieces {
 
       }
 
-      public static PortalRoom createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable PortalRoom createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -4, -1, 0, 11, 8, 16, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new PortalRoom(var5, var6, var4) : null;
       }

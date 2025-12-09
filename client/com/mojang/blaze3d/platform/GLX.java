@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -24,8 +24,7 @@ import oshi.hardware.CentralProcessor;
 @DontObfuscate
 public class GLX {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private static String cpuInfo;
+   private static @Nullable String cpuInfo;
 
    public GLX() {
       super();

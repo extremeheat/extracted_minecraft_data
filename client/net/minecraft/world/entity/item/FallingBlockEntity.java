@@ -2,7 +2,6 @@ package net.minecraft.world.entity.item;
 
 import com.mojang.logging.LogUtils;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,7 +30,6 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.Block;
@@ -42,6 +40,7 @@ import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -51,6 +50,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FallingBlockEntity extends Entity {
@@ -68,8 +68,7 @@ public class FallingBlockEntity extends Entity {
    private boolean hurtEntities;
    private int fallDamageMax;
    private float fallDamagePerDistance;
-   @Nullable
-   public CompoundTag blockData;
+   public @Nullable CompoundTag blockData;
    public boolean forceTickAfterTeleportToDuplicate;
    protected static final EntityDataAccessor<BlockPos> DATA_START_POS;
 
@@ -166,7 +165,7 @@ public class FallingBlockEntity extends Entity {
 
                if (!this.onGround() && !var5) {
                   if (this.time > 100 && (var20.getY() <= this.level().getMinY() || var20.getY() > this.level().getMaxY()) || this.time > 600) {
-                     if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                     if (this.dropItem && (Boolean)var2.getGameRules().get(GameRules.ENTITY_DROPS)) {
                         this.spawnAtLocation(var2, var1);
                      }
 
@@ -210,14 +209,14 @@ public class FallingBlockEntity extends Entity {
                                     var22.setChanged();
                                  }
                               }
-                           } else if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                           } else if (this.dropItem && (Boolean)var2.getGameRules().get(GameRules.ENTITY_DROPS)) {
                               this.discard();
                               this.callOnBrokenAfterFall(var1, var20);
                               this.spawnAtLocation(var2, var1);
                            }
                         } else {
                            this.discard();
-                           if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                           if (this.dropItem && (Boolean)var2.getGameRules().get(GameRules.ENTITY_DROPS)) {
                               this.callOnBrokenAfterFall(var1, var20);
                               this.spawnAtLocation(var2, var1);
                            }
@@ -346,8 +345,7 @@ public class FallingBlockEntity extends Entity {
       this.setStartPos(this.blockPosition());
    }
 
-   @Nullable
-   public Entity teleport(TeleportTransition var1) {
+   public @Nullable Entity teleport(TeleportTransition var1) {
       ResourceKey var2 = var1.newLevel().dimension();
       ResourceKey var3 = this.level().dimension();
       boolean var4 = (var3 == Level.END || var2 == Level.END) && var3 != var2;

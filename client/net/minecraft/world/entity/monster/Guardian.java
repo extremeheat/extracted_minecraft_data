@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -35,14 +34,15 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.squid.Squid;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Guardian extends Monster {
    protected static final int ATTACK_TIME = 80;
@@ -53,12 +53,10 @@ public class Guardian extends Monster {
    private float clientSideTailAnimationSpeed;
    private float clientSideSpikesAnimation;
    private float clientSideSpikesAnimationO;
-   @Nullable
-   private LivingEntity clientSideCachedAttackTarget;
+   private @Nullable LivingEntity clientSideCachedAttackTarget;
    private int clientSideAttackTime;
    private boolean clientSideTouchedGround;
-   @Nullable
-   protected RandomStrollGoal randomStrollGoal;
+   protected @Nullable RandomStrollGoal randomStrollGoal;
 
    public Guardian(EntityType<? extends Guardian> var1, Level var2) {
       super(var1, var2);
@@ -117,8 +115,7 @@ public class Guardian extends Monster {
       return (Integer)this.entityData.get(DATA_ID_ATTACK_TARGET) != 0;
    }
 
-   @Nullable
-   public LivingEntity getActiveAttackTarget() {
+   public @Nullable LivingEntity getActiveAttackTarget() {
       if (!this.hasActiveAttackTarget()) {
          return null;
       } else if (this.level().isClientSide()) {
@@ -244,7 +241,7 @@ public class Guardian extends Monster {
             this.setDeltaMovement(this.getDeltaMovement().add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F)));
             this.setYRot(this.random.nextFloat() * 360.0F);
             this.setOnGround(false);
-            this.hasImpulse = true;
+            this.needsSync = true;
          }
 
          if (this.hasActiveAttackTarget()) {
@@ -303,16 +300,12 @@ public class Guardian extends Monster {
       return 180;
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         this.moveRelative(0.1F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-         if (!this.isMoving() && this.getTarget() == null) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
-         }
-      } else {
-         super.travel(var1);
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(0.1F, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+      if (!this.isMoving() && this.getTarget() == null) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
       }
 
    }
@@ -364,7 +357,7 @@ public class Guardian extends Monster {
             this.guardian.getLookControl().setLookAt(var1, 90.0F, 90.0F);
          }
 
-         this.guardian.hasImpulse = true;
+         this.guardian.needsSync = true;
       }
 
       public void stop() {

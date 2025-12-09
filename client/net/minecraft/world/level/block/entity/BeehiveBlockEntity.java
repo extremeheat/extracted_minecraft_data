@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentGetter;
@@ -29,10 +28,12 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.debug.DebugHiveInfo;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.Bees;
 import net.minecraft.world.item.component.TypedEntityData;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BeehiveBlockEntity extends BlockEntity {
@@ -57,8 +59,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
    public static final int MIN_OCCUPATION_TICKS_NECTARLESS = 600;
    private final List<BeeData> stored = Lists.newArrayList();
-   @Nullable
-   private BlockPos savedFlowerPos;
+   private @Nullable BlockPos savedFlowerPos;
 
    public BeehiveBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.BEEHIVE, var1, var2);
@@ -163,7 +164,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    }
 
    private static boolean releaseOccupant(Level var0, BlockPos var1, BlockState var2, Occupant var3, @Nullable List<Entity> var4, BeeReleaseStatus var5, @Nullable BlockPos var6) {
-      if (Bee.isNightOrRaining(var0) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
+      if ((Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.BEES_STAY_IN_HIVE, var1) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
          return false;
       } else {
          Direction var7 = (Direction)var2.getValue(BeehiveBlock.FACING);
@@ -362,13 +363,12 @@ public class BeehiveBlockEntity extends BlockEntity {
          return new Occupant(TypedEntityData.of(EntityType.BEE, new CompoundTag()), var0, 600);
       }
 
-      @Nullable
-      public Entity createEntity(Level var1, BlockPos var2) {
+      public @Nullable Entity createEntity(Level var1, BlockPos var2) {
          CompoundTag var3 = this.entityData.copyTagWithoutId();
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var3);
          var10000.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive(this.entityData.type(), (CompoundTag)var3, var1, EntitySpawnReason.LOAD, (var0) -> var0);
+         Entity var4 = EntityType.loadEntityRecursive(this.entityData.type(), var3, var1, EntitySpawnReason.LOAD, EntityProcessor.NOP);
          if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {
             var4.setNoGravity(true);
             if (var4 instanceof Bee) {

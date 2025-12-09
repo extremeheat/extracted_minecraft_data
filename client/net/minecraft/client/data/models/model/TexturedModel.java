@@ -3,7 +3,7 @@ package net.minecraft.client.data.models.model;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 public class TexturedModel {
@@ -60,11 +60,11 @@ public class TexturedModel {
       return this;
    }
 
-   public ResourceLocation create(Block var1, BiConsumer<ResourceLocation, ModelInstance> var2) {
+   public Identifier create(Block var1, BiConsumer<Identifier, ModelInstance> var2) {
       return this.template.create(var1, this.mapping, var2);
    }
 
-   public ResourceLocation createWithSuffix(Block var1, String var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
+   public Identifier createWithSuffix(Block var1, String var2, BiConsumer<Identifier, ModelInstance> var3) {
       return this.template.createWithSuffix(var1, var2, this.mapping, var3);
    }
 
@@ -72,7 +72,7 @@ public class TexturedModel {
       return (var2) -> new TexturedModel((TextureMapping)var0.apply(var2), var1);
    }
 
-   public static TexturedModel createAllSame(ResourceLocation var0) {
+   public static TexturedModel createAllSame(Identifier var0) {
       return new TexturedModel(TextureMapping.cube(var0), ModelTemplates.CUBE_ALL);
    }
 
@@ -114,11 +114,11 @@ public class TexturedModel {
    public interface Provider {
       TexturedModel get(Block var1);
 
-      default ResourceLocation create(Block var1, BiConsumer<ResourceLocation, ModelInstance> var2) {
+      default Identifier create(Block var1, BiConsumer<Identifier, ModelInstance> var2) {
          return this.get(var1).create(var1, var2);
       }
 
-      default ResourceLocation createWithSuffix(Block var1, String var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
+      default Identifier createWithSuffix(Block var1, String var2, BiConsumer<Identifier, ModelInstance> var3) {
          return this.get(var1).createWithSuffix(var1, var2, var3);
       }
 

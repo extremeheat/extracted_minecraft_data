@@ -5,14 +5,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class WoodlandMansionPieces {
    public WoodlandMansionPieces() {
@@ -57,12 +57,12 @@ public class WoodlandMansionPieces {
          super(StructurePieceType.WOODLAND_MANSION_PIECE, var2, var1, (var1x) -> makeSettings((Mirror)var2.read("Mi", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
       }
 
-      protected ResourceLocation makeTemplateLocation() {
+      protected Identifier makeTemplateLocation() {
          return makeLocation(this.templateName);
       }
 
-      private static ResourceLocation makeLocation(String var0) {
-         return ResourceLocation.withDefaultNamespace("woodland_mansion/" + var0);
+      private static Identifier makeLocation(String var0) {
+         return Identifier.withDefaultNamespace("woodland_mansion/" + var0);
       }
 
       private static StructurePlaceSettings makeSettings(Mirror var0, Rotation var1) {
@@ -692,8 +692,7 @@ public class WoodlandMansionPieces {
          return (this.floorRooms[var4].get(var2, var3) & '\uffff') == var5;
       }
 
-      @Nullable
-      public Direction get1x2RoomDirection(SimpleGrid var1, int var2, int var3, int var4, int var5) {
+      public @Nullable Direction get1x2RoomDirection(SimpleGrid var1, int var2, int var3, int var4, int var5) {
          for(Direction var7 : Direction.Plane.HORIZONTAL) {
             if (this.isRoomId(var1, var2 + var7.getStepX(), var3 + var7.getStepZ(), var4, var5)) {
                return var7;

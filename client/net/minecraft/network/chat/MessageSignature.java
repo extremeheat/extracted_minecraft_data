@@ -6,11 +6,11 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
+import org.jspecify.annotations.Nullable;
 
 public record MessageSignature(byte[] bytes) {
    public static final Codec<MessageSignature> CODEC;

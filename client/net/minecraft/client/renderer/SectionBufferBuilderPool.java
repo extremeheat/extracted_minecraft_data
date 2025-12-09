@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SectionBufferBuilderPool {
@@ -40,8 +40,7 @@ public class SectionBufferBuilderPool {
       return new SectionBufferBuilderPool(var3);
    }
 
-   @Nullable
-   public SectionBufferBuilderPack acquire() {
+   public @Nullable SectionBufferBuilderPack acquire() {
       SectionBufferBuilderPack var1 = (SectionBufferBuilderPack)this.freeBuffers.poll();
       if (var1 != null) {
          this.freeBufferCount = this.freeBuffers.size();

@@ -7,7 +7,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 
 public class EntityFallDistanceFloatToDoubleFix extends DataFix {
-   private DSL.TypeReference type;
+   private final DSL.TypeReference type;
 
    public EntityFallDistanceFloatToDoubleFix(Schema var1, DSL.TypeReference var2) {
       super(var1, false);

@@ -1,17 +1,17 @@
 package net.minecraft.world.level.chunk.status;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.Heightmap;
-import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkStatus {
    public static final int MAX_STRUCTURE_DISTANCE = 8;
@@ -74,7 +74,7 @@ public class ChunkStatus {
    }
 
    public static ChunkStatus byName(String var0) {
-      return BuiltInRegistries.CHUNK_STATUS.getValue(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.CHUNK_STATUS.getValue(Identifier.tryParse(var0));
    }
 
    public EnumSet<Heightmap.Types> heightmapsAfter() {

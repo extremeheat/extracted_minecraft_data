@@ -2,20 +2,20 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.SalmonModel;
+import net.minecraft.client.model.animal.fish.SalmonModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SalmonRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Salmon;
+import net.minecraft.world.entity.animal.fish.Salmon;
 import org.joml.Quaternionfc;
 
 public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, SalmonModel> {
-   private static final ResourceLocation SALMON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fish/salmon.png");
+   private static final Identifier SALMON_LOCATION = Identifier.withDefaultNamespace("textures/entity/fish/salmon.png");
    private final SalmonModel smallSalmonModel;
    private final SalmonModel mediumSalmonModel;
    private final SalmonModel largeSalmonModel;
@@ -32,7 +32,7 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
       var2.variant = var1.getVariant();
    }
 
-   public ResourceLocation getTextureLocation(SalmonRenderState var1) {
+   public Identifier getTextureLocation(SalmonRenderState var1) {
       return SALMON_LOCATION;
    }
 
@@ -49,7 +49,7 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
          var6 = 1.7F;
       }
 
-      float var7 = var5 * 4.3F * Mth.sin(var6 * 0.6F * var1.ageInTicks);
+      float var7 = var5 * 4.3F * Mth.sin((double)(var6 * 0.6F * var1.ageInTicks));
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var7));
       if (!var1.isInWater) {
          var2.translate(0.2F, 0.1F, 0.0F);
@@ -72,7 +72,7 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SalmonRenderState)var1);
    }
 

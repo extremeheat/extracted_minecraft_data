@@ -8,12 +8,11 @@ import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.util.RealmsUtil;
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.FormatStyle;
 import java.util.Objects;
-import java.util.TimeZone;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -28,6 +27,8 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfigurationTab {
@@ -53,8 +54,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
    private RealmsServer serverData;
    private Component daysLeft;
    private Component startDate;
-   @Nullable
-   private Subscription.SubscriptionType type;
+   private Subscription.@Nullable SubscriptionType type;
 
    RealmsSubscriptionTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3) {
       super(TITLE);
@@ -79,8 +79,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
       var4.addChild(SpacerElement.height(2));
       this.deleteButton = (Button)var4.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var3x) -> var2.setScreen(RealmsPopups.warningPopupScreen(var1, Component.translatable("mco.configure.world.delete.question.line1"), (var1x) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
       var4.addChild(SpacerElement.height(2));
-      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(new FocusableTextWidget(200, Component.empty(), var5), LayoutSettings.defaults().alignHorizontallyCenter());
-      this.subscriptionInfo.setMaxWidth(200);
+      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(FocusableTextWidget.builder(Component.empty(), var5).maxWidth(200).build(), LayoutSettings.defaults().alignHorizontallyCenter());
       this.subscriptionInfo.setCentered(false);
       this.updateData(var3);
    }
@@ -98,9 +97,9 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
 
       try {
          Subscription var4 = var3.subscriptionFor(var1);
-         this.daysLeft = this.daysLeftPresentation(var4.daysLeft);
-         this.startDate = localPresentation(var4.startDate);
-         this.type = var4.type;
+         this.daysLeft = this.daysLeftPresentation(var4.daysLeft());
+         this.startDate = localPresentation(var4.startDate());
+         this.type = var4.type();
       } catch (RealmsServiceException var5) {
          LOGGER.error("Couldn't get subscription", var5);
          this.minecraft.setScreen(this.configurationScreen.createErrorScreen(var5));
@@ -108,10 +107,9 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
 
    }
 
-   private static Component localPresentation(long var0) {
-      GregorianCalendar var2 = new GregorianCalendar(TimeZone.getDefault());
-      ((Calendar)var2).setTimeInMillis(var0);
-      return Component.literal(DateFormat.getDateTimeInstance().format(((Calendar)var2).getTime())).withStyle(ChatFormatting.GRAY);
+   private static Component localPresentation(Instant var0) {
+      String var1 = ZonedDateTime.ofInstant(var0, ZoneId.systemDefault()).format(Util.localizedDateFormatter(FormatStyle.MEDIUM));
+      return Component.literal(var1).withStyle(ChatFormatting.GRAY);
    }
 
    private Component daysLeftPresentation(int var1) {

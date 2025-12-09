@@ -6,13 +6,13 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.ProblemReporter;
+import org.jspecify.annotations.Nullable;
 
 public class TagValueOutput implements ValueOutput {
    private final ProblemReporter problemReporter;

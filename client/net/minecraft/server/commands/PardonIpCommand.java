@@ -21,7 +21,7 @@ public class PardonIpCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires(Commands.hasPermission(3))).then(Commands.argument("target", StringArgumentType.word()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getUserList(), var1)).executes((var0x) -> unban((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target")))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("target", StringArgumentType.word()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getUserList(), var1)).executes((var0x) -> unban((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target")))));
    }
 
    private static int unban(CommandSourceStack var0, String var1) throws CommandSyntaxException {

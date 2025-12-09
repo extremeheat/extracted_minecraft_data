@@ -150,13 +150,13 @@ public class WorldGenSettingsFix extends DataFix {
                      var5.setTrue();
                      switch (var9) {
                         case "distance":
-                           var2.setValue(getInt(var10, var2.getValue(), 1));
+                           var2.setValue(getInt(var10, var2.intValue(), 1));
                            return;
                         case "spread":
-                           var3.setValue(getInt(var10, var3.getValue(), 1));
+                           var3.setValue(getInt(var10, var3.intValue(), 1));
                            return;
                         case "count":
-                           var4.setValue(getInt(var10, var4.getValue(), 1));
+                           var4.setValue(getInt(var10, var4.intValue(), 1));
                            return;
                         default:
                      }
@@ -204,7 +204,7 @@ public class WorldGenSettingsFix extends DataFix {
       ImmutableMap.Builder var7 = ImmutableMap.builder();
       var7.put(var1.createString("structures"), var1.createMap((Map)var6.entrySet().stream().collect(Collectors.toMap((var1x) -> var1.createString((String)var1x.getKey()), (var1x) -> ((StructureFeatureConfiguration)var1x.getValue()).serialize(var0)))));
       if (var5.isTrue()) {
-         var7.put(var1.createString("stronghold"), var1.createMap(ImmutableMap.of(var1.createString("distance"), var1.createInt(var2.getValue()), var1.createString("spread"), var1.createInt(var3.getValue()), var1.createString("count"), var1.createInt(var4.getValue()))));
+         var7.put(var1.createString("stronghold"), var1.createMap(ImmutableMap.of(var1.createString("distance"), var1.createInt(var2.intValue()), var1.createString("spread"), var1.createInt(var3.intValue()), var1.createString("count"), var1.createInt(var4.intValue()))));
       }
 
       return var7.build();

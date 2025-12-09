@@ -11,8 +11,8 @@ import com.jcraft.jorbis.Info;
 import it.unimi.dsi.fastutil.floats.FloatConsumer;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.annotation.Nullable;
 import javax.sound.sampled.AudioFormat;
+import org.jspecify.annotations.Nullable;
 
 public class JOrbisAudioStream implements FloatSampleSource {
    private static final int BUFSIZE = 8192;
@@ -86,8 +86,7 @@ public class JOrbisAudioStream implements FloatSampleSource {
       }
    }
 
-   @Nullable
-   private Page readPage() throws IOException {
+   private @Nullable Page readPage() throws IOException {
       while(true) {
          int var1 = this.syncState.pageout(this.page);
          switch (var1) {
@@ -125,8 +124,7 @@ public class JOrbisAudioStream implements FloatSampleSource {
       }
    }
 
-   @Nullable
-   private Packet readPacket() throws IOException {
+   private @Nullable Packet readPacket() throws IOException {
       while(true) {
          int var1 = this.streamState.packetout(this.packet);
          switch (var1) {

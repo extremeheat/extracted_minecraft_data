@@ -11,53 +11,53 @@ import net.minecraft.network.codec.StreamCodec;
 
 public class ResourceKey<T> {
    private static final ConcurrentMap<InternKey, ResourceKey<?>> VALUES = (new MapMaker()).weakValues().makeMap();
-   private final ResourceLocation registryName;
-   private final ResourceLocation location;
+   private final Identifier registryName;
+   private final Identifier identifier;
 
    public static <T> Codec<ResourceKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return ResourceLocation.CODEC.xmap((var1) -> create(var0, var1), ResourceKey::location);
+      return Identifier.CODEC.xmap((var1) -> create(var0, var1), ResourceKey::identifier);
    }
 
    public static <T> StreamCodec<ByteBuf, ResourceKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
-      return ResourceLocation.STREAM_CODEC.map((var1) -> create(var0, var1), ResourceKey::location);
+      return Identifier.STREAM_CODEC.map((var1) -> create(var0, var1), ResourceKey::identifier);
    }
 
-   public static <T> ResourceKey<T> create(ResourceKey<? extends Registry<T>> var0, ResourceLocation var1) {
-      return create(var0.location, var1);
+   public static <T> ResourceKey<T> create(ResourceKey<? extends Registry<T>> var0, Identifier var1) {
+      return create(var0.identifier, var1);
    }
 
-   public static <T> ResourceKey<Registry<T>> createRegistryKey(ResourceLocation var0) {
+   public static <T> ResourceKey<Registry<T>> createRegistryKey(Identifier var0) {
       return create(Registries.ROOT_REGISTRY_NAME, var0);
    }
 
-   private static <T> ResourceKey<T> create(ResourceLocation var0, ResourceLocation var1) {
-      return (ResourceKey)VALUES.computeIfAbsent(new InternKey(var0, var1), (var0x) -> new ResourceKey(var0x.registry, var0x.location));
+   private static <T> ResourceKey<T> create(Identifier var0, Identifier var1) {
+      return (ResourceKey)VALUES.computeIfAbsent(new InternKey(var0, var1), (var0x) -> new ResourceKey(var0x.registry, var0x.identifier));
    }
 
-   private ResourceKey(ResourceLocation var1, ResourceLocation var2) {
+   private ResourceKey(Identifier var1, Identifier var2) {
       super();
       this.registryName = var1;
-      this.location = var2;
+      this.identifier = var2;
    }
 
    public String toString() {
       String var10000 = String.valueOf(this.registryName);
-      return "ResourceKey[" + var10000 + " / " + String.valueOf(this.location) + "]";
+      return "ResourceKey[" + var10000 + " / " + String.valueOf(this.identifier) + "]";
    }
 
    public boolean isFor(ResourceKey<? extends Registry<?>> var1) {
-      return this.registryName.equals(var1.location());
+      return this.registryName.equals(var1.identifier());
    }
 
    public <E> Optional<ResourceKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
       return this.isFor(var1) ? Optional.of(this) : Optional.empty();
    }
 
-   public ResourceLocation location() {
-      return this.location;
+   public Identifier identifier() {
+      return this.identifier;
    }
 
-   public ResourceLocation registry() {
+   public Identifier registry() {
       return this.registryName;
    }
 
@@ -65,14 +65,14 @@ public class ResourceKey<T> {
       return createRegistryKey(this.registryName);
    }
 
-   static record InternKey(ResourceLocation registry, ResourceLocation location) {
-      final ResourceLocation registry;
-      final ResourceLocation location;
+   static record InternKey(Identifier registry, Identifier identifier) {
+      final Identifier registry;
+      final Identifier identifier;
 
-      InternKey(ResourceLocation var1, ResourceLocation var2) {
+      InternKey(Identifier var1, Identifier var2) {
          super();
          this.registry = var1;
-         this.location = var2;
+         this.identifier = var2;
       }
    }
 }

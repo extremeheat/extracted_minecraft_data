@@ -1,20 +1,15 @@
 package com.mojang.realmsclient.gui.screens;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
-public class UploadResult {
-   public final int statusCode;
-   @Nullable
-   public final String errorMessage;
-
-   UploadResult(int var1, String var2) {
+public record UploadResult(int statusCode, @Nullable String errorMessage) {
+   public UploadResult(int var1, @Nullable String var2) {
       super();
       this.statusCode = var1;
       this.errorMessage = var2;
    }
 
-   @Nullable
-   public String getSimplifiedErrorMessage() {
+   public @Nullable String getSimplifiedErrorMessage() {
       if (this.statusCode >= 200 && this.statusCode < 300) {
          return null;
       } else {
@@ -24,7 +19,7 @@ public class UploadResult {
 
    public static class Builder {
       private int statusCode = -1;
-      private String errorMessage;
+      private @Nullable String errorMessage;
 
       public Builder() {
          super();

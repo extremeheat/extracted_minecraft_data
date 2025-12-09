@@ -4,8 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
-import java.util.Set;
-import javax.annotation.Nullable;
+import java.util.function.Consumer;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -15,12 +14,13 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.DecoratedPotRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -35,7 +35,8 @@ import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
    private final MaterialSet materials;
@@ -115,7 +116,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return new DecoratedPotRenderState();
    }
 
-   public void extractRenderState(DecoratedPotBlockEntity var1, DecoratedPotRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(DecoratedPotBlockEntity var1, DecoratedPotRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.decorations = var1.getDecorations();
       var2.direction = var1.getDirection();
@@ -138,12 +139,12 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
          if (var1.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
             float var6 = 0.015625F;
             float var7 = var1.wobbleProgress * 6.2831855F;
-            float var8 = -1.5F * (Mth.cos(var7) + 0.5F) * Mth.sin(var7 / 2.0F);
+            float var8 = -1.5F * (Mth.cos((double)var7) + 0.5F) * Mth.sin((double)(var7 / 2.0F));
             var2.rotateAround(Axis.XP.rotation(var8 * 0.015625F), 0.5F, 0.0F, 0.5F);
-            float var9 = Mth.sin(var7);
+            float var9 = Mth.sin((double)var7);
             var2.rotateAround(Axis.ZP.rotation(var9 * 0.015625F), 0.5F, 0.0F, 0.5F);
          } else {
-            float var10 = Mth.sin(-var1.wobbleProgress * 3.0F * 3.1415927F) * 0.125F;
+            float var10 = Mth.sin((double)(-var1.wobbleProgress * 3.0F * 3.1415927F)) * 0.125F;
             float var11 = 1.0F - var1.wobbleProgress;
             var2.rotateAround(Axis.YP.rotation(var10 * var11), 0.5F, 0.0F, 0.5F);
          }
@@ -154,22 +155,22 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, PotDecorations var5, int var6) {
-      RenderType var7 = Sheets.DECORATED_POT_BASE.renderType(RenderType::entitySolid);
+      RenderType var7 = Sheets.DECORATED_POT_BASE.renderType(RenderTypes::entitySolid);
       TextureAtlasSprite var8 = this.materials.get(Sheets.DECORATED_POT_BASE);
       var2.submitModelPart(this.neck, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
       var2.submitModelPart(this.top, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
       var2.submitModelPart(this.bottom, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
       Material var9 = getSideMaterial(var5.front());
-      var2.submitModelPart(this.frontSide, var1, var9.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var9), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.frontSide, var1, var9.renderType(RenderTypes::entitySolid), var3, var4, this.materials.get(var9), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
       Material var10 = getSideMaterial(var5.back());
-      var2.submitModelPart(this.backSide, var1, var10.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var10), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.backSide, var1, var10.renderType(RenderTypes::entitySolid), var3, var4, this.materials.get(var10), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
       Material var11 = getSideMaterial(var5.left());
-      var2.submitModelPart(this.leftSide, var1, var11.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var11), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.leftSide, var1, var11.renderType(RenderTypes::entitySolid), var3, var4, this.materials.get(var11), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
       Material var12 = getSideMaterial(var5.right());
-      var2.submitModelPart(this.rightSide, var1, var12.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.rightSide, var1, var12.renderType(RenderTypes::entitySolid), var3, var4, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       this.neck.getExtentsForGui(var2, var1);
       this.top.getExtentsForGui(var2, var1);

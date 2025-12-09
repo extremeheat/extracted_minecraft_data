@@ -15,9 +15,9 @@ public class NoteParticle extends SingleQuadParticle {
       this.yd *= 0.009999999776482582;
       this.zd *= 0.009999999776482582;
       this.yd += 0.2;
-      this.rCol = Math.max(0.0F, Mth.sin(((float)var8 + 0.0F) * 6.2831855F) * 0.65F + 0.35F);
-      this.gCol = Math.max(0.0F, Mth.sin(((float)var8 + 0.33333334F) * 6.2831855F) * 0.65F + 0.35F);
-      this.bCol = Math.max(0.0F, Mth.sin(((float)var8 + 0.6666667F) * 6.2831855F) * 0.65F + 0.35F);
+      this.rCol = Math.max(0.0F, Mth.sin((double)(((float)var8 + 0.0F) * 6.2831855F)) * 0.65F + 0.35F);
+      this.gCol = Math.max(0.0F, Mth.sin((double)(((float)var8 + 0.33333334F) * 6.2831855F)) * 0.65F + 0.35F);
+      this.bCol = Math.max(0.0F, Mth.sin((double)(((float)var8 + 0.6666667F) * 6.2831855F)) * 0.65F + 0.35F);
       this.quadSize *= 1.5F;
       this.lifetime = 6;
    }

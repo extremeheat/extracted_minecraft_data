@@ -2,25 +2,25 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.PhantomModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.phantom.PhantomModel;
 import net.minecraft.client.renderer.entity.layers.PhantomEyesLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PhantomRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Phantom;
 import org.joml.Quaternionfc;
 
 public class PhantomRenderer extends MobRenderer<Phantom, PhantomRenderState, PhantomModel> {
-   private static final ResourceLocation PHANTOM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/phantom.png");
+   private static final Identifier PHANTOM_LOCATION = Identifier.withDefaultNamespace("textures/entity/phantom.png");
 
    public PhantomRenderer(EntityRendererProvider.Context var1) {
       super(var1, new PhantomModel(var1.bakeLayer(ModelLayers.PHANTOM)), 0.75F);
       this.addLayer(new PhantomEyesLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(PhantomRenderState var1) {
+   public Identifier getTextureLocation(PhantomRenderState var1) {
       return PHANTOM_LOCATION;
    }
 
@@ -46,7 +46,7 @@ public class PhantomRenderer extends MobRenderer<Phantom, PhantomRenderState, Ph
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((PhantomRenderState)var1);
    }
 

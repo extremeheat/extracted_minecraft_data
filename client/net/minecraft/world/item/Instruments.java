@@ -1,15 +1,15 @@
 package net.minecraft.world.item;
 
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Util;
 
 public interface Instruments {
    int GOAT_HORN_RANGE_BLOCKS = 256;
@@ -24,7 +24,7 @@ public interface Instruments {
    ResourceKey<Instrument> DREAM_GOAT_HORN = create("dream_goat_horn");
 
    private static ResourceKey<Instrument> create(String var0) {
-      return ResourceKey.create(Registries.INSTRUMENT, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.INSTRUMENT, Identifier.withDefaultNamespace(var0));
    }
 
    static void bootstrap(BootstrapContext<Instrument> var0) {
@@ -39,7 +39,7 @@ public interface Instruments {
    }
 
    static void register(BootstrapContext<Instrument> var0, ResourceKey<Instrument> var1, Holder<SoundEvent> var2, float var3, float var4) {
-      MutableComponent var5 = Component.translatable(Util.makeDescriptionId("instrument", var1.location()));
+      MutableComponent var5 = Component.translatable(Util.makeDescriptionId("instrument", var1.identifier()));
       var0.register(var1, new Instrument(var2, var3, var4, var5));
    }
 }

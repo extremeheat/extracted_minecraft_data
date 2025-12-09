@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -34,7 +35,7 @@ public class MapRenderer {
    }
 
    public void render(MapRenderState var1, PoseStack var2, SubmitNodeCollector var3, boolean var4, int var5) {
-      var3.submitCustomGeometry(var2, RenderType.text(var1.texture), (var1x, var2x) -> {
+      var3.submitCustomGeometry(var2, RenderTypes.text(var1.texture), (var1x, var2x) -> {
          var2x.addVertex(var1x, 0.0F, 128.0F, -0.01F).setColor(-1).setUv(0.0F, 1.0F).setLight(var5);
          var2x.addVertex(var1x, 128.0F, 128.0F, -0.01F).setColor(-1).setUv(1.0F, 1.0F).setLight(var5);
          var2x.addVertex(var1x, 128.0F, 0.0F, -0.01F).setColor(-1).setUv(1.0F, 0.0F).setLight(var5);
@@ -52,7 +53,7 @@ public class MapRenderer {
             TextureAtlasSprite var9 = var8.atlasSprite;
             if (var9 != null) {
                float var10 = (float)var6 * -0.001F;
-               var3.submitCustomGeometry(var2, RenderType.text(var9.atlasLocation()), (var3x, var4x) -> {
+               var3.submitCustomGeometry(var2, RenderTypes.text(var9.atlasLocation()), (var3x, var4x) -> {
                   var4x.addVertex(var3x, -1.0F, 1.0F, var10).setColor(-1).setUv(var9.getU0(), var9.getV0()).setLight(var5);
                   var4x.addVertex(var3x, 1.0F, 1.0F, var10).setColor(-1).setUv(var9.getU1(), var9.getV0()).setLight(var5);
                   var4x.addVertex(var3x, 1.0F, -1.0F, var10).setColor(-1).setUv(var9.getU1(), var9.getV1()).setLight(var5);

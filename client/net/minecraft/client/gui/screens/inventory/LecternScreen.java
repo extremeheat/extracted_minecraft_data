@@ -11,6 +11,9 @@ import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
 
 public class LecternScreen extends BookViewScreen implements MenuAccess<LecternMenu> {
+   private static final int MENU_BUTTON_MARGIN = 4;
+   private static final int MENU_BUTTON_SIZE = 98;
+   private static final Component TAKE_BOOK_LABEL = Component.translatable("lectern.take_book");
    private final LecternMenu menu;
    private final ContainerListener listener = new ContainerListener() {
       public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
@@ -51,8 +54,10 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
 
    protected void createMenuControls() {
       if (this.minecraft.player.mayBuild()) {
-         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).bounds(this.width / 2 - 100, 196, 98, 20).build());
-         this.addRenderableWidget(Button.builder(Component.translatable("lectern.take_book"), (var1) -> this.sendButtonClick(3)).bounds(this.width / 2 + 2, 196, 98, 20).build());
+         int var1 = this.menuControlsTop();
+         int var2 = this.width / 2;
+         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).pos(var2 - 98 - 2, var1).width(98).build());
+         this.addRenderableWidget(Button.builder(TAKE_BOOK_LABEL, (var1x) -> this.sendButtonClick(3)).pos(var2 + 2, var1).width(98).build());
       } else {
          super.createMenuControls();
       }

@@ -1,28 +1,28 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.LavaSlimeModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.MagmaCube;
 
-public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, LavaSlimeModel> {
-   private static final ResourceLocation MAGMACUBE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/slime/magmacube.png");
+public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, MagmaCubeModel> {
+   private static final Identifier MAGMACUBE_LOCATION = Identifier.withDefaultNamespace("textures/entity/slime/magmacube.png");
 
    public MagmaCubeRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new LavaSlimeModel(var1.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
+      super(var1, new MagmaCubeModel(var1.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
    }
 
    protected int getBlockLightLevel(MagmaCube var1, BlockPos var2) {
       return 15;
    }
 
-   public ResourceLocation getTextureLocation(SlimeRenderState var1) {
+   public Identifier getTextureLocation(SlimeRenderState var1) {
       return MAGMACUBE_LOCATION;
    }
 
@@ -53,7 +53,7 @@ public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, 
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SlimeRenderState)var1);
    }
 

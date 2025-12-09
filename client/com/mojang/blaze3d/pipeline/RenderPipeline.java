@@ -13,16 +13,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.ShaderDefines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
 public class RenderPipeline {
-   private final ResourceLocation location;
-   private final ResourceLocation vertexShader;
-   private final ResourceLocation fragmentShader;
+   private final Identifier location;
+   private final Identifier vertexShader;
+   private final Identifier fragmentShader;
    private final ShaderDefines shaderDefines;
    private final List<String> samplers;
    private final List<UniformDescription> uniforms;
@@ -41,7 +41,7 @@ public class RenderPipeline {
    private final int sortKey;
    private static int sortKeySeed;
 
-   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18, int var19) {
+   protected RenderPipeline(Identifier var1, Identifier var2, Identifier var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18, int var19) {
       super();
       this.location = var1;
       this.vertexShader = var2;
@@ -116,7 +116,7 @@ public class RenderPipeline {
       return this.depthBiasConstant;
    }
 
-   public ResourceLocation getLocation() {
+   public Identifier getLocation() {
       return this.location;
    }
 
@@ -128,11 +128,11 @@ public class RenderPipeline {
       return this.vertexFormatMode;
    }
 
-   public ResourceLocation getVertexShader() {
+   public Identifier getVertexShader() {
       return this.vertexShader;
    }
 
-   public ResourceLocation getFragmentShader() {
+   public Identifier getFragmentShader() {
       return this.fragmentShader;
    }
 
@@ -165,9 +165,9 @@ public class RenderPipeline {
    @DontObfuscate
    public static class Builder {
       private static int nextPipelineSortKey;
-      private Optional<ResourceLocation> location = Optional.empty();
-      private Optional<ResourceLocation> fragmentShader = Optional.empty();
-      private Optional<ResourceLocation> vertexShader = Optional.empty();
+      private Optional<Identifier> location = Optional.empty();
+      private Optional<Identifier> fragmentShader = Optional.empty();
+      private Optional<Identifier> vertexShader = Optional.empty();
       private Optional<ShaderDefines.Builder> definesBuilder = Optional.empty();
       private Optional<List<String>> samplers = Optional.empty();
       private Optional<List<UniformDescription>> uniforms = Optional.empty();
@@ -189,31 +189,31 @@ public class RenderPipeline {
       }
 
       public Builder withLocation(String var1) {
-         this.location = Optional.of(ResourceLocation.withDefaultNamespace(var1));
+         this.location = Optional.of(Identifier.withDefaultNamespace(var1));
          return this;
       }
 
-      public Builder withLocation(ResourceLocation var1) {
+      public Builder withLocation(Identifier var1) {
          this.location = Optional.of(var1);
          return this;
       }
 
       public Builder withFragmentShader(String var1) {
-         this.fragmentShader = Optional.of(ResourceLocation.withDefaultNamespace(var1));
+         this.fragmentShader = Optional.of(Identifier.withDefaultNamespace(var1));
          return this;
       }
 
-      public Builder withFragmentShader(ResourceLocation var1) {
+      public Builder withFragmentShader(Identifier var1) {
          this.fragmentShader = Optional.of(var1);
          return this;
       }
 
       public Builder withVertexShader(String var1) {
-         this.vertexShader = Optional.of(ResourceLocation.withDefaultNamespace(var1));
+         this.vertexShader = Optional.of(Identifier.withDefaultNamespace(var1));
          return this;
       }
 
-      public Builder withVertexShader(ResourceLocation var1) {
+      public Builder withVertexShader(Identifier var1) {
          this.vertexShader = Optional.of(var1);
          return this;
       }
@@ -436,7 +436,7 @@ public class RenderPipeline {
          } else if (this.vertexFormatMode.isEmpty()) {
             throw new IllegalStateException("Missing vertex mode");
          } else {
-            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant, nextPipelineSortKey++);
+            return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant, nextPipelineSortKey++);
          }
       }
    }
@@ -463,9 +463,9 @@ public class RenderPipeline {
    }
 
    @DontObfuscate
-   public static record Snippet(Optional<ResourceLocation> vertexShader, Optional<ResourceLocation> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<BlendFunction> blendFunction, Optional<DepthTestFunction> depthTestFunction, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<Boolean> writeColor, Optional<Boolean> writeAlpha, Optional<Boolean> writeDepth, Optional<LogicOp> colorLogic, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
-      final Optional<ResourceLocation> vertexShader;
-      final Optional<ResourceLocation> fragmentShader;
+   public static record Snippet(Optional<Identifier> vertexShader, Optional<Identifier> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<BlendFunction> blendFunction, Optional<DepthTestFunction> depthTestFunction, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<Boolean> writeColor, Optional<Boolean> writeAlpha, Optional<Boolean> writeDepth, Optional<LogicOp> colorLogic, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
+      final Optional<Identifier> vertexShader;
+      final Optional<Identifier> fragmentShader;
       final Optional<ShaderDefines> shaderDefines;
       final Optional<List<String>> samplers;
       final Optional<List<UniformDescription>> uniforms;
@@ -479,7 +479,7 @@ public class RenderPipeline {
       final Optional<VertexFormat> vertexFormat;
       final Optional<VertexFormat.Mode> vertexFormatMode;
 
-      public Snippet(Optional<ResourceLocation> var1, Optional<ResourceLocation> var2, Optional<ShaderDefines> var3, Optional<List<String>> var4, Optional<List<UniformDescription>> var5, Optional<BlendFunction> var6, Optional<DepthTestFunction> var7, Optional<PolygonMode> var8, Optional<Boolean> var9, Optional<Boolean> var10, Optional<Boolean> var11, Optional<Boolean> var12, Optional<LogicOp> var13, Optional<VertexFormat> var14, Optional<VertexFormat.Mode> var15) {
+      public Snippet(Optional<Identifier> var1, Optional<Identifier> var2, Optional<ShaderDefines> var3, Optional<List<String>> var4, Optional<List<UniformDescription>> var5, Optional<BlendFunction> var6, Optional<DepthTestFunction> var7, Optional<PolygonMode> var8, Optional<Boolean> var9, Optional<Boolean> var10, Optional<Boolean> var11, Optional<Boolean> var12, Optional<LogicOp> var13, Optional<VertexFormat> var14, Optional<VertexFormat.Mode> var15) {
          super();
          this.vertexShader = var1;
          this.fragmentShader = var2;

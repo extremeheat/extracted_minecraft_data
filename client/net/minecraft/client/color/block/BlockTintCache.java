@@ -5,11 +5,11 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.ToIntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public class BlockTintCache {
    private static final int MAX_CACHE_ENTRIES = 256;
@@ -171,8 +171,7 @@ public class BlockTintCache {
    static class LatestCacheInfo {
       public int x = -2147483648;
       public int z = -2147483648;
-      @Nullable
-      CacheData cache;
+      @Nullable CacheData cache;
 
       private LatestCacheInfo() {
          super();

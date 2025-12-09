@@ -12,7 +12,6 @@ import java.net.SocketAddress;
 import java.security.PrivateKey;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import net.minecraft.CrashReport;
@@ -37,6 +36,7 @@ import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.notifications.ServerActivityMonitor;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Crypt;
@@ -44,6 +44,7 @@ import net.minecraft.util.CryptException;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringUtil;
 import org.apache.commons.lang3.Validate;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener, TickablePacketListener {
@@ -53,12 +54,11 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    private final byte[] challenge;
    final MinecraftServer server;
    final Connection connection;
+   final ServerActivityMonitor serverActivityMonitor;
    private volatile State state;
    private int tick;
-   @Nullable
-   String requestedUsername;
-   @Nullable
-   private GameProfile authenticatedProfile;
+   @Nullable String requestedUsername;
+   private @Nullable GameProfile authenticatedProfile;
    private final String serverId;
    private final boolean transferred;
 
@@ -68,6 +68,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       this.serverId = "";
       this.server = var1;
       this.connection = var2;
+      this.serverActivityMonitor = this.server.getServerActivityMonitor();
       this.challenge = Ints.toByteArray(RandomSource.create().nextInt());
       this.transferred = var3;
    }
@@ -192,6 +193,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                if (var2x != null) {
                   GameProfile var3 = var2x.profile();
                   ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.name(), var3.id());
+                  ServerLoginPacketListenerImpl.this.serverActivityMonitor.reportLoginActivity();
                   ServerLoginPacketListenerImpl.this.startClientVerification(var3);
                } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Failed to verify username but will let them in anyway!");
@@ -212,8 +214,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
          }
 
-         @Nullable
-         private InetAddress getAddress() {
+         private @Nullable InetAddress getAddress() {
             SocketAddress var1 = ServerLoginPacketListenerImpl.this.connection.getRemoteAddress();
             return ServerLoginPacketListenerImpl.this.server.getPreventProxyConnections() && var1 instanceof InetSocketAddress ? ((InetSocketAddress)var1).getAddress() : null;
          }

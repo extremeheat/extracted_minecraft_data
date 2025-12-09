@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
@@ -13,6 +12,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 
 public class Objective {
    private final Scoreboard scoreboard;
@@ -22,8 +22,7 @@ public class Objective {
    private Component formattedDisplayName;
    private ObjectiveCriteria.RenderType renderType;
    private boolean displayAutoUpdate;
-   @Nullable
-   private NumberFormat numberFormat;
+   private @Nullable NumberFormat numberFormat;
 
    public Objective(Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5, boolean var6, @Nullable NumberFormat var7) {
       super();
@@ -61,8 +60,7 @@ public class Objective {
       return this.displayAutoUpdate;
    }
 
-   @Nullable
-   public NumberFormat numberFormat() {
+   public @Nullable NumberFormat numberFormat() {
       return this.numberFormat;
    }
 

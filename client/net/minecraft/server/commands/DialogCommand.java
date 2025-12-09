@@ -20,7 +20,7 @@ public class DialogCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("dialog").requires(Commands.hasPermission(2))).then(Commands.literal("show").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(var1)).executes((var0x) -> showDialog((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ResourceOrIdArgument.getDialog(var0x, "dialog"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((var0x) -> clearDialog((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("dialog").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("show").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(var1)).executes((var0x) -> showDialog((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ResourceOrIdArgument.getDialog(var0x, "dialog"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((var0x) -> clearDialog((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"))))));
    }
 
    private static int showDialog(CommandSourceStack var0, Collection<ServerPlayer> var1, Holder<Dialog> var2) {

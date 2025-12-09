@@ -2,7 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -10,9 +9,9 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -21,10 +20,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 public interface OrderedSubmitNodeCollector {
-   void submitHitbox(PoseStack var1, EntityRenderState var2, HitboxesRenderState var3);
-
    void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3);
 
    void submitNameTag(PoseStack var1, @Nullable Vec3 var2, int var3, Component var4, boolean var5, int var6, double var7, CameraRenderState var9);
@@ -35,9 +33,9 @@ public interface OrderedSubmitNodeCollector {
 
    void submitLeash(PoseStack var1, EntityRenderState.LeashState var2);
 
-   <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10);
+   <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10);
 
-   default <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable ModelFeatureRenderer.CrumblingOverlay var8) {
+   default <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, ModelFeatureRenderer.@Nullable CrumblingOverlay var8) {
       this.submitModel(var1, var2, var3, var4, var5, var6, -1, (TextureAtlasSprite)null, var7, var8);
    }
 
@@ -45,7 +43,7 @@ public interface OrderedSubmitNodeCollector {
       this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
-   default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, int var7, @Nullable ModelFeatureRenderer.CrumblingOverlay var8) {
+   default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, int var7, ModelFeatureRenderer.@Nullable CrumblingOverlay var8) {
       this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, var7, var8, 0);
    }
 
@@ -53,7 +51,7 @@ public interface OrderedSubmitNodeCollector {
       this.submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
-   void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10, int var11);
+   void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10, int var11);
 
    void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5);
 

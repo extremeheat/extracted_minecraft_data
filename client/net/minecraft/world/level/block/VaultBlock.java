@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class VaultBlock extends BaseEntityBlock {
    public static final MapCodec<VaultBlock> CODEC = simpleCodec(VaultBlock::new);
@@ -59,8 +59,7 @@ public class VaultBlock extends BaseEntityBlock {
       }
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new VaultBlockEntity(var1, var2);
    }
 
@@ -68,8 +67,7 @@ public class VaultBlock extends BaseEntityBlock {
       var1.add(FACING, STATE, OMINOUS);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       BlockEntityTicker var10000;
       if (var1 instanceof ServerLevel var4) {
          var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var1x, var2x, var3x, var4x) -> VaultBlockEntity.Server.tick(var4, var2x, var3x, var4x.getConfig(), var4x.getServerData(), var4x.getSharedData()));

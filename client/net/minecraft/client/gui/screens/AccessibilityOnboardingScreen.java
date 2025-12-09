@@ -2,8 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.mojang.text2speech.Narrator;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,6 +19,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 
 public class AccessibilityOnboardingScreen extends Screen {
    private static final Component TITLE = Component.translatable("accessibility.onboarding.screen.title");
@@ -28,14 +27,13 @@ public class AccessibilityOnboardingScreen extends Screen {
    private static final int PADDING = 4;
    private static final int TITLE_PADDING = 16;
    private static final float FADE_OUT_TIME = 1000.0F;
+   private static final int TEXT_WIDGET_WIDTH = 374;
    private final LogoRenderer logoRenderer;
    private final Options options;
    private final boolean narratorAvailable;
    private boolean hasNarrated;
    private float timer;
    private final Runnable onClose;
-   @Nullable
-   private FocusableTextWidget textWidget;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, this.initTitleYPos(), 33);
    private float fadeInStart;
    private boolean fadingIn = true;
@@ -52,7 +50,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    public void init() {
       LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
       var1.defaultCellSetting().alignHorizontallyCenter().padding(4);
-      this.textWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), (Consumer)((var0) -> var0.padding(8)));
+      var1.addChild(FocusableTextWidget.builder(this.title, this.font).maxWidth(374).build(), (Consumer)((var0) -> var0.padding(8)));
       AbstractWidget var3 = this.options.narrator().createButton(this.options);
       if (var3 instanceof CycleButton var2) {
          this.narratorButton = var2;
@@ -68,10 +66,6 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    protected void repositionElements() {
-      if (this.textWidget != null) {
-         this.textWidget.containWithin(this.width);
-      }
-
       this.layout.arrangeElements();
    }
 

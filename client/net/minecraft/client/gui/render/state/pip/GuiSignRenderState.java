@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.render.state.pip;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.model.Model;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import org.jspecify.annotations.Nullable;
 
 public record GuiSignRenderState(Model.Simple signModel, WoodType woodType, int x0, int y0, int x1, int y1, float scale, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {
    public GuiSignRenderState(Model.Simple var1, WoodType var2, int var3, int var4, int var5, int var6, float var7, @Nullable ScreenRectangle var8) {

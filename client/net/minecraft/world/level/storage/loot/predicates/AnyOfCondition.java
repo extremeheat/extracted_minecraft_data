@@ -2,7 +2,7 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class AnyOfCondition extends CompositeLootItemCondition {
    public static final MapCodec<AnyOfCondition> CODEC = createCodec(AnyOfCondition::new);

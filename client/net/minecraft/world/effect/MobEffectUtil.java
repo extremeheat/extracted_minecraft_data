@@ -1,7 +1,6 @@
 package net.minecraft.world.effect;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +10,7 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public final class MobEffectUtil {
    public MobEffectUtil() {
@@ -45,7 +45,11 @@ public final class MobEffectUtil {
    }
 
    public static boolean hasWaterBreathing(LivingEntity var0) {
-      return var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER);
+      return var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER) || var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
+   }
+
+   public static boolean shouldEffectsRefillAirsupply(LivingEntity var0) {
+      return !var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS) || var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER);
    }
 
    public static List<ServerPlayer> addEffectToPlayersAround(ServerLevel var0, @Nullable Entity var1, Vec3 var2, double var3, MobEffectInstance var5, int var6) {

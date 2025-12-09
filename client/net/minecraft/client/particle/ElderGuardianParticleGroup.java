@@ -5,10 +5,10 @@ import com.mojang.math.Axis;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -57,7 +57,7 @@ public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParti
 
       public static ElderGuardianParticleRenderState fromParticle(ElderGuardianParticle var0, Camera var1, float var2) {
          float var3 = ((float)var0.age + var2) / (float)var0.lifetime;
-         float var4 = 0.05F + 0.5F * Mth.sin(var3 * 3.1415927F);
+         float var4 = 0.05F + 0.5F * Mth.sin((double)(var3 * 3.1415927F));
          int var5 = ARGB.colorFromFloat(var4, 1.0F, 1.0F, 1.0F);
          PoseStack var6 = new PoseStack();
          var6.pushPose();

@@ -1,17 +1,16 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import org.jspecify.annotations.Nullable;
 
 public class ResultContainer implements Container, RecipeCraftingHolder {
    private final NonNullList<ItemStack> itemStacks;
-   @Nullable
-   private RecipeHolder<?> recipeUsed;
+   private @Nullable RecipeHolder<?> recipeUsed;
 
    public ResultContainer() {
       super();
@@ -63,8 +62,7 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
       this.recipeUsed = var1;
    }
 
-   @Nullable
-   public RecipeHolder<?> getRecipeUsed() {
+   public @Nullable RecipeHolder<?> getRecipeUsed() {
       return this.recipeUsed;
    }
 }

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
@@ -26,13 +25,14 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class SocialInteractionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.socialInteractions.title");
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("social_interactions/background");
-   private static final ResourceLocation SEARCH_SPRITE = ResourceLocation.withDefaultNamespace("icon/search");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("social_interactions/background");
+   private static final Identifier SEARCH_SPRITE = Identifier.withDefaultNamespace("icon/search");
    private static final Component TAB_ALL = Component.translatable("gui.socialInteractions.tab_all");
    private static final Component TAB_HIDDEN = Component.translatable("gui.socialInteractions.tab_hidden");
    private static final Component TAB_BLOCKED = Component.translatable("gui.socialInteractions.tab_blocked");
@@ -54,10 +54,8 @@ public class SocialInteractionsScreen extends Screen {
    private static final int BUTTON_HEIGHT = 20;
    private static final int ITEM_HEIGHT = 36;
    private final HeaderAndFooterLayout layout;
-   @Nullable
-   private final Screen lastScreen;
-   @Nullable
-   SocialInteractionsPlayerList socialInteractionsPlayerList;
+   private final @Nullable Screen lastScreen;
+   @Nullable SocialInteractionsPlayerList socialInteractionsPlayerList;
    EditBox searchBox;
    private String lastSearch;
    private Page page;
@@ -65,8 +63,7 @@ public class SocialInteractionsScreen extends Screen {
    private Button hiddenButton;
    private Button blockedButton;
    private Button blockingHintButton;
-   @Nullable
-   private Component serverLabel;
+   private @Nullable Component serverLabel;
    private int playerCount;
 
    public SocialInteractionsScreen() {
@@ -108,20 +105,19 @@ public class SocialInteractionsScreen extends Screen {
       this.hiddenButton = (Button)this.addRenderableWidget(Button.builder(TAB_HIDDEN, (var1x) -> this.showPage(SocialInteractionsScreen.Page.HIDDEN)).bounds((var2 + var3 - var1) / 2 + 1, 45, var1, 20).build());
       this.blockedButton = (Button)this.addRenderableWidget(Button.builder(TAB_BLOCKED, (var1x) -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(var3 - var1 + 1, 45, var1, 20).build());
       String var4 = this.searchBox != null ? this.searchBox.getValue() : "";
-      this.searchBox = new EditBox(this.font, this.marginX() + 28, 74, 200, 15, SEARCH_HINT) {
+      this.searchBox = (EditBox)this.addRenderableWidget(new EditBox(this.font, this.marginX() + 28, 74, 200, 15, SEARCH_HINT) {
          protected MutableComponent createNarrationMessage() {
             return !SocialInteractionsScreen.this.searchBox.getValue().isEmpty() && SocialInteractionsScreen.this.socialInteractionsPlayerList.isEmpty() ? super.createNarrationMessage().append(", ").append(SocialInteractionsScreen.EMPTY_SEARCH) : super.createNarrationMessage();
          }
-      };
+      });
       this.searchBox.setMaxLength(16);
       this.searchBox.setVisible(true);
       this.searchBox.setTextColor(-1);
       this.searchBox.setValue(var4);
       this.searchBox.setHint(SEARCH_HINT);
       this.searchBox.setResponder(this::checkSearchStringUpdate);
-      this.addRenderableWidget(this.searchBox);
-      this.addWidget(this.socialInteractionsPlayerList);
       this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
+      this.addWidget(this.socialInteractionsPlayerList);
       this.showPage(this.page);
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((var1x) -> {
@@ -202,8 +198,8 @@ public class SocialInteractionsScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderBackground(var1, var2, var3, var4);
       int var5 = this.marginX() + 3;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

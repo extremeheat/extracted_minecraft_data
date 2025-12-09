@@ -12,7 +12,7 @@ public class StopCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stop").requires(Commands.hasPermission(4))).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stop").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> {
          ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.stop.stopping"), true);
          ((CommandSourceStack)var0x.getSource()).getServer().halt(false);
          return 1;

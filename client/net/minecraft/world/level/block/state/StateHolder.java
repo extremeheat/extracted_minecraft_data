@@ -12,14 +12,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public abstract class StateHolder<O, S> {
    public static final String NAME_TAG = "Name";
    public static final String PROPERTIES_TAG = "Properties";
    private static final Function<Map.Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<Map.Entry<Property<?>, Comparable<?>>, String>() {
-      public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> var1) {
+      public String apply(Map.@Nullable Entry<Property<?>, Comparable<?>> var1) {
          if (var1 == null) {
             return "<NULL>";
          } else {
@@ -34,7 +34,7 @@ public abstract class StateHolder<O, S> {
       }
 
       // $FF: synthetic method
-      public Object apply(@Nullable final Object var1) {
+      public Object apply(final @Nullable Object var1) {
          return this.apply((Map.Entry)var1);
       }
    };
@@ -105,8 +105,7 @@ public abstract class StateHolder<O, S> {
       return (T)(Objects.requireNonNullElse(this.getNullableValue(var1), var2));
    }
 
-   @Nullable
-   private <T extends Comparable<T>> T getNullableValue(Property<T> var1) {
+   private <T extends Comparable<T>> @Nullable T getNullableValue(Property<T> var1) {
       Comparable var2 = (Comparable)this.values.get(var1);
       return (T)(var2 == null ? null : (Comparable)var1.getValueClass().cast(var2));
    }

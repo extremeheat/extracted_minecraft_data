@@ -2,14 +2,13 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
-import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.LecternRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, LecternRenderState> {
    private final MaterialSet materials;
@@ -34,7 +34,7 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
       return new LecternRenderState();
    }
 
-   public void extractRenderState(LecternBlockEntity var1, LecternRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(LecternBlockEntity var1, LecternRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.hasBook = (Boolean)var1.getBlockState().getValue(LecternBlock.HAS_BOOK);
       var2.yRot = ((Direction)var1.getBlockState().getValue(LecternBlock.FACING)).getClockWise().toYRot();
@@ -47,7 +47,7 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var1.yRot));
          var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
          var2.translate(0.0F, -0.125F, 0.0F);
-         var3.submitModel(this.bookModel, this.bookState, var2, EnchantTableRenderer.BOOK_LOCATION.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_LOCATION), 0, var1.breakProgress);
+         var3.submitModel(this.bookModel, this.bookState, var2, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, var1.breakProgress);
          var2.popPose();
       }
    }

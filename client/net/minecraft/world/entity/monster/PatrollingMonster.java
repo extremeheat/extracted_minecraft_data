@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
@@ -22,12 +21,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class PatrollingMonster extends Monster {
    private static final boolean DEFAULT_PATROL_LEADER = false;
    private static final boolean DEFAULT_PATROLLING = false;
-   @Nullable
-   private BlockPos patrolTarget;
+   private @Nullable BlockPos patrolTarget;
    private boolean patrolLeader = false;
    private boolean patrolling = false;
 
@@ -58,8 +57,7 @@ public abstract class PatrollingMonster extends Monster {
       return true;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var3 != EntitySpawnReason.PATROL && var3 != EntitySpawnReason.EVENT && var3 != EntitySpawnReason.STRUCTURE && var1.getRandom().nextFloat() < 0.06F && this.canBeLeader()) {
          this.patrolLeader = true;
       }
@@ -89,7 +87,7 @@ public abstract class PatrollingMonster extends Monster {
       this.patrolling = true;
    }
 
-   public BlockPos getPatrolTarget() {
+   public @Nullable BlockPos getPatrolTarget() {
       return this.patrolTarget;
    }
 

@@ -41,15 +41,15 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.Utf8String;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.VarLong;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.joml.Quaternionfc;
+import org.joml.Vector3fc;
 
 public interface ByteBufCodecs {
    int MAX_INITIAL_COLLECTION_SIZE = 65536;
@@ -284,9 +284,9 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, String> STRING_UTF8 = stringUtf8(32767);
-   StreamCodec<ByteBuf, Tag> TAG = tagCodec(() -> NbtAccounter.create(2097152L));
+   StreamCodec<ByteBuf, Tag> TAG = tagCodec(NbtAccounter::defaultQuota);
    StreamCodec<ByteBuf, Tag> TRUSTED_TAG = tagCodec(NbtAccounter::unlimitedHeap);
-   StreamCodec<ByteBuf, CompoundTag> COMPOUND_TAG = compoundTagCodec(() -> NbtAccounter.create(2097152L));
+   StreamCodec<ByteBuf, CompoundTag> COMPOUND_TAG = compoundTagCodec(NbtAccounter::defaultQuota);
    StreamCodec<ByteBuf, CompoundTag> TRUSTED_COMPOUND_TAG = compoundTagCodec(NbtAccounter::unlimitedHeap);
    StreamCodec<ByteBuf, Optional<CompoundTag>> OPTIONAL_COMPOUND_TAG = new StreamCodec<ByteBuf, Optional<CompoundTag>>() {
       public Optional<CompoundTag> decode(ByteBuf var1) {
@@ -307,18 +307,18 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, Vector3f> VECTOR3F = new StreamCodec<ByteBuf, Vector3f>() {
-      public Vector3f decode(ByteBuf var1) {
+   StreamCodec<ByteBuf, Vector3fc> VECTOR3F = new StreamCodec<ByteBuf, Vector3fc>() {
+      public Vector3fc decode(ByteBuf var1) {
          return FriendlyByteBuf.readVector3f(var1);
       }
 
-      public void encode(ByteBuf var1, Vector3f var2) {
+      public void encode(ByteBuf var1, Vector3fc var2) {
          FriendlyByteBuf.writeVector3f(var1, var2);
       }
 
       // $FF: synthetic method
       public void encode(final Object var1, final Object var2) {
-         this.encode((ByteBuf)var1, (Vector3f)var2);
+         this.encode((ByteBuf)var1, (Vector3fc)var2);
       }
 
       // $FF: synthetic method
@@ -326,18 +326,18 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, Quaternionf> QUATERNIONF = new StreamCodec<ByteBuf, Quaternionf>() {
-      public Quaternionf decode(ByteBuf var1) {
+   StreamCodec<ByteBuf, Quaternionfc> QUATERNIONF = new StreamCodec<ByteBuf, Quaternionfc>() {
+      public Quaternionfc decode(ByteBuf var1) {
          return FriendlyByteBuf.readQuaternion(var1);
       }
 
-      public void encode(ByteBuf var1, Quaternionf var2) {
+      public void encode(ByteBuf var1, Quaternionfc var2) {
          FriendlyByteBuf.writeQuaternion(var1, var2);
       }
 
       // $FF: synthetic method
       public void encode(final Object var1, final Object var2) {
-         this.encode((ByteBuf)var1, (Quaternionf)var2);
+         this.encode((ByteBuf)var1, (Quaternionfc)var2);
       }
 
       // $FF: synthetic method
@@ -365,11 +365,6 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, PropertyMap> GAME_PROFILE_PROPERTIES = new StreamCodec<ByteBuf, PropertyMap>() {
-      private static final int MAX_PROPERTY_NAME_LENGTH = 64;
-      private static final int MAX_PROPERTY_VALUE_LENGTH = 32767;
-      private static final int MAX_PROPERTY_SIGNATURE_LENGTH = 1024;
-      private static final int MAX_PROPERTIES = 16;
-
       public PropertyMap decode(ByteBuf var1) {
          int var2 = ByteBufCodecs.readCount(var1, 16);
          ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
@@ -546,7 +541,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0) {
-      return fromCodec(var0, (Supplier)(() -> NbtAccounter.create(2097152L)));
+      return fromCodec(var0, NbtAccounter::defaultQuota);
    }
 
    static <T, B extends ByteBuf, V> StreamCodec.CodecOperation<B, T, V> fromCodec(DynamicOps<T> var0, Codec<V> var1) {
@@ -582,7 +577,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistries(Codec<T> var0) {
-      return fromCodecWithRegistries(var0, () -> NbtAccounter.create(2097152L));
+      return fromCodecWithRegistries(var0, NbtAccounter::defaultQuota);
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistries(final Codec<T> var0, Supplier<NbtAccounter> var1) {
@@ -940,7 +935,7 @@ public interface ByteBufCodecs {
             int var2 = VarInt.read(var1) - 1;
             if (var2 == -1) {
                Registry var5 = var1.registryAccess().lookupOrThrow(var0);
-               return (HolderSet)var5.get(TagKey.create(var0, (ResourceLocation)ResourceLocation.STREAM_CODEC.decode(var1))).orElseThrow();
+               return (HolderSet)var5.get(TagKey.create(var0, (Identifier)Identifier.STREAM_CODEC.decode(var1))).orElseThrow();
             } else {
                ArrayList var3 = new ArrayList(Math.min(var2, 65536));
 
@@ -956,7 +951,7 @@ public interface ByteBufCodecs {
             Optional var3 = var2.unwrapKey();
             if (var3.isPresent()) {
                VarInt.write(var1, 0);
-               ResourceLocation.STREAM_CODEC.encode(var1, ((TagKey)var3.get()).location());
+               Identifier.STREAM_CODEC.encode(var1, ((TagKey)var3.get()).location());
             } else {
                VarInt.write(var1, var2.size() + 1);
 

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -27,15 +26,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CloneCommands {
@@ -50,7 +50,7 @@ public class CloneCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(2))).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> DimensionArgument.getDimension(var0x, "sourceDimension"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> DimensionArgument.getDimension(var0x, "sourceDimension"))))));
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1) {
@@ -90,7 +90,7 @@ public class CloneCommands {
          throw ERROR_OVERLAP.create();
       } else {
          int var15 = var9.getXSpan() * var9.getYSpan() * var9.getZSpan();
-         int var16 = var0.getLevel().getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+         int var16 = (Integer)var0.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
          if (var15 > var16) {
             throw ERROR_AREA_TOO_LARGE.create(var16, var15);
          } else if (var13.hasChunksAt(var7, var8) && var14.hasChunksAt(var10, var11)) {
@@ -248,8 +248,7 @@ public class CloneCommands {
    static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo, BlockState previousStateAtDestination) {
       final BlockPos pos;
       final BlockState state;
-      @Nullable
-      final CloneBlockEntityInfo blockEntityInfo;
+      final @Nullable CloneBlockEntityInfo blockEntityInfo;
       final BlockState previousStateAtDestination;
 
       CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3, BlockState var4) {

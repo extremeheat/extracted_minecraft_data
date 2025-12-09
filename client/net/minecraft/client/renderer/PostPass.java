@@ -13,28 +13,29 @@ import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.SamplerCache;
 import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.datafixers.util.Pair;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
 
 public class PostPass implements AutoCloseable {
    private static final int UBO_SIZE_PER_SAMPLER = (new Std140SizeCalculator()).putVec2().get();
    private final String name;
    private final RenderPipeline pipeline;
-   private final ResourceLocation outputTargetId;
+   private final Identifier outputTargetId;
    private final Map<String, GpuBuffer> customUniforms = new HashMap();
    private final MappableRingBuffer infoUbo;
    private final List<Input> inputs;
 
-   public PostPass(RenderPipeline var1, ResourceLocation var2, Map<String, List<UniformValue>> var3, List<Input> var4) {
+   public PostPass(RenderPipeline var1, Identifier var2, Map<String, List<UniformValue>> var3, List<Input> var4) {
       super();
       this.pipeline = var1;
       this.name = var1.getLocation().toString();
@@ -85,7 +86,7 @@ public class PostPass implements AutoCloseable {
       this.infoUbo = new MappableRingBuffer(() -> this.name + " SamplerInfo", 130, (var4.size() + 1) * UBO_SIZE_PER_SAMPLER);
    }
 
-   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, GpuBufferSlice var3) {
+   public void addToFrame(FrameGraphBuilder var1, Map<Identifier, ResourceHandle<RenderTarget>> var2, GpuBufferSlice var3) {
       FramePass var4 = var1.addPass(this.name);
 
       for(Input var6 : this.inputs) {
@@ -101,38 +102,39 @@ public class PostPass implements AutoCloseable {
             RenderSystem.backupProjectionMatrix();
             RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
             CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
-            List var6 = this.inputs.stream().map((var1) -> Pair.of(var1.samplerName(), var1.texture(var2))).toList();
+            SamplerCache var6 = RenderSystem.getSamplerCache();
+            List var7x = this.inputs.stream().map((var2x) -> new InputTexture(var2x.samplerName(), var2x.texture(var2), var6.getClampToEdge(var2x.bilinear() ? FilterMode.LINEAR : FilterMode.NEAREST))).toList();
 
-            try (GpuBuffer.MappedView var7x = var5.mapBuffer(this.infoUbo.currentBuffer(), false, true)) {
-               Std140Builder var8 = Std140Builder.intoBuffer(var7x.data());
-               var8.putVec2((float)var4.width, (float)var4.height);
+            try (GpuBuffer.MappedView var8 = var5.mapBuffer(this.infoUbo.currentBuffer(), false, true)) {
+               Std140Builder var9 = Std140Builder.intoBuffer(var8.data());
+               var9.putVec2((float)var4.width, (float)var4.height);
 
-               for(Pair var10 : var6) {
-                  var8.putVec2((float)((GpuTextureView)var10.getSecond()).getWidth(0), (float)((GpuTextureView)var10.getSecond()).getHeight(0));
+               for(InputTexture var11 : var7x) {
+                  var9.putVec2((float)var11.view.getWidth(0), (float)var11.view.getHeight(0));
                }
             }
 
-            try (RenderPass var15 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTextureView(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTextureView() : null, OptionalDouble.empty())) {
-               var15.setPipeline(this.pipeline);
-               RenderSystem.bindDefaultUniforms(var15);
-               var15.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
+            try (RenderPass var16 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTextureView(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTextureView() : null, OptionalDouble.empty())) {
+               var16.setPipeline(this.pipeline);
+               RenderSystem.bindDefaultUniforms(var16);
+               var16.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
 
-               for(Map.Entry var20 : this.customUniforms.entrySet()) {
-                  var15.setUniform((String)var20.getKey(), (GpuBuffer)var20.getValue());
+               for(Map.Entry var21 : this.customUniforms.entrySet()) {
+                  var16.setUniform((String)var21.getKey(), (GpuBuffer)var21.getValue());
                }
 
-               for(Pair var21 : var6) {
-                  var15.bindSampler((String)var21.getFirst() + "Sampler", (GpuTextureView)var21.getSecond());
+               for(InputTexture var22 : var7x) {
+                  var16.bindTexture(var22.samplerName() + "Sampler", var22.view(), var22.sampler());
                }
 
-               var15.draw(0, 3);
+               var16.draw(0, 3);
             }
 
             this.infoUbo.rotate();
             RenderSystem.restoreProjectionMatrix();
 
-            for(Input var19 : this.inputs) {
-               var19.cleanup(var2);
+            for(Input var20 : this.inputs) {
+               var20.cleanup(var2);
             }
 
          });
@@ -148,35 +150,38 @@ public class PostPass implements AutoCloseable {
    }
 
    public interface Input {
-      void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
+      void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2);
 
-      default void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      default void cleanup(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
       }
 
-      GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1);
+      GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1);
 
       String samplerName();
+
+      boolean bilinear();
    }
 
-   public static record TextureInput(String samplerName, AbstractTexture texture, int width, int height) implements Input {
-      public TextureInput(String var1, AbstractTexture var2, int var3, int var4) {
+   public static record TextureInput(String samplerName, AbstractTexture texture, int width, int height, boolean bilinear) implements Input {
+      public TextureInput(String var1, AbstractTexture var2, int var3, int var4, boolean var5) {
          super();
          this.samplerName = var1;
          this.texture = var2;
          this.width = var3;
          this.height = var4;
+         this.bilinear = var5;
       }
 
-      public void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
+      public void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2) {
       }
 
-      public GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      public GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
          return this.texture.getTextureView();
       }
    }
 
-   public static record TargetInput(String samplerName, ResourceLocation targetId, boolean depthBuffer, boolean bilinear) implements Input {
-      public TargetInput(String var1, ResourceLocation var2, boolean var3, boolean var4) {
+   public static record TargetInput(String samplerName, Identifier targetId, boolean depthBuffer, boolean bilinear) implements Input {
+      public TargetInput(String var1, Identifier var2, boolean var3, boolean var4) {
          super();
          this.samplerName = var1;
          this.targetId = var2;
@@ -184,7 +189,7 @@ public class PostPass implements AutoCloseable {
          this.bilinear = var4;
       }
 
-      private ResourceHandle<RenderTarget> getHandle(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      private ResourceHandle<RenderTarget> getHandle(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
          ResourceHandle var2 = (ResourceHandle)var1.get(this.targetId);
          if (var2 == null) {
             throw new IllegalStateException("Missing handle for target " + String.valueOf(this.targetId));
@@ -193,21 +198,13 @@ public class PostPass implements AutoCloseable {
          }
       }
 
-      public void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
+      public void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2) {
          var1.reads(this.getHandle(var2));
       }
 
-      public void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
-         if (this.bilinear) {
-            ((RenderTarget)this.getHandle(var1).get()).setFilterMode(FilterMode.NEAREST);
-         }
-
-      }
-
-      public GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      public GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
          ResourceHandle var2 = this.getHandle(var1);
          RenderTarget var3 = (RenderTarget)var2.get();
-         var3.setFilterMode(this.bilinear ? FilterMode.LINEAR : FilterMode.NEAREST);
          GpuTextureView var4 = this.depthBuffer ? var3.getDepthTextureView() : var3.getColorTextureView();
          if (var4 == null) {
             String var10002 = this.depthBuffer ? "depth" : "color";
@@ -215,6 +212,17 @@ public class PostPass implements AutoCloseable {
          } else {
             return var4;
          }
+      }
+   }
+
+   static record InputTexture(String samplerName, GpuTextureView view, GpuSampler sampler) {
+      final GpuTextureView view;
+
+      InputTexture(String var1, GpuTextureView var2, GpuSampler var3) {
+         super();
+         this.samplerName = var1;
+         this.view = var2;
+         this.sampler = var3;
       }
    }
 }

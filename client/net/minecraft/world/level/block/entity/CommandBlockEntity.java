@@ -9,6 +9,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.block.Block;
@@ -33,22 +34,14 @@ public class CommandBlockEntity extends BlockEntity {
          CommandBlockEntity.this.setChanged();
       }
 
-      public ServerLevel getLevel() {
-         return (ServerLevel)CommandBlockEntity.this.level;
+      public void onUpdated(ServerLevel var1) {
+         BlockState var2 = var1.getBlockState(CommandBlockEntity.this.worldPosition);
+         var1.sendBlockUpdated(CommandBlockEntity.this.worldPosition, var2, var2, 3);
       }
 
-      public void onUpdated() {
-         BlockState var1 = CommandBlockEntity.this.level.getBlockState(CommandBlockEntity.this.worldPosition);
-         this.getLevel().sendBlockUpdated(CommandBlockEntity.this.worldPosition, var1, var1, 3);
-      }
-
-      public Vec3 getPosition() {
-         return Vec3.atCenterOf(CommandBlockEntity.this.worldPosition);
-      }
-
-      public CommandSourceStack createCommandSourceStack(CommandSource var1) {
-         Direction var2 = (Direction)CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
-         return new CommandSourceStack(var1, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, var2.toYRot()), this.getLevel(), 2, this.getName().getString(), this.getName(), this.getLevel().getServer(), (Entity)null);
+      public CommandSourceStack createCommandSourceStack(ServerLevel var1, CommandSource var2) {
+         Direction var3 = (Direction)CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
+         return new CommandSourceStack(var2, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, var3.toYRot()), var1, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), this.getName(), var1.getServer(), (Entity)null);
       }
 
       public boolean isValid() {

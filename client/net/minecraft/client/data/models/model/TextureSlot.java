@@ -1,6 +1,6 @@
 package net.minecraft.client.data.models.model;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class TextureSlot {
    public static final TextureSlot ALL = create("all");
@@ -49,8 +49,7 @@ public final class TextureSlot {
    public static final TextureSlot TENTACLES;
    public static final TextureSlot BARS;
    private final String id;
-   @Nullable
-   private final TextureSlot parent;
+   private final @Nullable TextureSlot parent;
 
    private static TextureSlot create(String var0) {
       return new TextureSlot(var0, (TextureSlot)null);
@@ -70,8 +69,7 @@ public final class TextureSlot {
       return this.id;
    }
 
-   @Nullable
-   public TextureSlot getParent() {
+   public @Nullable TextureSlot getParent() {
       return this.parent;
    }
 

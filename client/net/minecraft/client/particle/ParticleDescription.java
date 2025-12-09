@@ -5,18 +5,18 @@ import com.google.common.collect.Streams;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 
 public class ParticleDescription {
-   private final List<ResourceLocation> textures;
+   private final List<Identifier> textures;
 
-   private ParticleDescription(List<ResourceLocation> var1) {
+   private ParticleDescription(List<Identifier> var1) {
       super();
       this.textures = var1;
    }
 
-   public List<ResourceLocation> getTextures() {
+   public List<Identifier> getTextures() {
       return this.textures;
    }
 
@@ -25,7 +25,7 @@ public class ParticleDescription {
       if (var1 == null) {
          return new ParticleDescription(List.of());
       } else {
-         List var2 = (List)Streams.stream(var1).map((var0x) -> GsonHelper.convertToString(var0x, "texture")).map(ResourceLocation::parse).collect(ImmutableList.toImmutableList());
+         List var2 = (List)Streams.stream(var1).map((var0x) -> GsonHelper.convertToString(var0x, "texture")).map(Identifier::parse).collect(ImmutableList.toImmutableList());
          return new ParticleDescription(var2);
       }
    }

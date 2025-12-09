@@ -7,25 +7,26 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class GraphicsWorkarounds {
    private static final List<String> INTEL_GEN11_CORE = List.of("i3-1000g1", "i3-1000g4", "i3-1000ng4", "i3-1005g1", "i3-l13g4", "i5-1030g4", "i5-1030g7", "i5-1030ng7", "i5-1034g1", "i5-1035g1", "i5-1035g4", "i5-1035g7", "i5-1038ng7", "i5-l16g7", "i7-1060g7", "i7-1060ng7", "i7-1065g7", "i7-1068g7", "i7-1068ng7");
    private static final List<String> INTEL_GEN11_ATOM = List.of("x6211e", "x6212re", "x6214re", "x6413e", "x6414re", "x6416re", "x6425e", "x6425re", "x6427fe");
    private static final List<String> INTEL_GEN11_CELERON = List.of("j6412", "j6413", "n4500", "n4505", "n5095", "n5095a", "n5100", "n5105", "n6210", "n6211");
    private static final List<String> INTEL_GEN11_PENTIUM = List.of("6805", "j6426", "n6415", "n6000", "n6005");
-   @Nullable
-   private static GraphicsWorkarounds instance;
+   private static @Nullable GraphicsWorkarounds instance;
    private final WeakReference<GpuDevice> gpuDevice;
    private final boolean alwaysCreateFreshImmediateBuffer;
    private final boolean isGlOnDx12;
+   private final boolean isAmd;
 
    private GraphicsWorkarounds(GpuDevice var1) {
       super();
       this.gpuDevice = new WeakReference(var1);
       this.alwaysCreateFreshImmediateBuffer = isIntelGen11(var1);
       this.isGlOnDx12 = isGlOnDx12(var1);
+      this.isAmd = isAmd(var1);
    }
 
    public static GraphicsWorkarounds get(GpuDevice var0) {
@@ -43,6 +44,10 @@ public class GraphicsWorkarounds {
 
    public boolean isGlOnDx12() {
       return this.isGlOnDx12;
+   }
+
+   public boolean isAmd() {
+      return this.isAmd;
    }
 
    private static boolean isIntelGen11(GpuDevice var0) {
@@ -99,5 +104,9 @@ public class GraphicsWorkarounds {
    private static boolean isGlOnDx12(GpuDevice var0) {
       boolean var1 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
       return var1 || var0.getRenderer().startsWith("D3D12");
+   }
+
+   private static boolean isAmd(GpuDevice var0) {
+      return var0.getRenderer().contains("AMD");
    }
 }

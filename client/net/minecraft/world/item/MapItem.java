@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multisets;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import org.jspecify.annotations.Nullable;
 
 public class MapItem extends Item {
    public static final int IMAGE_WIDTH = 128;
@@ -45,13 +45,11 @@ public class MapItem extends Item {
       return var6;
    }
 
-   @Nullable
-   public static MapItemSavedData getSavedData(@Nullable MapId var0, Level var1) {
+   public static @Nullable MapItemSavedData getSavedData(@Nullable MapId var0, Level var1) {
       return var0 == null ? null : var1.getMapData(var0);
    }
 
-   @Nullable
-   public static MapItemSavedData getSavedData(ItemStack var0, Level var1) {
+   public static @Nullable MapItemSavedData getSavedData(ItemStack var0, Level var1) {
       MapId var2 = (MapId)var0.get(DataComponents.MAP_ID);
       return getSavedData(var2, var1);
    }
@@ -225,7 +223,7 @@ public class MapItem extends Item {
                   if (isBiomeWatery(var6, var15, var16)) {
                      var19 = MapColor.COLOR_ORANGE;
                      if (var17 > 7 && var16 % 2 == 0) {
-                        switch ((var15 + (int)(Mth.sin((float)var16 + 0.0F) * 7.0F)) / 8 % 5) {
+                        switch ((var15 + (int)(Mth.sin((double)((float)var16 + 0.0F)) * 7.0F)) / 8 % 5) {
                            case 0:
                            case 4:
                               var18 = MapColor.Brightness.LOW;

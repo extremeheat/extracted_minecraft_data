@@ -7,13 +7,13 @@ import java.util.List;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath path) implements NumberProvider {
-   public static final MapCodec<StorageValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(var0, StorageValue::new));
+public record StorageValue(Identifier storage, NbtPathArgument.NbtPath path) implements NumberProvider {
+   public static final MapCodec<StorageValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(var0, StorageValue::new));
 
-   public StorageValue(ResourceLocation var1, NbtPathArgument.NbtPath var2) {
+   public StorageValue(Identifier var1, NbtPathArgument.NbtPath var2) {
       super();
       this.storage = var1;
       this.path = var2;

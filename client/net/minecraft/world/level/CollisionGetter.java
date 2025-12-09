@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -18,12 +17,12 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public interface CollisionGetter extends BlockGetter {
    WorldBorder getWorldBorder();
 
-   @Nullable
-   BlockGetter getChunkForCollisions(int var1, int var2);
+   @Nullable BlockGetter getChunkForCollisions(int var1, int var2);
 
    default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
       return true;
@@ -51,30 +50,34 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noCollision(@Nullable Entity var1, AABB var2, boolean var3) {
+      return this.noBlockCollision(var1, var2, var3) && this.noEntityCollision(var1, var2) && this.noBorderCollision(var1, var2);
+   }
+
+   default boolean noBlockCollision(@Nullable Entity var1, AABB var2) {
+      return this.noBlockCollision(var1, var2, false);
+   }
+
+   default boolean noBlockCollision(@Nullable Entity var1, AABB var2, boolean var3) {
       for(VoxelShape var6 : var3 ? this.getBlockAndLiquidCollisions(var1, var2) : this.getBlockCollisions(var1, var2)) {
          if (!var6.isEmpty()) {
             return false;
          }
       }
 
-      if (!this.getEntityCollisions(var1, var2).isEmpty()) {
-         return false;
-      } else if (var1 == null) {
-         return true;
-      } else {
-         VoxelShape var7 = this.borderCollision(var1, var2);
-         return var7 == null || !Shapes.joinIsNotEmpty(var7, Shapes.create(var2), BooleanOp.AND);
-      }
+      return true;
    }
 
-   default boolean noBlockCollision(@Nullable Entity var1, AABB var2) {
-      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
-         if (!var4.isEmpty()) {
-            return false;
-         }
-      }
+   default boolean noEntityCollision(@Nullable Entity var1, AABB var2) {
+      return this.getEntityCollisions(var1, var2).isEmpty();
+   }
 
-      return true;
+   default boolean noBorderCollision(@Nullable Entity var1, AABB var2) {
+      if (var1 == null) {
+         return true;
+      } else {
+         VoxelShape var3 = this.borderCollision(var1, var2);
+         return var3 == null || !Shapes.joinIsNotEmpty(var3, Shapes.create(var2), BooleanOp.AND);
+      }
    }
 
    List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2);
@@ -103,8 +106,7 @@ public interface CollisionGetter extends BlockGetter {
       return () -> new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var1x);
    }
 
-   @Nullable
-   private VoxelShape borderCollision(Entity var1, AABB var2) {
+   private @Nullable VoxelShape borderCollision(Entity var1, AABB var2) {
       WorldBorder var3 = this.getWorldBorder();
       return var3.isInsideCloseToBorder(var1, var2) ? var3.getCollisionShape() : null;
    }

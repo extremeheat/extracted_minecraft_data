@@ -4,9 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.Nullable;
 
 public class JsonRPCUtils {
    public static final String JSON_RPC_VERSION = "2.0";
@@ -24,7 +24,7 @@ public class JsonRPCUtils {
       return var2;
    }
 
-   public static JsonObject createRequest(@Nullable Integer var0, ResourceLocation var1, List<JsonElement> var2) {
+   public static JsonObject createRequest(@Nullable Integer var0, Identifier var1, List<JsonElement> var2) {
       JsonObject var3 = new JsonObject();
       var3.addProperty("jsonrpc", "2.0");
       if (var0 != null) {
@@ -60,28 +60,23 @@ public class JsonRPCUtils {
       return var4;
    }
 
-   @Nullable
-   public static JsonElement getRequestId(JsonObject var0) {
+   public static @Nullable JsonElement getRequestId(JsonObject var0) {
       return var0.get("id");
    }
 
-   @Nullable
-   public static String getMethodName(JsonObject var0) {
+   public static @Nullable String getMethodName(JsonObject var0) {
       return GsonHelper.getAsString(var0, "method", (String)null);
    }
 
-   @Nullable
-   public static JsonElement getParams(JsonObject var0) {
+   public static @Nullable JsonElement getParams(JsonObject var0) {
       return var0.get("params");
    }
 
-   @Nullable
-   public static JsonElement getResult(JsonObject var0) {
+   public static @Nullable JsonElement getResult(JsonObject var0) {
       return var0.get("result");
    }
 
-   @Nullable
-   public static JsonObject getError(JsonObject var0) {
+   public static @Nullable JsonObject getError(JsonObject var0) {
       return GsonHelper.getAsJsonObject(var0, "error", (JsonObject)null);
    }
 }

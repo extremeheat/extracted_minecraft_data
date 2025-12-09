@@ -66,8 +66,8 @@ public class LevelEventHandler {
          case 1038:
             Camera var4 = this.minecraft.gameRenderer.getMainCamera();
             if (var4.isInitialized()) {
-               Vec3 var5 = Vec3.atCenterOf(var2).subtract(var4.getPosition()).normalize();
-               Vec3 var6 = var4.getPosition().add(var5.scale(2.0));
+               Vec3 var5 = Vec3.atCenterOf(var2).subtract(var4.position()).normalize();
+               Vec3 var6 = var4.position().add(var5.scale(2.0));
                if (var1 == 1023) {
                   this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
                } else if (var1 == 1038) {
@@ -306,9 +306,9 @@ public class LevelEventHandler {
             for(int var51 = 0; var51 < 200; ++var51) {
                float var58 = var4.nextFloat() * 4.0F;
                float var67 = var4.nextFloat() * 6.2831855F;
-               double var71 = (double)(Mth.cos(var67) * var58);
+               double var71 = (double)(Mth.cos((double)var67) * var58);
                double var79 = 0.01 + var4.nextDouble() * 0.5;
-               double var83 = (double)(Mth.sin(var67) * var58);
+               double var83 = (double)(Mth.sin((double)var67) * var58);
                this.level.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
             }
 

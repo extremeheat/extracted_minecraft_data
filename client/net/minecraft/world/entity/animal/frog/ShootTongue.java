@@ -16,7 +16,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraft.world.phys.Vec3;
 
 public class ShootTongue extends Behavior<Frog> {
    public static final int TIME_OUT_DURATION = 100;
@@ -30,7 +29,6 @@ public class ShootTongue extends Behavior<Frog> {
    private int calculatePathCounter;
    private final SoundEvent tongueSound;
    private final SoundEvent eatSound;
-   private Vec3 itemSpawnPos;
    private State state;
 
    public ShootTongue(SoundEvent var1, SoundEvent var2) {
@@ -94,7 +92,6 @@ public class ShootTongue extends Behavior<Frog> {
                var1.playSound((Entity)null, var2, this.tongueSound, SoundSource.NEUTRAL, 2.0F, 1.0F);
                var2.setPose(Pose.USING_TONGUE);
                var5.setDeltaMovement(var5.position().vectorTo(var2.position()).normalize().scale(0.75));
-               this.itemSpawnPos = var5.position();
                this.eatAnimationTimer = 0;
                this.state = ShootTongue.State.CATCH_ANIMATION;
             } else if (this.calculatePathCounter <= 0) {

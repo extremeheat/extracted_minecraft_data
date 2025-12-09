@@ -1,15 +1,15 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.TurtleModel;
+import net.minecraft.client.model.animal.turtle.TurtleModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TurtleRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.Turtle;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.turtle.Turtle;
 
 public class TurtleRenderer extends AgeableMobRenderer<Turtle, TurtleRenderState, TurtleModel> {
-   private static final ResourceLocation TURTLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/turtle/big_sea_turtle.png");
+   private static final Identifier TURTLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/turtle/big_sea_turtle.png");
 
    public TurtleRenderer(EntityRendererProvider.Context var1) {
       super(var1, new TurtleModel(var1.bakeLayer(ModelLayers.TURTLE)), new TurtleModel(var1.bakeLayer(ModelLayers.TURTLE_BABY)), 0.7F);
@@ -31,7 +31,7 @@ public class TurtleRenderer extends AgeableMobRenderer<Turtle, TurtleRenderState
       var2.hasEgg = !var1.isBaby() && var1.hasEgg();
    }
 
-   public ResourceLocation getTextureLocation(TurtleRenderState var1) {
+   public Identifier getTextureLocation(TurtleRenderState var1) {
       return TURTLE_LOCATION;
    }
 

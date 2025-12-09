@@ -35,12 +35,12 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.block.TrialSpawnerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -151,12 +151,12 @@ public final class TrialSpawner {
    }
 
    public boolean canSpawnInLevel(ServerLevel var1) {
-      if (!var1.getServer().getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED)) {
+      if (!(Boolean)var1.getGameRules().get(GameRules.SPAWNER_BLOCKS_WORK)) {
          return false;
       } else if (this.overridePeacefulAndMobSpawnRule) {
          return true;
       } else {
-         return var1.getDifficulty() == Difficulty.PEACEFUL ? false : var1.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
+         return var1.getDifficulty() == Difficulty.PEACEFUL ? false : (Boolean)var1.getGameRules().get(GameRules.SPAWN_MOBS);
       }
    }
 

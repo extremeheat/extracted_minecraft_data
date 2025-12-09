@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -16,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.jspecify.annotations.Nullable;
 
 public class SetLoreFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetLoreFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ComponentSerialization.CODEC.sizeLimitedListOf(256).fieldOf("lore").forGetter((var0x) -> var0x.lore), ListOperation.codec(256).forGetter((var0x) -> var0x.mode), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> var0x.resolutionContext))).apply(var0, SetLoreFunction::new));
@@ -35,7 +35,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.getParam())).orElseGet(Set::of);
+      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.contextParam())).orElseGet(Set::of);
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {

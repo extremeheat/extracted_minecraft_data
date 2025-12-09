@@ -3,21 +3,21 @@ package net.minecraft.world.level.storage.loot;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class LootParams {
    private final ServerLevel level;
    private final ContextMap params;
-   private final Map<ResourceLocation, DynamicDrop> dynamicDrops;
+   private final Map<Identifier, DynamicDrop> dynamicDrops;
    private final float luck;
 
-   public LootParams(ServerLevel var1, ContextMap var2, Map<ResourceLocation, DynamicDrop> var3, float var4) {
+   public LootParams(ServerLevel var1, ContextMap var2, Map<Identifier, DynamicDrop> var3, float var4) {
       super();
       this.level = var1;
       this.params = var2;
@@ -33,7 +33,7 @@ public class LootParams {
       return this.params;
    }
 
-   public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
+   public void addDynamicDrops(Identifier var1, Consumer<ItemStack> var2) {
       DynamicDrop var3 = (DynamicDrop)this.dynamicDrops.get(var1);
       if (var3 != null) {
          var3.add(var2);
@@ -48,7 +48,7 @@ public class LootParams {
    public static class Builder {
       private final ServerLevel level;
       private final ContextMap.Builder params = new ContextMap.Builder();
-      private final Map<ResourceLocation, DynamicDrop> dynamicDrops = Maps.newHashMap();
+      private final Map<Identifier, DynamicDrop> dynamicDrops = Maps.newHashMap();
       private float luck;
 
       public Builder(ServerLevel var1) {
@@ -74,12 +74,11 @@ public class LootParams {
          return (T)this.params.getParameter(var1);
       }
 
-      @Nullable
-      public <T> T getOptionalParameter(ContextKey<T> var1) {
+      public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
          return (T)this.params.getOptionalParameter(var1);
       }
 
-      public Builder withDynamicDrop(ResourceLocation var1, DynamicDrop var2) {
+      public Builder withDynamicDrop(Identifier var1, DynamicDrop var2) {
          DynamicDrop var3 = (DynamicDrop)this.dynamicDrops.put(var1, var2);
          if (var3 != null) {
             throw new IllegalStateException("Duplicated dynamic drop '" + String.valueOf(this.dynamicDrops) + "'");

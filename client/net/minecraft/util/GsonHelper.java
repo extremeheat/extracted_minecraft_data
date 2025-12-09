@@ -26,13 +26,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public class GsonHelper {
    private static final Gson GSON = (new GsonBuilder()).create();
@@ -110,16 +110,15 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static String getAsString(JsonObject var0, String var1, @Nullable String var2) {
+   public static @Nullable String getAsString(JsonObject var0, String var1, @Nullable String var2) {
       return var0.has(var1) ? convertToString(var0.get(var1), var1) : var2;
    }
 
    public static Holder<Item> convertToItem(JsonElement var0, String var1) {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
-         return (Holder)BuiltInRegistries.ITEM.get(ResourceLocation.parse(var2)).orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
+         return (Holder)BuiltInRegistries.ITEM.get(Identifier.parse(var2)).orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
       } else {
          throw new JsonSyntaxException("Expected " + var1 + " to be an item, was " + getType(var0));
       }
@@ -133,9 +132,8 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static Holder<Item> getAsItem(JsonObject var0, String var1, @Nullable Holder<Item> var2) {
+   public static @Nullable Holder<Item> getAsItem(JsonObject var0, String var1, @Nullable Holder<Item> var2) {
       return var0.has(var1) ? convertToItem(var0.get(var1), var1) : var2;
    }
 
@@ -355,9 +353,8 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static JsonObject getAsJsonObject(JsonObject var0, String var1, @Nullable JsonObject var2) {
+   public static @Nullable JsonObject getAsJsonObject(JsonObject var0, String var1, @Nullable JsonObject var2) {
       return var0.has(var1) ? convertToJsonObject(var0.get(var1), var1) : var2;
    }
 
@@ -377,9 +374,8 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static JsonArray getAsJsonArray(JsonObject var0, String var1, @Nullable JsonArray var2) {
+   public static @Nullable JsonArray getAsJsonArray(JsonObject var0, String var1, @Nullable JsonArray var2) {
       return var0.has(var1) ? convertToJsonArray(var0.get(var1), var1) : var2;
    }
 
@@ -399,9 +395,8 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null,_,_->!null;_,_,null,_,_->_")
-   public static <T> T getAsObject(JsonObject var0, String var1, @Nullable T var2, JsonDeserializationContext var3, Class<? extends T> var4) {
+   public static <T> @Nullable T getAsObject(JsonObject var0, String var1, @Nullable T var2, JsonDeserializationContext var3, Class<? extends T> var4) {
       return var0.has(var1) ? convertToObject(var0.get(var1), var1, var3, var4) : var2;
    }
 
@@ -446,8 +441,7 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
-   public static <T> T fromNullableJson(Gson var0, Reader var1, TypeToken<T> var2) {
+   public static <T> @Nullable T fromNullableJson(Gson var0, Reader var1, TypeToken<T> var2) {
       try {
          JsonReader var3 = new JsonReader(var1);
          var3.setStrictness(Strictness.STRICT);
@@ -466,8 +460,7 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
-   public static <T> T fromNullableJson(Gson var0, String var1, TypeToken<T> var2) {
+   public static <T> @Nullable T fromNullableJson(Gson var0, String var1, TypeToken<T> var2) {
       return (T)fromNullableJson(var0, (Reader)(new StringReader(var1)), var2);
    }
 

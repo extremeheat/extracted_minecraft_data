@@ -2,9 +2,9 @@ package net.minecraft.world.level.entity;
 
 import java.util.UUID;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class LevelEntityGetterAdapter<T extends EntityAccess> implements LevelEntityGetter<T> {
    private final EntityLookup<T> visibleEntities;
@@ -16,13 +16,11 @@ public class LevelEntityGetterAdapter<T extends EntityAccess> implements LevelEn
       this.sectionStorage = var2;
    }
 
-   @Nullable
-   public T get(int var1) {
+   public @Nullable T get(int var1) {
       return this.visibleEntities.getEntity(var1);
    }
 
-   @Nullable
-   public T get(UUID var1) {
+   public @Nullable T get(UUID var1) {
       return this.visibleEntities.getEntity(var1);
    }
 

@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleSortedMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleSortedMaps;
 import java.util.Comparator;
 import java.util.Map;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class Percentiles {
    public static final Quantiles.ScaleAndIndexes DEFAULT_INDEXES = Quantiles.scale(100).indexes(new int[]{50, 75, 90, 99});
@@ -16,6 +16,10 @@ public class Percentiles {
    }
 
    public static Map<Integer, Double> evaluate(long[] var0) {
+      return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
+   }
+
+   public static Map<Integer, Double> evaluate(int[] var0) {
       return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
    }
 

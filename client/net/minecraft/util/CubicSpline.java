@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -24,10 +23,7 @@ public interface CubicSpline<C, I extends BoundedFloatFunction<C>> extends Bound
 
    static <C, I extends BoundedFloatFunction<C>> Codec<CubicSpline<C, I>> codec(Codec<I> var0) {
       MutableObject var1 = new MutableObject();
-      Codec var2 = RecordCodecBuilder.create((var1x) -> {
-         RecordCodecBuilder var10001 = Codec.FLOAT.fieldOf("location").forGetter(1Point::location);
-         Objects.requireNonNull(var1);
-         return var1x.group(var10001, Codec.lazyInitialized(var1::getValue).fieldOf("value").forGetter(1Point::value), Codec.FLOAT.fieldOf("derivative").forGetter(1Point::derivative)).apply(var1x, (var0, var1xx, var2) -> {
+      Codec var2 = RecordCodecBuilder.create((var1x) -> var1x.group(Codec.FLOAT.fieldOf("location").forGetter(1Point::location), Codec.lazyInitialized(var1).fieldOf("value").forGetter(1Point::value), Codec.FLOAT.fieldOf("derivative").forGetter(1Point::derivative)).apply(var1x, (var0, var1xx, var2) -> {
             record 1Point<C, I extends BoundedFloatFunction<C>>(float location, CubicSpline<C, I> value, float derivative) {
                _Point/* $FF was: 1Point*/(float var1, CubicSpline<C, I> var2, float var3) {
                   super();
@@ -38,8 +34,7 @@ public interface CubicSpline<C, I extends BoundedFloatFunction<C>> extends Bound
             }
 
             return new 1Point(var0, var1xx, var2);
-         });
-      });
+         }));
       Codec var3 = RecordCodecBuilder.create((var2x) -> var2x.group(var0.fieldOf("coordinate").forGetter(Multipoint::coordinate), ExtraCodecs.nonEmptyList(var2.listOf()).fieldOf("points").forGetter((var0x) -> IntStream.range(0, var0x.locations.length).mapToObj((var1) -> new 1Point(var0x.locations()[var1], (CubicSpline)var0x.values().get(var1), var0x.derivatives()[var1])).toList())).apply(var2x, (var0x, var1) -> {
             float[] var2 = new float[var1.size()];
             ImmutableList.Builder var3 = ImmutableList.builder();
@@ -64,7 +59,7 @@ public interface CubicSpline<C, I extends BoundedFloatFunction<C>> extends Bound
 
          return var10000;
       }));
-      return (Codec)var1.getValue();
+      return (Codec)var1.get();
    }
 
    static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> constant(float var0) {

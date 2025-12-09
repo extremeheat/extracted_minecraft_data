@@ -3,8 +3,8 @@ package net.minecraft.world.item.enchantment.providers;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -30,6 +30,6 @@ public interface VanillaEnchantmentProviders {
    }
 
    static ResourceKey<EnchantmentProvider> create(String var0) {
-      return ResourceKey.create(Registries.ENCHANTMENT_PROVIDER, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.ENCHANTMENT_PROVIDER, Identifier.withDefaultNamespace(var0));
    }
 }

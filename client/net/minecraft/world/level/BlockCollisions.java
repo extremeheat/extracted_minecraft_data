@@ -2,7 +2,6 @@ package net.minecraft.world.level;
 
 import com.google.common.collect.AbstractIterator;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.SectionPos;
@@ -16,6 +15,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class BlockCollisions<T> extends AbstractIterator<T> {
    private final AABB box;
@@ -25,8 +25,7 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
    private final VoxelShape entityShape;
    private final CollisionGetter collisionGetter;
    private final boolean onlySuffocatingBlocks;
-   @Nullable
-   private BlockGetter cachedBlockGetter;
+   private @Nullable BlockGetter cachedBlockGetter;
    private long cachedBlockGetterPos;
    private final BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> resultProvider;
 
@@ -52,8 +51,7 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
       this.cursor = new Cursor3D(var6, var8, var10, var7, var9, var11);
    }
 
-   @Nullable
-   private BlockGetter getChunk(int var1, int var2) {
+   private @Nullable BlockGetter getChunk(int var1, int var2) {
       int var3 = SectionPos.blockToSectionCoord(var1);
       int var4 = SectionPos.blockToSectionCoord(var2);
       long var5 = ChunkPos.asLong(var3, var4);

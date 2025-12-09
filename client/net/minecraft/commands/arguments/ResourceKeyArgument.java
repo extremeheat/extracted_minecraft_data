@@ -22,8 +22,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -51,7 +51,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    public static <T> ResourceKey<T> getRegistryKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = (ResourceKey)var0.getArgument(var1, ResourceKey.class);
       Optional var5 = var4.cast(var2);
-      return (ResourceKey)var5.orElseThrow(() -> var3.create(var4.location()));
+      return (ResourceKey)var5.orElseThrow(() -> var3.create(var4.identifier()));
    }
 
    private static <T> Registry<T> getRegistry(CommandContext<CommandSourceStack> var0, ResourceKey<? extends Registry<T>> var1) {
@@ -60,7 +60,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
 
    private static <T> Holder.Reference<T> resolveKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = getRegistryKey(var0, var1, var2, var3);
-      return (Holder.Reference)getRegistry(var0, var2).get(var4).orElseThrow(() -> var3.create(var4.location()));
+      return (Holder.Reference)getRegistry(var0, var2).get(var4).orElseThrow(() -> var3.create(var4.identifier()));
    }
 
    public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
@@ -78,21 +78,21 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
       ResourceKey var3 = getRegistryKey(var0, var1, Registries.RECIPE, ERROR_INVALID_RECIPE);
-      return (RecipeHolder)var2.byKey(var3).orElseThrow(() -> ERROR_INVALID_RECIPE.create(var3.location()));
+      return (RecipeHolder)var2.byKey(var3).orElseThrow(() -> ERROR_INVALID_RECIPE.create(var3.identifier()));
    }
 
    public static AdvancementHolder getAdvancement(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       ResourceKey var2 = getRegistryKey(var0, var1, Registries.ADVANCEMENT, ERROR_INVALID_ADVANCEMENT);
-      AdvancementHolder var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().get(var2.location());
+      AdvancementHolder var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().get(var2.identifier());
       if (var3 == null) {
-         throw ERROR_INVALID_ADVANCEMENT.create(var2.location());
+         throw ERROR_INVALID_ADVANCEMENT.create(var2.identifier());
       } else {
          return var3;
       }
    }
 
    public ResourceKey<T> parse(StringReader var1) throws CommandSyntaxException {
-      ResourceLocation var2 = ResourceLocation.read(var1);
+      Identifier var2 = Identifier.read(var1);
       return ResourceKey.create(this.registryKey, var2);
    }
 
@@ -123,7 +123,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
       }
 
       public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.location().toString());
+         var2.addProperty("registry", var1.registryKey.identifier().toString());
       }
 
       public Info<T>.Template unpack(ResourceKeyArgument<T> var1) {

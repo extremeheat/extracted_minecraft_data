@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -10,6 +9,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.ReplaceSphereConfiguration;
+import org.jspecify.annotations.Nullable;
 
 public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
    public ReplaceBlobsFeature(Codec<ReplaceSphereConfiguration> var1) {
@@ -47,8 +47,7 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
       }
    }
 
-   @Nullable
-   private static BlockPos findTarget(LevelAccessor var0, BlockPos.MutableBlockPos var1, Block var2) {
+   private static @Nullable BlockPos findTarget(LevelAccessor var0, BlockPos.MutableBlockPos var1, Block var2) {
       while(var1.getY() > var0.getMinY() + 1) {
          BlockState var3 = var0.getBlockState(var1);
          if (var3.is(var2)) {

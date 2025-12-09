@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -50,10 +49,10 @@ public class DirectJoinServerScreen extends Screen {
       this.setInitialFocus(this.ipEdit);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.ipEdit.getValue();
-      this.init(var1, var2, var3);
-      this.ipEdit.setValue(var4);
+   public void resize(int var1, int var2) {
+      String var3 = this.ipEdit.getValue();
+      this.init(var1, var2);
+      this.ipEdit.setValue(var3);
    }
 
    private void onSelect() {

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 
 public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends Goal {
@@ -23,7 +23,7 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
    }
 
    public boolean canUse() {
-      return getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && this.wasHurtByPlayer();
+      return (Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.UNIVERSAL_ANGER) && this.wasHurtByPlayer();
    }
 
    private boolean wasHurtByPlayer() {

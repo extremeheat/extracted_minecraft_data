@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 public final class ItemTags {
@@ -93,11 +93,13 @@ public final class ItemTags {
    public static final TagKey<Item> WOLF_FOOD = bind("wolf_food");
    public static final TagKey<Item> CAT_FOOD = bind("cat_food");
    public static final TagKey<Item> HORSE_FOOD = bind("horse_food");
+   public static final TagKey<Item> ZOMBIE_HORSE_FOOD = bind("zombie_horse_food");
    public static final TagKey<Item> HORSE_TEMPT_ITEMS = bind("horse_tempt_items");
    public static final TagKey<Item> HARNESSES = bind("harnesses");
    public static final TagKey<Item> HAPPY_GHAST_FOOD = bind("happy_ghast_food");
    public static final TagKey<Item> HAPPY_GHAST_TEMPT_ITEMS = bind("happy_ghast_tempt_items");
    public static final TagKey<Item> CAMEL_FOOD = bind("camel_food");
+   public static final TagKey<Item> CAMEL_HUSK_FOOD = bind("camel_husk_food");
    public static final TagKey<Item> ARMADILLO_FOOD = bind("armadillo_food");
    public static final TagKey<Item> CHICKEN_FOOD = bind("chicken_food");
    public static final TagKey<Item> FROG_FOOD = bind("frog_food");
@@ -115,6 +117,9 @@ public final class ItemTags {
    public static final TagKey<Item> PARROT_FOOD = bind("parrot_food");
    public static final TagKey<Item> PARROT_POISONOUS_FOOD = bind("parrot_poisonous_food");
    public static final TagKey<Item> AXOLOTL_FOOD = bind("axolotl_food");
+   public static final TagKey<Item> NAUTILUS_BUCKET_FOOD = bind("nautilus_bucket_food");
+   public static final TagKey<Item> NAUTILUS_FOOD = bind("nautilus_food");
+   public static final TagKey<Item> NAUTILUS_TAMING_ITEMS = bind("nautilus_taming_items");
    public static final TagKey<Item> NON_FLAMMABLE_WOOD = bind("non_flammable_wood");
    public static final TagKey<Item> BOATS = bind("boats");
    public static final TagKey<Item> CHEST_BOATS = bind("chest_boats");
@@ -161,6 +166,7 @@ public final class ItemTags {
    public static final TagKey<Item> HOES = bind("hoes");
    public static final TagKey<Item> PICKAXES = bind("pickaxes");
    public static final TagKey<Item> SHOVELS = bind("shovels");
+   public static final TagKey<Item> SPEARS = bind("spears");
    public static final TagKey<Item> BREAKS_DECORATED_POTS = bind("breaks_decorated_pots");
    public static final TagKey<Item> VILLAGER_PLANTABLE_SEEDS = bind("villager_plantable_seeds");
    public static final TagKey<Item> VILLAGER_PICKS_UP = bind("villager_picks_up");
@@ -179,7 +185,8 @@ public final class ItemTags {
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");
    public static final TagKey<Item> HEAD_ARMOR_ENCHANTABLE = bind("enchantable/head_armor");
    public static final TagKey<Item> ARMOR_ENCHANTABLE = bind("enchantable/armor");
-   public static final TagKey<Item> SWORD_ENCHANTABLE = bind("enchantable/sword");
+   public static final TagKey<Item> MELEE_WEAPON_ENCHANTABLE = bind("enchantable/melee_weapon");
+   public static final TagKey<Item> SWEEPING_ENCHANTABLE = bind("enchantable/sweeping");
    public static final TagKey<Item> FIRE_ASPECT_ENCHANTABLE = bind("enchantable/fire_aspect");
    public static final TagKey<Item> SHARP_WEAPON_ENCHANTABLE = bind("enchantable/sharp_weapon");
    public static final TagKey<Item> WEAPON_ENCHANTABLE = bind("enchantable/weapon");
@@ -187,6 +194,7 @@ public final class ItemTags {
    public static final TagKey<Item> MINING_LOOT_ENCHANTABLE = bind("enchantable/mining_loot");
    public static final TagKey<Item> FISHING_ENCHANTABLE = bind("enchantable/fishing");
    public static final TagKey<Item> TRIDENT_ENCHANTABLE = bind("enchantable/trident");
+   public static final TagKey<Item> LUNGE_ENCHANTABLE = bind("enchantable/lunge");
    public static final TagKey<Item> DURABILITY_ENCHANTABLE = bind("enchantable/durability");
    public static final TagKey<Item> BOW_ENCHANTABLE = bind("enchantable/bow");
    public static final TagKey<Item> EQUIPPABLE_ENCHANTABLE = bind("enchantable/equippable");
@@ -201,6 +209,6 @@ public final class ItemTags {
    }
 
    private static TagKey<Item> bind(String var0) {
-      return TagKey.<Item>create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Item>create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
    }
 }

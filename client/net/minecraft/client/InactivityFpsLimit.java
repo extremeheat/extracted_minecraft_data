@@ -1,30 +1,24 @@
 package net.minecraft.client;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.util.OptionEnum;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
-public enum InactivityFpsLimit implements OptionEnum, StringRepresentable {
-   MINIMIZED(0, "minimized", "options.inactivityFpsLimit.minimized"),
-   AFK(1, "afk", "options.inactivityFpsLimit.afk");
+public enum InactivityFpsLimit implements StringRepresentable {
+   MINIMIZED("minimized", "options.inactivityFpsLimit.minimized"),
+   AFK("afk", "options.inactivityFpsLimit.afk");
 
    public static final Codec<InactivityFpsLimit> CODEC = StringRepresentable.<InactivityFpsLimit>fromEnum(InactivityFpsLimit::values);
-   private final int id;
    private final String serializedName;
-   private final String key;
+   private final Component caption;
 
-   private InactivityFpsLimit(final int var3, final String var4, final String var5) {
-      this.id = var3;
-      this.serializedName = var4;
-      this.key = var5;
+   private InactivityFpsLimit(final String var3, final String var4) {
+      this.serializedName = var3;
+      this.caption = Component.translatable(var4);
    }
 
-   public int getId() {
-      return this.id;
-   }
-
-   public String getKey() {
-      return this.key;
+   public Component caption() {
+      return this.caption;
    }
 
    public String getSerializedName() {

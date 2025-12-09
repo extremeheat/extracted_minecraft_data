@@ -9,17 +9,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientRegistryLayer;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.PlaceholderLookupProvider;
 import net.minecraft.util.StrictJsonParser;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientItemInfoLoader {
@@ -35,7 +35,7 @@ public class ClientItemInfoLoader {
       return CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var0), var1).thenCompose((var2x) -> {
          ArrayList var3 = new ArrayList(var2x.size());
          var2x.forEach((var3x, var4) -> var3.add(CompletableFuture.supplyAsync(() -> {
-               ResourceLocation var3 = LISTER.fileToId(var3x);
+               Identifier var3 = LISTER.fileToId(var3x);
 
                try {
                   BufferedReader var4x = var4.openAsReader();
@@ -82,20 +82,19 @@ public class ClientItemInfoLoader {
       });
    }
 
-   static record PendingLoad(ResourceLocation id, @Nullable ClientItem clientItemInfo) {
-      final ResourceLocation id;
-      @Nullable
-      final ClientItem clientItemInfo;
+   static record PendingLoad(Identifier id, @Nullable ClientItem clientItemInfo) {
+      final Identifier id;
+      final @Nullable ClientItem clientItemInfo;
 
-      PendingLoad(ResourceLocation var1, @Nullable ClientItem var2) {
+      PendingLoad(Identifier var1, @Nullable ClientItem var2) {
          super();
          this.id = var1;
          this.clientItemInfo = var2;
       }
    }
 
-   public static record LoadedClientInfos(Map<ResourceLocation, ClientItem> contents) {
-      public LoadedClientInfos(Map<ResourceLocation, ClientItem> var1) {
+   public static record LoadedClientInfos(Map<Identifier, ClientItem> contents) {
+      public LoadedClientInfos(Map<Identifier, ClientItem> var1) {
          super();
          this.contents = var1;
       }

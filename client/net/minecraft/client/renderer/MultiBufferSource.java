@@ -9,7 +9,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SequencedMap;
-import javax.annotation.Nullable;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import org.jspecify.annotations.Nullable;
 
 public interface MultiBufferSource {
    static BufferSource immediate(ByteBufferBuilder var0) {
@@ -26,8 +27,7 @@ public interface MultiBufferSource {
       protected final ByteBufferBuilder sharedBuffer;
       protected final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers;
       protected final Map<RenderType, BufferBuilder> startedBuilders = new HashMap();
-      @Nullable
-      protected RenderType lastSharedType;
+      protected @Nullable RenderType lastSharedType;
 
       protected BufferSource(ByteBufferBuilder var1, SequencedMap<RenderType, ByteBufferBuilder> var2) {
          super();

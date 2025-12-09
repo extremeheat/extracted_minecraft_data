@@ -3,20 +3,20 @@ package net.minecraft.world.level.levelgen.structure.structures;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.monster.Drowned;
+import net.minecraft.world.entity.monster.zombie.Drowned;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -57,14 +57,14 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public class OceanRuinPieces {
    static final StructureProcessor WARM_SUSPICIOUS_BLOCK_PROCESSOR;
    static final StructureProcessor COLD_SUSPICIOUS_BLOCK_PROCESSOR;
-   private static final ResourceLocation[] WARM_RUINS;
-   private static final ResourceLocation[] RUINS_BRICK;
-   private static final ResourceLocation[] RUINS_CRACKED;
-   private static final ResourceLocation[] RUINS_MOSSY;
-   private static final ResourceLocation[] BIG_RUINS_BRICK;
-   private static final ResourceLocation[] BIG_RUINS_MOSSY;
-   private static final ResourceLocation[] BIG_RUINS_CRACKED;
-   private static final ResourceLocation[] BIG_WARM_RUINS;
+   private static final Identifier[] WARM_RUINS;
+   private static final Identifier[] RUINS_BRICK;
+   private static final Identifier[] RUINS_CRACKED;
+   private static final Identifier[] RUINS_MOSSY;
+   private static final Identifier[] BIG_RUINS_BRICK;
+   private static final Identifier[] BIG_RUINS_MOSSY;
+   private static final Identifier[] BIG_RUINS_CRACKED;
+   private static final Identifier[] BIG_WARM_RUINS;
 
    public OceanRuinPieces() {
       super();
@@ -74,12 +74,12 @@ public class OceanRuinPieces {
       return new CappedProcessor(new RuleProcessor(List.of(new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, PosAlwaysTrueTest.INSTANCE, var1.defaultBlockState(), new AppendLoot(var2)))), ConstantInt.of(5));
    }
 
-   private static ResourceLocation getSmallWarmRuin(RandomSource var0) {
-      return (ResourceLocation)Util.getRandom(WARM_RUINS, var0);
+   private static Identifier getSmallWarmRuin(RandomSource var0) {
+      return (Identifier)Util.getRandom(WARM_RUINS, var0);
    }
 
-   private static ResourceLocation getBigWarmRuin(RandomSource var0) {
-      return (ResourceLocation)Util.getRandom(BIG_WARM_RUINS, var0);
+   private static Identifier getBigWarmRuin(RandomSource var0) {
+      return (Identifier)Util.getRandom(BIG_WARM_RUINS, var0);
    }
 
    public static void addPieces(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, OceanRuinStructure var5) {
@@ -132,13 +132,13 @@ public class OceanRuinPieces {
       switch (var5.biomeTemp) {
          case WARM:
          default:
-            ResourceLocation var8 = var6 ? getBigWarmRuin(var4) : getSmallWarmRuin(var4);
+            Identifier var8 = var6 ? getBigWarmRuin(var4) : getSmallWarmRuin(var4);
             var3.addPiece(new OceanRuinPiece(var0, var8, var1, var2, var7, var5.biomeTemp, var6));
             break;
          case COLD:
-            ResourceLocation[] var9 = var6 ? BIG_RUINS_BRICK : RUINS_BRICK;
-            ResourceLocation[] var10 = var6 ? BIG_RUINS_CRACKED : RUINS_CRACKED;
-            ResourceLocation[] var11 = var6 ? BIG_RUINS_MOSSY : RUINS_MOSSY;
+            Identifier[] var9 = var6 ? BIG_RUINS_BRICK : RUINS_BRICK;
+            Identifier[] var10 = var6 ? BIG_RUINS_CRACKED : RUINS_CRACKED;
+            Identifier[] var11 = var6 ? BIG_RUINS_MOSSY : RUINS_MOSSY;
             int var12 = var4.nextInt(var9.length);
             var3.addPiece(new OceanRuinPiece(var0, var9[var12], var1, var2, var7, var5.biomeTemp, var6));
             var3.addPiece(new OceanRuinPiece(var0, var10[var12], var1, var2, 0.7F, var5.biomeTemp, var6));
@@ -150,14 +150,14 @@ public class OceanRuinPieces {
    static {
       WARM_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(Blocks.SAND, Blocks.SUSPICIOUS_SAND, BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY);
       COLD_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY);
-      WARM_RUINS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/warm_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_4"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_5"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_6"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_7"), ResourceLocation.withDefaultNamespace("underwater_ruin/warm_8")};
-      RUINS_BRICK = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/brick_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_4"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_5"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_6"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_7"), ResourceLocation.withDefaultNamespace("underwater_ruin/brick_8")};
-      RUINS_CRACKED = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_4"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_5"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_6"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_7"), ResourceLocation.withDefaultNamespace("underwater_ruin/cracked_8")};
-      RUINS_MOSSY = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_4"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_5"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_6"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_7"), ResourceLocation.withDefaultNamespace("underwater_ruin/mossy_8")};
-      BIG_RUINS_BRICK = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/big_brick_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_brick_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_brick_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_brick_8")};
-      BIG_RUINS_MOSSY = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/big_mossy_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_mossy_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_mossy_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_mossy_8")};
-      BIG_RUINS_CRACKED = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/big_cracked_1"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_cracked_2"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_cracked_3"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_cracked_8")};
-      BIG_WARM_RUINS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("underwater_ruin/big_warm_4"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_warm_5"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_warm_6"), ResourceLocation.withDefaultNamespace("underwater_ruin/big_warm_7")};
+      WARM_RUINS = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/warm_1"), Identifier.withDefaultNamespace("underwater_ruin/warm_2"), Identifier.withDefaultNamespace("underwater_ruin/warm_3"), Identifier.withDefaultNamespace("underwater_ruin/warm_4"), Identifier.withDefaultNamespace("underwater_ruin/warm_5"), Identifier.withDefaultNamespace("underwater_ruin/warm_6"), Identifier.withDefaultNamespace("underwater_ruin/warm_7"), Identifier.withDefaultNamespace("underwater_ruin/warm_8")};
+      RUINS_BRICK = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/brick_1"), Identifier.withDefaultNamespace("underwater_ruin/brick_2"), Identifier.withDefaultNamespace("underwater_ruin/brick_3"), Identifier.withDefaultNamespace("underwater_ruin/brick_4"), Identifier.withDefaultNamespace("underwater_ruin/brick_5"), Identifier.withDefaultNamespace("underwater_ruin/brick_6"), Identifier.withDefaultNamespace("underwater_ruin/brick_7"), Identifier.withDefaultNamespace("underwater_ruin/brick_8")};
+      RUINS_CRACKED = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/cracked_1"), Identifier.withDefaultNamespace("underwater_ruin/cracked_2"), Identifier.withDefaultNamespace("underwater_ruin/cracked_3"), Identifier.withDefaultNamespace("underwater_ruin/cracked_4"), Identifier.withDefaultNamespace("underwater_ruin/cracked_5"), Identifier.withDefaultNamespace("underwater_ruin/cracked_6"), Identifier.withDefaultNamespace("underwater_ruin/cracked_7"), Identifier.withDefaultNamespace("underwater_ruin/cracked_8")};
+      RUINS_MOSSY = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/mossy_1"), Identifier.withDefaultNamespace("underwater_ruin/mossy_2"), Identifier.withDefaultNamespace("underwater_ruin/mossy_3"), Identifier.withDefaultNamespace("underwater_ruin/mossy_4"), Identifier.withDefaultNamespace("underwater_ruin/mossy_5"), Identifier.withDefaultNamespace("underwater_ruin/mossy_6"), Identifier.withDefaultNamespace("underwater_ruin/mossy_7"), Identifier.withDefaultNamespace("underwater_ruin/mossy_8")};
+      BIG_RUINS_BRICK = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/big_brick_1"), Identifier.withDefaultNamespace("underwater_ruin/big_brick_2"), Identifier.withDefaultNamespace("underwater_ruin/big_brick_3"), Identifier.withDefaultNamespace("underwater_ruin/big_brick_8")};
+      BIG_RUINS_MOSSY = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/big_mossy_1"), Identifier.withDefaultNamespace("underwater_ruin/big_mossy_2"), Identifier.withDefaultNamespace("underwater_ruin/big_mossy_3"), Identifier.withDefaultNamespace("underwater_ruin/big_mossy_8")};
+      BIG_RUINS_CRACKED = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/big_cracked_1"), Identifier.withDefaultNamespace("underwater_ruin/big_cracked_2"), Identifier.withDefaultNamespace("underwater_ruin/big_cracked_3"), Identifier.withDefaultNamespace("underwater_ruin/big_cracked_8")};
+      BIG_WARM_RUINS = new Identifier[]{Identifier.withDefaultNamespace("underwater_ruin/big_warm_4"), Identifier.withDefaultNamespace("underwater_ruin/big_warm_5"), Identifier.withDefaultNamespace("underwater_ruin/big_warm_6"), Identifier.withDefaultNamespace("underwater_ruin/big_warm_7")};
    }
 
    public static class OceanRuinPiece extends TemplateStructurePiece {
@@ -165,7 +165,7 @@ public class OceanRuinPieces {
       private final float integrity;
       private final boolean isLarge;
 
-      public OceanRuinPiece(StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4, float var5, OceanRuinStructure.Type var6, boolean var7) {
+      public OceanRuinPiece(StructureTemplateManager var1, Identifier var2, BlockPos var3, Rotation var4, float var5, OceanRuinStructure.Type var6, boolean var7) {
          super(StructurePieceType.OCEAN_RUIN, 0, var1, var2, var2.toString(), makeSettings(var4, var5, var6), var3);
          this.integrity = var5;
          this.biomeType = var6;

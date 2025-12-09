@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -16,12 +15,12 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class MultiPartModel implements BlockStateModel {
    private final SharedBakedState shared;
    private final BlockState blockState;
-   @Nullable
-   private List<BlockStateModel> models;
+   private @Nullable List<BlockStateModel> models;
 
    MultiPartModel(SharedBakedState var1, BlockState var2) {
       super();

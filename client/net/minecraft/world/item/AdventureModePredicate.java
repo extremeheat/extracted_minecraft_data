@@ -5,9 +5,8 @@ import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.advancements.criterion.BlockPredicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.storage.TagValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class AdventureModePredicate {
@@ -31,10 +31,8 @@ public class AdventureModePredicate {
    public static final Component CAN_PLACE_HEADER;
    private static final Component UNKNOWN_USE;
    private final List<BlockPredicate> predicates;
-   @Nullable
-   private List<Component> cachedTooltip;
-   @Nullable
-   private BlockInWorld lastCheckedBlock;
+   private @Nullable List<Component> cachedTooltip;
+   private @Nullable BlockInWorld lastCheckedBlock;
    private boolean lastResult;
    private boolean checksBlockEntity;
 

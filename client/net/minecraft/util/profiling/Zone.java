@@ -1,12 +1,11 @@
 package net.minecraft.util.profiling;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class Zone implements AutoCloseable {
    public static final Zone INACTIVE = new Zone((ProfilerFiller)null);
-   @Nullable
-   private final ProfilerFiller profiler;
+   private final @Nullable ProfilerFiller profiler;
 
    Zone(@Nullable ProfilerFiller var1) {
       super();

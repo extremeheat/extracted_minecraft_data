@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.navigation;
 
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
 
 public record ScreenRectangle(ScreenPosition position, int width, int height) {
    private static final ScreenRectangle EMPTY = new ScreenRectangle(0, 0, 0, 0);
@@ -78,8 +78,7 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return (this.getBoundInDirection(var1.getPositive()) + this.getBoundInDirection(var1.getNegative())) / 2;
    }
 
-   @Nullable
-   public ScreenRectangle intersection(ScreenRectangle var1) {
+   public @Nullable ScreenRectangle intersection(ScreenRectangle var1) {
       int var2 = Math.max(this.left(), var1.left());
       int var3 = Math.max(this.top(), var1.top());
       int var4 = Math.min(this.right(), var1.right());
@@ -115,13 +114,13 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return var1 >= this.left() && var1 < this.right() && var2 >= this.top() && var2 < this.bottom();
    }
 
-   public ScreenRectangle transformAxisAligned(Matrix3x2f var1) {
+   public ScreenRectangle transformAxisAligned(Matrix3x2fc var1) {
       Vector2f var2 = var1.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
       Vector2f var3 = var1.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
       return new ScreenRectangle(Mth.floor(var2.x), Mth.floor(var2.y), Mth.floor(var3.x - var2.x), Mth.floor(var3.y - var2.y));
    }
 
-   public ScreenRectangle transformMaxBounds(Matrix3x2f var1) {
+   public ScreenRectangle transformMaxBounds(Matrix3x2fc var1) {
       Vector2f var2 = var1.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
       Vector2f var3 = var1.transformPosition((float)this.right(), (float)this.top(), new Vector2f());
       Vector2f var4 = var1.transformPosition((float)this.left(), (float)this.bottom(), new Vector2f());

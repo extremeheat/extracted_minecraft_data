@@ -14,12 +14,12 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class QuickPlayLog {
@@ -33,8 +33,7 @@ public class QuickPlayLog {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Gson GSON = (new GsonBuilder()).create();
    private final Path path;
-   @Nullable
-   private QuickPlayWorld worldData;
+   private @Nullable QuickPlayWorld worldData;
 
    QuickPlayLog(String var1) {
       super();

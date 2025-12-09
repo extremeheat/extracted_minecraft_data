@@ -209,7 +209,7 @@ public class MultilineTextField {
                this.insertText("\n");
                return true;
             case 259:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   StringView var5 = this.getPreviousWord();
                   this.deleteText(var5.beginIndex - this.cursor);
                } else {
@@ -218,7 +218,7 @@ public class MultilineTextField {
 
                return true;
             case 261:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   StringView var4 = this.getNextWord();
                   this.deleteText(var4.beginIndex - this.cursor);
                } else {
@@ -227,7 +227,7 @@ public class MultilineTextField {
 
                return true;
             case 262:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   StringView var3 = this.getNextWord();
                   this.seekCursor(Whence.ABSOLUTE, var3.beginIndex);
                } else {
@@ -236,7 +236,7 @@ public class MultilineTextField {
 
                return true;
             case 263:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   StringView var2 = this.getPreviousWord();
                   this.seekCursor(Whence.ABSOLUTE, var2.beginIndex);
                } else {
@@ -245,13 +245,13 @@ public class MultilineTextField {
 
                return true;
             case 264:
-               if (!var1.hasControlDown()) {
+               if (!var1.hasControlDownWithQuirk()) {
                   this.seekCursorLine(1);
                }
 
                return true;
             case 265:
-               if (!var1.hasControlDown()) {
+               if (!var1.hasControlDownWithQuirk()) {
                   this.seekCursorLine(-1);
                }
 
@@ -263,7 +263,7 @@ public class MultilineTextField {
                this.seekCursor(Whence.END, 0);
                return true;
             case 268:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   this.seekCursor(Whence.ABSOLUTE, 0);
                } else {
                   this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().beginIndex);
@@ -271,7 +271,7 @@ public class MultilineTextField {
 
                return true;
             case 269:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   this.seekCursor(Whence.END, 0);
                } else {
                   this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().endIndex);

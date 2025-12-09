@@ -3,16 +3,16 @@ package net.minecraft.commands;
 import com.mojang.serialization.Codec;
 import java.util.Optional;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerFunctionManager;
 
 public class CacheableFunction {
    public static final Codec<CacheableFunction> CODEC;
-   private final ResourceLocation id;
+   private final Identifier id;
    private boolean resolved;
    private Optional<CommandFunction<CommandSourceStack>> function = Optional.empty();
 
-   public CacheableFunction(ResourceLocation var1) {
+   public CacheableFunction(Identifier var1) {
       super();
       this.id = var1;
    }
@@ -26,7 +26,7 @@ public class CacheableFunction {
       return this.function;
    }
 
-   public ResourceLocation getId() {
+   public Identifier getId() {
       return this.id;
    }
 
@@ -49,6 +49,6 @@ public class CacheableFunction {
    }
 
    static {
-      CODEC = ResourceLocation.CODEC.xmap(CacheableFunction::new, CacheableFunction::getId);
+      CODEC = Identifier.CODEC.xmap(CacheableFunction::new, CacheableFunction::getId);
    }
 }

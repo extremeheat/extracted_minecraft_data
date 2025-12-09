@@ -7,17 +7,17 @@ import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.execution.UnboundEntryAction;
 import net.minecraft.commands.execution.tasks.BuildContexts;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public interface CommandFunction<T> {
-   ResourceLocation id();
+   Identifier id();
 
    InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException;
 
@@ -26,7 +26,7 @@ public interface CommandFunction<T> {
       return var1 > 0 && var0.charAt(var1 - 1) == '\\';
    }
 
-   static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(ResourceLocation var0, CommandDispatcher<T> var1, T var2, List<String> var3) {
+   static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(Identifier var0, CommandDispatcher<T> var1, T var2, List<String> var3) {
       FunctionBuilder var4 = new FunctionBuilder();
 
       for(int var5 = 0; var5 < var3.size(); ++var5) {

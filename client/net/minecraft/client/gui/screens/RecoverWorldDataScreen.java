@@ -6,7 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
-import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -24,6 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RecoverWorldDataScreen extends Screen {
@@ -92,7 +94,7 @@ public class RecoverWorldDataScreen extends Screen {
       } else {
          MutableComponent var4 = Component.empty();
          Instant var5 = var1.getFileModificationTime(var2);
-         MutableComponent var6 = var5 != null ? Component.literal(WorldSelectionList.DATE_FORMAT.format(var5)) : Component.translatable("recover_world.state_entry.unknown");
+         MutableComponent var6 = var5 != null ? Component.literal(WorldSelectionList.DATE_FORMAT.format(ZonedDateTime.ofInstant(var5, ZoneId.systemDefault()))) : Component.translatable("recover_world.state_entry.unknown");
          var4.append((Component)Component.translatable("recover_world.state_entry", var6.withStyle(ChatFormatting.GRAY)));
          if (var3 == null) {
             var4.append(NO_ISSUES);
@@ -108,8 +110,7 @@ public class RecoverWorldDataScreen extends Screen {
       }
    }
 
-   @Nullable
-   private Exception collectIssue(LevelStorageSource.LevelStorageAccess var1, boolean var2) {
+   private @Nullable Exception collectIssue(LevelStorageSource.LevelStorageAccess var1, boolean var2) {
       try {
          if (!var2) {
             var1.getSummary(var1.getDataTag());

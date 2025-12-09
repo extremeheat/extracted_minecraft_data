@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.blockentity.state;
 
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.SkullBlock;
 

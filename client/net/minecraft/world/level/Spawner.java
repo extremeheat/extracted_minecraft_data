@@ -1,7 +1,6 @@
 package net.minecraft.world.level;
 
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -9,6 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import org.jspecify.annotations.Nullable;
 
 public interface Spawner {
    void setEntityId(EntityType<?> var1, RandomSource var2);
@@ -25,8 +25,7 @@ public interface Spawner {
 
    }
 
-   @Nullable
-   static Component getSpawnEntityDisplayName(@Nullable TypedEntityData<BlockEntityType<?>> var0, String var1) {
+   static @Nullable Component getSpawnEntityDisplayName(@Nullable TypedEntityData<BlockEntityType<?>> var0, String var1) {
       return var0 == null ? null : (Component)var0.getUnsafe().getCompound(var1).flatMap((var0x) -> var0x.getCompound("entity")).flatMap((var0x) -> var0x.read("id", EntityType.CODEC)).map((var0x) -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY)).orElse((Object)null);
    }
 }

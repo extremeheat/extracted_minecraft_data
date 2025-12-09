@@ -21,8 +21,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkProtoTickListFix extends DataFix {
    private static final int SECTION_WIDTH = 16;
@@ -51,7 +51,7 @@ public class ChunkProtoTickListFix extends DataFix {
                   int var7x = var6x.get("Y").asInt(2147483647);
                   if (var7x != 2147483647) {
                      if (var5x.getOptionalTyped(var6).isPresent()) {
-                        var9.setValue(Math.min(var7x, var9.getValue()));
+                        var9.setValue(Math.min(var7x, var9.intValue()));
                      }
 
                      var5x.getOptionalTyped(var5).ifPresent((var3) -> var10.put(var7x, Suppliers.memoize(() -> {
@@ -61,7 +61,7 @@ public class ChunkProtoTickListFix extends DataFix {
                         })));
                   }
                }));
-            byte var11 = var9.getValue().byteValue();
+            byte var11 = var9.byteValue();
             var7x = var7x.update(DSL.remainderFinder(), (var1) -> var1.update("yPos", (var1x) -> var1x.createByte(var11)));
             if (!var7x.getOptionalTyped(var8).isPresent() && !var8x.get("fluid_ticks").result().isPresent()) {
                int var12 = var8x.get("xPos").asInt(0);
@@ -138,13 +138,12 @@ public class ChunkProtoTickListFix extends DataFix {
          this.valuesPerLong = (char)(64 / this.bits);
       }
 
-      @Nullable
-      public Dynamic<?> get(int var1, int var2, int var3) {
+      public @Nullable Dynamic<?> get(int var1, int var2, int var3) {
          int var4 = this.palette.size();
          if (var4 < 1) {
             return null;
          } else if (var4 == 1) {
-            return (Dynamic)this.palette.get(0);
+            return (Dynamic)this.palette.getFirst();
          } else {
             int var5 = this.getIndex(var1, var2, var3);
             int var6 = var5 / this.valuesPerLong;

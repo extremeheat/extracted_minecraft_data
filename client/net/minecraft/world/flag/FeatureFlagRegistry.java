@@ -12,16 +12,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
 public class FeatureFlagRegistry {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final FeatureFlagUniverse universe;
-   private final Map<ResourceLocation, FeatureFlag> names;
+   private final Map<Identifier, FeatureFlag> names;
    private final FeatureFlagSet allFlags;
 
-   FeatureFlagRegistry(FeatureFlagUniverse var1, FeatureFlagSet var2, Map<ResourceLocation, FeatureFlag> var3) {
+   FeatureFlagRegistry(FeatureFlagUniverse var1, FeatureFlagSet var2, Map<Identifier, FeatureFlag> var3) {
       super();
       this.universe = var1;
       this.names = var3;
@@ -36,7 +36,7 @@ public class FeatureFlagRegistry {
       return this.allFlags;
    }
 
-   public FeatureFlagSet fromNames(Iterable<ResourceLocation> var1) {
+   public FeatureFlagSet fromNames(Iterable<Identifier> var1) {
       return this.fromNames(var1, (var0) -> LOGGER.warn("Unknown feature flag: {}", var0));
    }
 
@@ -44,10 +44,10 @@ public class FeatureFlagRegistry {
       return FeatureFlagSet.create(this.universe, Arrays.asList(var1));
    }
 
-   public FeatureFlagSet fromNames(Iterable<ResourceLocation> var1, Consumer<ResourceLocation> var2) {
+   public FeatureFlagSet fromNames(Iterable<Identifier> var1, Consumer<Identifier> var2) {
       Set var3 = Sets.newIdentityHashSet();
 
-      for(ResourceLocation var5 : var1) {
+      for(Identifier var5 : var1) {
          FeatureFlag var6 = (FeatureFlag)this.names.get(var5);
          if (var6 == null) {
             var2.accept(var5);
@@ -59,7 +59,7 @@ public class FeatureFlagRegistry {
       return FeatureFlagSet.create(this.universe, var3);
    }
 
-   public Set<ResourceLocation> toNames(FeatureFlagSet var1) {
+   public Set<Identifier> toNames(FeatureFlagSet var1) {
       HashSet var2 = new HashSet();
       this.names.forEach((var2x, var3) -> {
          if (var1.contains(var3)) {
@@ -71,7 +71,7 @@ public class FeatureFlagRegistry {
    }
 
    public Codec<FeatureFlagSet> codec() {
-      return ResourceLocation.CODEC.listOf().comapFlatMap((var1) -> {
+      return Identifier.CODEC.listOf().comapFlatMap((var1) -> {
          HashSet var2 = new HashSet();
          Objects.requireNonNull(var2);
          FeatureFlagSet var3 = this.fromNames(var1, var2::add);
@@ -82,7 +82,7 @@ public class FeatureFlagRegistry {
    public static class Builder {
       private final FeatureFlagUniverse universe;
       private int id;
-      private final Map<ResourceLocation, FeatureFlag> flags = new LinkedHashMap();
+      private final Map<Identifier, FeatureFlag> flags = new LinkedHashMap();
 
       public Builder(String var1) {
          super();
@@ -90,10 +90,10 @@ public class FeatureFlagRegistry {
       }
 
       public FeatureFlag createVanilla(String var1) {
-         return this.create(ResourceLocation.withDefaultNamespace(var1));
+         return this.create(Identifier.withDefaultNamespace(var1));
       }
 
-      public FeatureFlag create(ResourceLocation var1) {
+      public FeatureFlag create(Identifier var1) {
          if (this.id >= 64) {
             throw new IllegalStateException("Too many feature flags");
          } else {

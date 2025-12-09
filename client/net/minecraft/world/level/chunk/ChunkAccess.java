@@ -19,7 +19,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -56,26 +55,24 @@ import net.minecraft.world.level.lighting.ChunkSkyLightSources;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.SavedTick;
 import net.minecraft.world.ticks.TickContainerAccess;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, LightChunk, StructureAccess {
    public static final int NO_FILLED_SECTION = -1;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final LongSet EMPTY_REFERENCE_SET = new LongOpenHashSet();
-   protected final ShortList[] postProcessing;
+   protected final @Nullable ShortList[] postProcessing;
    private volatile boolean unsaved;
    private volatile boolean isLightCorrect;
    protected final ChunkPos chunkPos;
    private long inhabitedTime;
    /** @deprecated */
-   @Nullable
    @Deprecated
-   private BiomeGenerationSettings carverBiomeSettings;
-   @Nullable
-   protected NoiseChunk noiseChunk;
+   private @Nullable BiomeGenerationSettings carverBiomeSettings;
+   protected @Nullable NoiseChunk noiseChunk;
    protected final UpgradeData upgradeData;
-   @Nullable
-   protected BlendingData blendingData;
+   protected @Nullable BlendingData blendingData;
    protected final Map<Heightmap.Types, Heightmap> heightmaps = Maps.newEnumMap(Heightmap.Types.class);
    protected ChunkSkyLightSources skyLightSources;
    private final Map<Structure, StructureStart> structureStarts = Maps.newHashMap();
@@ -85,7 +82,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
 
-   public ChunkAccess(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, PalettedContainerFactory var4, long var5, @Nullable LevelChunkSection[] var7, @Nullable BlendingData var8) {
+   public ChunkAccess(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, PalettedContainerFactory var4, long var5, LevelChunkSection @Nullable [] var7, @Nullable BlendingData var8) {
       super();
       this.chunkPos = var1;
       this.upgradeData = var2;
@@ -119,13 +116,11 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return GameEventListenerRegistry.NOOP;
    }
 
-   @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2) {
+   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2) {
       return this.setBlockState(var1, var2, 3);
    }
 
-   @Nullable
-   public abstract BlockState setBlockState(BlockPos var1, BlockState var2, int var3);
+   public abstract @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3);
 
    public abstract void setBlockEntity(BlockEntity var1);
 
@@ -201,8 +196,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.chunkPos;
    }
 
-   @Nullable
-   public StructureStart getStartForStructure(Structure var1) {
+   public @Nullable StructureStart getStartForStructure(Structure var1) {
       return (StructureStart)this.structureStarts.get(var1);
    }
 
@@ -294,7 +288,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       LOGGER.warn("Trying to mark a block for PostProcessing @ {}, but this operation is not supported.", var1);
    }
 
-   public ShortList[] getPostProcessing() {
+   public @Nullable ShortList[] getPostProcessing() {
       return this.postProcessing;
    }
 
@@ -310,13 +304,11 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
 
    }
 
-   @Nullable
-   public CompoundTag getBlockEntityNbt(BlockPos var1) {
+   public @Nullable CompoundTag getBlockEntityNbt(BlockPos var1) {
       return (CompoundTag)this.pendingBlockEntities.get(var1);
    }
 
-   @Nullable
-   public abstract CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2);
+   public abstract @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2);
 
    public final void findBlockLightSources(BiConsumer<BlockPos, BlockState> var1) {
       this.findBlocks((var0) -> var0.getLightEmission() != 0, var1);
@@ -363,8 +355,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.blendingData != null;
    }
 
-   @Nullable
-   public BlendingData getBlendingData() {
+   public @Nullable BlendingData getBlendingData() {
       return this.blendingData;
    }
 
@@ -380,12 +371,14 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       this.inhabitedTime = var1;
    }
 
-   public static ShortList getOrCreateOffsetList(ShortList[] var0, int var1) {
-      if (var0[var1] == null) {
-         var0[var1] = new ShortArrayList();
+   public static ShortList getOrCreateOffsetList(@Nullable ShortList[] var0, int var1) {
+      Object var2 = var0[var1];
+      if (var2 == null) {
+         var2 = new ShortArrayList();
+         var0[var1] = (ShortList)var2;
       }
 
-      return var0[var1];
+      return (ShortList)var2;
    }
 
    public boolean isLightCorrect() {
@@ -456,8 +449,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return !this.getAllReferences().isEmpty();
    }
 
-   @Nullable
-   public BelowZeroRetrogen getBelowZeroRetrogen() {
+   public @Nullable BelowZeroRetrogen getBelowZeroRetrogen() {
       return null;
    }
 

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.reporting.ChatReportScreen;
@@ -24,6 +23,7 @@ import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.SignedMessageBody;
 import net.minecraft.network.chat.SignedMessageLink;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class ChatReport extends Report {
    final IntSet reportedMessages = new IntOpenHashSet();
@@ -84,8 +84,7 @@ public class ChatReport extends Report {
          return StringUtils.isNotEmpty(this.comments()) || !this.reportedMessages().isEmpty() || this.reason() != null;
       }
 
-      @Nullable
-      public Report.CannotBuildReason checkBuildable() {
+      public Report.@Nullable CannotBuildReason checkBuildable() {
          if ((this.report).reportedMessages.isEmpty()) {
             return Report.CannotBuildReason.NO_REPORTED_MESSAGES;
          } else if ((this.report).reportedMessages.size() > this.limits.maxReportedMessageCount()) {

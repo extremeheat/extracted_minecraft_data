@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.goal.target;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,8 +11,9 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class HurtByTargetGoal extends TargetGoal {
    private static final TargetingConditions HURT_BY_TARGETING = TargetingConditions.forCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
@@ -21,8 +21,7 @@ public class HurtByTargetGoal extends TargetGoal {
    private boolean alertSameType;
    private int timestamp;
    private final Class<?>[] toIgnoreDamage;
-   @Nullable
-   private Class<?>[] toIgnoreAlert;
+   private Class<?> @Nullable [] toIgnoreAlert;
 
    public HurtByTargetGoal(PathfinderMob var1, Class<?>... var2) {
       super(var1, true);
@@ -34,7 +33,7 @@ public class HurtByTargetGoal extends TargetGoal {
       int var1 = this.mob.getLastHurtByMobTimestamp();
       LivingEntity var2 = this.mob.getLastHurtByMob();
       if (var1 != this.timestamp && var2 != null) {
-         if (var2.getType() == EntityType.PLAYER && getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if (var2.getType() == EntityType.PLAYER && (Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             return false;
          } else {
             for(Class var6 : this.toIgnoreDamage) {

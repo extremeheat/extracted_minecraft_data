@@ -1,10 +1,10 @@
 package net.minecraft.world.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.portal.TeleportTransition;
+import org.jspecify.annotations.Nullable;
 
 public class PortalProcessor {
    private final Portal portal;
@@ -29,8 +29,7 @@ public class PortalProcessor {
       }
    }
 
-   @Nullable
-   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2) {
+   public @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2) {
       return this.portal.getPortalDestination(var1, var2, this.entryPosition);
    }
 

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.projectile;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.List;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -32,6 +31,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    private static final EntityDataAccessor<ItemStack> DATA_ID_FIREWORKS_ITEM;
@@ -42,8 +42,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    private static final boolean DEFAULT_SHOT_AT_ANGLE = false;
    private int life;
    private int lifetime;
-   @Nullable
-   private LivingEntity attachedToEntity;
+   private @Nullable LivingEntity attachedToEntity;
 
    public FireworkRocketEntity(EntityType<? extends FireworkRocketEntity> var1, Level var2) {
       super(var1, var2);
@@ -150,7 +149,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       if (!this.noPhysics && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
          this.hitTargetOrDeflectSelf(var1);
-         this.hasImpulse = true;
+         this.needsSync = true;
       }
 
       this.updateRotation();

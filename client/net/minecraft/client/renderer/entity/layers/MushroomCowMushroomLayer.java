@@ -2,14 +2,14 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.CowModel;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.animal.cow.CowModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.MushroomCowRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
@@ -59,7 +59,7 @@ public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState
 
    private void submitMushroomBlock(PoseStack var1, SubmitNodeCollector var2, int var3, boolean var4, int var5, BlockState var6, int var7, BlockStateModel var8) {
       if (var4) {
-         var2.submitBlockModel(var1, RenderType.outline(TextureAtlas.LOCATION_BLOCKS), var8, 0.0F, 0.0F, 0.0F, var3, var7, var5);
+         var2.submitBlockModel(var1, RenderTypes.outline(TextureAtlas.LOCATION_BLOCKS), var8, 0.0F, 0.0F, 0.0F, var3, var7, var5);
       } else {
          var2.submitBlock(var1, var6, var3, var7, var5);
       }

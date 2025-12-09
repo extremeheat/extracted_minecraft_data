@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
@@ -39,6 +38,7 @@ import net.minecraft.server.network.config.SynchronizeRegistriesTask;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.flag.FeatureFlags;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketListenerImpl implements ServerConfigurationPacketListener, TickablePacketListener {
@@ -47,13 +47,10 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    private static final Component DISCONNECT_REASON_CONFIGURATION_ERROR = Component.translatable("multiplayer.disconnect.configuration_error");
    private final GameProfile gameProfile;
    private final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue();
-   @Nullable
-   private ConfigurationTask currentTask;
+   private @Nullable ConfigurationTask currentTask;
    private ClientInformation clientInformation;
-   @Nullable
-   private SynchronizeRegistriesTask synchronizeRegistriesTask;
-   @Nullable
-   private PrepareSpawnTask prepareSpawnTask;
+   private @Nullable SynchronizeRegistriesTask synchronizeRegistriesTask;
+   private @Nullable PrepareSpawnTask prepareSpawnTask;
 
    public ServerConfigurationPacketListenerImpl(MinecraftServer var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);

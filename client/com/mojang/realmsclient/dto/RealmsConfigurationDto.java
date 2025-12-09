@@ -2,7 +2,7 @@ package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record RealmsConfigurationDto(RealmsSlotUpdateDto options, List<RealmsSetting> settings, @Nullable RegionSelectionPreferenceDto regionSelectionPreference, @Nullable RealmsDescriptionDto description) implements ReflectionBasedSerialization {
    public RealmsConfigurationDto(RealmsSlotUpdateDto var1, List<RealmsSetting> var2, @Nullable RegionSelectionPreferenceDto var3, @Nullable RealmsDescriptionDto var4) {
@@ -23,15 +23,13 @@ public record RealmsConfigurationDto(RealmsSlotUpdateDto options, List<RealmsSet
       return this.settings;
    }
 
-   @Nullable
    @SerializedName("regionSelectionPreference")
-   public RegionSelectionPreferenceDto regionSelectionPreference() {
+   public @Nullable RegionSelectionPreferenceDto regionSelectionPreference() {
       return this.regionSelectionPreference;
    }
 
-   @Nullable
    @SerializedName("description")
-   public RealmsDescriptionDto description() {
+   public @Nullable RealmsDescriptionDto description() {
       return this.description;
    }
 }

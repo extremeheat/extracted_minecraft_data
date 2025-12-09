@@ -1,17 +1,16 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundTagQueryPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundTagQueryPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundTagQueryPacket>codec(ClientboundTagQueryPacket::write, ClientboundTagQueryPacket::new);
    private final int transactionId;
-   @Nullable
-   private final CompoundTag tag;
+   private final @Nullable CompoundTag tag;
 
    public ClientboundTagQueryPacket(int var1, @Nullable CompoundTag var2) {
       super();
@@ -42,8 +41,7 @@ public class ClientboundTagQueryPacket implements Packet<ClientGamePacketListene
       return this.transactionId;
    }
 
-   @Nullable
-   public CompoundTag getTag() {
+   public @Nullable CompoundTag getTag() {
       return this.tag;
    }
 

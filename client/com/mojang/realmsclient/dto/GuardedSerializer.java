@@ -5,7 +5,7 @@ import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class GuardedSerializer {
    ExclusionStrategy strategy = new ExclusionStrategy() {
@@ -32,8 +32,7 @@ public class GuardedSerializer {
       return this.gson.toJson(var1);
    }
 
-   @Nullable
-   public <T extends ReflectionBasedSerialization> T fromJson(String var1, Class<T> var2) {
+   public <T extends ReflectionBasedSerialization> @Nullable T fromJson(String var1, Class<T> var2) {
       return (T)(this.gson.fromJson(var1, var2));
    }
 }

@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PrepareSpawnTask implements ConfigurationTask {
@@ -34,8 +34,7 @@ public class PrepareSpawnTask implements ConfigurationTask {
    final MinecraftServer server;
    final NameAndId nameAndId;
    final LevelLoadListener loadListener;
-   @Nullable
-   private State state;
+   private @Nullable State state;
 
    public PrepareSpawnTask(MinecraftServer var1, NameAndId var2) {
       super();
@@ -129,8 +128,7 @@ public class PrepareSpawnTask implements ConfigurationTask {
       private final ServerLevel spawnLevel;
       private final CompletableFuture<Vec3> spawnPosition;
       private final Vec2 spawnAngle;
-      @Nullable
-      private CompletableFuture<?> chunkLoadFuture;
+      private @Nullable CompletableFuture<?> chunkLoadFuture;
       private final ChunkLoadCounter chunkLoadCounter = new ChunkLoadCounter();
 
       Preparing(final ServerLevel var2, final CompletableFuture<Vec3> var3, final Vec2 var4) {
@@ -144,8 +142,7 @@ public class PrepareSpawnTask implements ConfigurationTask {
          this.spawnPosition.cancel(false);
       }
 
-      @Nullable
-      public Ready tick() {
+      public @Nullable Ready tick() {
          if (!this.spawnPosition.isDone()) {
             return null;
          } else {

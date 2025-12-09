@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.PopupScreen;
@@ -17,8 +15,10 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.LenientJsonParser;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsNotification {
@@ -128,11 +128,10 @@ public class RealmsNotification {
       private static final String URL_BUTTON = "urlButton";
       private final RealmsText title;
       private final RealmsText message;
-      private final ResourceLocation image;
-      @Nullable
-      private final UrlButton urlButton;
+      private final Identifier image;
+      private final @Nullable UrlButton urlButton;
 
-      private InfoPopup(RealmsNotification var1, RealmsText var2, RealmsText var3, ResourceLocation var4, @Nullable UrlButton var5) {
+      private InfoPopup(RealmsNotification var1, RealmsText var2, RealmsText var3, Identifier var4, @Nullable UrlButton var5) {
          super(var1.uuid, var1.dismissable, var1.seen, var1.type);
          this.title = var2;
          this.message = var3;
@@ -143,13 +142,12 @@ public class RealmsNotification {
       public static InfoPopup parse(RealmsNotification var0, JsonObject var1) {
          RealmsText var2 = (RealmsText)JsonUtils.getRequired("title", var1, RealmsText::parse);
          RealmsText var3 = (RealmsText)JsonUtils.getRequired("message", var1, RealmsText::parse);
-         ResourceLocation var4 = ResourceLocation.parse(JsonUtils.getRequiredString("image", var1));
+         Identifier var4 = Identifier.parse(JsonUtils.getRequiredString("image", var1));
          UrlButton var5 = (UrlButton)JsonUtils.getOptional("urlButton", var1, UrlButton::parse);
          return new InfoPopup(var0, var2, var3, var4, var5);
       }
 
-      @Nullable
-      public PopupScreen buildScreen(Screen var1, Consumer<UUID> var2) {
+      public @Nullable PopupScreen buildScreen(Screen var1, Consumer<UUID> var2) {
          Component var3 = this.title.createComponent();
          if (var3 == null) {
             RealmsNotification.LOGGER.warn("Realms info popup had title with no available translation: {}", this.title);

@@ -23,8 +23,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -56,7 +56,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
       if (var4.isFor(var2)) {
          return var3;
       } else {
-         throw ERROR_INVALID_RESOURCE_TYPE.create(var4.location(), var4.registry(), var2.location());
+         throw ERROR_INVALID_RESOURCE_TYPE.create(var4.identifier(), var4.registry(), var2.identifier());
       }
    }
 
@@ -79,7 +79,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    public static Holder.Reference<EntityType<?>> getSummonableEntityType(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       Holder.Reference var2 = getResource(var0, var1, Registries.ENTITY_TYPE);
       if (!((EntityType)var2.value()).canSummon()) {
-         throw ERROR_NOT_SUMMONABLE_ENTITY.create(var2.key().location().toString());
+         throw ERROR_NOT_SUMMONABLE_ENTITY.create(var2.key().identifier().toString());
       } else {
          return var2;
       }
@@ -94,9 +94,9 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    }
 
    public Holder.Reference<T> parse(StringReader var1) throws CommandSyntaxException {
-      ResourceLocation var2 = ResourceLocation.read(var1);
+      Identifier var2 = Identifier.read(var1);
       ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
-      return (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
+      return (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.identifier()));
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
@@ -126,7 +126,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
       }
 
       public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.location().toString());
+         var2.addProperty("registry", var1.registryKey.identifier().toString());
       }
 
       public Info<T>.Template unpack(ResourceArgument<T> var1) {

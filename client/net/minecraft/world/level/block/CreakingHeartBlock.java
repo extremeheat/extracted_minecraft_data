@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.jspecify.annotations.Nullable;
 
 public class CreakingHeartBlock extends BaseEntityBlock {
    public static final MapCodec<CreakingHeartBlock> CODEC = simpleCodec(CreakingHeartBlock::new);
@@ -52,8 +53,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       return new CreakingHeartBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       if (var1.isClientSide()) {
          return null;
       } else {
@@ -61,12 +61,8 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       }
    }
 
-   public static boolean isNaturalNight(Level var0) {
-      return var0.isMoonVisible();
-   }
-
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (isNaturalNight(var2)) {
+      if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.CREAKING_ACTIVE, var3)) {
          if (var1.getValue(STATE) != CreakingHeartState.UPROOTED) {
             if (var4.nextInt(16) == 0 && isSurroundedByLogs(var2, var3)) {
                var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.CREAKING_HEART_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
@@ -92,7 +88,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    private static BlockState updateState(BlockState var0, Level var1, BlockPos var2) {
       boolean var3 = hasRequiredLogs(var0, var1, var2);
       boolean var4 = var0.getValue(STATE) == CreakingHeartState.UPROOTED;
-      return var3 && var4 ? (BlockState)var0.setValue(STATE, isNaturalNight(var1) ? CreakingHeartState.AWAKE : CreakingHeartState.DORMANT) : var0;
+      return var3 && var4 ? (BlockState)var0.setValue(STATE, (Boolean)var1.environmentAttributes().getValue(EnvironmentAttributes.CREAKING_ACTIVE, var2) ? CreakingHeartState.AWAKE : CreakingHeartState.DORMANT) : var0;
    }
 
    public static boolean hasRequiredLogs(BlockState var0, LevelReader var1, BlockPos var2) {
@@ -120,8 +116,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       return true;
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       return updateState((BlockState)this.defaultBlockState().setValue(AXIS, var1.getClickedFace().getAxis()), var1.getLevel(), var1.getClickedPos());
    }
 

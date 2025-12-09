@@ -3,7 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
@@ -31,7 +31,7 @@ public class TrappedChestBlock extends ChestBlock {
       return new TrappedChestBlockEntity(var1, var2);
    }
 
-   protected Stat<ResourceLocation> getOpenChestStat() {
+   protected Stat<Identifier> getOpenChestStat() {
       return Stats.CUSTOM.get(Stats.TRIGGER_TRAPPED_CHEST);
    }
 

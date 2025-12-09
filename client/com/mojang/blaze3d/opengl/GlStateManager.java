@@ -1,14 +1,14 @@
 package com.mojang.blaze3d.opengl;
 
-import com.google.common.base.Charsets;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.Plot;
 import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -34,6 +34,7 @@ public class GlStateManager {
    private static final ColorLogicState COLOR_LOGIC = new ColorLogicState();
    private static final ScissorState SCISSOR = new ScissorState();
    private static int activeTexture;
+   private static final int TEXTURE_COUNT = 12;
    private static final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((var0) -> new TextureState()).toArray((var0) -> new TextureState[var0]);
    private static final ColorMask COLOR_MASK = new ColorMask();
    private static int readFbo;
@@ -130,7 +131,7 @@ public class GlStateManager {
 
    public static void glShaderSource(int var0, String var1) {
       RenderSystem.assertOnRenderThread();
-      byte[] var2 = var1.getBytes(Charsets.UTF_8);
+      byte[] var2 = var1.getBytes(StandardCharsets.UTF_8);
       ByteBuffer var3 = MemoryUtil.memAlloc(var2.length + 1);
       var3.put(var2);
       var3.put((byte)0);
@@ -240,9 +241,9 @@ public class GlStateManager {
       GL15.glBufferData(var0, var1, var2);
    }
 
-   public static void _glBufferSubData(int var0, int var1, ByteBuffer var2) {
+   public static void _glBufferSubData(int var0, long var1, ByteBuffer var3) {
       RenderSystem.assertOnRenderThread();
-      GL15.glBufferSubData(var0, (long)var1, var2);
+      GL15.glBufferSubData(var0, var1, var3);
    }
 
    public static void _glBufferData(int var0, long var1, int var3) {
@@ -250,10 +251,9 @@ public class GlStateManager {
       GL15.glBufferData(var0, var1, var3);
    }
 
-   @Nullable
-   public static ByteBuffer _glMapBufferRange(int var0, int var1, int var2, int var3) {
+   public static @Nullable ByteBuffer _glMapBufferRange(int var0, long var1, long var3, int var5) {
       RenderSystem.assertOnRenderThread();
-      return GL30.glMapBufferRange(var0, (long)var1, (long)var2, var3);
+      return GL30.glMapBufferRange(var0, var1, var3, var5);
    }
 
    public static void _glUnmapBuffer(int var0) {

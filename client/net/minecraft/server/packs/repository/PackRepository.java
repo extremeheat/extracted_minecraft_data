@@ -14,10 +14,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.util.Util;
 import net.minecraft.world.flag.FeatureFlagSet;
+import org.jspecify.annotations.Nullable;
 
 public class PackRepository {
    private final Set<RepositorySource> sources;
@@ -124,8 +124,7 @@ public class PackRepository {
       return this.selected;
    }
 
-   @Nullable
-   public Pack getPack(String var1) {
+   public @Nullable Pack getPack(String var1) {
       return (Pack)this.available.get(var1);
    }
 

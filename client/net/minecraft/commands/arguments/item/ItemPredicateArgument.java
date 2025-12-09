@@ -17,8 +17,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
@@ -28,10 +27,12 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,9 +45,14 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
    static final Dynamic2CommandExceptionType ERROR_MALFORMED_COMPONENT = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("arguments.item.component.malformed", var0, var1));
    static final DynamicCommandExceptionType ERROR_UNKNOWN_PREDICATE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.item.predicate.unknown", var0));
    static final Dynamic2CommandExceptionType ERROR_MALFORMED_PREDICATE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("arguments.item.predicate.malformed", var0, var1));
-   private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
-   static final Map<ResourceLocation, ComponentWrapper> PSEUDO_COMPONENTS;
-   static final Map<ResourceLocation, PredicateWrapper> PSEUDO_PREDICATES;
+   private static final Identifier COUNT_ID = Identifier.withDefaultNamespace("count");
+   static final Map<Identifier, ComponentWrapper> PSEUDO_COMPONENTS;
+   static final Map<Identifier, PredicateWrapper> PSEUDO_PREDICATES;
+
+   private static PredicateWrapper createComponentExistencePredicate(Holder.Reference<DataComponentType<?>> var0) {
+      Predicate var1 = (var1x) -> var1x.has((DataComponentType)var0.value());
+      return new PredicateWrapper(var0.key().identifier(), Unit.CODEC.map((var1x) -> var1));
+   }
 
    public ItemPredicateArgument(CommandBuildContext var1) {
       super(ComponentPredicateParser.createGrammar(new Context(var1)).mapResult((var0) -> {
@@ -73,17 +79,17 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
       PSEUDO_PREDICATES = (Map)Stream.of(new PredicateWrapper(COUNT_ID, MinMaxBounds.Ints.CODEC.map((var0) -> (var1) -> var0.matches(var1.getCount())))).collect(Collectors.toUnmodifiableMap(PredicateWrapper::id, (var0) -> var0));
    }
 
-   static record ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
+   static record ComponentWrapper(Identifier id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
       final Predicate<ItemStack> presenceChecker;
 
-      ComponentWrapper(ResourceLocation var1, Predicate<ItemStack> var2, Decoder<? extends Predicate<ItemStack>> var3) {
+      ComponentWrapper(Identifier var1, Predicate<ItemStack> var2, Decoder<? extends Predicate<ItemStack>> var3) {
          super();
          this.id = var1;
          this.presenceChecker = var2;
          this.valueChecker = var3;
       }
 
-      public static <T> ComponentWrapper create(ImmutableStringReader var0, ResourceLocation var1, DataComponentType<T> var2) throws CommandSyntaxException {
+      public static <T> ComponentWrapper create(ImmutableStringReader var0, Identifier var1, DataComponentType<T> var2) throws CommandSyntaxException {
          Codec var3 = var2.codec();
          if (var3 == null) {
             throw ItemPredicateArgument.ERROR_UNKNOWN_COMPONENT.createWithContext(var0, var1);
@@ -101,15 +107,15 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
       }
    }
 
-   static record PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
+   static record PredicateWrapper(Identifier id, Decoder<? extends Predicate<ItemStack>> type) {
       public PredicateWrapper(Holder.Reference<DataComponentPredicate.Type<?>> var1) {
-         this(var1.key().location(), ((DataComponentPredicate.Type)var1.value()).codec().map((var0) -> {
+         this(var1.key().identifier(), ((DataComponentPredicate.Type)var1.value()).codec().map((var0) -> {
             Objects.requireNonNull(var0);
             return var0::matches;
          }));
       }
 
-      PredicateWrapper(ResourceLocation var1, Decoder<? extends Predicate<ItemStack>> var2) {
+      PredicateWrapper(Identifier var1, Decoder<? extends Predicate<ItemStack>> var2) {
          super();
          this.id = var1;
          this.type = var2;
@@ -135,17 +141,17 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
          this.predicates = var1.lookupOrThrow(Registries.DATA_COMPONENT_PREDICATE_TYPE);
       }
 
-      public Predicate<ItemStack> forElementType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public Predicate<ItemStack> forElementType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException {
          Holder.Reference var3 = (Holder.Reference)this.items.get(ResourceKey.create(Registries.ITEM, var2)).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_ITEM.createWithContext(var1, var2));
          return (var1x) -> var1x.is(var3);
       }
 
-      public Predicate<ItemStack> forTagType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public Predicate<ItemStack> forTagType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException {
          HolderSet var3 = (HolderSet)this.items.get(TagKey.create(Registries.ITEM, var2)).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_TAG.createWithContext(var1, var2));
          return (var1x) -> var1x.is(var3);
       }
 
-      public ComponentWrapper lookupComponentType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public ComponentWrapper lookupComponentType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException {
          ComponentWrapper var3 = (ComponentWrapper)ItemPredicateArgument.PSEUDO_COMPONENTS.get(var2);
          if (var3 != null) {
             return var3;
@@ -163,29 +169,29 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
          return var2.presenceChecker;
       }
 
-      public PredicateWrapper lookupPredicateType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public PredicateWrapper lookupPredicateType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException {
          PredicateWrapper var3 = (PredicateWrapper)ItemPredicateArgument.PSEUDO_PREDICATES.get(var2);
-         return var3 != null ? var3 : (PredicateWrapper)this.predicates.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, var2)).map(PredicateWrapper::new).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_PREDICATE.createWithContext(var1, var2));
+         return var3 != null ? var3 : (PredicateWrapper)this.predicates.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, var2)).map(PredicateWrapper::new).or(() -> this.components.get(ResourceKey.create(Registries.DATA_COMPONENT_TYPE, var2)).map(ItemPredicateArgument::createComponentExistencePredicate)).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_PREDICATE.createWithContext(var1, var2));
       }
 
       public Predicate<ItemStack> createPredicateTest(ImmutableStringReader var1, PredicateWrapper var2, Dynamic<?> var3) throws CommandSyntaxException {
          return var2.decode(var1, RegistryOps.injectRegistryContext(var3, this.registries));
       }
 
-      public Stream<ResourceLocation> listElementTypes() {
-         return this.items.listElementIds().map(ResourceKey::location);
+      public Stream<Identifier> listElementTypes() {
+         return this.items.listElementIds().map(ResourceKey::identifier);
       }
 
-      public Stream<ResourceLocation> listTagTypes() {
+      public Stream<Identifier> listTagTypes() {
          return this.items.listTagIds().map(TagKey::location);
       }
 
-      public Stream<ResourceLocation> listComponentTypes() {
-         return Stream.concat(ItemPredicateArgument.PSEUDO_COMPONENTS.keySet().stream(), this.components.listElements().filter((var0) -> !((DataComponentType)var0.value()).isTransient()).map((var0) -> var0.key().location()));
+      public Stream<Identifier> listComponentTypes() {
+         return Stream.concat(ItemPredicateArgument.PSEUDO_COMPONENTS.keySet().stream(), this.components.listElements().filter((var0) -> !((DataComponentType)var0.value()).isTransient()).map((var0) -> var0.key().identifier()));
       }
 
-      public Stream<ResourceLocation> listPredicateTypes() {
-         return Stream.concat(ItemPredicateArgument.PSEUDO_PREDICATES.keySet().stream(), this.predicates.listElementIds().map(ResourceKey::location));
+      public Stream<Identifier> listPredicateTypes() {
+         return Stream.concat(ItemPredicateArgument.PSEUDO_PREDICATES.keySet().stream(), this.predicates.listElementIds().map(ResourceKey::identifier));
       }
 
       public Predicate<ItemStack> negate(Predicate<ItemStack> var1) {
@@ -207,22 +213,22 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
       }
 
       // $FF: synthetic method
-      public Object lookupPredicateType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
+      public Object lookupPredicateType(final ImmutableStringReader var1, final Identifier var2) throws CommandSyntaxException {
          return this.lookupPredicateType(var1, var2);
       }
 
       // $FF: synthetic method
-      public Object lookupComponentType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
+      public Object lookupComponentType(final ImmutableStringReader var1, final Identifier var2) throws CommandSyntaxException {
          return this.lookupComponentType(var1, var2);
       }
 
       // $FF: synthetic method
-      public Object forTagType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
+      public Object forTagType(final ImmutableStringReader var1, final Identifier var2) throws CommandSyntaxException {
          return this.forTagType(var1, var2);
       }
 
       // $FF: synthetic method
-      public Object forElementType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
+      public Object forElementType(final ImmutableStringReader var1, final Identifier var2) throws CommandSyntaxException {
          return this.forElementType(var1, var2);
       }
    }

@@ -3,14 +3,12 @@ package net.minecraft.world.entity;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -25,54 +23,59 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ambient.Bat;
-import net.minecraft.world.entity.animal.Bee;
-import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.entity.animal.Chicken;
-import net.minecraft.world.entity.animal.Cod;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.animal.Dolphin;
-import net.minecraft.world.entity.animal.Fox;
-import net.minecraft.world.entity.animal.HappyGhast;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.animal.MushroomCow;
-import net.minecraft.world.entity.animal.Ocelot;
-import net.minecraft.world.entity.animal.Panda;
-import net.minecraft.world.entity.animal.Parrot;
-import net.minecraft.world.entity.animal.Pig;
-import net.minecraft.world.entity.animal.PolarBear;
-import net.minecraft.world.entity.animal.Pufferfish;
-import net.minecraft.world.entity.animal.Rabbit;
-import net.minecraft.world.entity.animal.Salmon;
-import net.minecraft.world.entity.animal.SnowGolem;
-import net.minecraft.world.entity.animal.Squid;
-import net.minecraft.world.entity.animal.TropicalFish;
-import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.entity.animal.camel.Camel;
-import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
+import net.minecraft.world.entity.animal.camel.CamelHusk;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.entity.animal.dolphin.Dolphin;
+import net.minecraft.world.entity.animal.equine.Donkey;
+import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.equine.Llama;
+import net.minecraft.world.entity.animal.equine.Mule;
+import net.minecraft.world.entity.animal.equine.SkeletonHorse;
+import net.minecraft.world.entity.animal.equine.TraderLlama;
+import net.minecraft.world.entity.animal.equine.ZombieHorse;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.feline.Ocelot;
+import net.minecraft.world.entity.animal.fish.Cod;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
+import net.minecraft.world.entity.animal.fish.Salmon;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
+import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.Tadpole;
 import net.minecraft.world.entity.animal.goat.Goat;
-import net.minecraft.world.entity.animal.horse.Donkey;
-import net.minecraft.world.entity.animal.horse.Horse;
-import net.minecraft.world.entity.animal.horse.Llama;
-import net.minecraft.world.entity.animal.horse.Mule;
-import net.minecraft.world.entity.animal.horse.SkeletonHorse;
-import net.minecraft.world.entity.animal.horse.TraderLlama;
-import net.minecraft.world.entity.animal.horse.ZombieHorse;
+import net.minecraft.world.entity.animal.golem.CopperGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.entity.animal.happyghast.HappyGhast;
+import net.minecraft.world.entity.animal.nautilus.Nautilus;
+import net.minecraft.world.entity.animal.nautilus.ZombieNautilus;
+import net.minecraft.world.entity.animal.panda.Panda;
+import net.minecraft.world.entity.animal.parrot.Parrot;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.polarbear.PolarBear;
+import net.minecraft.world.entity.animal.rabbit.Rabbit;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.animal.squid.GlowSquid;
+import net.minecraft.world.entity.animal.squid.Squid;
+import net.minecraft.world.entity.animal.turtle.Turtle;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -82,84 +85,85 @@ import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.decoration.Mannequin;
-import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.entity.decoration.painting.Painting;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Blaze;
-import net.minecraft.world.entity.monster.Bogged;
-import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Endermite;
-import net.minecraft.world.entity.monster.Evoker;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Giant;
 import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.monster.Husk;
-import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.entity.monster.MagmaCube;
 import net.minecraft.world.entity.monster.Phantom;
-import net.minecraft.world.entity.monster.Pillager;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.monster.Silverfish;
-import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.entity.monster.Spider;
-import net.minecraft.world.entity.monster.Stray;
 import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.entity.monster.Vex;
-import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.Witch;
-import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.entity.monster.Zoglin;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.monster.ZombieVillager;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
+import net.minecraft.world.entity.monster.illager.Evoker;
+import net.minecraft.world.entity.monster.illager.Illusioner;
+import net.minecraft.world.entity.monster.illager.Pillager;
+import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.piglin.PiglinBrute;
+import net.minecraft.world.entity.monster.skeleton.Bogged;
+import net.minecraft.world.entity.monster.skeleton.Parched;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
+import net.minecraft.world.entity.monster.skeleton.Stray;
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
+import net.minecraft.world.entity.monster.spider.CaveSpider;
+import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.monster.warden.Warden;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.monster.zombie.Drowned;
+import net.minecraft.world.entity.monster.zombie.Husk;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.entity.projectile.EvokerFangs;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
-import net.minecraft.world.entity.projectile.SmallFireball;
-import net.minecraft.world.entity.projectile.Snowball;
-import net.minecraft.world.entity.projectile.SpectralArrow;
-import net.minecraft.world.entity.projectile.ThrownEgg;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
-import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
-import net.minecraft.world.entity.projectile.ThrownLingeringPotion;
-import net.minecraft.world.entity.projectile.ThrownSplashPotion;
-import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.entity.projectile.WitherSkull;
-import net.minecraft.world.entity.projectile.windcharge.BreezeWindCharge;
-import net.minecraft.world.entity.projectile.windcharge.WindCharge;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.entity.vehicle.ChestBoat;
-import net.minecraft.world.entity.vehicle.ChestRaft;
-import net.minecraft.world.entity.vehicle.Minecart;
-import net.minecraft.world.entity.vehicle.MinecartChest;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
-import net.minecraft.world.entity.vehicle.MinecartFurnace;
-import net.minecraft.world.entity.vehicle.MinecartHopper;
-import net.minecraft.world.entity.vehicle.MinecartSpawner;
-import net.minecraft.world.entity.vehicle.MinecartTNT;
-import net.minecraft.world.entity.vehicle.Raft;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.entity.projectile.arrow.SpectralArrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
+import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
+import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.BreezeWindCharge;
+import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownLingeringPotion;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
+import net.minecraft.world.entity.vehicle.boat.Boat;
+import net.minecraft.world.entity.vehicle.boat.ChestBoat;
+import net.minecraft.world.entity.vehicle.boat.ChestRaft;
+import net.minecraft.world.entity.vehicle.boat.Raft;
+import net.minecraft.world.entity.vehicle.minecart.Minecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartHopper;
+import net.minecraft.world.entity.vehicle.minecart.MinecartSpawner;
+import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlag;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -181,6 +185,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EntityType<T extends Entity> implements FeatureElement, EntityTypeTest<Entity, T> {
@@ -210,6 +215,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Breeze> BREEZE;
    public static final EntityType<BreezeWindCharge> BREEZE_WIND_CHARGE;
    public static final EntityType<Camel> CAMEL;
+   public static final EntityType<CamelHusk> CAMEL_HUSK;
    public static final EntityType<Cat> CAT;
    public static final EntityType<CaveSpider> CAVE_SPIDER;
    public static final EntityType<Boat> CHERRY_BOAT;
@@ -277,6 +283,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Minecart> MINECART;
    public static final EntityType<MushroomCow> MOOSHROOM;
    public static final EntityType<Mule> MULE;
+   public static final EntityType<Nautilus> NAUTILUS;
    public static final EntityType<Boat> OAK_BOAT;
    public static final EntityType<ChestBoat> OAK_CHEST_BOAT;
    public static final EntityType<Ocelot> OCELOT;
@@ -285,6 +292,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Boat> PALE_OAK_BOAT;
    public static final EntityType<ChestBoat> PALE_OAK_CHEST_BOAT;
    public static final EntityType<Panda> PANDA;
+   public static final EntityType<Parched> PARCHED;
    public static final EntityType<Parrot> PARROT;
    public static final EntityType<Phantom> PHANTOM;
    public static final EntityType<Pig> PIG;
@@ -339,6 +347,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Zoglin> ZOGLIN;
    public static final EntityType<Zombie> ZOMBIE;
    public static final EntityType<ZombieHorse> ZOMBIE_HORSE;
+   public static final EntityType<ZombieNautilus> ZOMBIE_NAUTILUS;
    public static final EntityType<ZombieVillager> ZOMBIE_VILLAGER;
    public static final EntityType<ZombifiedPiglin> ZOMBIFIED_PIGLIN;
    public static final EntityType<Player> PLAYER;
@@ -354,8 +363,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    private final int clientTrackingRange;
    private final int updateInterval;
    private final String descriptionId;
-   @Nullable
-   private Component description;
+   private @Nullable Component description;
    private final Optional<ResourceKey<LootTable>> lootTable;
    private final EntityDimensions dimensions;
    private final float spawnDimensionsScale;
@@ -367,19 +375,19 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    private static ResourceKey<EntityType<?>> vanillaEntityId(String var0) {
-      return ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(var0));
    }
 
    private static <T extends Entity> EntityType<T> register(String var0, Builder<T> var1) {
       return register(vanillaEntityId(var0), var1);
    }
 
-   public static ResourceLocation getKey(EntityType<?> var0) {
+   public static Identifier getKey(EntityType<?> var0) {
       return BuiltInRegistries.ENTITY_TYPE.getKey(var0);
    }
 
    public static Optional<EntityType<?>> byString(String var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse(var0));
    }
 
    public EntityType(EntityFactory<T> var1, MobCategory var2, boolean var3, boolean var4, boolean var5, boolean var6, ImmutableSet<Block> var7, EntityDimensions var8, float var9, int var10, int var11, String var12, Optional<ResourceKey<LootTable>> var13, FeatureFlagSet var14, boolean var15) {
@@ -402,8 +410,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       this.allowedInPeaceful = var15;
    }
 
-   @Nullable
-   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
+   public @Nullable T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
       Consumer var8;
       if (var2 != null) {
          var8 = createDefaultStackConfig(var1, var2, var3);
@@ -433,13 +440,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var4 != null ? var0.andThen((var3x) -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
    }
 
-   @Nullable
-   public T spawn(ServerLevel var1, BlockPos var2, EntitySpawnReason var3) {
+   public @Nullable T spawn(ServerLevel var1, BlockPos var2, EntitySpawnReason var3) {
       return (T)this.spawn(var1, (Consumer)null, var2, var3, false, false);
    }
 
-   @Nullable
-   public T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
+   public @Nullable T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
       Entity var7 = this.create(var1, var2, var3, var4, var5, var6);
       if (var7 != null) {
          var1.addFreshEntityWithPassengers(var7);
@@ -452,8 +457,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (T)var7;
    }
 
-   @Nullable
-   public T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
+   public @Nullable T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
       Entity var7 = this.create(var1, var4);
       if (var7 == null) {
          return null;
@@ -569,8 +573,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.requiredFeatures;
    }
 
-   @Nullable
-   public T create(Level var1, EntitySpawnReason var2) {
+   public @Nullable T create(Level var1, EntitySpawnReason var2) {
       return (T)(!this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1));
    }
 
@@ -608,31 +611,31 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var0.<EntityType<?>>read("id", CODEC);
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
+   public static @Nullable Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, EntityProcessor var3) {
       try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(LOGGER)) {
          return loadEntityRecursive(TagValueInput.create(var4, var1.registryAccess(), var0), var1, var2, var3);
       }
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(EntityType<?> var0, CompoundTag var1, Level var2, EntitySpawnReason var3, Function<Entity, Entity> var4) {
+   public static @Nullable Entity loadEntityRecursive(EntityType<?> var0, CompoundTag var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
       try (ProblemReporter.ScopedCollector var5 = new ProblemReporter.ScopedCollector(LOGGER)) {
          return loadEntityRecursive(var0, TagValueInput.create(var5, var2.registryAccess(), var1), var2, var3, var4);
       }
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
-      return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> loadPassengersRecursive(var4, var0, var1, var2, var3)).orElse((Object)null);
+   public static @Nullable Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, EntityProcessor var3) {
+      Optional var10000 = loadStaticEntity(var0, var1, var2);
+      Objects.requireNonNull(var3);
+      return (Entity)var10000.map(var3::process).map((var4) -> loadPassengersRecursive(var4, var0, var1, var2, var3)).orElse((Object)null);
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3, Function<Entity, Entity> var4) {
-      return (Entity)loadStaticEntity(var0, var1, var2, var3).map(var4).map((var4x) -> loadPassengersRecursive(var4x, var1, var2, var3, var4)).orElse((Object)null);
+   public static @Nullable Entity loadEntityRecursive(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
+      Optional var10000 = loadStaticEntity(var0, var1, var2, var3);
+      Objects.requireNonNull(var4);
+      return (Entity)var10000.map(var4::process).map((var4x) -> loadPassengersRecursive(var4x, var1, var2, var3, var4)).orElse((Object)null);
    }
 
-   private static Entity loadPassengersRecursive(Entity var0, ValueInput var1, Level var2, EntitySpawnReason var3, Function<Entity, Entity> var4) {
+   private static Entity loadPassengersRecursive(Entity var0, ValueInput var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
       for(ValueInput var6 : var1.childrenListOrEmpty("Passengers")) {
          Entity var7 = loadEntityRecursive(var6, var2, var3, var4);
          if (var7 != null) {
@@ -688,8 +691,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var1.contains(this.builtInRegistryHolder);
    }
 
-   @Nullable
-   public T tryCast(Entity var1) {
+   public @Nullable T tryCast(Entity var1) {
       return (T)(var1.getType() == this ? var1 : null);
    }
 
@@ -750,6 +752,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       BREEZE = register("breeze", EntityType.Builder.of(Breeze::new, MobCategory.MONSTER).sized(0.6F, 1.77F).eyeHeight(1.3452F).clientTrackingRange(10).notInPeaceful());
       BREEZE_WIND_CHARGE = register("breeze_wind_charge", EntityType.Builder.of(BreezeWindCharge::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10));
       CAMEL = register("camel", EntityType.Builder.of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).eyeHeight(2.275F).clientTrackingRange(10));
+      CAMEL_HUSK = register("camel_husk", EntityType.Builder.of(CamelHusk::new, MobCategory.MONSTER).sized(1.7F, 2.375F).eyeHeight(2.275F).clientTrackingRange(10));
       CAT = register("cat", EntityType.Builder.of(Cat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.35F).passengerAttachments(0.5125F).clientTrackingRange(8));
       CAVE_SPIDER = register("cave_spider", EntityType.Builder.of(CaveSpider::new, MobCategory.MONSTER).sized(0.7F, 0.5F).eyeHeight(0.45F).clientTrackingRange(8).notInPeaceful());
       CHERRY_BOAT = register("cherry_boat", EntityType.Builder.of(boatFactory(() -> Items.CHERRY_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
@@ -817,6 +820,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       MINECART = register("minecart", EntityType.Builder.of(Minecart::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       MOOSHROOM = register("mooshroom", EntityType.Builder.of(MushroomCow::new, MobCategory.CREATURE).sized(0.9F, 1.4F).eyeHeight(1.3F).passengerAttachments(1.36875F).clientTrackingRange(10));
       MULE = register("mule", EntityType.Builder.of(Mule::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.2125F).clientTrackingRange(8));
+      NAUTILUS = register("nautilus", EntityType.Builder.of(Nautilus::new, MobCategory.WATER_CREATURE).sized(0.875F, 0.95F).passengerAttachments(1.1375F).eyeHeight(0.2751F).clientTrackingRange(10));
       OAK_BOAT = register("oak_boat", EntityType.Builder.of(boatFactory(() -> Items.OAK_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       OAK_CHEST_BOAT = register("oak_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       OCELOT = register("ocelot", EntityType.Builder.of(Ocelot::new, MobCategory.CREATURE).sized(0.6F, 0.7F).passengerAttachments(0.6375F).clientTrackingRange(10));
@@ -825,6 +829,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       PALE_OAK_BOAT = register("pale_oak_boat", EntityType.Builder.of(boatFactory(() -> Items.PALE_OAK_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PALE_OAK_CHEST_BOAT = register("pale_oak_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.PALE_OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PANDA = register("panda", EntityType.Builder.of(Panda::new, MobCategory.CREATURE).sized(1.3F, 1.25F).clientTrackingRange(10));
+      PARCHED = register("parched", EntityType.Builder.of(Parched::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       PARROT = register("parrot", EntityType.Builder.of(Parrot::new, MobCategory.CREATURE).sized(0.5F, 0.9F).eyeHeight(0.54F).passengerAttachments(0.4625F).clientTrackingRange(8));
       PHANTOM = register("phantom", EntityType.Builder.of(Phantom::new, MobCategory.MONSTER).sized(0.9F, 0.5F).eyeHeight(0.175F).passengerAttachments(0.3375F).ridingOffset(-0.125F).clientTrackingRange(8).notInPeaceful());
       PIG = register("pig", EntityType.Builder.of(Pig::new, MobCategory.CREATURE).sized(0.9F, 0.9F).passengerAttachments(0.86875F).clientTrackingRange(10));
@@ -878,7 +883,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       WOLF = register("wolf", EntityType.Builder.of(Wolf::new, MobCategory.CREATURE).sized(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3(0.0, 0.81875, -0.0625)).clientTrackingRange(10));
       ZOGLIN = register("zoglin", EntityType.Builder.of(Zoglin::new, MobCategory.MONSTER).fireImmune().sized(1.3964844F, 1.4F).passengerAttachments(1.49375F).clientTrackingRange(8).notInPeaceful());
       ZOMBIE = register("zombie", EntityType.Builder.of(Zombie::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
-      ZOMBIE_HORSE = register("zombie_horse", EntityType.Builder.of(ZombieHorse::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.31875F).clientTrackingRange(10));
+      ZOMBIE_HORSE = register("zombie_horse", EntityType.Builder.of(ZombieHorse::new, MobCategory.MONSTER).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.31875F).clientTrackingRange(10));
+      ZOMBIE_NAUTILUS = register("zombie_nautilus", EntityType.Builder.of(ZombieNautilus::new, MobCategory.MONSTER).sized(0.875F, 0.95F).passengerAttachments(1.1375F).eyeHeight(0.2751F).clientTrackingRange(10));
       ZOMBIE_VILLAGER = register("zombie_villager", EntityType.Builder.of(ZombieVillager::new, MobCategory.MONSTER).sized(0.6F, 1.95F).passengerAttachments(2.125F).ridingOffset(-0.7F).eyeHeight(1.74F).clientTrackingRange(8).notInPeaceful());
       ZOMBIFIED_PIGLIN = register("zombified_piglin", EntityType.Builder.of(ZombifiedPiglin::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       PLAYER = register("player", EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(32).updateInterval(2));
@@ -907,8 +913,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private Builder(EntityFactory<T> var1, MobCategory var2) {
          super();
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
-         this.lootTable = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("entities/")));
-         this.descriptionId = (var0) -> Util.makeDescriptionId("entity", var0.location());
+         this.lootTable = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.identifier().withPrefix("entities/")));
+         this.descriptionId = (var0) -> Util.makeDescriptionId("entity", var0.identifier());
          this.allowedInPeaceful = true;
          this.factory = var1;
          this.category = var2;
@@ -1028,7 +1034,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
       public EntityType<T> build(ResourceKey<EntityType<?>> var1) {
          if (this.serialize) {
-            Util.fetchChoiceType(References.ENTITY_TREE, var1.location().toString());
+            Util.fetchChoiceType(References.ENTITY_TREE, var1.identifier().toString());
          }
 
          return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(var1), this.lootTable.get(var1), this.requiredFeatures, this.allowedInPeaceful);
@@ -1037,7 +1043,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
    @FunctionalInterface
    public interface EntityFactory<T extends Entity> {
-      @Nullable
-      T create(EntityType<T> var1, Level var2);
+      @Nullable T create(EntityType<T> var1, Level var2);
    }
 }

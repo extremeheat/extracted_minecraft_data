@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 
 public class WorkAtPoi extends Behavior<Villager> {
    private static final int CHECK_COOLDOWN = 300;
@@ -37,7 +37,7 @@ public class WorkAtPoi extends Behavior<Villager> {
       var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent((var1x) -> var5.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(var1x.pos())));
       var2.playWorkSound();
       this.useWorkstation(var1, var2);
-      if (var2.shouldRestock()) {
+      if (var2.shouldRestock(var1)) {
          var2.restock();
       }
 

@@ -1,18 +1,17 @@
 package net.minecraft.server.chase;
 
-import com.google.common.base.Charsets;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.CommonComponents;
@@ -21,10 +20,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChaseClient {
@@ -34,10 +35,8 @@ public class ChaseClient {
    private final int serverPort;
    private final MinecraftServer server;
    private volatile boolean wantsToRun;
-   @Nullable
-   private Socket socket;
-   @Nullable
-   private Thread thread;
+   private @Nullable Socket socket;
+   private @Nullable Thread thread;
 
    public ChaseClient(String var1, int var2, MinecraftServer var3) {
       super();
@@ -74,7 +73,7 @@ public class ChaseClient {
             LOGGER.info("Connected to remote control server! Will continuously execute the command broadcasted by that server.");
 
             try {
-               BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), Charsets.US_ASCII));
+               BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.US_ASCII));
 
                try {
                   while(this.wantsToRun) {
@@ -144,7 +143,7 @@ public class ChaseClient {
    }
 
    private void handleTeleport(Scanner var1) {
-      this.parseTarget(var1).ifPresent((var1x) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", var1x.level.location(), var1x.pos.x, var1x.pos.y, var1x.pos.z, var1x.rot.y, var1x.rot.x)));
+      this.parseTarget(var1).ifPresent((var1x) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", var1x.level.identifier(), var1x.pos.x, var1x.pos.y, var1x.pos.z, var1x.rot.y, var1x.rot.x)));
    }
 
    private Optional<TeleportTarget> parseTarget(Scanner var1) {
@@ -167,7 +166,7 @@ public class ChaseClient {
          if (!var2.isEmpty()) {
             ServerPlayer var3 = (ServerPlayer)var2.get(0);
             ServerLevel var4 = this.server.overworld();
-            CommandSourceStack var5 = new CommandSourceStack(var3.commandSource(), Vec3.atLowerCornerOf(var4.getRespawnData().pos()), Vec2.ZERO, var4, 4, "", CommonComponents.EMPTY, this.server, var3);
+            CommandSourceStack var5 = new CommandSourceStack(var3.commandSource(), Vec3.atLowerCornerOf(var4.getRespawnData().pos()), Vec2.ZERO, var4, LevelBasedPermissionSet.OWNER, "", CommonComponents.EMPTY, this.server, var3);
             Commands var6 = this.server.getCommands();
             var6.performPrefixedCommand(var5, var1);
          }

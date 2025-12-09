@@ -1,30 +1,28 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -43,6 +41,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M> {
    private static final float EYE_BED_OFFSET = 0.1F;
@@ -121,17 +120,16 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       return -1;
    }
 
-   public abstract ResourceLocation getTextureLocation(S var1);
+   public abstract Identifier getTextureLocation(S var1);
 
-   @Nullable
-   protected RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
-      ResourceLocation var5 = this.getTextureLocation(var1);
+   protected @Nullable RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
+      Identifier var5 = this.getTextureLocation(var1);
       if (var3) {
-         return RenderType.itemEntityTranslucentCull(var5);
+         return RenderTypes.itemEntityTranslucentCull(var5);
       } else if (var2) {
          return this.model.renderType(var5);
       } else {
-         return var4 ? RenderType.outline(var5) : null;
+         return var4 ? RenderTypes.outline(var5) : null;
       }
    }
 
@@ -303,6 +301,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.isBaby = var1.isBaby();
          var2.isInWater = var1.isInWater();
          var2.isAutoSpinAttack = var1.isAutoSpinAttack();
+         var2.ticksSinceKineticHitFeedback = var1.getTicksSinceLastKineticHitFeedback(var3);
          var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
          ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
          Item var8 = var9.getItem();
@@ -328,13 +327,6 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
       Minecraft var11 = Minecraft.getInstance();
       var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var11.player);
-   }
-
-   protected void extractAdditionalHitboxes(T var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
-      AABB var4 = var1.getBoundingBox();
-      float var5 = 0.01F;
-      HitboxRenderState var6 = new HitboxRenderState(var4.minX - var1.getX(), (double)(var1.getEyeHeight() - 0.01F), var4.minZ - var1.getZ(), var4.maxX - var1.getX(), (double)(var1.getEyeHeight() + 0.01F), var4.maxZ - var1.getZ(), 1.0F, 0.0F, 0.0F);
-      var2.add(var6);
    }
 
    private static float solveBodyRot(LivingEntity var0, float var1, float var2) {

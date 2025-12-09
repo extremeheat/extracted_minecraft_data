@@ -6,16 +6,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.repository.KnownPack;
+import org.jspecify.annotations.Nullable;
 
 public class Resource {
    private final PackResources source;
    private final IoSupplier<InputStream> streamSupplier;
    private final IoSupplier<ResourceMetadata> metadataSupplier;
-   @Nullable
-   private ResourceMetadata cachedMetadata;
+   private @Nullable ResourceMetadata cachedMetadata;
 
    public Resource(PackResources var1, IoSupplier<InputStream> var2, IoSupplier<ResourceMetadata> var3) {
       super();

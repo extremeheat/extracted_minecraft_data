@@ -1,15 +1,14 @@
 package net.minecraft.util.profiling;
 
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jspecify.annotations.Nullable;
 
 public interface ProfileCollector extends ProfilerFiller {
    ProfileResults getResults();
 
-   @Nullable
-   ActiveProfiler.PathEntry getEntry(String var1);
+   ActiveProfiler.@Nullable PathEntry getEntry(String var1);
 
    Set<Pair<String, MetricCategory>> getChartedPaths();
 }

@@ -1,24 +1,24 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.EndermanModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.enderman.EndermanModel;
 import net.minecraft.client.renderer.entity.layers.CarriedBlockLayer;
 import net.minecraft.client.renderer.entity.layers.EnderEyesLayer;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.phys.Vec3;
 
 public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState, EndermanModel<EndermanRenderState>> {
-   private static final ResourceLocation ENDERMAN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderman/enderman.png");
+   private static final Identifier ENDERMAN_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderman/enderman.png");
    private final RandomSource random = RandomSource.create();
 
    public EndermanRenderer(EntityRendererProvider.Context var1) {
       super(var1, new EndermanModel(var1.bakeLayer(ModelLayers.ENDERMAN)), 0.5F);
       this.addLayer(new EnderEyesLayer(this));
-      this.addLayer(new CarriedBlockLayer(this, var1.getBlockRenderDispatcher()));
+      this.addLayer(new CarriedBlockLayer(this));
    }
 
    public Vec3 getRenderOffset(EndermanRenderState var1) {
@@ -31,7 +31,7 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState,
       }
    }
 
-   public ResourceLocation getTextureLocation(EndermanRenderState var1) {
+   public Identifier getTextureLocation(EndermanRenderState var1) {
       return ENDERMAN_LOCATION;
    }
 

@@ -16,7 +16,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,9 +28,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import net.minecraft.WorldVersion;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class HashCache {
@@ -109,7 +109,7 @@ public class HashCache {
          if (this.cachesToWrite.contains(var2x)) {
             Path var4 = this.getProviderCachePath(var2x);
             Path var10001 = this.rootDir;
-            String var10003 = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
+            String var10003 = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.now());
             var3x.save(var10001, var4, var10003 + "\t" + var2x);
          }
 
@@ -156,8 +156,7 @@ public class HashCache {
          this.data = var2;
       }
 
-      @Nullable
-      public HashCode get(Path var1) {
+      public @Nullable HashCode get(Path var1) {
          return (HashCode)this.data.get(var1);
       }
 

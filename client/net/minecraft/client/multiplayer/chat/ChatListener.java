@@ -6,9 +6,7 @@ import java.time.Instant;
 import java.util.Deque;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -18,7 +16,9 @@ import net.minecraft.network.chat.FilterMask;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.util.StringDecomposer;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class ChatListener {
    private static final Component CHAT_VALIDATION_ERROR;

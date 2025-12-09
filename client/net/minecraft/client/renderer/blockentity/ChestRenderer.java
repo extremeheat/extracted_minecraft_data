@@ -4,22 +4,22 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import java.util.Calendar;
-import javax.annotation.Nullable;
-import net.minecraft.client.model.ChestModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.chest.ChestModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T, ChestRenderState> {
    private final MaterialSet materials;
@@ -51,15 +52,14 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
    }
 
    public static boolean xmasTextures() {
-      Calendar var0 = Calendar.getInstance();
-      return var0.get(2) + 1 == 12 && var0.get(5) >= 24 && var0.get(5) <= 26;
+      return SpecialDates.isExtendedChristmas();
    }
 
    public ChestRenderState createRenderState() {
       return new ChestRenderState();
    }
 
-   public void extractRenderState(T var1, ChestRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(T var1, ChestRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       DoubleBlockCombiner.NeighborCombineResult var8;
       label30: {
          BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
@@ -96,7 +96,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       var5 = 1.0F - var5;
       var5 = 1.0F - var5 * var5 * var5;
       Material var6 = Sheets.chooseMaterial(var1.material, var1.type);
-      RenderType var7 = var6.renderType(RenderType::entityCutout);
+      RenderType var7 = var6.renderType(RenderTypes::entityCutout);
       TextureAtlasSprite var8 = this.materials.get(var6);
       if (var1.type != ChestType.SINGLE) {
          if (var1.type == ChestType.LEFT) {

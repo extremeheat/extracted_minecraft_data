@@ -1,10 +1,9 @@
 package net.minecraft.client.gui.components.events;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractContainerEventHandler implements ContainerEventHandler {
-   @Nullable
-   private GuiEventListener focused;
+   private @Nullable GuiEventListener focused;
    private boolean isDragging;
 
    public AbstractContainerEventHandler() {
@@ -19,8 +18,7 @@ public abstract class AbstractContainerEventHandler implements ContainerEventHan
       this.isDragging = var1;
    }
 
-   @Nullable
-   public GuiEventListener getFocused() {
+   public @Nullable GuiEventListener getFocused() {
       return this.focused;
    }
 

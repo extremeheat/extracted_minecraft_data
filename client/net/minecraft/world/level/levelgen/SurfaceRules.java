@@ -12,14 +12,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import org.jspecify.annotations.Nullable;
 
 public class SurfaceRules {
    public static final ConditionSource ON_FLOOR;
@@ -88,7 +88,7 @@ public class SurfaceRules {
    }
 
    public static ConditionSource verticalGradient(String var0, VerticalAnchor var1, VerticalAnchor var2) {
-      return new VerticalGradientConditionSource(ResourceLocation.parse(var0), var1, var2);
+      return new VerticalGradientConditionSource(Identifier.parse(var0), var1, var2);
    }
 
    public static ConditionSource steep() {
@@ -305,8 +305,7 @@ public class SurfaceRules {
    abstract static class LazyCondition implements Condition {
       protected final Context context;
       private long lastUpdate;
-      @Nullable
-      Boolean result;
+      @Nullable Boolean result;
 
       protected LazyCondition(Context var1) {
          super();
@@ -383,8 +382,7 @@ public class SurfaceRules {
          this.followup = var2;
       }
 
-      @Nullable
-      public BlockState tryApply(int var1, int var2, int var3) {
+      public @Nullable BlockState tryApply(int var1, int var2, int var3) {
          return !this.condition.test() ? null : this.followup.tryApply(var1, var2, var3);
       }
    }
@@ -395,8 +393,7 @@ public class SurfaceRules {
          this.rules = var1;
       }
 
-      @Nullable
-      public BlockState tryApply(int var1, int var2, int var3) {
+      public @Nullable BlockState tryApply(int var1, int var2, int var3) {
          for(SurfaceRule var5 : this.rules) {
             BlockState var6 = var5.tryApply(var1, var2, var3);
             if (var6 != null) {
@@ -737,10 +734,10 @@ public class SurfaceRules {
       }
    }
 
-   static record VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) implements ConditionSource {
-      static final KeyDispatchDataCodec<VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.<VerticalGradientConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new)));
+   static record VerticalGradientConditionSource(Identifier randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) implements ConditionSource {
+      static final KeyDispatchDataCodec<VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.<VerticalGradientConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new)));
 
-      VerticalGradientConditionSource(ResourceLocation var1, VerticalAnchor var2, VerticalAnchor var3) {
+      VerticalGradientConditionSource(Identifier var1, VerticalAnchor var2, VerticalAnchor var3) {
          super();
          this.randomName = var1;
          this.trueAtAndBelow = var2;
@@ -962,7 +959,6 @@ public class SurfaceRules {
    }
 
    protected interface SurfaceRule {
-      @Nullable
-      BlockState tryApply(int var1, int var2, int var3);
+      @Nullable BlockState tryApply(int var1, int var2, int var3);
    }
 }

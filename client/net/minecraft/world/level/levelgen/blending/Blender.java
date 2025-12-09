@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.FluidState;
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public class Blender {
    private static final Blender EMPTY = new Blender(new Long2ObjectOpenHashMap(), new Long2ObjectOpenHashMap()) {
@@ -116,15 +116,15 @@ public class Blender {
          MutableDouble var7 = new MutableDouble(0.0);
          MutableDouble var8 = new MutableDouble(0.0);
          MutableDouble var9 = new MutableDouble(1.0 / 0.0);
-         this.heightAndBiomeBlendingData.forEach((var5x, var6) -> var6.iterateHeights(QuartPos.fromSection(ChunkPos.getX(var5x)), QuartPos.fromSection(ChunkPos.getZ(var5x)), (var5, var6x, var7x) -> {
-               double var9x = (double)Mth.length((float)(var3 - var5), (float)(var4 - var6x));
+         this.heightAndBiomeBlendingData.forEach((var5x, var7x) -> var7x.iterateHeights(QuartPos.fromSection(ChunkPos.getX(var5x)), QuartPos.fromSection(ChunkPos.getZ(var5x)), (var5, var6, var7xx) -> {
+               double var9x = (double)Mth.length((float)(var3 - var5), (float)(var4 - var6));
                if (!(var9x > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
                   if (var9x < var9.doubleValue()) {
                      var9.setValue(var9x);
                   }
 
                   double var11 = 1.0 / (var9x * var9x * var9x * var9x);
-                  var8.add(var7x * var11);
+                  var8.add(var7xx * var11);
                   var7.add(var11);
                }
             }));
@@ -157,8 +157,8 @@ public class Blender {
          MutableDouble var9 = new MutableDouble(0.0);
          MutableDouble var10 = new MutableDouble(0.0);
          MutableDouble var11 = new MutableDouble(1.0 / 0.0);
-         this.densityBlendingData.forEach((var6x, var7x) -> var7x.iterateDensities(QuartPos.fromSection(ChunkPos.getX(var6x)), QuartPos.fromSection(ChunkPos.getZ(var6x)), var5 - 1, var5 + 1, (var6xx, var7, var8, var9x) -> {
-               double var11x = Mth.length((double)(var4 - var6xx), (double)((var5 - var7) * 2), (double)(var6 - var8));
+         this.densityBlendingData.forEach((var6x, var8) -> var8.iterateDensities(QuartPos.fromSection(ChunkPos.getX(var6x)), QuartPos.fromSection(ChunkPos.getZ(var6x)), var5 - 1, var5 + 1, (var6xx, var7, var8x, var9x) -> {
+               double var11x = Mth.length((double)(var4 - var6xx), (double)((var5 - var7) * 2), (double)(var6 - var8x));
                if (!(var11x > 2.0)) {
                   if (var11x < var11.doubleValue()) {
                      var11.setValue(var11x);
@@ -216,11 +216,10 @@ public class Blender {
       };
    }
 
-   @Nullable
    private Holder<Biome> blendBiome(int var1, int var2, int var3) {
       MutableDouble var4 = new MutableDouble(1.0 / 0.0);
       MutableObject var5 = new MutableObject();
-      this.heightAndBiomeBlendingData.forEach((var5x, var6x) -> var6x.iterateBiomes(QuartPos.fromSection(ChunkPos.getX(var5x)), var2, QuartPos.fromSection(ChunkPos.getZ(var5x)), (var4x, var5xx, var6) -> {
+      this.heightAndBiomeBlendingData.forEach((var5x, var7) -> var7.iterateBiomes(QuartPos.fromSection(ChunkPos.getX(var5x)), var2, QuartPos.fromSection(ChunkPos.getZ(var5x)), (var4x, var5xx, var6) -> {
             double var7 = (double)Mth.length((float)(var1 - var4x), (float)(var3 - var5xx));
             if (!(var7 > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
                if (var7 < var4.doubleValue()) {
@@ -235,7 +234,7 @@ public class Blender {
       } else {
          double var6 = SHIFT_NOISE.getValue((double)var1, 0.0, (double)var3) * 12.0;
          double var8 = Mth.clamp((var4.doubleValue() + var6) / (double)(HEIGHT_BLENDING_RANGE_CELLS + 1), 0.0, 1.0);
-         return var8 > 0.5 ? null : (Holder)var5.getValue();
+         return var8 > 0.5 ? null : (Holder)var5.get();
       }
    }
 

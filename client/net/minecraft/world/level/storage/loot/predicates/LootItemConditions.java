@@ -3,7 +3,7 @@ package net.minecraft.world.level.storage.loot.predicates;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LootItemConditions {
    public static final LootItemConditionType INVERTED;
@@ -31,7 +31,7 @@ public class LootItemConditions {
    }
 
    private static LootItemConditionType register(String var0, MapCodec<? extends LootItemCondition> var1) {
-      return (LootItemConditionType)Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootItemConditionType(var1));
+      return (LootItemConditionType)Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootItemConditionType(var1));
    }
 
    static {

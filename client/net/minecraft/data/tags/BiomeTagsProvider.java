@@ -69,11 +69,8 @@ public class BiomeTagsProvider extends KeyTagProvider<Biome> {
       this.tag(BiomeTags.HAS_RUINED_PORTAL_NETHER).addTag(BiomeTags.IS_NETHER);
       this.tag(BiomeTags.HAS_END_CITY).add(Biomes.END_HIGHLANDS).add(Biomes.END_MIDLANDS);
       this.tag(BiomeTags.PRODUCES_CORALS_FROM_BONEMEAL).add(Biomes.WARM_OCEAN);
-      this.tag(BiomeTags.PLAYS_UNDERWATER_MUSIC).addTag(BiomeTags.IS_OCEAN).addTag(BiomeTags.IS_RIVER);
-      this.tag(BiomeTags.HAS_CLOSER_WATER_FOG).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP);
       this.tag(BiomeTags.WATER_ON_MAP_OUTLINES).addTag(BiomeTags.IS_OCEAN).addTag(BiomeTags.IS_RIVER).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP);
       this.tag(BiomeTags.WITHOUT_ZOMBIE_SIEGES).add(Biomes.MUSHROOM_FIELDS);
-      this.tag(BiomeTags.WITHOUT_PATROL_SPAWNS).add(Biomes.MUSHROOM_FIELDS);
       this.tag(BiomeTags.WITHOUT_WANDERING_TRADER_SPAWNS).add(Biomes.THE_VOID);
       this.tag(BiomeTags.SPAWNS_COLD_VARIANT_FROGS).add(Biomes.SNOWY_PLAINS).add(Biomes.ICE_SPIKES).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.SNOWY_SLOPES).add(Biomes.FROZEN_OCEAN).add(Biomes.DEEP_FROZEN_OCEAN).add(Biomes.GROVE).add(Biomes.DEEP_DARK).add(Biomes.FROZEN_RIVER).add(Biomes.SNOWY_TAIGA).add(Biomes.SNOWY_BEACH).addTag(BiomeTags.IS_END);
       this.tag(BiomeTags.SPAWNS_WARM_VARIANT_FROGS).add(Biomes.DESERT).add(Biomes.WARM_OCEAN).addTag(BiomeTags.IS_JUNGLE).addTag(BiomeTags.IS_SAVANNA).addTag(BiomeTags.IS_NETHER).addTag(BiomeTags.IS_BADLANDS).add(Biomes.MANGROVE_SWAMP);
@@ -87,7 +84,6 @@ public class BiomeTagsProvider extends KeyTagProvider<Biome> {
       this.tag(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS).addTag(BiomeTags.IS_RIVER);
       this.tag(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP);
       this.tag(BiomeTags.SPAWNS_SNOW_FOXES).add(Biomes.SNOWY_PLAINS).add(Biomes.ICE_SPIKES).add(Biomes.FROZEN_OCEAN).add(Biomes.SNOWY_TAIGA).add(Biomes.FROZEN_RIVER).add(Biomes.SNOWY_BEACH).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.SNOWY_SLOPES).add(Biomes.GROVE);
-      this.tag(BiomeTags.INCREASED_FIRE_BURNOUT).add(Biomes.BAMBOO_JUNGLE).add(Biomes.MUSHROOM_FIELDS).add(Biomes.MANGROVE_SWAMP).add(Biomes.SNOWY_SLOPES).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.SWAMP).add(Biomes.JUNGLE);
-      this.tag(BiomeTags.SNOW_GOLEM_MELTS).add(Biomes.BADLANDS).add(Biomes.BASALT_DELTAS).add(Biomes.CRIMSON_FOREST).add(Biomes.DESERT).add(Biomes.ERODED_BADLANDS).add(Biomes.NETHER_WASTES).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.SOUL_SAND_VALLEY).add(Biomes.WARPED_FOREST).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.WOODED_BADLANDS);
+      this.tag(BiomeTags.SPAWNS_CORAL_VARIANT_ZOMBIE_NAUTILUS).add(Biomes.WARM_OCEAN);
    }
 }

@@ -2,8 +2,8 @@ package net.minecraft.data.worldgen;
 
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.TrapezoidFloat;
@@ -28,7 +28,7 @@ public class Carvers {
    }
 
    private static ResourceKey<ConfiguredWorldCarver<?>> createKey(String var0) {
-      return ResourceKey.create(Registries.CONFIGURED_CARVER, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.CONFIGURED_CARVER, Identifier.withDefaultNamespace(var0));
    }
 
    public static void bootstrap(BootstrapContext<ConfiguredWorldCarver<?>> var0) {

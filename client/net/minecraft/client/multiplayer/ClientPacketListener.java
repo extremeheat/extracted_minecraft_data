@@ -30,7 +30,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.ClientRecipeBook;
@@ -54,6 +53,7 @@ import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.NautilusInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
@@ -70,6 +70,7 @@ import net.minecraft.client.resources.sounds.SnifferSoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
 import net.minecraft.client.waypoints.ClientWaypointManager;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
@@ -142,7 +143,6 @@ import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
-import net.minecraft.network.protocol.game.ClientboundHorseScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
@@ -154,6 +154,7 @@ import net.minecraft.network.protocol.game.ClientboundLightUpdatePacketData;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
+import net.minecraft.network.protocol.game.ClientboundMountScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveMinecartPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveVehiclePacket;
@@ -244,10 +245,13 @@ import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -278,8 +282,9 @@ import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.animal.Bee;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.bee.Bee;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Guardian;
@@ -287,16 +292,18 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartBehavior;
-import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.inventory.NautilusInventoryMenu;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -327,6 +334,7 @@ import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientPacketListener extends ClientCommonPacketListenerImpl implements ClientGamePacketListener, TickablePacketListener {
@@ -341,32 +349,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private static final Component BUTTON_SUGGEST_COMMAND = Component.translatable("multiplayer.confirm_command.suggest_command");
    private static final int PENDING_OFFSET_THRESHOLD = 64;
    public static final int TELEPORT_INTERPOLATION_THRESHOLD = 64;
-   private static final ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider> COMMAND_NODE_BUILDER = new ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider>() {
-      public ArgumentBuilder<ClientSuggestionProvider, ?> createLiteral(String var1) {
-         return LiteralArgumentBuilder.literal(var1);
-      }
-
-      public ArgumentBuilder<ClientSuggestionProvider, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable ResourceLocation var3) {
-         RequiredArgumentBuilder var4 = RequiredArgumentBuilder.argument(var1, var2);
-         if (var3 != null) {
-            var4.suggests(SuggestionProviders.getProvider(var3));
-         }
-
-         return var4;
-      }
-
-      public ArgumentBuilder<ClientSuggestionProvider, ?> configure(ArgumentBuilder<ClientSuggestionProvider, ?> var1, boolean var2, boolean var3) {
-         if (var2) {
-            var1.executes((var0) -> 0);
-         }
-
-         if (var3) {
-            var1.requires(ClientSuggestionProvider::allowsRestrictedCommands);
-         }
-
-         return var1;
-      }
-   };
+   private static final Permission RESTRICTED_COMMAND = Permission.Atom.create("client/commands/restricted");
+   static final PermissionCheck RESTRICTED_COMMAND_CHECK;
+   private static final PermissionSet ALLOW_RESTRICTED_COMMANDS;
+   private static final ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider> COMMAND_NODE_BUILDER;
    private final GameProfile localGameProfile;
    private ClientLevel level;
    private ClientLevel.ClientLevelData levelData;
@@ -389,27 +375,24 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private FuelValues fuelValues;
    private final HashedPatchMap.HashGenerator decoratedHashOpsGenerator;
    private OptionalInt removedPlayerVehicleId = OptionalInt.empty();
-   @Nullable
-   private LocalChatSession chatSession;
+   private @Nullable LocalChatSession chatSession;
    private SignedMessageChain.Encoder signedMessageEncoder;
    private int nextChatIndex;
    private LastSeenMessagesTracker lastSeenMessages;
    private MessageSignatureCache messageSignatureCache;
-   @Nullable
-   private CompletableFuture<Optional<ProfileKeyPair>> keyPairFuture;
-   @Nullable
-   private ClientInformation remoteClientInformation;
+   private @Nullable CompletableFuture<Optional<ProfileKeyPair>> keyPairFuture;
+   private @Nullable ClientInformation remoteClientInformation;
    private final ChunkBatchSizeCalculator chunkBatchSizeCalculator;
    private final PingDebugMonitor pingDebugMonitor;
    private final ClientDebugSubscriber debugSubscriber;
-   @Nullable
-   private LevelLoadTracker levelLoadTracker;
+   private @Nullable LevelLoadTracker levelLoadTracker;
    private boolean serverEnforcesSecureChat;
    private volatile boolean closed;
    private final Scoreboard scoreboard;
    private final ClientWaypointManager waypointManager;
    private final SessionSearchTrees searchTrees;
    private final List<WeakReference<CacheSlot<?, ?>>> cacheSlots;
+   private boolean clientLoaded;
 
    public ClientPacketListener(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -430,8 +413,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          })).asInt();
       this.enabledFeatures = var3.enabledFeatures();
       this.advancements = new ClientAdvancements(var1, this.telemetryManager);
-      this.suggestionsProvider = new ClientSuggestionProvider(this, var1, true);
-      this.restrictedSuggestionsProvider = new ClientSuggestionProvider(this, var1, false);
+      PermissionSet var5 = (var1x) -> {
+         LocalPlayer var2 = var1.player;
+         return var2 != null && var2.permissions().hasPermission(var1x);
+      };
+      this.suggestionsProvider = new ClientSuggestionProvider(this, var1, var5.union(ALLOW_RESTRICTED_COMMANDS));
+      this.restrictedSuggestionsProvider = new ClientSuggestionProvider(this, var1, PermissionSet.NO_PERMISSIONS);
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
       this.debugSubscriber = new ClientDebugSubscriber(this, var1.getDebugOverlay());
       if (var3.chatState() != null) {
@@ -500,6 +487,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
       }
 
+      this.setClientLoaded(false);
       this.debugSubscriber.clear();
       this.minecraft.levelRenderer.debugRenderer.refreshRendererList();
       this.minecraft.player.resetPos();
@@ -561,8 +549,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    }
 
-   @Nullable
-   private Entity createEntityFromPacket(ClientboundAddEntityPacket var1) {
+   private @Nullable Entity createEntityFromPacket(ClientboundAddEntityPacket var1) {
       EntityType var2 = var1.getType();
       if (var2 == EntityType.PLAYER) {
          PlayerInfo var3 = this.getPlayerInfo(var1.getUUID());
@@ -1171,6 +1158,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var14 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
       }
 
+      this.setClientLoaded(false);
       this.startWaitingForNewLevel(var14, this.level, var8);
       var14.setId(var5.getId());
       this.minecraft.player = var14;
@@ -1242,16 +1230,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var10000.ifPresent(var10001::addDeltaMovement);
    }
 
-   public void handleHorseScreenOpen(ClientboundHorseScreenOpenPacket var1) {
+   public void handleMountScreenOpen(ClientboundMountScreenOpenPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       Entity var2 = this.level.getEntity(var1.getEntityId());
-      if (var2 instanceof AbstractHorse var3) {
-         LocalPlayer var4 = this.minecraft.player;
-         int var5 = var1.getInventoryColumns();
-         SimpleContainer var6 = new SimpleContainer(AbstractHorse.getInventorySize(var5));
-         HorseInventoryMenu var7 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var6, var3, var5);
-         var4.containerMenu = var7;
-         this.minecraft.setScreen(new HorseInventoryScreen(var7, var4.getInventory(), var3, var5));
+      LocalPlayer var3 = this.minecraft.player;
+      int var4 = var1.getInventoryColumns();
+      SimpleContainer var5 = new SimpleContainer(AbstractMountInventoryMenu.getInventorySize(var4));
+      if (var2 instanceof AbstractHorse var6) {
+         HorseInventoryMenu var8 = new HorseInventoryMenu(var1.getContainerId(), var3.getInventory(), var5, var6, var4);
+         var3.containerMenu = var8;
+         this.minecraft.setScreen(new HorseInventoryScreen(var8, var3.getInventory(), var6, var4));
+      } else if (var2 instanceof AbstractNautilus var7) {
+         NautilusInventoryMenu var9 = new NautilusInventoryMenu(var1.getContainerId(), var3.getInventory(), var5, var7, var4);
+         var3.containerMenu = var9;
+         this.minecraft.setScreen(new NautilusInventoryScreen(var9, var3.getInventory(), var7, var4));
       }
 
    }
@@ -1501,7 +1493,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSelectAdvancementsTab(ClientboundSelectAdvancementsTabPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      ResourceLocation var2 = var1.getTab();
+      Identifier var2 = var1.getTab();
       if (var2 == null) {
          this.advancements.setSelectedTab((AdvancementHolder)null, false);
       } else {
@@ -1661,7 +1653,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity var2 = this.level.getEntity(var1.playerId());
       if (var2 == this.minecraft.player) {
          if (this.minecraft.player.shouldShowDeathScreen()) {
-            this.minecraft.setScreen(new DeathScreen(var1.message(), this.level.getLevelData().isHardcore()));
+            this.minecraft.setScreen(new DeathScreen(var1.message(), this.level.getLevelData().isHardcore(), this.minecraft.player));
          } else {
             this.minecraft.player.respawn();
          }
@@ -1690,7 +1682,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var2.setCenter(var1.getNewCenterX(), var1.getNewCenterZ());
       long var3 = var1.getLerpTime();
       if (var3 > 0L) {
-         var2.lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var3);
+         var2.lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var3, this.level.getGameTime());
       } else {
          var2.setSize(var1.getNewSize());
       }
@@ -1707,7 +1699,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSetBorderLerpSize(ClientboundSetBorderLerpSizePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.level.getWorldBorder().lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var1.getLerpTime());
+      this.level.getWorldBorder().lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var1.getLerpTime(), this.level.getGameTime());
    }
 
    public void handleSetBorderSize(ClientboundSetBorderSizePacket var1) {
@@ -2308,13 +2300,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       return this.playerInfoMap.keySet();
    }
 
-   @Nullable
-   public PlayerInfo getPlayerInfo(UUID var1) {
+   public @Nullable PlayerInfo getPlayerInfo(UUID var1) {
       return (PlayerInfo)this.playerInfoMap.get(var1);
    }
 
-   @Nullable
-   public PlayerInfo getPlayerInfo(String var1) {
+   public @Nullable PlayerInfo getPlayerInfo(String var1) {
       for(PlayerInfo var3 : this.playerInfoMap.values()) {
          if (var3.getProfile().name().equals(var1)) {
             return var3;
@@ -2328,8 +2318,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       return this.seenPlayers;
    }
 
-   @Nullable
-   public PlayerInfo getPlayerInfoIgnoreCase(String var1) {
+   public @Nullable PlayerInfo getPlayerInfoIgnoreCase(String var1) {
       for(PlayerInfo var3 : this.playerInfoMap.values()) {
          if (var3.getProfile().name().equalsIgnoreCase(var1)) {
             return var3;
@@ -2520,9 +2509,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void notifyPlayerLoaded() {
-      if (!this.minecraft.player.hasClientLoaded()) {
+      if (!this.hasClientLoaded()) {
          this.connection.send(new ServerboundPlayerLoadedPacket());
-         this.minecraft.player.setClientLoaded(true);
+         this.setClientLoaded(true);
       }
 
    }
@@ -2549,8 +2538,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       };
    }
 
-   @Nullable
-   public ServerData getServerData() {
+   public @Nullable ServerData getServerData() {
       return this.serverData;
    }
 
@@ -2596,6 +2584,45 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public DebugValueAccess createDebugValueAccess() {
       return this.debugSubscriber.createDebugValueAccess(this.level);
+   }
+
+   public boolean hasClientLoaded() {
+      return this.clientLoaded;
+   }
+
+   private void setClientLoaded(boolean var1) {
+      this.clientLoaded = var1;
+   }
+
+   static {
+      RESTRICTED_COMMAND_CHECK = new PermissionCheck.Require(RESTRICTED_COMMAND);
+      ALLOW_RESTRICTED_COMMANDS = (var0) -> var0.equals(RESTRICTED_COMMAND);
+      COMMAND_NODE_BUILDER = new ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider>() {
+         public ArgumentBuilder<ClientSuggestionProvider, ?> createLiteral(String var1) {
+            return LiteralArgumentBuilder.literal(var1);
+         }
+
+         public ArgumentBuilder<ClientSuggestionProvider, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable Identifier var3) {
+            RequiredArgumentBuilder var4 = RequiredArgumentBuilder.argument(var1, var2);
+            if (var3 != null) {
+               var4.suggests(SuggestionProviders.getProvider(var3));
+            }
+
+            return var4;
+         }
+
+         public ArgumentBuilder<ClientSuggestionProvider, ?> configure(ArgumentBuilder<ClientSuggestionProvider, ?> var1, boolean var2, boolean var3) {
+            if (var2) {
+               var1.executes((var0) -> 0);
+            }
+
+            if (var3) {
+               var1.requires(Commands.hasPermission(ClientPacketListener.RESTRICTED_COMMAND_CHECK));
+            }
+
+            return var1;
+         }
+      };
    }
 
    static enum CommandCheckResult {

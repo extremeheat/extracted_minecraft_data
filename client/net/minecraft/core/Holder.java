@@ -6,17 +6,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import org.jspecify.annotations.Nullable;
 
 public interface Holder<T> {
    T value();
 
    boolean isBound();
 
-   boolean is(ResourceLocation var1);
+   boolean is(Identifier var1);
 
    boolean is(ResourceKey<T> var1);
 
@@ -39,7 +39,7 @@ public interface Holder<T> {
    boolean canSerializeIn(HolderOwner<T> var1);
 
    default String getRegisteredName() {
-      return (String)this.unwrapKey().map((var0) -> var0.location().toString()).orElse("[unregistered]");
+      return (String)this.unwrapKey().map((var0) -> var0.identifier().toString()).orElse("[unregistered]");
    }
 
    static <T> Holder<T> direct(T var0) {
@@ -69,7 +69,7 @@ public interface Holder<T> {
          return true;
       }
 
-      public boolean is(ResourceLocation var1) {
+      public boolean is(Identifier var1) {
          return false;
       }
 
@@ -116,13 +116,10 @@ public interface Holder<T> {
 
    public static class Reference<T> implements Holder<T> {
       private final HolderOwner<T> owner;
-      @Nullable
-      private Set<TagKey<T>> tags;
+      private @Nullable Set<TagKey<T>> tags;
       private final Type type;
-      @Nullable
-      private ResourceKey<T> key;
-      @Nullable
-      private T value;
+      private @Nullable ResourceKey<T> key;
+      private @Nullable T value;
 
       protected Reference(Type var1, HolderOwner<T> var2, @Nullable ResourceKey<T> var3, @Nullable T var4) {
          super();
@@ -160,8 +157,8 @@ public interface Holder<T> {
          }
       }
 
-      public boolean is(ResourceLocation var1) {
-         return this.key().location().equals(var1);
+      public boolean is(Identifier var1) {
+         return this.key().identifier().equals(var1);
       }
 
       public boolean is(ResourceKey<T> var1) {

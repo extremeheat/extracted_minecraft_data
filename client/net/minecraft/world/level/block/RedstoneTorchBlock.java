@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
+import org.jspecify.annotations.Nullable;
 
 public class RedstoneTorchBlock extends BaseTorchBlock {
    public static final MapCodec<RedstoneTorchBlock> CODEC = simpleCodec(RedstoneTorchBlock::new);
@@ -137,8 +137,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
       return false;
    }
 
-   @Nullable
-   protected Orientation randomOrientation(Level var1, BlockState var2) {
+   protected @Nullable Orientation randomOrientation(Level var1, BlockState var2) {
       return ExperimentalRedstoneUtils.initialOrientation(var1, (Direction)null, Direction.UP);
    }
 

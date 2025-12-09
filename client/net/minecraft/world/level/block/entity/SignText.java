@@ -6,16 +6,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
+import org.jspecify.annotations.Nullable;
 
 public class SignText {
    private static final Codec<Component[]> LINES_CODEC;
@@ -25,8 +25,7 @@ public class SignText {
    private final Component[] filteredMessages;
    private final DyeColor color;
    private final boolean hasGlowingText;
-   @Nullable
-   private FormattedCharSequence[] renderMessages;
+   private FormattedCharSequence @Nullable [] renderMessages;
    private boolean renderMessagedFiltered;
 
    public SignText() {

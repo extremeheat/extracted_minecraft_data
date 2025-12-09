@@ -24,10 +24,12 @@ import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.slf4j.Logger;
 
 @SuppressForbidden(
@@ -81,10 +83,10 @@ public class Bootstrap {
    private static void checkGameruleTranslations(final Set<String> var0) {
       final Language var1 = Language.getInstance();
       GameRules var2 = new GameRules(FeatureFlags.REGISTRY.allFlags());
-      var2.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
-         public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
+      var2.visitGameRuleTypes(new GameRuleTypeVisitor() {
+         public <T> void visit(GameRule<T> var1x) {
             if (!var1.has(var1x.getDescriptionId())) {
-               var0.add(var1x.getId());
+               var0.add(var1x.id());
             }
 
          }

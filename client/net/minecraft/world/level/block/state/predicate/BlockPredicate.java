@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block.state.predicate;
 
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class BlockPredicate implements Predicate<BlockState> {
    private final Block block;
@@ -22,7 +22,7 @@ public class BlockPredicate implements Predicate<BlockState> {
    }
 
    // $FF: synthetic method
-   public boolean test(@Nullable final Object var1) {
+   public boolean test(final @Nullable Object var1) {
       return this.test((BlockState)var1);
    }
 }

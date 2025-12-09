@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Locale;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -34,9 +33,11 @@ import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.TimeUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.ProfileResults;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -53,7 +54,7 @@ public class DebugCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(3))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(3))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
    }
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {
@@ -107,7 +108,7 @@ public class DebugCommand {
 
                for(final CommandFunction var15 : var6) {
                   try {
-                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
+                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(LevelBasedPermissionSet.GAMEMASTER);
                      InstantiatedFunction var17 = var15.instantiate((CompoundTag)null, var9);
                      var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
                         public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
@@ -201,7 +202,7 @@ public class DebugCommand {
 
       }
 
-      public void onCall(int var1, ResourceLocation var2, int var3) {
+      public void onCall(int var1, Identifier var2, int var3) {
          this.newLine();
          this.indentAndSave(var1);
          this.output.print("[F] ");

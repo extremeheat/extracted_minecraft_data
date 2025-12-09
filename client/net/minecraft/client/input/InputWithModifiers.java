@@ -1,11 +1,17 @@
 package net.minecraft.client.input;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 public interface InputWithModifiers {
    int NOT_DIGIT = -1;
 
-   int input();
+   @InputConstants.Value int input();
 
-   int modifiers();
+   @InputWithModifiers.Modifiers int modifiers();
 
    default boolean isSelection() {
       return this.input() == 257 || this.input() == 32 || this.input() == 335;
@@ -53,22 +59,31 @@ public interface InputWithModifiers {
    }
 
    default boolean hasControlDown() {
+      return (this.modifiers() & 2) != 0;
+   }
+
+   default boolean hasControlDownWithQuirk() {
       return (this.modifiers() & InputQuirks.EDIT_SHORTCUT_KEY_MODIFIER) != 0;
    }
 
    default boolean isSelectAll() {
-      return this.input() == 65 && this.hasControlDown() && !this.hasShiftDown() && !this.hasAltDown();
+      return this.input() == 65 && this.hasControlDownWithQuirk() && !this.hasShiftDown() && !this.hasAltDown();
    }
 
    default boolean isCopy() {
-      return this.input() == 67 && this.hasControlDown() && !this.hasShiftDown() && !this.hasAltDown();
+      return this.input() == 67 && this.hasControlDownWithQuirk() && !this.hasShiftDown() && !this.hasAltDown();
    }
 
    default boolean isPaste() {
-      return this.input() == 86 && this.hasControlDown() && !this.hasShiftDown() && !this.hasAltDown();
+      return this.input() == 86 && this.hasControlDownWithQuirk() && !this.hasShiftDown() && !this.hasAltDown();
    }
 
    default boolean isCut() {
-      return this.input() == 88 && this.hasControlDown() && !this.hasShiftDown() && !this.hasAltDown();
+      return this.input() == 88 && this.hasControlDownWithQuirk() && !this.hasShiftDown() && !this.hasAltDown();
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Modifiers {
    }
 }

@@ -1,7 +1,7 @@
 package net.minecraft.world.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public record ConversionParams(ConversionType type, boolean keepEquipment, boolean preserveCanPickUpLoot, @Nullable PlayerTeam team) {
    public ConversionParams(ConversionType var1, boolean var2, boolean var3, @Nullable PlayerTeam var4) {

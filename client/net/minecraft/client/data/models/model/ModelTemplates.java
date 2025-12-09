@@ -2,7 +2,7 @@ package net.minecraft.client.data.models.model;
 
 import java.util.Optional;
 import java.util.stream.IntStream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ModelTemplates {
    public static final ModelTemplate CUBE;
@@ -171,6 +171,7 @@ public class ModelTemplates {
    public static final ModelTemplate BUNDLE_OPEN_BACK_INVENTORY;
    public static final ModelTemplate BOW;
    public static final ModelTemplate CROSSBOW;
+   public static final ModelTemplate SPEAR_IN_HAND;
    public static final ModelTemplate CANDLE;
    public static final ModelTemplate TWO_CANDLES;
    public static final ModelTemplate THREE_CANDLES;
@@ -190,19 +191,19 @@ public class ModelTemplates {
    }
 
    private static ModelTemplate create(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("block/" + var0)), Optional.empty(), var1);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + var0)), Optional.empty(), var1);
    }
 
    private static ModelTemplate createItem(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("item/" + var0)), Optional.empty(), var1);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + var0)), Optional.empty(), var1);
    }
 
    private static ModelTemplate createItem(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("item/" + var0)), Optional.of(var1), var2);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + var0)), Optional.of(var1), var2);
    }
 
    private static ModelTemplate create(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("block/" + var0)), Optional.of(var1), var2);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + var0)), Optional.of(var1), var2);
    }
 
    static {
@@ -372,6 +373,7 @@ public class ModelTemplates {
       BUNDLE_OPEN_BACK_INVENTORY = createItem("template_bundle_open_back", "_open_back", TextureSlot.LAYER0);
       BOW = createItem("bow", TextureSlot.LAYER0);
       CROSSBOW = createItem("crossbow", TextureSlot.LAYER0);
+      SPEAR_IN_HAND = createItem("spear_in_hand", "_in_hand", TextureSlot.LAYER0);
       CANDLE = create("template_candle", TextureSlot.ALL, TextureSlot.PARTICLE);
       TWO_CANDLES = create("template_two_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
       THREE_CANDLES = create("template_three_candles", TextureSlot.ALL, TextureSlot.PARTICLE);

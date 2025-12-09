@@ -14,8 +14,6 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -40,6 +38,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
@@ -68,6 +67,7 @@ import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class GameTestHelper {
    private final GameTestInfo testInfo;
@@ -159,24 +159,37 @@ public class GameTestHelper {
    }
 
    public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
-      ServerLevel var3 = this.getLevel();
-      Entity var4 = var1.create(var3, EntitySpawnReason.STRUCTURE);
-      if (var4 == null) {
+      return (E)this.spawn(var1, var2, (EntitySpawnReason)null);
+   }
+
+   public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2, @Nullable EntitySpawnReason var3) {
+      ServerLevel var4 = this.getLevel();
+      Entity var5 = var1.create(var4, EntitySpawnReason.STRUCTURE);
+      if (var5 == null) {
          throw this.assertionException(BlockPos.containing(var2), "test.error.spawn_failure", var1.builtInRegistryHolder().getRegisteredName());
       } else {
-         if (var4 instanceof Mob) {
-            Mob var5 = (Mob)var4;
-            var5.setPersistenceRequired();
+         if (var5 instanceof Mob) {
+            Mob var6 = (Mob)var5;
+            var6.setPersistenceRequired();
          }
 
-         Vec3 var7 = this.absoluteVec(var2);
-         float var6 = var4.rotate(this.getTestRotation());
-         var4.snapTo(var7.x, var7.y, var7.z, var6, var4.getXRot());
-         var4.setYBodyRot(var6);
-         var4.setYHeadRot(var6);
-         var3.addFreshEntity(var4);
-         return (E)var4;
+         Vec3 var9 = this.absoluteVec(var2);
+         float var7 = var5.rotate(this.getTestRotation());
+         var5.snapTo(var9.x, var9.y, var9.z, var7, var5.getXRot());
+         var5.setYBodyRot(var7);
+         var5.setYHeadRot(var7);
+         if (var3 != null && var5 instanceof Mob) {
+            Mob var8 = (Mob)var5;
+            var8.finalizeSpawn(this.getLevel(), this.getLevel().getCurrentDifficultyAt(var8.blockPosition()), var3, (SpawnGroupData)null);
+         }
+
+         var4.addFreshEntityWithPassengers(var5);
+         return (E)var5;
       }
+   }
+
+   public <E extends Mob> E spawn(EntityType<E> var1, int var2, int var3, int var4, EntitySpawnReason var5) {
+      return (E)(this.spawn(var1, new Vec3((double)var2, (double)var3, (double)var4), var5));
    }
 
    public void hurt(Entity var1, DamageSource var2, float var3) {
@@ -307,7 +320,6 @@ public class GameTestHelper {
 
    public Player makeMockPlayer(final GameType var1) {
       return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
-         @Nonnull
          public GameType gameMode() {
             return var1;
          }
@@ -387,14 +399,6 @@ public class GameTestHelper {
       }
 
       this.getLevel().setBlock(this.absolutePos(var1), var4, 3);
-   }
-
-   public void setNight() {
-      this.setDayTime(13000);
-   }
-
-   public void setDayTime(int var1) {
-      this.getLevel().setDayTime((long)var1);
    }
 
    public void assertBlockPresent(Block var1, int var2, int var3, int var4) {
@@ -503,6 +507,13 @@ public class GameTestHelper {
       AABB var3 = this.absoluteAABB(var2);
       if (!this.getLevel().hasEntities(var1, var3, Entity::isAlive)) {
          throw this.assertionException(BlockPos.containing(var2.getCenter()), "test.error.expected_entity", var1.getDescription());
+      }
+   }
+
+   public void assertEntityPresent(EntityType<?> var1, AABB var2, Component var3) {
+      AABB var4 = this.absoluteAABB(var2);
+      if (!this.getLevel().hasEntities(var1, var4, Entity::isAlive)) {
+         throw this.assertionException(BlockPos.containing(var2.getCenter()), var3);
       }
    }
 
@@ -655,15 +666,18 @@ public class GameTestHelper {
    }
 
    public <E extends Entity, T> void assertEntityData(BlockPos var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
-      BlockPos var5 = this.absolutePos(var1);
-      List var6 = this.getLevel().getEntities(var2, new AABB(var5), Entity::isAlive);
-      if (var6.isEmpty()) {
-         throw this.assertionException(var1, "test.error.expected_entity", var2.getDescription());
+      this.assertEntityData((AABB)(new AABB(var1)), var2, var3, var4);
+   }
+
+   public <E extends Entity, T> void assertEntityData(AABB var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
+      List var5 = this.getLevel().getEntities(var2, this.absoluteAABB(var1), Entity::isAlive);
+      if (var5.isEmpty()) {
+         throw this.assertionException(BlockPos.containing(var1.getBottomCenter()), "test.error.expected_entity", var2.getDescription());
       } else {
-         for(Entity var8 : var6) {
-            Object var9 = var3.apply(var8);
-            if (!Objects.equals(var9, var4)) {
-               throw this.assertionException(var1, "test.error.expected_entity_data", var4, var9);
+         for(Entity var7 : var5) {
+            Object var8 = var3.apply(var7);
+            if (!Objects.equals(var8, var4)) {
+               throw this.assertionException(BlockPos.containing(var1.getBottomCenter()), "test.error.expected_entity_data", var4, var8);
             }
          }
 
@@ -748,12 +762,6 @@ public class GameTestHelper {
 
    public <E extends Entity, T> void succeedWhenEntityData(BlockPos var1, EntityType<E> var2, Function<E, T> var3, T var4) {
       this.succeedWhen(() -> this.assertEntityData(var1, var2, var3, var4));
-   }
-
-   public void assertEntityPosition(Entity var1, AABB var2, Component var3) {
-      if (!var2.contains(this.relativeVec(var1.position()))) {
-         throw this.assertionException(var3);
-      }
    }
 
    public <E extends Entity> void assertEntityProperty(E var1, Predicate<E> var2, Component var3) {
@@ -939,10 +947,22 @@ public class GameTestHelper {
       return this.testInfo.getRotation().rotate(Direction.SOUTH);
    }
 
+   public Direction getAbsoluteDirection(Direction var1) {
+      return this.getTestRotation().rotate(var1);
+   }
+
    public void assertTrue(boolean var1, Component var2) {
       if (!var1) {
          throw this.assertionException(var2);
       }
+   }
+
+   public void assertTrue(boolean var1, String var2) {
+      this.assertTrue(var1, (Component)Component.literal(var2));
+   }
+
+   public <N> void assertValueEqual(N var1, N var2, String var3) {
+      this.assertValueEqual(var1, var2, (Component)Component.literal(var3));
    }
 
    public <N> void assertValueEqual(N var1, N var2, Component var3) {
@@ -955,6 +975,10 @@ public class GameTestHelper {
       this.assertTrue(!var1, var2);
    }
 
+   public void assertFalse(boolean var1, String var2) {
+      this.assertFalse(var1, (Component)Component.literal(var2));
+   }
+
    public long getTick() {
       return (long)this.testInfo.getTick();
    }
@@ -963,7 +987,7 @@ public class GameTestHelper {
       return this.testInfo.getStructureBounds();
    }
 
-   private AABB getRelativeBounds() {
+   public AABB getRelativeBounds() {
       AABB var1 = this.testInfo.getStructureBounds();
       Rotation var2 = this.testInfo.getRotation();
       switch (var2) {

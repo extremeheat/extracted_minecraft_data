@@ -1,16 +1,16 @@
 package net.minecraft.world.level.gameevent;
 
 import com.mojang.serialization.Codec;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFixedCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public record GameEvent(int notificationRadius) {
    public static final Holder.Reference<GameEvent> BLOCK_ACTIVATE = register("block_activate");
@@ -90,7 +90,7 @@ public record GameEvent(int notificationRadius) {
    }
 
    private static Holder.Reference<GameEvent> register(String var0, int var1) {
-      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, ResourceLocation.withDefaultNamespace(var0), new GameEvent(var1));
+      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, Identifier.withDefaultNamespace(var0), new GameEvent(var1));
    }
 
    static {

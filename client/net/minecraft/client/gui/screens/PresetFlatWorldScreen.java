@@ -11,8 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -29,8 +27,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FlatLevelGeneratorPresetTags;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
@@ -44,10 +42,11 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PresetFlatWorldScreen extends Screen {
-   static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
+   static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
    static final Logger LOGGER = LogUtils.getLogger();
    private static final int SLOT_BG_SIZE = 18;
    private static final int SLOT_STAT_HEIGHT = 20;
@@ -70,8 +69,7 @@ public class PresetFlatWorldScreen extends Screen {
       this.parent = var1;
    }
 
-   @Nullable
-   private static FlatLayerInfo getLayerInfoFromString(HolderGetter<Block> var0, String var1, int var2) {
+   private static @Nullable FlatLayerInfo getLayerInfoFromString(HolderGetter<Block> var0, String var1, int var2) {
       List var3 = Splitter.on('*').limit(2).splitToList(var1);
       int var4;
       String var5;
@@ -94,7 +92,7 @@ public class PresetFlatWorldScreen extends Screen {
 
       Optional var8;
       try {
-         var8 = var0.get(ResourceKey.create(Registries.BLOCK, ResourceLocation.parse(var5)));
+         var8 = var0.get(ResourceKey.create(Registries.BLOCK, Identifier.parse(var5)));
       } catch (Exception var10) {
          LOGGER.error("Error while parsing flat world string", var10);
          return null;
@@ -142,7 +140,7 @@ public class PresetFlatWorldScreen extends Screen {
             Object var9 = var8;
             if (var6.hasNext()) {
                String var10 = (String)var6.next();
-               Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var10)).map((var0x) -> ResourceKey.create(Registries.BIOME, var0x));
+               Optional var10000 = Optional.ofNullable(Identifier.tryParse(var10)).map((var0x) -> ResourceKey.create(Registries.BIOME, var0x));
                Objects.requireNonNull(var1);
                var9 = (Holder)var10000.flatMap(var1::get).orElseGet(() -> {
                   LOGGER.warn("Invalid biome: {}", var10);
@@ -167,7 +165,7 @@ public class PresetFlatWorldScreen extends Screen {
       }
 
       var1.append(";");
-      var1.append(var0.getBiome().unwrapKey().map(ResourceKey::location).orElseThrow(() -> new IllegalStateException("Biome not registered")));
+      var1.append(var0.getBiome().unwrapKey().map(ResourceKey::identifier).orElseThrow(() -> new IllegalStateException("Biome not registered")));
       return var1.toString();
    }
 
@@ -200,10 +198,10 @@ public class PresetFlatWorldScreen extends Screen {
       return this.list.mouseScrolled(var1, var3, var5, var7);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.export.getValue();
-      this.init(var1, var2, var3);
-      this.export.setValue(var4);
+   public void resize(int var1, int var2) {
+      String var3 = this.export.getValue();
+      this.init(var1, var2);
+      this.export.setValue(var3);
    }
 
    public void onClose() {
@@ -234,7 +232,7 @@ public class PresetFlatWorldScreen extends Screen {
          for(Holder var5 : var2.lookupOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
             Set var6 = (Set)((FlatLevelGeneratorPreset)var5.value()).settings().getLayersInfo().stream().map((var0) -> var0.getBlockState().getBlock()).filter((var1x) -> !var1x.isEnabled(var3)).collect(Collectors.toSet());
             if (!var6.isEmpty()) {
-               PresetFlatWorldScreen.LOGGER.info("Discarding flat world preset {} since it contains experimental blocks {}", var5.unwrapKey().map((var0) -> var0.location().toString()).orElse("<unknown>"), var6);
+               PresetFlatWorldScreen.LOGGER.info("Discarding flat world preset {} since it contains experimental blocks {}", var5.unwrapKey().map((var0) -> var0.identifier().toString()).orElse("<unknown>"), var6);
             } else {
                this.addEntry(new Entry(var5));
             }
@@ -242,7 +240,7 @@ public class PresetFlatWorldScreen extends Screen {
 
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          PresetFlatWorldScreen.this.updateButtonValidity(var1 != null);
       }
@@ -260,14 +258,14 @@ public class PresetFlatWorldScreen extends Screen {
       }
 
       public class Entry extends ObjectSelectionList.Entry<Entry> {
-         private static final ResourceLocation STATS_ICON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/stats_icons.png");
+         private static final Identifier STATS_ICON_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/stats_icons.png");
          private final FlatLevelGeneratorPreset preset;
          private final Component name;
 
          public Entry(final Holder<FlatLevelGeneratorPreset> var2) {
             super();
             this.preset = (FlatLevelGeneratorPreset)var2.value();
-            this.name = (Component)var2.unwrapKey().map((var0) -> Component.translatable(var0.location().toLanguageKey("flat_world_preset"))).orElse(PresetFlatWorldScreen.UNKNOWN_PRESET);
+            this.name = (Component)var2.unwrapKey().map((var0) -> Component.translatable(var0.identifier().toLanguageKey("flat_world_preset"))).orElse(PresetFlatWorldScreen.UNKNOWN_PRESET);
          }
 
          public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
@@ -293,7 +291,7 @@ public class PresetFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
          }
 
          public Component getNarration() {

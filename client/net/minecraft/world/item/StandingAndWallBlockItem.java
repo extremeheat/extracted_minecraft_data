@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -10,6 +9,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
 
 public class StandingAndWallBlockItem extends BlockItem {
    protected final Block wallBlock;
@@ -25,8 +25,7 @@ public class StandingAndWallBlockItem extends BlockItem {
       return var2.canSurvive(var1, var3);
    }
 
-   @Nullable
-   protected BlockState getPlacementState(BlockPlaceContext var1) {
+   protected @Nullable BlockState getPlacementState(BlockPlaceContext var1) {
       BlockState var2 = this.wallBlock.getStateForPlacement(var1);
       BlockState var3 = null;
       Level var4 = var1.getLevel();

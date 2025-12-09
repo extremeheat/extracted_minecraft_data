@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EventLogDirectory {
@@ -73,8 +74,7 @@ public class EventLogDirectory {
       return var2;
    }
 
-   @Nullable
-   private File parseFile(Path var1) {
+   private @Nullable File parseFile(Path var1) {
       String var2 = var1.getFileName().toString();
       int var3 = var2.indexOf(46);
       if (var3 == -1) {
@@ -235,8 +235,7 @@ public class EventLogDirectory {
          return FileChannel.open(this.path, StandardOpenOption.WRITE, StandardOpenOption.READ);
       }
 
-      @Nullable
-      public Reader openReader() throws IOException {
+      public @Nullable Reader openReader() throws IOException {
          return Files.exists(this.path, new LinkOption[0]) ? Files.newBufferedReader(this.path) : null;
       }
 
@@ -254,9 +253,8 @@ public class EventLogDirectory {
          this.id = var2;
       }
 
-      @Nullable
-      public Reader openReader() throws IOException {
-         return !Files.exists(this.path, new LinkOption[0]) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path))));
+      public @Nullable Reader openReader() throws IOException {
+         return !Files.exists(this.path, new LinkOption[0]) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path)), StandardCharsets.UTF_8));
       }
 
       public CompressedFile compress() {
@@ -273,8 +271,7 @@ public class EventLogDirectory {
          this.index = var2;
       }
 
-      @Nullable
-      public static FileId parse(String var0) {
+      public static @Nullable FileId parse(String var0) {
          int var1 = var0.indexOf("-");
          if (var1 == -1) {
             return null;
@@ -310,8 +307,7 @@ public class EventLogDirectory {
 
       FileId id();
 
-      @Nullable
-      Reader openReader() throws IOException;
+      @Nullable Reader openReader() throws IOException;
 
       CompressedFile compress() throws IOException;
    }

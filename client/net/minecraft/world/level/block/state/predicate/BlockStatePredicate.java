@@ -3,11 +3,11 @@ package net.minecraft.world.level.block.state.predicate;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public class BlockStatePredicate implements Predicate<BlockState> {
    public static final Predicate<BlockState> ANY = (var0) -> true;
@@ -57,7 +57,7 @@ public class BlockStatePredicate implements Predicate<BlockState> {
    }
 
    // $FF: synthetic method
-   public boolean test(@Nullable final Object var1) {
+   public boolean test(final @Nullable Object var1) {
       return this.test((BlockState)var1);
    }
 }

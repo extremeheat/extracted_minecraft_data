@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -11,8 +10,10 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
+import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RandomStroll {
    private static final int MAX_XZ_DIST = 10;
@@ -55,8 +56,7 @@ public class RandomStroll {
             })));
    }
 
-   @Nullable
-   private static Vec3 getTargetSwimPos(PathfinderMob var0) {
+   private static @Nullable Vec3 getTargetSwimPos(PathfinderMob var0) {
       Vec3 var1 = null;
       Vec3 var2 = null;
 
@@ -67,7 +67,8 @@ public class RandomStroll {
             var2 = var0.position().add(var0.position().vectorTo(var1).normalize().multiply((double)var6[0], (double)var6[1], (double)var6[0]));
          }
 
-         if (var2 == null || var0.level().getFluidState(BlockPos.containing(var2)).isEmpty()) {
+         boolean var7 = GoalUtils.mobRestricted(var0, (double)var6[0]);
+         if (var2 == null || var0.level().getFluidState(BlockPos.containing(var2)).isEmpty() || GoalUtils.isRestricted(var7, var0, var2)) {
             return var1;
          }
 
@@ -77,8 +78,7 @@ public class RandomStroll {
       return var2;
    }
 
-   @Nullable
-   private static Vec3 getTargetFlyPos(PathfinderMob var0, int var1, int var2) {
+   private static @Nullable Vec3 getTargetFlyPos(PathfinderMob var0, int var1, int var2) {
       Vec3 var3 = var0.getViewVector(0.0F);
       return AirAndWaterRandomPos.getPos(var0, var1, var2, -2, var3.x, var3.z, 1.5707963705062866);
    }

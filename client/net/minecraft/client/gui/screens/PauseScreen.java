@@ -4,9 +4,9 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MusicToastDisplayState;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -29,16 +29,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.Dialogs;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class PauseScreen extends Screen {
-   private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
+   private static final Identifier DRAFT_REPORT_SPRITE = Identifier.withDefaultNamespace("icon/draft_report");
    private static final int COLUMNS = 2;
    private static final int MENU_PADDING_TOP = 50;
    private static final int BUTTON_PADDING = 4;
@@ -57,8 +58,7 @@ public class PauseScreen extends Screen {
    private static final Component PAUSED = Component.translatable("menu.paused");
    private static final Tooltip CUSTOM_OPTIONS_TOOLTIP = Tooltip.create(Component.translatable("menu.custom_options.tooltip"));
    private final boolean showPauseMenu;
-   @Nullable
-   private Button disconnectButton;
+   private @Nullable Button disconnectButton;
 
    public PauseScreen(boolean var1) {
       super(var1 ? GAME : PAUSED);
@@ -155,8 +155,8 @@ public class PauseScreen extends Screen {
          NowPlayingToast.renderToast(var1, this.font);
       }
 
-      if (this.showPauseMenu && this.minecraft != null && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
+      if (this.showPauseMenu && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
       }
 
    }
@@ -170,7 +170,7 @@ public class PauseScreen extends Screen {
 
    public boolean rendersNowPlayingToast() {
       Options var1 = this.minecraft.options;
-      return (Boolean)var1.showNowPlayingToast().get() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
+      return ((MusicToastDisplayState)var1.musicToast().get()).renderInPauseScreen() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
    }
 
    private Button openScreenButton(Component var1, Supplier<Screen> var2) {

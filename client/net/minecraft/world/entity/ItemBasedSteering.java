@@ -43,7 +43,7 @@ public class ItemBasedSteering {
    }
 
    public float boostFactor() {
-      return this.boosting ? 1.0F + 1.15F * Mth.sin((float)this.boostTime / (float)this.boostTimeTotal() * 3.1415927F) : 1.0F;
+      return this.boosting ? 1.0F + 1.15F * Mth.sin((double)((float)this.boostTime / (float)this.boostTimeTotal() * 3.1415927F)) : 1.0F;
    }
 
    private int boostTimeTotal() {

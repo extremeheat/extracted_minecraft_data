@@ -4,9 +4,9 @@ import java.nio.ByteOrder;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 public class BufferBuilder implements VertexConsumer {
@@ -45,8 +45,7 @@ public class BufferBuilder implements VertexConsumer {
       }
    }
 
-   @Nullable
-   public MeshData build() {
+   public @Nullable MeshData build() {
       this.ensureBuilding();
       this.endLastVertex();
       MeshData var1 = this.storeMesh();
@@ -70,8 +69,7 @@ public class BufferBuilder implements VertexConsumer {
       }
    }
 
-   @Nullable
-   private MeshData storeMesh() {
+   private @Nullable MeshData storeMesh() {
       if (this.vertices == 0) {
          return null;
       } else {
@@ -124,7 +122,7 @@ public class BufferBuilder implements VertexConsumer {
             String var3 = (String)var10000.map(var10001::getElementName).collect(Collectors.joining(", "));
             throw new IllegalStateException("Missing elements in vertex: " + var3);
          } else {
-            if (this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP) {
+            if (this.mode == VertexFormat.Mode.LINES) {
                long var1 = this.buffer.reserve(this.vertexSize);
                MemoryUtil.memCopy(var1 - (long)this.vertexSize, var1, (long)this.vertexSize);
                ++this.vertices;
@@ -231,6 +229,15 @@ public class BufferBuilder implements VertexConsumer {
          MemoryUtil.memPutByte(var4, normalIntValue(var1));
          MemoryUtil.memPutByte(var4 + 1L, normalIntValue(var2));
          MemoryUtil.memPutByte(var4 + 2L, normalIntValue(var3));
+      }
+
+      return this;
+   }
+
+   public VertexConsumer setLineWidth(float var1) {
+      long var2 = this.beginElement(VertexFormatElement.LINE_WIDTH);
+      if (var2 != -1L) {
+         MemoryUtil.memPutFloat(var2, var1);
       }
 
       return this;

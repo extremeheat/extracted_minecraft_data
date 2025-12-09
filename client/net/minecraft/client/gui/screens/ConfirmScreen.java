@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -10,16 +9,15 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class ConfirmScreen extends Screen {
    private final Component message;
    protected LinearLayout layout;
    protected Component yesButtonComponent;
    protected Component noButtonComponent;
-   @Nullable
-   protected Button yesButton;
-   @Nullable
-   protected Button noButton;
+   protected @Nullable Button yesButton;
+   protected @Nullable Button noButton;
    private int delayTicker;
    protected final BooleanConsumer callback;
 

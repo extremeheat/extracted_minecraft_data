@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class Stitcher<T extends Stitcher.Entry> {
    private static final Comparator<Holder<?>> HOLDER_COMPARATOR = Comparator.comparing((var0) -> -var0.height).thenComparing((var0) -> -var0.width).thenComparing((var0) -> var0.entry.name());
@@ -18,12 +18,14 @@ public class Stitcher<T extends Stitcher.Entry> {
    private int storageY;
    private final int maxWidth;
    private final int maxHeight;
+   private final int padding;
 
-   public Stitcher(int var1, int var2, int var3) {
+   public Stitcher(int var1, int var2, int var3, int var4) {
       super();
       this.mipLevel = var3;
       this.maxWidth = var1;
       this.maxHeight = var2;
+      this.padding = 1 << var3 << Mth.clamp(var4 - 1, 0, 4);
    }
 
    public int getWidth() {
@@ -35,7 +37,7 @@ public class Stitcher<T extends Stitcher.Entry> {
    }
 
    public void registerSprite(T var1) {
-      Holder var2 = new Holder(var1, this.mipLevel);
+      Holder var2 = new Holder(var1, smallestFittingMinTexel(var1.width() + this.padding * 2, this.mipLevel), smallestFittingMinTexel(var1.height() + this.padding * 2, this.mipLevel));
       this.texturesToBeStitched.add(var2);
    }
 
@@ -53,12 +55,12 @@ public class Stitcher<T extends Stitcher.Entry> {
 
    public void gatherSprites(SpriteLoader<T> var1) {
       for(Region var3 : this.storage) {
-         var3.walk(var1);
+         var3.walk(var1, this.padding);
       }
 
    }
 
-   static int smallestFittingMinTexel(int var0, int var1) {
+   private static int smallestFittingMinTexel(int var0, int var1) {
       return (var0 >> var1) + ((var0 & (1 << var1) - 1) == 0 ? 0 : 1) << var1;
    }
 
@@ -115,11 +117,7 @@ public class Stitcher<T extends Stitcher.Entry> {
       final int width;
       final int height;
 
-      public Holder(T var1, int var2) {
-         this(var1, Stitcher.smallestFittingMinTexel(var1.width(), var2), Stitcher.smallestFittingMinTexel(var1.height(), var2));
-      }
-
-      private Holder(T var1, int var2, int var3) {
+      Holder(T var1, int var2, int var3) {
          super();
          this.entry = var1;
          this.width = var2;
@@ -132,10 +130,8 @@ public class Stitcher<T extends Stitcher.Entry> {
       private final int originY;
       private final int width;
       private final int height;
-      @Nullable
-      private List<Region<T>> subSlots;
-      @Nullable
-      private Holder<T> holder;
+      private @Nullable List<Region<T>> subSlots;
+      private @Nullable Holder<T> holder;
 
       public Region(int var1, int var2, int var3, int var4) {
          super();
@@ -200,12 +196,12 @@ public class Stitcher<T extends Stitcher.Entry> {
          }
       }
 
-      public void walk(SpriteLoader<T> var1) {
+      public void walk(SpriteLoader<T> var1, int var2) {
          if (this.holder != null) {
-            var1.load(this.holder.entry, this.getX(), this.getY());
+            var1.load(this.holder.entry, this.getX(), this.getY(), var2);
          } else if (this.subSlots != null) {
-            for(Region var3 : this.subSlots) {
-               var3.walk(var1);
+            for(Region var4 : this.subSlots) {
+               var4.walk(var1, var2);
             }
          }
 
@@ -222,10 +218,10 @@ public class Stitcher<T extends Stitcher.Entry> {
 
       int height();
 
-      ResourceLocation name();
+      Identifier name();
    }
 
    public interface SpriteLoader<T extends Entry> {
-      void load(T var1, int var2, int var3);
+      void load(T var1, int var2, int var3, int var4);
    }
 }

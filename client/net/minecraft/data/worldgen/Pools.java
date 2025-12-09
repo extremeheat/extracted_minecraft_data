@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class Pools {
@@ -15,16 +15,16 @@ public class Pools {
       super();
    }
 
-   public static ResourceKey<StructureTemplatePool> createKey(ResourceLocation var0) {
+   public static ResourceKey<StructureTemplatePool> createKey(Identifier var0) {
       return ResourceKey.create(Registries.TEMPLATE_POOL, var0);
    }
 
    public static ResourceKey<StructureTemplatePool> createKey(String var0) {
-      return createKey(ResourceLocation.withDefaultNamespace(var0));
+      return createKey(Identifier.withDefaultNamespace(var0));
    }
 
    public static ResourceKey<StructureTemplatePool> parseKey(String var0) {
-      return createKey(ResourceLocation.parse(var0));
+      return createKey(Identifier.parse(var0));
    }
 
    public static void register(BootstrapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {

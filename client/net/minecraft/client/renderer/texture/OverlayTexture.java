@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import net.minecraft.util.ARGB;
 
 public class OverlayTexture implements AutoCloseable {
@@ -22,21 +22,16 @@ public class OverlayTexture implements AutoCloseable {
                var1.setPixel(var3, var2, -1291911168);
             } else {
                int var4 = (int)((1.0F - (float)var3 / 15.0F * 0.75F) * 255.0F);
-               var1.setPixel(var3, var2, ARGB.color(var4, -1));
+               var1.setPixel(var3, var2, ARGB.white(var4));
             }
          }
       }
 
-      this.texture.setClamp(true);
       this.texture.upload();
    }
 
    public void close() {
       this.texture.close();
-   }
-
-   public void setupOverlayColor() {
-      RenderSystem.setupOverlayColor(this.texture.getTextureView());
    }
 
    public static int u(float var0) {
@@ -55,7 +50,7 @@ public class OverlayTexture implements AutoCloseable {
       return pack(u(var0), v(var1));
    }
 
-   public void teardownOverlayColor() {
-      RenderSystem.teardownOverlayColor();
+   public GpuTextureView getTextureView() {
+      return this.texture.getTextureView();
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -13,6 +12,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.commands.PublishCommand;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class ShareToLanScreen extends Screen {
    private static final int PORT_LOWER_BOUND = 1024;
@@ -23,13 +23,11 @@ public class ShareToLanScreen extends Screen {
    private static final Component PORT_INFO_TEXT = Component.translatable("lanServer.port");
    private static final Component PORT_UNAVAILABLE = Component.translatable("lanServer.port.unavailable", 1024, 65535);
    private static final Component INVALID_PORT = Component.translatable("lanServer.port.invalid", 1024, 65535);
-   private static final int INVALID_PORT_COLOR = -43691;
    private final Screen lastScreen;
    private GameType gameMode;
    private boolean commands;
    private int port;
-   @Nullable
-   private EditBox portEdit;
+   private @Nullable EditBox portEdit;
 
    public ShareToLanScreen(Screen var1) {
       super(Component.translatable("lanServer.title"));
@@ -42,7 +40,7 @@ public class ShareToLanScreen extends Screen {
       IntegratedServer var1 = this.minecraft.getSingleplayerServer();
       this.gameMode = var1.getDefaultGameType();
       this.commands = var1.getWorldData().isAllowCommands();
-      this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).withInitialValue(this.gameMode).create(this.width / 2 - 155, 100, 150, 20, GAME_MODE_LABEL, (var1x, var2x) -> this.gameMode = var2x));
+      this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(this.width / 2 - 155, 100, 150, 20, GAME_MODE_LABEL, (var1x, var2x) -> this.gameMode = var2x));
       this.addRenderableWidget(CycleButton.onOffBuilder(this.commands).create(this.width / 2 + 5, 100, 150, 20, ALLOW_COMMANDS_LABEL, (var1x, var2x) -> this.commands = var2x));
       Button var2 = Button.builder(Component.translatable("lanServer.start"), (var2x) -> {
          this.minecraft.setScreen((Screen)null);
@@ -66,7 +64,7 @@ public class ShareToLanScreen extends Screen {
             this.portEdit.setTooltip((Tooltip)null);
             var2.active = true;
          } else {
-            this.portEdit.setTextColor(-43691);
+            this.portEdit.setTextColor(-2142128);
             this.portEdit.setTooltip(Tooltip.create(var3));
             var2.active = false;
          }
@@ -82,8 +80,7 @@ public class ShareToLanScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   @Nullable
-   private Component tryParsePort(String var1) {
+   private @Nullable Component tryParsePort(String var1) {
       if (var1.isBlank()) {
          this.port = HttpUtil.getAvailablePort();
          return null;

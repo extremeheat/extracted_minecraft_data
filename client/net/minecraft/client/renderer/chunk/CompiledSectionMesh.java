@@ -9,10 +9,10 @@ import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public class CompiledSectionMesh implements SectionMesh {
    public static final SectionMesh UNCOMPILED = new SectionMesh() {
@@ -27,10 +27,8 @@ public class CompiledSectionMesh implements SectionMesh {
    };
    private final List<BlockEntity> renderableBlockEntities;
    private final VisibilitySet visibilitySet;
-   @Nullable
-   private final MeshData.SortState transparencyState;
-   @Nullable
-   private TranslucencyPointOfView translucencyPointOfView;
+   private final MeshData.@Nullable SortState transparencyState;
+   private @Nullable TranslucencyPointOfView translucencyPointOfView;
    private final Map<ChunkSectionLayer, SectionBuffers> buffers = new EnumMap(ChunkSectionLayer.class);
 
    public CompiledSectionMesh(TranslucencyPointOfView var1, SectionCompiler.Results var2) {
@@ -65,8 +63,7 @@ public class CompiledSectionMesh implements SectionMesh {
       return this.visibilitySet.visibilityBetween(var1, var2);
    }
 
-   @Nullable
-   public SectionBuffers getBuffers(ChunkSectionLayer var1) {
+   public @Nullable SectionBuffers getBuffers(ChunkSectionLayer var1) {
       return (SectionBuffers)this.buffers.get(var1);
    }
 
@@ -74,7 +71,7 @@ public class CompiledSectionMesh implements SectionMesh {
       CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
       SectionBuffers var6 = this.getBuffers(var1);
       if (var6 != null) {
-         if (var6.getVertexBuffer().size() < var2.vertexBuffer().remaining()) {
+         if (var6.getVertexBuffer().size() < (long)var2.vertexBuffer().remaining()) {
             var6.getVertexBuffer().close();
             var6.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
                String var10000 = var1.label();
@@ -86,7 +83,7 @@ public class CompiledSectionMesh implements SectionMesh {
 
          ByteBuffer var7 = var2.indexBuffer();
          if (var7 != null) {
-            if (var6.getIndexBuffer() != null && var6.getIndexBuffer().size() >= var7.remaining()) {
+            if (var6.getIndexBuffer() != null && var6.getIndexBuffer().size() >= (long)var7.remaining()) {
                if (!var6.getIndexBuffer().isClosed()) {
                   var5.writeToBuffer(var6.getIndexBuffer().slice(), var7);
                }
@@ -145,8 +142,7 @@ public class CompiledSectionMesh implements SectionMesh {
       return this.buffers.containsKey(ChunkSectionLayer.TRANSLUCENT);
    }
 
-   @Nullable
-   public MeshData.SortState getTransparencyState() {
+   public MeshData.@Nullable SortState getTransparencyState() {
       return this.transparencyState;
    }
 

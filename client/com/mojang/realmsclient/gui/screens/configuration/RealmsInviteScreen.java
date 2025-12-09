@@ -2,8 +2,6 @@ package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -15,6 +13,8 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsInviteScreen extends RealmsScreen {
    private static final Component TITLE = Component.translatable("mco.configure.world.buttons.invite");
@@ -23,14 +23,11 @@ public class RealmsInviteScreen extends RealmsScreen {
    private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error").withColor(-65536);
    private static final Component DUPLICATE_PLAYER_TEXT = Component.translatable("mco.configure.world.players.invite.duplicate").withColor(-65536);
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-   @Nullable
-   private EditBox profileName;
-   @Nullable
-   private Button inviteButton;
+   private @Nullable EditBox profileName;
+   private @Nullable Button inviteButton;
    private final RealmsServer serverData;
    private final RealmsConfigureWorldScreen configureScreen;
-   @Nullable
-   private Component message;
+   private @Nullable Component message;
 
    public RealmsInviteScreen(RealmsConfigureWorldScreen var1, RealmsServer var2) {
       super(TITLE);
@@ -66,7 +63,7 @@ public class RealmsInviteScreen extends RealmsScreen {
       if (this.inviteButton != null && this.profileName != null) {
          if (StringUtil.isBlank(this.profileName.getValue())) {
             this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
-         } else if (this.serverData.players.stream().anyMatch((var1x) -> var1x.getName().equalsIgnoreCase(this.profileName.getValue()))) {
+         } else if (this.serverData.players.stream().anyMatch((var1x) -> var1x.name.equalsIgnoreCase(this.profileName.getValue()))) {
             this.showMessage(DUPLICATE_PLAYER_TEXT);
          } else {
             long var1 = this.serverData.id;

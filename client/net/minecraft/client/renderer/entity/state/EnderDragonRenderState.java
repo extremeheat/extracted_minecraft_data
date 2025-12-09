@@ -1,15 +1,14 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.boss.enderdragon.DragonFlightHistory;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EnderDragonRenderState extends EntityRenderState {
    public float flapTime;
    public float deathTime;
    public boolean hasRedOverlay;
-   @Nullable
-   public Vec3 beamOffset;
+   public @Nullable Vec3 beamOffset;
    public boolean isLandingOrTakingOff;
    public boolean isSitting;
    public double distanceToEgg;

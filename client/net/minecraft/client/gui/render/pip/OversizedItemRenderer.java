@@ -3,7 +3,6 @@ package net.minecraft.client.gui.render.pip;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
@@ -14,11 +13,11 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import org.jspecify.annotations.Nullable;
 
 public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedItemRenderState> {
    private boolean usedOnThisFrame;
-   @Nullable
-   private Object modelOnTextureIdentity;
+   private @Nullable Object modelOnTextureIdentity;
 
    public OversizedItemRenderer(MultiBufferSource.BufferSource var1) {
       super(var1);

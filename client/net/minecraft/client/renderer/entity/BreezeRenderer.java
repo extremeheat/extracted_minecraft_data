@@ -1,17 +1,17 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.BreezeModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.breeze.BreezeModel;
 import net.minecraft.client.renderer.entity.layers.BreezeEyesLayer;
 import net.minecraft.client.renderer.entity.layers.BreezeWindLayer;
 import net.minecraft.client.renderer.entity.state.BreezeRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.breeze.Breeze;
 
 public class BreezeRenderer extends MobRenderer<Breeze, BreezeRenderState, BreezeModel> {
-   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/breeze/breeze.png");
+   private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/breeze/breeze.png");
 
    public BreezeRenderer(EntityRendererProvider.Context var1) {
       super(var1, new BreezeModel(var1.bakeLayer(ModelLayers.BREEZE)), 0.5F);
@@ -19,7 +19,7 @@ public class BreezeRenderer extends MobRenderer<Breeze, BreezeRenderState, Breez
       this.addLayer(new BreezeEyesLayer(this, var1.getModelSet()));
    }
 
-   public ResourceLocation getTextureLocation(BreezeRenderState var1) {
+   public Identifier getTextureLocation(BreezeRenderState var1) {
       return TEXTURE_LOCATION;
    }
 
@@ -38,7 +38,7 @@ public class BreezeRenderer extends MobRenderer<Breeze, BreezeRenderState, Breez
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((BreezeRenderState)var1);
    }
 

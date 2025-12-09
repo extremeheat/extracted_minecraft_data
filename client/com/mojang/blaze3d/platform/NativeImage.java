@@ -18,11 +18,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.PngInfo;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.stb.STBIWriteCallback;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.stb.STBImageResize;
@@ -106,7 +106,6 @@ public final class NativeImage implements AutoCloseable {
       NativeImage var3;
       try {
          var2 = TextureUtil.readResource(var1);
-         var2.rewind();
          var3 = read(var0, var2);
       } finally {
          MemoryUtil.memFree(var2);
@@ -496,8 +495,7 @@ public final class NativeImage implements AutoCloseable {
 
    static class WriteCallback extends STBIWriteCallback {
       private final WritableByteChannel output;
-      @Nullable
-      private IOException exception;
+      private @Nullable IOException exception;
 
       WriteCallback(WritableByteChannel var1) {
          super();

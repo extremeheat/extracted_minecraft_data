@@ -1,26 +1,30 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.CamelModel;
-import net.minecraft.client.model.CamelSaddleModel;
+import net.minecraft.client.model.animal.camel.CamelModel;
+import net.minecraft.client.model.animal.camel.CamelSaddleModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.CamelRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.camel.Camel;
 
 public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, CamelModel> {
-   private static final ResourceLocation CAMEL_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/camel/camel.png");
+   private static final Identifier CAMEL_LOCATION = Identifier.withDefaultNamespace("textures/entity/camel/camel.png");
 
    public CamelRenderer(EntityRendererProvider.Context var1) {
       super(var1, new CamelModel(var1.bakeLayer(ModelLayers.CAMEL)), new CamelModel(var1.bakeLayer(ModelLayers.CAMEL_BABY)), 0.7F);
-      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.CAMEL_SADDLE, (var0) -> var0.saddle, new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_SADDLE)), new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_BABY_SADDLE))));
+      this.addLayer(this.createCamelSaddleLayer(var1));
    }
 
-   public ResourceLocation getTextureLocation(CamelRenderState var1) {
+   protected SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel> createCamelSaddleLayer(EntityRendererProvider.Context var1) {
+      return new SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel>(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.CAMEL_SADDLE, (var0) -> var0.saddle, new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_SADDLE)), new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_BABY_SADDLE)));
+   }
+
+   public Identifier getTextureLocation(CamelRenderState var1) {
       return CAMEL_LOCATION;
    }
 
@@ -41,7 +45,7 @@ public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, C
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CamelRenderState)var1);
    }
 

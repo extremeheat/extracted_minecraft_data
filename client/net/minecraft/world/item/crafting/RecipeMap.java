@@ -6,9 +6,9 @@ import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class RecipeMap {
    public static final RecipeMap EMPTY = new RecipeMap(ImmutableMultimap.of(), Map.of());
@@ -41,8 +41,7 @@ public class RecipeMap {
       return this.byKey.values();
    }
 
-   @Nullable
-   public RecipeHolder<?> byKey(ResourceKey<Recipe<?>> var1) {
+   public @Nullable RecipeHolder<?> byKey(ResourceKey<Recipe<?>> var1) {
       return (RecipeHolder)this.byKey.get(var1);
    }
 

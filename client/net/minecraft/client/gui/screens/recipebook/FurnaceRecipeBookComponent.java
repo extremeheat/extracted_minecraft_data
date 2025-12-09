@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.recipebook;
 import java.util.List;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
@@ -12,7 +12,7 @@ import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
 public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurnaceMenu> {
-   private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/furnace_filter_enabled"), ResourceLocation.withDefaultNamespace("recipe_book/furnace_filter_disabled"), ResourceLocation.withDefaultNamespace("recipe_book/furnace_filter_enabled_highlighted"), ResourceLocation.withDefaultNamespace("recipe_book/furnace_filter_disabled_highlighted"));
+   private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/furnace_filter_enabled"), Identifier.withDefaultNamespace("recipe_book/furnace_filter_disabled"), Identifier.withDefaultNamespace("recipe_book/furnace_filter_enabled_highlighted"), Identifier.withDefaultNamespace("recipe_book/furnace_filter_disabled_highlighted"));
    private final Component recipeFilterName;
 
    public FurnaceRecipeBookComponent(AbstractFurnaceMenu var1, Component var2, List<RecipeBookComponent.TabInfo> var3) {
@@ -20,8 +20,8 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
       this.recipeFilterName = var2;
    }
 
-   protected void initFilterButtonTextures() {
-      this.filterButton.initTextureValues(FILTER_SPRITES);
+   protected WidgetSprites getFilterButtonTextures() {
+      return FILTER_SPRITES;
    }
 
    protected boolean isCraftingSlot(Slot var1) {

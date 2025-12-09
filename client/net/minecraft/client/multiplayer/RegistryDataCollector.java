@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -23,12 +22,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.tags.TagNetworkSerialization;
+import org.jspecify.annotations.Nullable;
 
 public class RegistryDataCollector {
-   @Nullable
-   private ContentsCollector contentsCollector;
-   @Nullable
-   private TagCollector tagCollector;
+   private @Nullable ContentsCollector contentsCollector;
+   private @Nullable TagCollector tagCollector;
 
    public RegistryDataCollector() {
       super();
@@ -97,8 +95,8 @@ public class RegistryDataCollector {
 
    private static void addCrashDetails(CrashReport var0, Map<ResourceKey<? extends Registry<?>>, RegistryDataLoader.NetworkedRegistryData> var1, List<Registry.PendingTags<?>> var2) {
       CrashReportCategory var3 = var0.addCategory("Received Elements and Tags");
-      var3.setDetail("Dynamic Registries", (CrashReportDetail)(() -> (String)var1.entrySet().stream().sorted(Comparator.comparing((var0) -> ((ResourceKey)var0.getKey()).location())).map((var0) -> String.format(Locale.ROOT, "\n\t\t%s: elements=%d tags=%d", ((ResourceKey)var0.getKey()).location(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).elements().size(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).tags().size())).collect(Collectors.joining())));
-      var3.setDetail("Static Registries", (CrashReportDetail)(() -> (String)var2.stream().sorted(Comparator.comparing((var0) -> var0.key().location())).map((var0) -> String.format(Locale.ROOT, "\n\t\t%s: tags=%d", var0.key().location(), var0.size())).collect(Collectors.joining())));
+      var3.setDetail("Dynamic Registries", (CrashReportDetail)(() -> (String)var1.entrySet().stream().sorted(Comparator.comparing((var0) -> ((ResourceKey)var0.getKey()).identifier())).map((var0) -> String.format(Locale.ROOT, "\n\t\t%s: elements=%d tags=%d", ((ResourceKey)var0.getKey()).identifier(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).elements().size(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).tags().size())).collect(Collectors.joining())));
+      var3.setDetail("Static Registries", (CrashReportDetail)(() -> (String)var2.stream().sorted(Comparator.comparing((var0) -> var0.key().identifier())).map((var0) -> String.format(Locale.ROOT, "\n\t\t%s: tags=%d", var0.key().identifier(), var0.size())).collect(Collectors.joining())));
    }
 
    private void loadOnlyTags(TagCollector var1, RegistryAccess.Frozen var2, boolean var3) {

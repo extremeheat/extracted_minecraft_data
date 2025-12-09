@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
@@ -9,7 +8,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -18,10 +17,10 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
-   private static final ResourceLocation TEXT_FIELD_SPRITE = ResourceLocation.withDefaultNamespace("container/anvil/text_field");
-   private static final ResourceLocation TEXT_FIELD_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/anvil/text_field_disabled");
-   private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/anvil/error");
-   private static final ResourceLocation ANVIL_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/anvil.png");
+   private static final Identifier TEXT_FIELD_SPRITE = Identifier.withDefaultNamespace("container/anvil/text_field");
+   private static final Identifier TEXT_FIELD_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/anvil/text_field_disabled");
+   private static final Identifier ERROR_SPRITE = Identifier.withDefaultNamespace("container/anvil/error");
+   private static final Identifier ANVIL_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/anvil.png");
    private static final Component TOO_EXPENSIVE_TEXT = Component.translatable("container.repair.expensive");
    private EditBox name;
    private final Player player;
@@ -39,6 +38,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setCanLoseFocus(false);
       this.name.setTextColor(-1);
       this.name.setTextColorUneditable(-1);
+      this.name.setInvertHighlightedTextColor(false);
       this.name.setBordered(false);
       this.name.setMaxLength(50);
       this.name.setResponder(this::onNameChanged);
@@ -56,10 +56,10 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.setInitialFocus(this.name);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.name.getValue();
-      this.init(var1, var2, var3);
-      this.name.setValue(var4);
+   public void resize(int var1, int var2) {
+      String var3 = this.name.getValue();
+      this.init(var1, var2);
+      this.name.setValue(var3);
    }
 
    public boolean keyPressed(KeyEvent var1) {
@@ -116,12 +116,12 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if ((((AnvilMenu)this.menu).getSlot(0).hasItem() || ((AnvilMenu)this.menu).getSlot(1).hasItem()) && !((AnvilMenu)this.menu).getSlot(((AnvilMenu)this.menu).getResultSlot()).hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
       }
 
    }

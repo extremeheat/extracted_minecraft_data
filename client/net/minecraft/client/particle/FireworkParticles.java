@@ -2,7 +2,6 @@ package net.minecraft.client.particle;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -16,6 +15,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.component.FireworkExplosion;
 
@@ -118,7 +118,7 @@ public class FireworkParticles {
 
       private boolean isFarAwayFromCamera() {
          Minecraft var1 = Minecraft.getInstance();
-         return var1.gameRenderer.getMainCamera().getPosition().distanceToSqr(this.x, this.y, this.z) >= 256.0;
+         return var1.gameRenderer.getMainCamera().position().distanceToSqr(this.x, this.y, this.z) >= 256.0;
       }
 
       private void createParticle(double var1, double var3, double var5, double var7, double var9, double var11, IntList var13, IntList var14, boolean var15, boolean var16) {
@@ -275,7 +275,7 @@ public class FireworkParticles {
       }
 
       public float getQuadSize(float var1) {
-         return 7.1F * Mth.sin(((float)this.age + var1 - 1.0F) * 0.25F * 3.1415927F);
+         return 7.1F * Mth.sin((double)(((float)this.age + var1 - 1.0F) * 0.25F * 3.1415927F));
       }
    }
 

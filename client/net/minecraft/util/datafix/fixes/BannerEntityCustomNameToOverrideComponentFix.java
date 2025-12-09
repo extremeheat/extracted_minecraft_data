@@ -12,7 +12,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
 public class BannerEntityCustomNameToOverrideComponentFix extends DataFix {

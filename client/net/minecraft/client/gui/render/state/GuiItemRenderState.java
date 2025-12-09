@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.render.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix3x2f;
+import org.jspecify.annotations.Nullable;
 
 public final class GuiItemRenderState implements ScreenArea {
    private final String name;
@@ -13,12 +13,9 @@ public final class GuiItemRenderState implements ScreenArea {
    private final TrackingItemStackRenderState itemStackRenderState;
    private final int x;
    private final int y;
-   @Nullable
-   private final ScreenRectangle scissorArea;
-   @Nullable
-   private final ScreenRectangle oversizedItemBounds;
-   @Nullable
-   private final ScreenRectangle bounds;
+   private final @Nullable ScreenRectangle scissorArea;
+   private final @Nullable ScreenRectangle oversizedItemBounds;
+   private final @Nullable ScreenRectangle bounds;
 
    public GuiItemRenderState(String var1, Matrix3x2f var2, TrackingItemStackRenderState var3, int var4, int var5, @Nullable ScreenRectangle var6) {
       super();
@@ -32,8 +29,7 @@ public final class GuiItemRenderState implements ScreenArea {
       this.bounds = this.calculateBounds(this.oversizedItemBounds != null ? this.oversizedItemBounds : new ScreenRectangle(this.x, this.y, 16, 16));
    }
 
-   @Nullable
-   private ScreenRectangle calculateOversizedItemBounds() {
+   private @Nullable ScreenRectangle calculateOversizedItemBounds() {
       AABB var1 = this.itemStackRenderState.getModelBoundingBox();
       int var2 = Mth.ceil(var1.getXsize() * 16.0);
       int var3 = Mth.ceil(var1.getYsize() * 16.0);
@@ -50,8 +46,7 @@ public final class GuiItemRenderState implements ScreenArea {
       }
    }
 
-   @Nullable
-   private ScreenRectangle calculateBounds(ScreenRectangle var1) {
+   private @Nullable ScreenRectangle calculateBounds(ScreenRectangle var1) {
       ScreenRectangle var2 = var1.transformMaxBounds(this.pose);
       return this.scissorArea != null ? this.scissorArea.intersection(var2) : var2;
    }
@@ -76,18 +71,15 @@ public final class GuiItemRenderState implements ScreenArea {
       return this.y;
    }
 
-   @Nullable
-   public ScreenRectangle scissorArea() {
+   public @Nullable ScreenRectangle scissorArea() {
       return this.scissorArea;
    }
 
-   @Nullable
-   public ScreenRectangle oversizedItemBounds() {
+   public @Nullable ScreenRectangle oversizedItemBounds() {
       return this.oversizedItemBounds;
    }
 
-   @Nullable
-   public ScreenRectangle bounds() {
+   public @Nullable ScreenRectangle bounds() {
       return this.bounds;
    }
 }

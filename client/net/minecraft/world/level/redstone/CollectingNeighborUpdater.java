@@ -5,13 +5,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CollectingNeighborUpdater implements NeighborUpdater {
@@ -21,8 +21,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    private final ArrayDeque<NeighborUpdates> stack = new ArrayDeque();
    private final List<NeighborUpdates> addedThisLayer = new ArrayList();
    private int count = 0;
-   @Nullable
-   private Consumer<BlockPos> debugListener;
+   private @Nullable Consumer<BlockPos> debugListener;
 
    public CollectingNeighborUpdater(Level var1, int var2) {
       super();
@@ -34,7 +33,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       this.debugListener = var1;
    }
 
-   public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+   public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6) {
       this.addAndRun(var3, new ShapeUpdate(var1, var2, var3.immutable(), var4.immutable(), var5, var6));
    }
 
@@ -140,10 +139,8 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    static final class MultiNeighborUpdate implements NeighborUpdates {
       private final BlockPos sourcePos;
       private final Block sourceBlock;
-      @Nullable
-      private Orientation orientation;
-      @Nullable
-      private final Direction skipDirection;
+      private @Nullable Orientation orientation;
+      private final @Nullable Direction skipDirection;
       private int idx = 0;
 
       MultiNeighborUpdate(BlockPos var1, Block var2, @Nullable Orientation var3, @Nullable Direction var4) {
@@ -190,8 +187,8 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       }
    }
 
-   static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) implements NeighborUpdates {
-      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+   static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, @Block.UpdateFlags int updateFlags, int updateLimit) implements NeighborUpdates {
+      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6) {
          super();
          this.direction = var1;
          this.neighborState = var2;

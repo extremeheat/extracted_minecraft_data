@@ -5,14 +5,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.attribute.EnvironmentAttributeProbe;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.vehicle.Minecart;
-import net.minecraft.world.entity.vehicle.MinecartBehavior;
-import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.entity.vehicle.minecart.Minecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -23,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.waypoints.TrackedWaypoint;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class Camera implements TrackedWaypoint.Camera {
    private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
@@ -30,7 +32,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
    private static final Vector3f LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
    private boolean initialized;
-   private BlockGetter level;
+   private Level level;
    private Entity entity;
    private Vec3 position;
    private final BlockPos.MutableBlockPos blockPosition;
@@ -44,6 +46,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private float eyeHeight;
    private float eyeHeightOld;
    private float partialTickTime;
+   private final EnvironmentAttributeProbe attributeProbe;
 
    public Camera() {
       super();
@@ -53,9 +56,10 @@ public class Camera implements TrackedWaypoint.Camera {
       this.up = new Vector3f(UP);
       this.left = new Vector3f(LEFT);
       this.rotation = new Quaternionf();
+      this.attributeProbe = new EnvironmentAttributeProbe();
    }
 
-   public void setup(BlockGetter var1, Entity var2, boolean var3, boolean var4, float var5) {
+   public void setup(Level var1, Entity var2, boolean var3, boolean var4, float var5) {
       label44: {
          this.initialized = true;
          this.level = var1;
@@ -120,6 +124,7 @@ public class Camera implements TrackedWaypoint.Camera {
       if (this.entity != null) {
          this.eyeHeightOld = this.eyeHeight;
          this.eyeHeight += (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
+         this.attributeProbe.tick(this.level, this.position);
       }
 
    }
@@ -168,27 +173,31 @@ public class Camera implements TrackedWaypoint.Camera {
       this.blockPosition.set(var1.x, var1.y, var1.z);
    }
 
-   public Vec3 getPosition() {
+   public Vec3 position() {
       return this.position;
    }
 
-   public BlockPos getBlockPosition() {
+   public BlockPos blockPosition() {
       return this.blockPosition;
    }
 
-   public float getXRot() {
+   public float xRot() {
       return this.xRot;
    }
 
-   public float getYRot() {
+   public float yRot() {
       return this.yRot;
+   }
+
+   public float yaw() {
+      return Mth.wrapDegrees(this.yRot());
    }
 
    public Quaternionf rotation() {
       return this.rotation;
    }
 
-   public Entity getEntity() {
+   public Entity entity() {
       return this.entity;
    }
 
@@ -198,6 +207,10 @@ public class Camera implements TrackedWaypoint.Camera {
 
    public boolean isDetached() {
       return this.detached;
+   }
+
+   public EnvironmentAttributeProbe attributeProbe() {
+      return this.attributeProbe;
    }
 
    public NearPlane getNearPlane() {
@@ -242,34 +255,27 @@ public class Camera implements TrackedWaypoint.Camera {
       }
    }
 
-   public final Vector3f getLookVector() {
+   public Vector3fc forwardVector() {
       return this.forwards;
    }
 
-   public final Vector3f getUpVector() {
+   public Vector3fc upVector() {
       return this.up;
    }
 
-   public final Vector3f getLeftVector() {
+   public Vector3fc leftVector() {
       return this.left;
    }
 
    public void reset() {
       this.level = null;
       this.entity = null;
+      this.attributeProbe.reset();
       this.initialized = false;
    }
 
    public float getPartialTickTime() {
       return this.partialTickTime;
-   }
-
-   public float yaw() {
-      return Mth.wrapDegrees(this.getYRot());
-   }
-
-   public Vec3 position() {
-      return this.getPosition();
    }
 
    public static class NearPlane {

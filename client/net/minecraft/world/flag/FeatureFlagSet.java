@@ -3,13 +3,12 @@ package net.minecraft.world.flag;
 import it.unimi.dsi.fastutil.HashCommon;
 import java.util.Arrays;
 import java.util.Collection;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class FeatureFlagSet {
    private static final FeatureFlagSet EMPTY = new FeatureFlagSet((FeatureFlagUniverse)null, 0L);
    public static final int MAX_CONTAINER_SIZE = 64;
-   @Nullable
-   private final FeatureFlagUniverse universe;
+   private final @Nullable FeatureFlagUniverse universe;
    private final long mask;
 
    private FeatureFlagSet(@Nullable FeatureFlagUniverse var1, long var2) {

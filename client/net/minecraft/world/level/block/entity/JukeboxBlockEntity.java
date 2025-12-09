@@ -53,11 +53,12 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
          ItemStack var2 = this.getTheItem();
          if (!var2.isEmpty()) {
             this.removeTheItem();
-            Vec3 var3 = Vec3.atLowerCornerWithOffset(var1, 0.5, 1.01, 0.5).offsetRandom(this.level.random, 0.7F);
+            Vec3 var3 = Vec3.atLowerCornerWithOffset(var1, 0.5, 1.01, 0.5).offsetRandomXZ(this.level.random, 0.7F);
             ItemStack var4 = var2.copy();
             ItemEntity var5 = new ItemEntity(this.level, var3.x(), var3.y(), var3.z(), var4);
             var5.setDefaultPickUpDelay();
             this.level.addFreshEntity(var5);
+            this.onSongChanged();
          }
       }
    }

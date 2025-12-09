@@ -1,10 +1,10 @@
 package net.minecraft.network.protocol.login.custom;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface CustomQueryPayload {
-   ResourceLocation id();
+   Identifier id();
 
    void write(FriendlyByteBuf var1);
 }

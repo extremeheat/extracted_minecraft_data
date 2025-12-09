@@ -5,8 +5,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
+import org.jspecify.annotations.Nullable;
 
 public record NameAndId(UUID id, String name) {
    public static final Codec<NameAndId> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(NameAndId::id), Codec.STRING.fieldOf("name").forGetter(NameAndId::name)).apply(var0, NameAndId::new));
@@ -25,8 +25,7 @@ public record NameAndId(UUID id, String name) {
       this.name = var2;
    }
 
-   @Nullable
-   public static NameAndId fromJson(JsonObject var0) {
+   public static @Nullable NameAndId fromJson(JsonObject var0) {
       if (var0.has("uuid") && var0.has("name")) {
          String var1 = var0.get("uuid").getAsString();
 

@@ -4,7 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
@@ -16,10 +16,10 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
-public record EnchantmentAttributeEffect(ResourceLocation id, Holder<Attribute> attribute, LevelBasedValue amount, AttributeModifier.Operation operation) implements EnchantmentLocationBasedEffect {
-   public static final MapCodec<EnchantmentAttributeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(EnchantmentAttributeEffect::id), Attribute.CODEC.fieldOf("attribute").forGetter(EnchantmentAttributeEffect::attribute), LevelBasedValue.CODEC.fieldOf("amount").forGetter(EnchantmentAttributeEffect::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(EnchantmentAttributeEffect::operation)).apply(var0, EnchantmentAttributeEffect::new));
+public record EnchantmentAttributeEffect(Identifier id, Holder<Attribute> attribute, LevelBasedValue amount, AttributeModifier.Operation operation) implements EnchantmentLocationBasedEffect {
+   public static final MapCodec<EnchantmentAttributeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(EnchantmentAttributeEffect::id), Attribute.CODEC.fieldOf("attribute").forGetter(EnchantmentAttributeEffect::attribute), LevelBasedValue.CODEC.fieldOf("amount").forGetter(EnchantmentAttributeEffect::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(EnchantmentAttributeEffect::operation)).apply(var0, EnchantmentAttributeEffect::new));
 
-   public EnchantmentAttributeEffect(ResourceLocation var1, Holder<Attribute> var2, LevelBasedValue var3, AttributeModifier.Operation var4) {
+   public EnchantmentAttributeEffect(Identifier var1, Holder<Attribute> var2, LevelBasedValue var3, AttributeModifier.Operation var4) {
       super();
       this.id = var1;
       this.attribute = var2;
@@ -27,7 +27,7 @@ public record EnchantmentAttributeEffect(ResourceLocation id, Holder<Attribute> 
       this.operation = var4;
    }
 
-   private ResourceLocation idForSlot(StringRepresentable var1) {
+   private Identifier idForSlot(StringRepresentable var1) {
       return this.id.withSuffix("/" + var1.getSerializedName());
    }
 
