@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -227,10 +228,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.serverSimulationDistance = serverSimulationDistance;
       this.environmentAttributes = this.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
       this.updateSkyBrightness();
-      if (this.canHaveWeather()) {
-         this.prepareWeather();
-      }
-
    }
 
    private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(final EnvironmentAttributeSystem.Builder environmentAttributes) {
@@ -504,6 +501,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       category.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
       category.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
       category.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
+      category.setDetail("Client weather", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Raining: %b, thundering: %b", this.isRaining(), this.isThundering())));
       return category;
    }
 
@@ -780,6 +778,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.levelData.getRespawnData();
    }
 
+   public boolean isThundering() {
+      return false;
+   }
+
    public String toString() {
       return "ClientLevel";
    }
@@ -925,7 +927,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       private final boolean isFlat;
       private LevelData.RespawnData respawnData;
       private long gameTime;
-      private boolean raining;
       private Difficulty difficulty;
       private boolean difficultyLocked;
 
@@ -950,18 +951,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
       public void setSpawn(final LevelData.RespawnData respawnData) {
          this.respawnData = respawnData;
-      }
-
-      public boolean isThundering() {
-         return false;
-      }
-
-      public boolean isRaining() {
-         return this.raining;
-      }
-
-      public void setRaining(final boolean raining) {
-         this.raining = raining;
       }
 
       public boolean isHardcore() {

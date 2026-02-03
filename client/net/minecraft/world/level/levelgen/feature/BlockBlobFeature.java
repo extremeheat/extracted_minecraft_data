@@ -4,27 +4,20 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockBlobConfiguration;
 
-public class BlockBlobFeature extends Feature<BlockStateConfiguration> {
-   public BlockBlobFeature(final Codec<BlockStateConfiguration> codec) {
+public class BlockBlobFeature extends Feature<BlockBlobConfiguration> {
+   public BlockBlobFeature(final Codec<BlockBlobConfiguration> codec) {
       super(codec);
    }
 
-   public boolean place(final FeaturePlaceContext<BlockStateConfiguration> context) {
+   public boolean place(final FeaturePlaceContext<BlockBlobConfiguration> context) {
       BlockPos origin = context.origin();
       WorldGenLevel level = context.level();
       RandomSource random = context.random();
 
-      BlockStateConfiguration config;
-      for(config = context.config(); origin.getY() > level.getMinY() + 3; origin = origin.below()) {
-         if (!level.isEmptyBlock(origin.below())) {
-            BlockState subState = level.getBlockState(origin.below());
-            if (isDirt(subState) || isStone(subState)) {
-               break;
-            }
-         }
+      BlockBlobConfiguration config;
+      for(config = context.config(); origin.getY() > level.getMinY() + 3 && !config.canPlaceOn().test(level, origin.below()); origin = origin.below()) {
       }
 
       if (origin.getY() <= level.getMinY() + 3) {
@@ -38,7 +31,7 @@ public class BlockBlobFeature extends Feature<BlockStateConfiguration> {
 
             for(BlockPos blockPos : BlockPos.betweenClosed(origin.offset(-xr, -yr, -zr), origin.offset(xr, yr, zr))) {
                if (blockPos.distSqr(origin) <= (double)(tr * tr)) {
-                  level.setBlock(blockPos, config.state, 3);
+                  level.setBlock(blockPos, config.state(), 3);
                }
             }
 

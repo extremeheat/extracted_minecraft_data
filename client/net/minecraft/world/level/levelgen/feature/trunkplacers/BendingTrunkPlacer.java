@@ -10,7 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -31,12 +31,12 @@ public class BendingTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.BENDING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
       Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
       int logHeight = treeHeight - 1;
       BlockPos.MutableBlockPos pos = origin.mutable();
       BlockPos belowPos = pos.below();
-      setDirtAt(level, trunkSetter, random, belowPos, config);
+      placeBelowTrunkBlock(level, trunkSetter, random, belowPos, config);
       List<FoliagePlacer.FoliageAttachment> foliagePoints = Lists.newArrayList();
 
       for(int i = 0; i <= logHeight; ++i) {

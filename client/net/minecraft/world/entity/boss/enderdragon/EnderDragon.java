@@ -36,7 +36,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -77,7 +77,7 @@ public class EnderDragon extends Mob implements Enemy {
    public int dragonDeathTime = 0;
    public float yRotA;
    public @Nullable EndCrystal nearestCrystal;
-   private @Nullable EndDragonFight dragonFight;
+   private @Nullable EnderDragonFight dragonFight;
    private BlockPos fightOrigin;
    private final EnderDragonPhaseManager phaseManager;
    private int growlTime;
@@ -107,7 +107,7 @@ public class EnderDragon extends Mob implements Enemy {
       this.phaseManager = new EnderDragonPhaseManager(this);
    }
 
-   public void setDragonFight(final EndDragonFight fight) {
+   public void setDragonFight(final EnderDragonFight fight) {
       this.dragonFight = fight;
    }
 
@@ -155,8 +155,8 @@ public class EnderDragon extends Mob implements Enemy {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var2;
-            EndDragonFight maybeOurFight = serverLevel.getDragonFight();
-            if (maybeOurFight != null && this.getUUID().equals(maybeOurFight.getDragonUUID())) {
+            EnderDragonFight maybeOurFight = serverLevel.getDragonFight();
+            if (maybeOurFight != null && this.getUUID().equals(maybeOurFight.dragonUUID())) {
                this.dragonFight = maybeOurFight;
             }
          }
@@ -603,7 +603,7 @@ public class EnderDragon extends Mob implements Enemy {
       int closestIndex = 0;
       Node currentPos = new Node(Mth.floor(tX), Mth.floor(tY), Mth.floor(tZ));
       int startIndex = 0;
-      if (this.dragonFight == null || this.dragonFight.getCrystalsAlive() == 0) {
+      if (this.dragonFight == null || this.dragonFight.aliveCrystals() == 0) {
          startIndex = 12;
       }
 
@@ -640,7 +640,7 @@ public class EnderDragon extends Mob implements Enemy {
       this.openSet.insert(from);
       Node closest = from;
       int minimumNodeIndex = 0;
-      if (this.dragonFight == null || this.dragonFight.getCrystalsAlive() == 0) {
+      if (this.dragonFight == null || this.dragonFight.aliveCrystals() == 0) {
          minimumNodeIndex = 12;
       }
 
@@ -811,7 +811,7 @@ public class EnderDragon extends Mob implements Enemy {
       return this.phaseManager;
    }
 
-   public @Nullable EndDragonFight getDragonFight() {
+   public @Nullable EnderDragonFight getDragonFight() {
       return this.dragonFight;
    }
 

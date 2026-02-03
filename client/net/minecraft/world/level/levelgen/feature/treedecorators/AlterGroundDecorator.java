@@ -3,15 +3,15 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
    public static final MapCodec<AlterGroundDecorator> CODEC;
-   private final BlockStateProvider provider;
+   private final RuleBasedBlockStateProvider provider;
 
-   public AlterGroundDecorator(final BlockStateProvider provider) {
+   public AlterGroundDecorator(final RuleBasedBlockStateProvider provider) {
       super();
       this.provider = provider;
    }
@@ -23,7 +23,7 @@ public class AlterGroundDecorator extends TreeDecorator {
    public void place(final TreeDecorator.Context context) {
       List<BlockPos> blockPositions = TreeFeature.getLowestTrunkOrRootOfTree(context);
       if (!blockPositions.isEmpty()) {
-         int minY = ((BlockPos)blockPositions.get(0)).getY();
+         int minY = ((BlockPos)blockPositions.getFirst()).getY();
          blockPositions.stream().filter((pos) -> pos.getY() == minY).forEach((pos) -> {
             this.placeCircle(context, pos.west().north());
             this.placeCircle(context, pos.east(2).north());
@@ -57,8 +57,9 @@ public class AlterGroundDecorator extends TreeDecorator {
    private void placeBlockAt(final TreeDecorator.Context context, final BlockPos pos) {
       for(int dy = 2; dy >= -3; --dy) {
          BlockPos blockPos = pos.above(dy);
-         if (Feature.isGrassOrDirt(context.level(), blockPos)) {
-            context.setBlock(blockPos, this.provider.getState(context.random(), pos));
+         BlockState replaceWith = this.provider.getState(context.level(), context.random(), pos);
+         if (replaceWith != null) {
+            context.setBlock(blockPos, replaceWith);
             break;
          }
 
@@ -70,6 +71,6 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    static {
-      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (d) -> d.provider);
+      CODEC = RuleBasedBlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (d) -> d.provider);
    }
 }

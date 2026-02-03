@@ -15,7 +15,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -53,7 +52,7 @@ public class FarmlandBlock extends Block {
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
       BlockState aboveState = level.getBlockState(pos.above());
-      return !aboveState.isSolid() || aboveState.getBlock() instanceof FenceGateBlock || aboveState.getBlock() instanceof MovingPistonBlock;
+      return !aboveState.isSolid() || shouldMaintainFarmland(level, pos);
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {

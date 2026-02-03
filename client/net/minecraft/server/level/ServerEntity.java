@@ -105,7 +105,7 @@ public class ServerEntity {
                MapItemSavedData data = MapItem.getSavedData((MapId)id, this.level);
                if (data != null) {
                   for(ServerPlayer player : this.level.players()) {
-                     data.tickCarriedBy(player, itemStack);
+                     data.tickCarriedBy(player, itemStack, frame);
                      Packet<?> packet = data.getUpdatePacket(id, player);
                      if (packet != null) {
                         player.connection.send(packet);

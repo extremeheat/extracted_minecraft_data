@@ -36,7 +36,7 @@ public class WardenModel extends EntityModel<WardenRenderState> {
    private final KeyframeAnimation sniffAnimation;
 
    public WardenModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutoutNoCull);
+      super(root, RenderTypes::entityCutout);
       this.bone = root.getChild("bone");
       this.body = this.bone.getChild("body");
       this.head = this.body.getChild("head");

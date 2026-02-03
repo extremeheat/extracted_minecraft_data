@@ -12,7 +12,7 @@ import net.minecraft.util.Unit;
 
 public class BeeStingerModel extends Model<Unit> {
    public BeeStingerModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutout);
+      super(root, RenderTypes::entityCutoutCull);
    }
 
    public static LayerDefinition createBodyLayer() {

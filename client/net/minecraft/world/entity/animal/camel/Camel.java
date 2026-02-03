@@ -60,7 +60,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Camel extends AbstractHorse {
-   public static final float BABY_SCALE = 0.45F;
+   public static final float BABY_SCALE = 0.6F;
    public static final int DASH_COOLDOWN_TICKS = 55;
    public static final int MAX_HEAD_Y_ROT = 30;
    private static final float RUNNING_SPEED_BONUS = 0.1F;
@@ -454,7 +454,7 @@ public class Camel extends AbstractHorse {
    }
 
    public float getAgeScale() {
-      return this.isBaby() ? 0.45F : 1.0F;
+      return this.isBaby() ? 0.6F : 1.0F;
    }
 
    private double getBodyAnchorAnimationYOffset(final boolean isFront, final float partialTicks, final EntityDimensions dimensions, final float scale) {

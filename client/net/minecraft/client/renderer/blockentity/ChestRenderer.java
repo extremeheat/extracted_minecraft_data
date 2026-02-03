@@ -96,7 +96,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       open = 1.0F - open;
       open = 1.0F - open * open * open;
       Material material = Sheets.chooseMaterial(state.material, state.type);
-      RenderType renderType = material.renderType(RenderTypes::entityCutout);
+      RenderType renderType = material.renderType(RenderTypes::entityCutoutCull);
       TextureAtlasSprite sprite = this.materials.get(material);
       if (state.type != ChestType.SINGLE) {
          if (state.type == ChestType.LEFT) {

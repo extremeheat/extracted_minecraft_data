@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
+import java.nio.file.Path;
 import java.util.function.UnaryOperator;
 import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
@@ -20,6 +21,7 @@ public final class Identifier implements Comparable<Identifier> {
    public static final char NAMESPACE_SEPARATOR = ':';
    public static final String DEFAULT_NAMESPACE = "minecraft";
    public static final String REALMS_NAMESPACE = "realms";
+   public static final String ALLOWED_NAMESPACE_CHARACTERS = "[a-z0-9_.-]";
    private final String namespace;
    private final String path;
 
@@ -150,6 +152,10 @@ public final class Identifier implements Comparable<Identifier> {
       return result;
    }
 
+   public Path resolveAgainst(final Path root) {
+      return root.resolve(this.getNamespace(), new String[]{this.getPath()});
+   }
+
    public String toDebugFileName() {
       return this.toString().replace('/', '_').replace(':', '_');
    }
@@ -226,18 +232,22 @@ public final class Identifier implements Comparable<Identifier> {
    }
 
    public static boolean isValidNamespace(final String namespace) {
-      for(int i = 0; i < namespace.length(); ++i) {
-         if (!validNamespaceChar(namespace.charAt(i))) {
-            return false;
+      if (namespace.equals("..")) {
+         return false;
+      } else {
+         for(int i = 0; i < namespace.length(); ++i) {
+            if (!validNamespaceChar(namespace.charAt(i))) {
+               return false;
+            }
          }
-      }
 
-      return true;
+         return true;
+      }
    }
 
    private static String assertValidNamespace(final String namespace, final String path) {
       if (!isValidNamespace(namespace)) {
-         throw new IdentifierException("Non [a-z0-9_.-] character in namespace of location: " + namespace + ":" + path);
+         throw new IdentifierException("Non [a-z0-9_.-] character in namespace of identifier: " + namespace + ":" + path);
       } else {
          return namespace;
       }

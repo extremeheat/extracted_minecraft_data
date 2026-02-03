@@ -28,10 +28,15 @@ public class SnbtToNbt implements DataProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final PackOutput output;
    private final Iterable<Path> inputFolders;
-   private final List<Filter> filters = Lists.newArrayList();
+   private final List<Filter> filters;
+
+   public SnbtToNbt(final PackOutput output, final Path inputFolder) {
+      this(output, (Iterable)List.of(inputFolder));
+   }
 
    public SnbtToNbt(final PackOutput output, final Iterable<Path> inputFolders) {
       super();
+      this.filters = Lists.newArrayList();
       this.output = output;
       this.inputFolders = inputFolders;
    }

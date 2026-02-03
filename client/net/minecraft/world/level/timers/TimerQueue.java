@@ -1,60 +1,54 @@
 package net.minecraft.world.level.timers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.UnsignedLong;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import java.util.stream.Stream;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import org.slf4j.Logger;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
-public class TimerQueue<T> {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final String CALLBACK_DATA_TAG = "Callback";
-   private static final String TIMER_NAME_TAG = "Name";
-   private static final String TIMER_TRIGGER_TIME_TAG = "TriggerTime";
-   private final TimerCallbacks<T> callbacksRegistry;
+public class TimerQueue<T> extends SavedData {
+   public static final Codec<TimerQueue<MinecraftServer>> CODEC;
+   public static final SavedDataType<TimerQueue<MinecraftServer>> TYPE;
    private final Queue<Event<T>> queue;
    private UnsignedLong sequentialId;
    private final Table<String, Long, Event<T>> events;
+
+   @VisibleForTesting
+   protected static <T> Codec<TimerQueue<T>> codec(final TimerCallbacks<T> callbacks) {
+      return TimerQueue.Packed.codec(callbacks.codec()).xmap(TimerQueue::new, TimerQueue::pack);
+   }
 
    private static <T> Comparator<Event<T>> createComparator() {
       return Comparator.comparingLong((l) -> l.triggerTime).thenComparing((l) -> l.sequentialId);
    }
 
-   public TimerQueue(final TimerCallbacks<T> callbacksRegistry, final Stream<? extends Dynamic<?>> eventData) {
-      this(callbacksRegistry);
+   public TimerQueue(final Packed<T> packedEvents) {
+      this();
       this.queue.clear();
       this.events.clear();
       this.sequentialId = UnsignedLong.ZERO;
-      eventData.forEach((input) -> {
-         Tag tag = (Tag)input.convert(NbtOps.INSTANCE).getValue();
-         if (tag instanceof CompoundTag compoundTag) {
-            this.loadEvent(compoundTag);
-         } else {
-            LOGGER.warn("Invalid format of events: {}", tag);
-         }
-
-      });
+      packedEvents.events.forEach((event) -> this.schedule(event.id, event.triggerTime, event.callback));
    }
 
-   public TimerQueue(final TimerCallbacks<T> callbacksRegistry) {
+   public TimerQueue() {
       super();
       this.queue = new PriorityQueue(createComparator());
       this.sequentialId = UnsignedLong.ZERO;
       this.events = HashBasedTable.create();
-      this.callbacksRegistry = callbacksRegistry;
    }
 
    public void tick(final T context, final long currentTick) {
@@ -66,6 +60,7 @@ public class TimerQueue<T> {
 
          this.queue.remove();
          this.events.remove(event.id, currentTick);
+         this.setDirty();
          event.callback.handle(context, this, currentTick);
       }
    }
@@ -76,6 +71,7 @@ public class TimerQueue<T> {
          Event<T> newEvent = new Event<T>(time, this.sequentialId, id, callback);
          this.events.put(id, time, newEvent);
          this.queue.add(newEvent);
+         this.setDirty();
       }
    }
 
@@ -86,6 +82,7 @@ public class TimerQueue<T> {
       eventsToRemove.forEach(var10001::remove);
       int size = eventsToRemove.size();
       eventsToRemove.clear();
+      this.setDirty();
       return size;
    }
 
@@ -93,44 +90,39 @@ public class TimerQueue<T> {
       return Collections.unmodifiableSet(this.events.rowKeySet());
    }
 
-   private void loadEvent(final CompoundTag tag) {
-      TimerCallback<T> callback = (TimerCallback)tag.read("Callback", this.callbacksRegistry.codec()).orElse((Object)null);
-      if (callback != null) {
-         String id = tag.getStringOr("Name", "");
-         long time = tag.getLongOr("TriggerTime", 0L);
-         this.schedule(id, time, callback);
+   @VisibleForTesting
+   protected Packed<T> pack() {
+      return new Packed<T>(this.queue.stream().sorted(createComparator()).map((event) -> new Event.Packed(event.triggerTime, event.id, event.callback)).toList());
+   }
+
+   static {
+      CODEC = codec(TimerCallbacks.SERVER_CALLBACKS);
+      TYPE = new SavedDataType<TimerQueue<MinecraftServer>>(Identifier.withDefaultNamespace("scheduled_events"), TimerQueue::new, CODEC, DataFixTypes.SAVED_DATA_SCHEDULED_EVENTS);
+   }
+
+   public static record Event<T>(long triggerTime, UnsignedLong sequentialId, String id, TimerCallback<T> callback) {
+      public Event {
+         super();
       }
 
+      public static record Packed<T>(long triggerTime, String id, TimerCallback<T> callback) {
+         public Packed {
+            super();
+         }
+
+         public static <T> Codec<Packed<T>> codec(final Codec<TimerCallback<T>> callbackCodec) {
+            return RecordCodecBuilder.create((i) -> i.group(Codec.LONG.fieldOf("trigger_time").forGetter(Packed::triggerTime), Codec.STRING.fieldOf("id").forGetter(Packed::id), callbackCodec.fieldOf("callback").forGetter(Packed::callback)).apply(i, Packed::new));
+         }
+      }
    }
 
-   private CompoundTag storeEvent(final Event<T> event) {
-      CompoundTag result = new CompoundTag();
-      result.putString("Name", event.id);
-      result.putLong("TriggerTime", event.triggerTime);
-      result.store("Callback", this.callbacksRegistry.codec(), event.callback);
-      return result;
-   }
-
-   public ListTag store() {
-      ListTag result = new ListTag();
-      Stream var10000 = this.queue.stream().sorted(createComparator()).map(this::storeEvent);
-      Objects.requireNonNull(result);
-      var10000.forEach(result::add);
-      return result;
-   }
-
-   public static class Event<T> {
-      public final long triggerTime;
-      public final UnsignedLong sequentialId;
-      public final String id;
-      public final TimerCallback<T> callback;
-
-      private Event(final long triggerTime, final UnsignedLong sequentialId, final String id, final TimerCallback<T> callback) {
+   public static record Packed<T>(List<Event.Packed<T>> events) {
+      public Packed {
          super();
-         this.triggerTime = triggerTime;
-         this.sequentialId = sequentialId;
-         this.id = id;
-         this.callback = callback;
+      }
+
+      public static <T> Codec<Packed<T>> codec(final Codec<TimerCallback<T>> callbackCodec) {
+         return RecordCodecBuilder.create((i) -> i.group(TimerQueue.Event.Packed.codec(callbackCodec).listOf().fieldOf("events").forGetter(Packed::events)).apply(i, Packed::new));
       }
    }
 }

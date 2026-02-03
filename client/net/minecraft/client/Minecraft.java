@@ -254,6 +254,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.world.phys.BlockHitResult;
@@ -2028,7 +2029,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return new WorldOpenFlows(this, this.levelSource);
    }
 
-   public void doWorldLoad(final LevelStorageSource.LevelStorageAccess levelSourceAccess, final PackRepository packRepository, final WorldStem worldStem, final boolean newWorld) {
+   public void doWorldLoad(final LevelStorageSource.LevelStorageAccess levelSourceAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final boolean newWorld) {
       this.disconnectWithProgressScreen();
       Instant worldLoadStart = Instant.now();
       LevelLoadTracker loadTracker = new LevelLoadTracker(newWorld ? 500L : 0L);
@@ -2037,18 +2038,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       int chunkStatusViewRadius = Math.max(5, 3) + ChunkLevel.RADIUS_AROUND_FULL_CHUNK + 1;
 
       try {
-         levelSourceAccess.saveDataTag(worldStem.registries().compositeAccess(), worldStem.worldData());
+         levelSourceAccess.saveDataTag(worldStem.worldDataAndGenSettings().data());
          LevelLoadListener loadListener = LevelLoadListener.compose(loadTracker, LoggingLevelLoadListener.forSingleplayer());
-         this.singleplayerServer = (IntegratedServer)MinecraftServer.spin((thread) -> new IntegratedServer(thread, this, levelSourceAccess, packRepository, worldStem, this.services, loadListener));
+         this.singleplayerServer = (IntegratedServer)MinecraftServer.spin((thread) -> new IntegratedServer(thread, this, levelSourceAccess, packRepository, worldStem, gameRules, this.services, loadListener));
          loadTracker.setServerChunkStatusView(this.singleplayerServer.createChunkLoadStatusView(chunkStatusViewRadius));
          this.isLocalServer = true;
          this.updateReportEnvironment(ReportEnvironment.local());
-         this.quickPlayLog.setWorldData(QuickPlayLog.Type.SINGLEPLAYER, levelSourceAccess.getLevelId(), worldStem.worldData().getLevelName());
+         this.quickPlayLog.setWorldData(QuickPlayLog.Type.SINGLEPLAYER, levelSourceAccess.getLevelId(), worldStem.worldDataAndGenSettings().data().getLevelName());
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "Starting integrated server");
          CrashReportCategory category = report.addCategory("Starting integrated server");
          category.setDetail("Level ID", levelSourceAccess.getLevelId());
-         category.setDetail("Level Name", (CrashReportDetail)(() -> worldStem.worldData().getLevelName()));
+         category.setDetail("Level Name", (CrashReportDetail)(() -> worldStem.worldDataAndGenSettings().data().getLevelName()));
          throw new ReportedException(report);
       }
 

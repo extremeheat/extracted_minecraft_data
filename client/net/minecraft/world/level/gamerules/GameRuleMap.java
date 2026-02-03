@@ -9,10 +9,15 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import org.jspecify.annotations.Nullable;
 
-public final class GameRuleMap {
+public final class GameRuleMap extends SavedData {
    public static final Codec<GameRuleMap> CODEC;
+   public static final SavedDataType<GameRuleMap> TYPE;
    private final Reference2ObjectMap<GameRule<?>, Object> map;
 
    private GameRuleMap(final Reference2ObjectMap<GameRule<?>, Object> map) {
@@ -47,10 +52,16 @@ public final class GameRuleMap {
    }
 
    public <T> void set(final GameRule<T> gameRule, final T value) {
+      this.setDirty();
       this.map.put(gameRule, value);
    }
 
+   public <T> void reset(final GameRule<T> gameRule) {
+      this.set(gameRule, gameRule.defaultValue());
+   }
+
    public <T> @Nullable T remove(final GameRule<T> gameRule) {
+      this.setDirty();
       return (T)this.map.remove(gameRule);
    }
 
@@ -106,6 +117,7 @@ public final class GameRuleMap {
 
    static {
       CODEC = Codec.dispatchedMap(BuiltInRegistries.GAME_RULE.byNameCodec(), GameRule::valueCodec).xmap(GameRuleMap::ofTrusted, GameRuleMap::map);
+      TYPE = new SavedDataType<GameRuleMap>(Identifier.withDefaultNamespace("game_rules"), GameRuleMap::of, CODEC, DataFixTypes.SAVED_DATA_GAME_RULES);
    }
 
    public static class Builder {

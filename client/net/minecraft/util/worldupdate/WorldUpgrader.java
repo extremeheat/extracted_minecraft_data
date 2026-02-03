@@ -25,9 +25,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.structure.LegacyStructureDataHandler;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import org.slf4j.Logger;
 
 public class WorldUpgrader implements AutoCloseable {
@@ -42,7 +41,7 @@ public class WorldUpgrader implements AutoCloseable {
    private final Thread thread;
    private final DataFixer dataFixer;
    private final UpgradeProgress upgradeProgress = new UpgradeProgress();
-   private final DimensionDataStorage overworldDataStorage;
+   private final SavedDataStorage overworldSavedDataStorage;
 
    public WorldUpgrader(final LevelStorageSource.LevelStorageAccess levelSource, final DataFixer dataFixer, final RegistryAccess registryAccess, final boolean eraseCache, final boolean recreateRegionFiles) {
       super();
@@ -51,7 +50,7 @@ public class WorldUpgrader implements AutoCloseable {
       this.eraseCache = eraseCache;
       this.dataFixer = dataFixer;
       this.levelStorage = levelSource;
-      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), dataFixer, registryAccess);
+      this.overworldSavedDataStorage = new SavedDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), dataFixer, registryAccess);
       this.recreateRegionFiles = recreateRegionFiles;
       this.thread = THREAD_FACTORY.newThread(this::work);
       this.thread.setUncaughtExceptionHandler((t, e) -> {
@@ -116,8 +115,8 @@ public class WorldUpgrader implements AutoCloseable {
       LOGGER.info("Upgrading POIs");
       this.upgradeLevels(DataFixTypes.POI_CHUNK, (new RegionStorageUpgrader.Builder(this.dataFixer)).setTypeAndFolderName("poi").setDefaultVersion(1945).setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress));
       LOGGER.info("Upgrading blocks");
-      this.upgradeLevels(DataFixTypes.CHUNK, (new RegionStorageUpgrader.Builder(this.dataFixer)).setType("chunk").setFolderName("region").setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress), (levelSpecificBuilder, level) -> levelSpecificBuilder.setDataFixContextTag(getDataFixContextTag(this.dimensions, level)).setLegacyFixer(LegacyStructureDataHandler.getLegacyTagFixer(level, () -> this.overworldDataStorage, this.dataFixer)).addTagModifier(currentVersion, this.eraseCache ? WorldUpgrader::verifyChunkPosAndEraseCache : WorldUpgrader::verifyChunkPos));
-      this.overworldDataStorage.saveAndJoin();
+      this.upgradeLevels(DataFixTypes.CHUNK, (new RegionStorageUpgrader.Builder(this.dataFixer)).setType("chunk").setFolderName("region").setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress), (levelSpecificBuilder, level) -> levelSpecificBuilder.setDataFixContextTag(getDataFixContextTag(this.dimensions, level)).addTagModifier(currentVersion, this.eraseCache ? WorldUpgrader::verifyChunkPosAndEraseCache : WorldUpgrader::verifyChunkPos));
+      this.overworldSavedDataStorage.saveAndJoin();
       conversionTime = Util.getMillis() - conversionTime;
       LOGGER.info("World optimization finished after {} seconds", conversionTime / 1000L);
       this.upgradeProgress.setFinished(true);
@@ -130,6 +129,7 @@ public class WorldUpgrader implements AutoCloseable {
    private void upgradeLevels(final DataFixTypes dataFixType, final RegionStorageUpgrader.Builder builder, final BiFunction<RegionStorageUpgrader.Builder, ResourceKey<Level>, RegionStorageUpgrader.Builder> levelSpecificBuilder) {
       List<RegionStorageUpgrader> upgraders = new ArrayList();
       this.upgradeProgress.reset(dataFixType);
+      this.upgradeProgress.setType(UpgradeProgress.Type.REGIONS);
       builder.setDataFixType(dataFixType);
       int previousCopiesFileAmounts = 0;
 
@@ -176,6 +176,6 @@ public class WorldUpgrader implements AutoCloseable {
    }
 
    public void close() {
-      this.overworldDataStorage.close();
+      this.overworldSavedDataStorage.close();
    }
 }

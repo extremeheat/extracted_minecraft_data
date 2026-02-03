@@ -140,7 +140,7 @@ public class Chicken extends Animal {
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound(SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
+      this.playSound(this.isBaby() ? SoundEvents.CHICKEN_STEP_BABY : SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
    }
 
    public @Nullable Chicken getBreedOffspring(final ServerLevel level, final AgeableMob partner) {

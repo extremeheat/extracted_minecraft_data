@@ -9,7 +9,6 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -54,7 +53,7 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
    }
 
    private static void updateSignalStrength(final BlockState state, final Level level, final BlockPos pos) {
-      int target = level.getBrightness(LightLayer.SKY, pos) - level.getSkyDarken();
+      int target = level.getEffectiveSkyBrightness(pos);
       float sunAngle = (Float)level.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, pos) * 0.017453292F;
       boolean isInverted = (Boolean)state.getValue(INVERTED);
       if (isInverted) {

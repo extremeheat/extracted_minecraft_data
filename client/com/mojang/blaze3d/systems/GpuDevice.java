@@ -26,7 +26,7 @@ public class GpuDevice {
    }
 
    public CommandEncoder createCommandEncoder() {
-      return new CommandEncoder(this.backend.createCommandEncoder());
+      return new CommandEncoder(this.backend, this.backend.createCommandEncoder());
    }
 
    public GpuSampler createSampler(final AddressMode addressModeU, final AddressMode addressModeV, final FilterMode minFilter, final FilterMode magFilter, final int maxAnisotropy, final OptionalDouble maxLod) {

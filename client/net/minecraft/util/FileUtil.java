@@ -5,10 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -77,11 +75,6 @@ public class FileUtil {
       }
    }
 
-   public static boolean isPathNormalized(final Path path) {
-      Path normalized = path.normalize();
-      return normalized.equals(path);
-   }
-
    public static boolean isPathPortable(final Path path) {
       for(Path part : path) {
          if (!isPathPartPortable(part.toString())) {
@@ -94,16 +87,6 @@ public class FileUtil {
 
    public static boolean isPathPartPortable(final String name) {
       return !RESERVED_WINDOWS_FILENAMES.matcher(name).matches();
-   }
-
-   public static Path createPathToResource(final Path resourceDirectory, final String resource, final String extension) {
-      String path = resource + extension;
-      Path relativeResourcePath = Paths.get(path);
-      if (relativeResourcePath.endsWith(extension)) {
-         throw new InvalidPathException(path, "empty resource name");
-      } else {
-         return resourceDirectory.resolve(relativeResourcePath);
-      }
    }
 
    public static String getFullResourcePath(final String filename) {

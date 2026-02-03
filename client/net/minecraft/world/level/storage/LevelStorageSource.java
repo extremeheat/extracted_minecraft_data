@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -39,13 +41,14 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.NbtFormatException;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.nbt.visitors.SkipFields;
@@ -68,12 +71,17 @@ import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRuleMap;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.validation.ContentValidationException;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.world.level.validation.ForbiddenSymlinkInfo;
 import net.minecraft.world.level.validation.PathAllowList;
+import org.apache.commons.io.function.IORunnable;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -152,15 +160,44 @@ public class LevelStorageSource {
       return new WorldLoader.PackConfig(packRepository, readDataConfig(levelDataTag), safeMode, false);
    }
 
-   public static LevelDataAndDimensions getLevelDataAndDimensions(final Dynamic<?> levelDataTag, final WorldDataConfiguration dataConfiguration, final Registry<LevelStem> datapackDimensions, final HolderLookup.Provider registryAccess) {
-      Dynamic<?> dataTag = RegistryOps.injectRegistryContext(levelDataTag, registryAccess);
-      Dynamic<?> worldGenSettingsTag = dataTag.get("WorldGenSettings").orElseEmptyMap();
-      WorldGenSettings worldGenSettings = (WorldGenSettings)WorldGenSettings.CODEC.parse(worldGenSettingsTag).getOrThrow();
-      LevelSettings settings = LevelSettings.parse(dataTag, dataConfiguration);
-      WorldDimensions.Complete dimensions = worldGenSettings.dimensions().bake(datapackDimensions);
-      Lifecycle lifecycle = dimensions.lifecycle().add(registryAccess.allRegistriesLifecycle());
-      PrimaryLevelData worldData = PrimaryLevelData.parse(dataTag, settings, dimensions.specialWorldProperty(), worldGenSettings.options(), lifecycle);
-      return new LevelDataAndDimensions(worldData, dimensions);
+   public static LevelDataAndDimensions getLevelDataAndDimensions(final LevelStorageAccess worldAccess, final Dynamic<?> levelDataTag, final WorldDataConfiguration dataConfiguration, final Registry<LevelStem> datapackDimensions, final HolderLookup.Provider registryAccess) {
+      if (DataFixers.getFileFixer().requiresFileFixing(NbtUtils.getDataVersion(levelDataTag))) {
+         throw new IllegalStateException("Cannot get level data without file fixing first");
+      } else {
+         Dynamic<?> dataTag = RegistryOps.injectRegistryContext(levelDataTag, registryAccess);
+         WorldGenSettings worldGenSettings = (WorldGenSettings)readExistingSavedData(worldAccess, registryAccess, WorldGenSettings.TYPE).getOrThrow((errorMessage) -> new LevelStorageException(Component.translatable("selectWorld.world_gen_settings_access", errorMessage)));
+         LevelSettings settings = LevelSettings.parse(dataTag, dataConfiguration);
+         WorldDimensions.Complete dimensions = worldGenSettings.dimensions().bake(datapackDimensions);
+         Lifecycle lifecycle = dimensions.lifecycle().add(registryAccess.allRegistriesLifecycle());
+         PrimaryLevelData worldData = PrimaryLevelData.parse(dataTag, settings, dimensions.specialWorldProperty(), lifecycle);
+         return LevelDataAndDimensions.create(worldData, worldGenSettings, dimensions);
+      }
+   }
+
+   public static <T extends SavedData> DataResult<T> readExistingSavedData(final LevelStorageAccess access, final HolderLookup.Provider registryAccess, final SavedDataType<T> savedDataType) {
+      Path dataLocation = savedDataType.id().withSuffix(".dat").resolveAgainst(access.getLevelPath(LevelResource.DATA));
+
+      CompoundTag fileContents;
+      try {
+         fileContents = NbtIo.readCompressed(dataLocation, NbtAccounter.defaultQuota());
+      } catch (IOException e) {
+         Objects.requireNonNull(e);
+         return DataResult.error(e::getMessage);
+      }
+
+      return savedDataType.codec().parse(RegistryOps.create(NbtOps.INSTANCE, (HolderLookup.Provider)registryAccess), fileContents.getCompoundOrEmpty("data"));
+   }
+
+   public static void writeGameRules(final WorldData worldData, final Path worldFolder, final GameRules gameRules) throws IOException {
+      Codec<GameRules> codec = GameRules.codec(worldData.enabledFeatures());
+      DataResult<Tag> encoded = codec.encodeStart(NbtOps.INSTANCE, gameRules);
+      if (encoded.isSuccess()) {
+         CompoundTag fullTag = new CompoundTag();
+         fullTag.put("data", (Tag)encoded.getOrThrow());
+         NbtUtils.addCurrentDataVersion(fullTag);
+         NbtIo.writeCompressed(fullTag, GameRuleMap.TYPE.id().withSuffix(".dat").resolveAgainst(worldFolder.resolve("data")));
+      }
+
    }
 
    public String getName() {
@@ -249,16 +286,6 @@ public class LevelStorageSource {
       return NbtIo.readCompressed(dataFile, NbtAccounter.uncompressedQuota());
    }
 
-   private static Dynamic<?> readLevelDataTagFixed(final Path dataFile, final DataFixer dataFixer) throws IOException {
-      CompoundTag root = readLevelDataTagRaw(dataFile);
-      CompoundTag dataTag = root.getCompoundOrEmpty("Data");
-      int dataVersion = NbtUtils.getDataVersion(dataTag);
-      Dynamic<?> updated = DataFixTypes.LEVEL.updateToCurrentVersion(dataFixer, new Dynamic(NbtOps.INSTANCE, dataTag), dataVersion);
-      updated = updated.update("Player", (playerTagUnfixed) -> DataFixTypes.PLAYER.updateToCurrentVersion(dataFixer, playerTagUnfixed, dataVersion));
-      updated = updated.update("WorldGenSettings", (worldGenSettingsTagUnfixed) -> DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(dataFixer, worldGenSettingsTagUnfixed, dataVersion));
-      return updated;
-   }
-
    private LevelSummary readLevelSummary(final LevelDirectory level, final boolean locked) {
       Path dataFile = level.dataFile();
       if (Files.exists(dataFile, new LinkOption[0])) {
@@ -277,7 +304,7 @@ public class LevelStorageSource {
                CompoundTag tag = root.getCompoundOrEmpty("Data");
                int dataVersion = NbtUtils.getDataVersion(tag);
                Dynamic<?> updated = DataFixTypes.LEVEL_SUMMARY.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, tag), dataVersion);
-               return this.makeLevelSummary(updated, level, locked);
+               return this.makeLevelSummary(updated, level, locked, dataVersion);
             }
 
             LOGGER.warn("Invalid root tag in {}", dataFile);
@@ -306,19 +333,20 @@ public class LevelStorageSource {
       }
    }
 
-   private LevelSummary makeLevelSummary(final Dynamic<?> dataTag, final LevelDirectory levelDirectory, final boolean locked) {
+   private LevelSummary makeLevelSummary(final Dynamic<?> dataTag, final LevelDirectory levelDirectory, final boolean locked, final int dataVersion) {
       LevelVersion levelVersion = LevelVersion.parse(dataTag);
       int levelDataVersion = levelVersion.levelDataVersion();
       if (levelDataVersion != 19132 && levelDataVersion != 19133) {
          throw new NbtFormatException("Unknown data version: " + Integer.toHexString(levelDataVersion));
       } else {
          boolean requiresManualConversion = levelDataVersion != this.getStorageVersion();
+         boolean requiresFileFixing = DataFixers.getFileFixer().requiresFileFixing(dataVersion);
          Path icon = levelDirectory.iconFile();
          WorldDataConfiguration dataConfiguration = readDataConfig(dataTag);
          LevelSettings settings = LevelSettings.parse(dataTag, dataConfiguration);
          FeatureFlagSet enabledFeatureFlags = parseFeatureFlagsFromSummary(dataTag);
          boolean experimental = FeatureFlags.isExperimental(enabledFeatureFlags);
-         return new LevelSummary(settings, levelVersion, levelDirectory.directoryName(), requiresManualConversion, locked, experimental, icon);
+         return new LevelSummary(settings, levelVersion, levelDirectory.directoryName(), requiresManualConversion, requiresFileFixing, locked, experimental, icon);
       }
    }
 
@@ -385,7 +413,7 @@ public class LevelStorageSource {
    }
 
    public class LevelStorageAccess implements AutoCloseable {
-      private final DirectoryLock lock;
+      private DirectoryLock lock;
       private final LevelDirectory levelDirectory;
       private final String levelId;
       private final Map<LevelResource, Path> resources;
@@ -396,7 +424,22 @@ public class LevelStorageSource {
          this.resources = Maps.newHashMap();
          this.levelId = levelId;
          this.levelDirectory = new LevelDirectory(path);
-         this.lock = DirectoryLock.create(path);
+         this.createLock();
+      }
+
+      private void createLock() throws IOException {
+         this.lock = DirectoryLock.create(this.levelDirectory.path);
+      }
+
+      public void releaseTemporarilyAndRun(final IORunnable runnable) throws IOException {
+         this.close();
+
+         try {
+            runnable.run();
+         } finally {
+            this.createLock();
+         }
+
       }
 
       public long estimateDiskSpace() {
@@ -454,32 +497,66 @@ public class LevelStorageSource {
          return new PlayerDataStorage(this, LevelStorageSource.this.fixerUpper);
       }
 
-      public LevelSummary getSummary(final Dynamic<?> dataTag) {
+      public void collectIssues(final boolean useFallback) throws IOException {
          this.checkLock();
-         return LevelStorageSource.this.makeLevelSummary(dataTag, this.levelDirectory, false);
+         Dynamic<?> unfixedDataTag = this.getUnfixedDataTag(useFallback);
+         int dataVersion = NbtUtils.getDataVersion(unfixedDataTag);
+         Dynamic<?> fixedDataTag = DataFixTypes.LEVEL.updateToCurrentVersion(LevelStorageSource.this.fixerUpper, unfixedDataTag, dataVersion);
+         LevelStorageSource.this.makeLevelSummary(fixedDataTag, this.levelDirectory, false, dataVersion);
       }
 
-      public Dynamic<?> getDataTag() throws IOException {
-         return this.getDataTag(false);
-      }
-
-      public Dynamic<?> getDataTagFallback() throws IOException {
-         return this.getDataTag(true);
-      }
-
-      private Dynamic<?> getDataTag(final boolean useFallback) throws IOException {
+      public LevelSummary fixAndGetSummary() throws IOException {
          this.checkLock();
-         return LevelStorageSource.readLevelDataTagFixed(useFallback ? this.levelDirectory.oldDataFile() : this.levelDirectory.dataFile(), LevelStorageSource.this.fixerUpper);
+         return this.fixAndGetSummaryFromTag(this.getUnfixedDataTag(false));
       }
 
-      public void saveDataTag(final RegistryAccess registryAccess, final WorldData levelData) {
-         this.saveDataTag(registryAccess, levelData, (CompoundTag)null);
+      public LevelSummary fixAndGetSummaryFromTag(final Dynamic<?> dataTag) {
+         this.checkLock();
+         int dataVersion = NbtUtils.getDataVersion(dataTag);
+         Dynamic<?> dataTagFixed = DataFixTypes.LEVEL_SUMMARY.updateToCurrentVersion(LevelStorageSource.this.fixerUpper, dataTag, dataVersion);
+         return LevelStorageSource.this.makeLevelSummary(dataTagFixed, this.levelDirectory, false, dataVersion);
       }
 
-      public void saveDataTag(final RegistryAccess registryAccess, final WorldData levelData, final @Nullable CompoundTag playerData) {
-         CompoundTag dataTag = levelData.createTag(registryAccess, playerData);
+      public Dynamic<?> getUnfixedDataTagWithFallback() throws IOException {
+         Dynamic<?> unfixedDataTag;
+         try {
+            unfixedDataTag = this.getUnfixedDataTag(false);
+         } catch (NbtException | ReportedNbtException | IOException e) {
+            LevelStorageSource.LOGGER.warn("Failed to load world data from {}", this.levelDirectory.dataFile(), e);
+            LevelStorageSource.LOGGER.info("Attempting to use fallback {}", this.levelDirectory.oldDataFile());
+            unfixedDataTag = this.getUnfixedDataTag(true);
+            this.restoreLevelDataFromOld();
+         }
+
+         return unfixedDataTag;
+      }
+
+      public Dynamic<?> getUnfixedDataTag(final boolean useFallback) throws IOException {
+         this.checkLock();
+         Path dataFile = this.getDataFile(useFallback);
+         CompoundTag root = LevelStorageSource.readLevelDataTagRaw(dataFile);
+         return new Dynamic(NbtOps.INSTANCE, root.getCompoundOrEmpty("Data"));
+      }
+
+      private Path getDataFile(final boolean useFallback) {
+         return useFallback ? this.levelDirectory.oldDataFile() : this.levelDirectory.dataFile();
+      }
+
+      public void saveDataTag(final WorldData levelData) {
+         this.saveDataTag(levelData, (UUID)null);
+      }
+
+      public void saveDataTag(final WorldData levelData, final @Nullable UUID singleplayerUUID) {
+         CompoundTag dataTag = levelData.createTag(singleplayerUUID);
          CompoundTag root = new CompoundTag();
          root.put("Data", dataTag);
+         this.saveLevelData(root);
+      }
+
+      public void saveLevelData(final Dynamic<?> tag) {
+         Tag genericTag = (Tag)tag.convert(NbtOps.INSTANCE).getValue();
+         CompoundTag root = new CompoundTag();
+         root.put("Data", genericTag);
          this.saveLevelData(root);
       }
 
@@ -563,7 +640,7 @@ public class LevelStorageSource {
       public void renameAndDropPlayer(final String newName) throws IOException {
          this.modifyLevelDataWithoutDatafix((tag) -> {
             tag.putString("LevelName", newName.trim());
-            tag.remove("Player");
+            tag.remove("singleplayer_uuid");
          });
       }
 
@@ -636,7 +713,7 @@ public class LevelStorageSource {
       }
 
       public @Nullable Instant getFileModificationTime(final boolean fallback) {
-         return LevelStorageSource.getFileModificationTime(fallback ? this.levelDirectory.oldDataFile() : this.levelDirectory.dataFile());
+         return LevelStorageSource.getFileModificationTime(this.getDataFile(fallback));
       }
    }
 
@@ -673,13 +750,13 @@ public class LevelStorageSource {
 
       public Path corruptedDataFile(final ZonedDateTime time) {
          Path var10000 = this.path;
-         String var10001 = LevelResource.LEVEL_DATA_FILE.getId();
+         String var10001 = LevelResource.LEVEL_DATA_FILE.id();
          return var10000.resolve(var10001 + "_corrupted_" + time.format(FileNameDateFormatter.FORMATTER));
       }
 
       public Path rawDataFile(final ZonedDateTime time) {
          Path var10000 = this.path;
-         String var10001 = LevelResource.LEVEL_DATA_FILE.getId();
+         String var10001 = LevelResource.LEVEL_DATA_FILE.id();
          return var10000.resolve(var10001 + "_raw_" + time.format(FileNameDateFormatter.FORMATTER));
       }
 
@@ -692,7 +769,7 @@ public class LevelStorageSource {
       }
 
       public Path resourcePath(final LevelResource resource) {
-         return this.path.resolve(resource.getId());
+         return this.path.resolve(resource.id());
       }
    }
 }

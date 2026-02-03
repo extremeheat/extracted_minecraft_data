@@ -24,7 +24,7 @@ public class BatModel extends EntityModel<BatRenderState> {
    private final KeyframeAnimation restingAnimation;
 
    public BatModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutout);
+      super(root, RenderTypes::entityCutoutCull);
       this.body = root.getChild("body");
       this.head = root.getChild("head");
       this.rightWing = this.body.getChild("right_wing");

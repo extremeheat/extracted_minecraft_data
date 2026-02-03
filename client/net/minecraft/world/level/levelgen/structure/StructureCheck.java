@@ -116,26 +116,22 @@ public class StructureCheck {
          return null;
       } else {
          int version = NbtUtils.getDataVersion(chunkTag);
-         if (version <= 1493) {
+         SimpleRegionStorage.injectDatafixingContext(chunkTag, ChunkMap.getChunkDataFixContextTag(this.dimension, this.chunkGenerator.getTypeNameForDataFixer()));
+
+         CompoundTag fixedChunkTag;
+         try {
+            fixedChunkTag = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, chunkTag, version);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to partially datafix chunk {}", pos, e);
             return StructureCheckResult.CHUNK_LOAD_NEEDED;
+         }
+
+         Object2IntMap<Structure> knownStarts = this.loadStructures(fixedChunkTag);
+         if (knownStarts == null) {
+            return null;
          } else {
-            SimpleRegionStorage.injectDatafixingContext(chunkTag, ChunkMap.getChunkDataFixContextTag(this.dimension, this.chunkGenerator.getTypeNameForDataFixer()));
-
-            CompoundTag fixedChunkTag;
-            try {
-               fixedChunkTag = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, chunkTag, version);
-            } catch (Exception e) {
-               LOGGER.warn("Failed to partially datafix chunk {}", pos, e);
-               return StructureCheckResult.CHUNK_LOAD_NEEDED;
-            }
-
-            Object2IntMap<Structure> knownStarts = this.loadStructures(fixedChunkTag);
-            if (knownStarts == null) {
-               return null;
-            } else {
-               this.storeFullResults(posKey, knownStarts);
-               return this.checkStructureInfo(knownStarts, structure, requireUnreferenced);
-            }
+            this.storeFullResults(posKey, knownStarts);
+            return this.checkStructureInfo(knownStarts, structure, requireUnreferenced);
          }
       }
    }

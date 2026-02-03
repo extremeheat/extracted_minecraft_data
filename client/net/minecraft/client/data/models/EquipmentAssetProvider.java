@@ -52,6 +52,7 @@ public class EquipmentAssetProvider implements DataProvider {
       }
 
       consumer.accept(EquipmentAssets.TRADER_LLAMA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("trader_llama"))).build());
+      consumer.accept(EquipmentAssets.TRADER_LLAMA_BABY, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("trader_llama_baby"))).build());
    }
 
    private static EquipmentClientInfo onlyHumanoid(final String name) {

@@ -108,7 +108,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          poseStack.translate(0.5F, 0.3F + hh * 0.2F, 0.5F);
          Vector3f axis = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
          poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(rotation * 0.017453292F, axis));
-         submitNodeCollector.submitModelPart(this.cage, poseStack, ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutoutNoCull), state.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(ACTIVE_SHELL_TEXTURE), -1, state.breakProgress);
+         submitNodeCollector.submitModelPart(this.cage, poseStack, ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutout), state.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(ACTIVE_SHELL_TEXTURE), -1, state.breakProgress);
          poseStack.popPose();
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);
@@ -119,7 +119,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          }
 
          Material windMaterial = state.animationPhase == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE;
-         RenderType windRenderType = windMaterial.renderType(RenderTypes::entityCutoutNoCull);
+         RenderType windRenderType = windMaterial.renderType(RenderTypes::entityCutout);
          TextureAtlasSprite windSprite = this.materials.get(windMaterial);
          submitNodeCollector.submitModelPart(this.wind, poseStack, windRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, windSprite);
          poseStack.popPose();
@@ -137,7 +137,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          float scale = 1.3333334F;
          poseStack.scale(1.3333334F, 1.3333334F, 1.3333334F);
          Material eyeMaterial = state.isHunting ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE;
-         submitNodeCollector.submitModelPart(this.eye, poseStack, eyeMaterial.renderType(RenderTypes::entityCutoutNoCull), state.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(eyeMaterial));
+         submitNodeCollector.submitModelPart(this.eye, poseStack, eyeMaterial.renderType(RenderTypes::entityCutout), state.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(eyeMaterial));
          poseStack.popPose();
       }
    }

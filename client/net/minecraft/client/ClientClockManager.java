@@ -20,12 +20,12 @@ public class ClientClockManager implements ClockManager {
    }
 
    public void tick(final long gameTime) {
-      int gameTimeDelta = Math.toIntExact(gameTime - this.lastTickGameTime);
+      long gameTimeDelta = gameTime - this.lastTickGameTime;
       this.lastTickGameTime = gameTime;
 
       for(ClockInstance instance : this.clocks.values()) {
          if (!instance.paused) {
-            instance.totalTicks += (long)gameTimeDelta;
+            instance.totalTicks += gameTimeDelta;
          }
       }
 

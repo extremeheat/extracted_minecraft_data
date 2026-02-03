@@ -16,10 +16,12 @@ import org.slf4j.Logger;
 
 public class CommandEncoder {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private final GpuDeviceBackend device;
    private final CommandEncoderBackend backend;
 
-   public CommandEncoder(final CommandEncoderBackend backend) {
+   public CommandEncoder(final GpuDeviceBackend device, final CommandEncoderBackend backend) {
       super();
+      this.device = device;
       this.backend = backend;
    }
 
@@ -56,7 +58,7 @@ public class CommandEncoder {
                }
             }
 
-            return this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth);
+            return new RenderPass(this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth), this.device);
          }
       }
    }

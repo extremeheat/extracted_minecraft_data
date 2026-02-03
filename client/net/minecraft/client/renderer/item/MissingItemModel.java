@@ -27,7 +27,7 @@ public class MissingItemModel implements ItemModel {
    public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
       output.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState layer = output.newLayer();
-      layer.setRenderType(Sheets.cutoutBlockSheet());
+      layer.setRenderType(Sheets.cutoutBlockItemSheet());
       this.properties.applyToLayer(layer, displayContext);
       layer.setExtents(this.extents);
       layer.prepareQuadList().addAll(this.quads);

@@ -98,8 +98,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private @Nullable ManagementServer jsonRpcServer;
    private long lastHeartbeat;
 
-   public DedicatedServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final DedicatedServerSettings settings, final DataFixer fixerUpper, final Services services) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer());
+   public DedicatedServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final DedicatedServerSettings settings, final DataFixer fixerUpper, final Services services) {
+      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer());
       this.settings = settings;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.serverTextFilter = ServerTextFilter.createFromConfig(settings.getProperties());
@@ -266,7 +266,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.services.nameToIdCache().save();
       }
 
-      if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
+      if (!OldUsersConverter.areOldUserlistsRemoved()) {
          return false;
       } else {
          this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
@@ -279,7 +279,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          String time = String.format(Locale.ROOT, "%.3fs", (double)elapsed / 1.0E9);
          LOGGER.info("Done ({})! For help, type \"help\"", time);
          if (properties.announcePlayerAchievements != null) {
-            this.worldData.getGameRules().set(GameRules.SHOW_ADVANCEMENT_MESSAGES, properties.announcePlayerAchievements, this);
+            this.getGameRules().set(GameRules.SHOW_ADVANCEMENT_MESSAGES, properties.announcePlayerAchievements, this);
          }
 
          if (properties.enableQuery) {

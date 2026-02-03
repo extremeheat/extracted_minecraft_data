@@ -53,6 +53,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Goat extends Animal {
    public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.scalable(0.9F, 1.3F).scale(0.7F);
+   private static final float BABY_SCALE = 0.55F;
    private static final int ADULT_ATTACK_DAMAGE = 2;
    private static final int BABY_ATTACK_DAMAGE = 1;
    private static final Brain.Provider<Goat> BRAIN_PROVIDER;
@@ -90,14 +91,7 @@ public class Goat extends Animal {
    }
 
    protected void ageBoundaryReached() {
-      if (this.isBaby()) {
-         this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(1.0);
-         this.removeHorns();
-      } else {
-         this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
-         this.addHorns();
-      }
-
+      this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(this.isBaby() ? 1.0 : 2.0);
    }
 
    protected int calculateFallDamage(final double fallDistance, final float damageModifier) {
@@ -153,6 +147,10 @@ public class Goat extends Animal {
       }
 
       return newGoat;
+   }
+
+   public float getAgeScale() {
+      return this.isBaby() ? 0.55F : 1.0F;
    }
 
    public Brain<Goat> getBrain() {
@@ -275,40 +273,34 @@ public class Goat extends Animal {
    }
 
    public boolean dropHorn() {
-      boolean hasLeft = this.hasLeftHorn();
-      boolean hasRight = this.hasRightHorn();
-      if (!hasLeft && !hasRight) {
+      if (this.isBaby()) {
          return false;
       } else {
-         EntityDataAccessor<Boolean> hornToDrop;
-         if (!hasLeft) {
-            hornToDrop = DATA_HAS_RIGHT_HORN;
-         } else if (!hasRight) {
-            hornToDrop = DATA_HAS_LEFT_HORN;
+         boolean hasLeft = this.hasLeftHorn();
+         boolean hasRight = this.hasRightHorn();
+         if (!hasLeft && !hasRight) {
+            return false;
          } else {
-            hornToDrop = this.random.nextBoolean() ? DATA_HAS_LEFT_HORN : DATA_HAS_RIGHT_HORN;
+            EntityDataAccessor<Boolean> hornToDrop;
+            if (!hasLeft) {
+               hornToDrop = DATA_HAS_RIGHT_HORN;
+            } else if (!hasRight) {
+               hornToDrop = DATA_HAS_LEFT_HORN;
+            } else {
+               hornToDrop = this.random.nextBoolean() ? DATA_HAS_LEFT_HORN : DATA_HAS_RIGHT_HORN;
+            }
+
+            this.entityData.set(hornToDrop, false);
+            Vec3 bodyPosition = this.position();
+            ItemStack item = this.createHorn();
+            double deltaX = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
+            double deltaY = (double)Mth.randomBetween(this.random, 0.3F, 0.7F);
+            double deltaZ = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
+            ItemEntity itemEntity = new ItemEntity(this.level(), bodyPosition.x(), bodyPosition.y(), bodyPosition.z(), item, deltaX, deltaY, deltaZ);
+            this.level().addFreshEntity(itemEntity);
+            return true;
          }
-
-         this.entityData.set(hornToDrop, false);
-         Vec3 bodyPosition = this.position();
-         ItemStack item = this.createHorn();
-         double deltaX = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
-         double deltaY = (double)Mth.randomBetween(this.random, 0.3F, 0.7F);
-         double deltaZ = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
-         ItemEntity itemEntity = new ItemEntity(this.level(), bodyPosition.x(), bodyPosition.y(), bodyPosition.z(), item, deltaX, deltaY, deltaZ);
-         this.level().addFreshEntity(itemEntity);
-         return true;
       }
-   }
-
-   public void addHorns() {
-      this.entityData.set(DATA_HAS_LEFT_HORN, true);
-      this.entityData.set(DATA_HAS_RIGHT_HORN, true);
-   }
-
-   public void removeHorns() {
-      this.entityData.set(DATA_HAS_LEFT_HORN, false);
-      this.entityData.set(DATA_HAS_RIGHT_HORN, false);
    }
 
    public boolean isScreamingGoat() {

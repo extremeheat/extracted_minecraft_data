@@ -13,9 +13,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
@@ -25,6 +27,7 @@ import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryMap;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemorySlot;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
@@ -34,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Brain<E extends LivingEntity> {
    private static final int SCHEDULE_UPDATE_DELAY = 20;
-   private final Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memories = Maps.newHashMap();
+   private final Map<MemoryModuleType<?>, MemorySlot<?>> memories = Maps.newHashMap();
    private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = Maps.newLinkedHashMap();
    private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
    private @Nullable EnvironmentAttribute<Activity> schedule;
@@ -60,22 +63,22 @@ public class Brain<E extends LivingEntity> {
    }
 
    @VisibleForTesting
-   protected Brain(final Collection<? extends MemoryModuleType<?>> memoryTypes, final Collection<? extends SensorType<? extends Sensor<? super E>>> sensorTypes, final List<ActivityData<E>> activities, final MemoryMap memories) {
+   protected Brain(final Collection<? extends MemoryModuleType<?>> memoryTypes, final Collection<? extends SensorType<? extends Sensor<? super E>>> sensorTypes, final List<ActivityData<E>> activities, final MemoryMap memories, final RandomSource randomSource) {
       super();
       this.defaultActivity = Activity.IDLE;
       this.lastScheduleUpdate = -9999L;
 
       for(MemoryModuleType<?> memoryType : memoryTypes) {
-         this.memories.put(memoryType, Optional.empty());
+         this.registerMemory(memoryType);
       }
 
       for(SensorType<? extends Sensor<? super E>> sensorType : sensorTypes) {
-         this.sensors.put(sensorType, sensorType.create());
-      }
+         Sensor<? super E> newSensor = sensorType.create();
+         newSensor.randomlyDelayStart(randomSource);
+         this.sensors.put(sensorType, newSensor);
 
-      for(Sensor<? super E> sensor : this.sensors.values()) {
-         for(MemoryModuleType<?> type : sensor.requires()) {
-            this.memories.put(type, Optional.empty());
+         for(MemoryModuleType<?> type : newSensor.requires()) {
+            this.registerMemory(type);
          }
       }
 
@@ -91,6 +94,10 @@ public class Brain<E extends LivingEntity> {
       this.useDefaultActivity();
    }
 
+   private void registerMemory(final MemoryModuleType<?> memoryType) {
+      this.memories.putIfAbsent(memoryType, MemorySlot.create());
+   }
+
    public Brain() {
       super();
       this.defaultActivity = Activity.IDLE;
@@ -100,7 +107,43 @@ public class Brain<E extends LivingEntity> {
    }
 
    public Packed pack() {
-      return new Packed(MemoryMap.of(this.memories.entrySet().stream().filter((entry) -> ((MemoryModuleType)entry.getKey()).getCodec().isPresent()).flatMap((entry) -> ((Optional)entry.getValue()).map((value) -> MemoryMap.Value.createUnchecked((MemoryModuleType)entry.getKey(), value)).stream())));
+      final MemoryMap.Builder builder = new MemoryMap.Builder();
+      this.forEach(new Visitor() {
+         {
+            Objects.requireNonNull(Brain.this);
+         }
+
+         public <U> void acceptEmpty(final MemoryModuleType<U> type) {
+         }
+
+         public <U> void accept(final MemoryModuleType<U> type, final U value, final long timeToLive) {
+            if (type.canSerialize()) {
+               builder.add(type, ExpirableValue.of(value, timeToLive));
+            }
+
+         }
+
+         public <U> void accept(final MemoryModuleType<U> type, final U value) {
+            if (type.canSerialize()) {
+               builder.add(type, ExpirableValue.of(value));
+            }
+
+         }
+      });
+      return new Packed(builder.build());
+   }
+
+   private <T> @Nullable MemorySlot<T> getMemorySlotIfPresent(final MemoryModuleType<T> memoryType) {
+      return (MemorySlot)this.memories.get(memoryType);
+   }
+
+   private <T> MemorySlot<T> getMemorySlot(final MemoryModuleType<T> memoryType) {
+      MemorySlot<T> result = this.<T>getMemorySlotIfPresent(memoryType);
+      if (result == null) {
+         throw new IllegalStateException("Unregistered memory fetched: " + String.valueOf(memoryType));
+      } else {
+         return result;
+      }
    }
 
    public boolean hasMemoryValue(final MemoryModuleType<?> type) {
@@ -108,76 +151,103 @@ public class Brain<E extends LivingEntity> {
    }
 
    public void clearMemories() {
-      this.memories.keySet().forEach((key) -> this.memories.put(key, Optional.empty()));
+      this.memories.values().forEach(MemorySlot::clear);
    }
 
    public <U> void eraseMemory(final MemoryModuleType<U> type) {
-      this.setMemory(type, Optional.empty());
+      MemorySlot<U> slot = this.<U>getMemorySlotIfPresent(type);
+      if (slot != null) {
+         slot.clear();
+      }
+
    }
 
    public <U> void setMemory(final MemoryModuleType<U> type, final @Nullable U value) {
-      this.setMemory(type, Optional.ofNullable(value));
+      this.setMemoryInternal(type, value);
    }
 
    public <U> void setMemoryWithExpiry(final MemoryModuleType<U> type, final U value, final long timeToLive) {
-      this.setMemoryInternal(type, Optional.of(ExpirableValue.of(value, timeToLive)));
+      this.setMemoryInternal(type, value, timeToLive);
    }
 
    public <U> void setMemory(final MemoryModuleType<U> type, final Optional<? extends U> optionalValue) {
-      this.setMemoryInternal(type, optionalValue.map(ExpirableValue::of));
+      this.setMemoryInternal(type, optionalValue.orElse((Object)null));
    }
 
-   private <U> void setMemoryInternal(final MemoryModuleType<U> type, final Optional<? extends ExpirableValue<?>> optionalExpirableValue) {
-      if (this.memories.containsKey(type)) {
-         if (optionalExpirableValue.isPresent() && this.isEmptyCollection(((ExpirableValue)optionalExpirableValue.get()).getValue())) {
-            this.eraseMemory(type);
+   private <U> void setMemoryInternal(final MemoryMap.Value<U> value) {
+      ExpirableValue<U> expirableValue = value.value();
+      if (expirableValue.timeToLive().isPresent()) {
+         this.setMemoryInternal(value.type(), expirableValue.value(), (Long)expirableValue.timeToLive().get());
+      } else {
+         this.setMemoryInternal(value.type(), expirableValue.value());
+      }
+
+   }
+
+   private <U> void setMemoryInternal(final MemoryModuleType<U> type, U value, final long tileToLive) {
+      MemorySlot<U> slot = this.<U>getMemorySlotIfPresent(type);
+      if (slot != null) {
+         if (isEmptyCollection(value)) {
+            value = null;
+         }
+
+         if (value == null) {
+            slot.clear();
          } else {
-            this.memories.put(type, optionalExpirableValue);
+            slot.set(value, tileToLive);
          }
       }
 
    }
 
-   private <U> void setMemoryInternal(final MemoryMap.Value<U> value) {
-      this.setMemoryInternal(value.type(), Optional.of(value.value()));
+   private <U> void setMemoryInternal(final MemoryModuleType<U> type, @Nullable U value) {
+      MemorySlot<U> slot = this.<U>getMemorySlotIfPresent(type);
+      if (slot != null) {
+         if (value != null && isEmptyCollection(value)) {
+            value = null;
+         }
+
+         if (value == null) {
+            slot.clear();
+         } else {
+            slot.set(value);
+         }
+      }
+
    }
 
    public <U> Optional<U> getMemory(final MemoryModuleType<U> type) {
-      Optional<? extends ExpirableValue<?>> expirableValue = (Optional)this.memories.get(type);
-      if (expirableValue == null) {
-         throw new IllegalStateException("Unregistered memory fetched: " + String.valueOf(type));
-      } else {
-         return expirableValue.map(ExpirableValue::getValue);
-      }
+      return Optional.ofNullable(this.getMemorySlot(type).value());
    }
 
    public <U> @Nullable Optional<U> getMemoryInternal(final MemoryModuleType<U> type) {
-      Optional<? extends ExpirableValue<?>> expirableValue = (Optional)this.memories.get(type);
-      return expirableValue == null ? null : expirableValue.map(ExpirableValue::getValue);
+      MemorySlot<U> slot = this.<U>getMemorySlotIfPresent(type);
+      return slot == null ? null : Optional.ofNullable(slot.value());
    }
 
    public <U> long getTimeUntilExpiry(final MemoryModuleType<U> type) {
-      Optional<? extends ExpirableValue<?>> memory = (Optional)this.memories.get(type);
-      return (Long)memory.map(ExpirableValue::getTimeToLive).orElse(0L);
+      return this.getMemorySlot(type).timeToLive();
    }
 
-   /** @deprecated */
-   @Deprecated
-   @VisibleForDebug
-   public Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> getMemories() {
-      return this.memories;
+   public void forEach(final Visitor visitor) {
+      this.memories.forEach((memoryModuleType, slot) -> callVisitor(visitor, memoryModuleType, slot));
+   }
+
+   private static <U> void callVisitor(final Visitor visitor, final MemoryModuleType<U> memoryModuleType, final MemorySlot<?> slot) {
+      slot.visit(memoryModuleType, visitor);
    }
 
    public <U> boolean isMemoryValue(final MemoryModuleType<U> memoryType, final U value) {
-      return !this.hasMemoryValue(memoryType) ? false : this.getMemory(memoryType).filter((memory) -> memory.equals(value)).isPresent();
+      MemorySlot<U> slot = this.<U>getMemorySlotIfPresent(memoryType);
+      return slot != null && Objects.equals(value, slot.value());
    }
 
    public boolean checkMemory(final MemoryModuleType<?> type, final MemoryStatus status) {
-      Optional<? extends ExpirableValue<?>> optionalExpirableValue = (Optional)this.memories.get(type);
-      if (optionalExpirableValue == null) {
+      MemorySlot<?> slot = this.getMemorySlotIfPresent(type);
+      if (slot == null) {
          return false;
       } else {
-         return status == MemoryStatus.REGISTERED || status == MemoryStatus.VALUE_PRESENT && optionalExpirableValue.isPresent() || status == MemoryStatus.VALUE_ABSENT && optionalExpirableValue.isEmpty();
+         return status == MemoryStatus.REGISTERED || status == MemoryStatus.VALUE_PRESENT && slot.hasValue() || status == MemoryStatus.VALUE_ABSENT && !slot.hasValue();
       }
    }
 
@@ -299,9 +369,7 @@ public class Brain<E extends LivingEntity> {
          BehaviorControl<? super E> behavior = (BehaviorControl)pair.getSecond();
 
          for(MemoryModuleType<?> requiredMemory : behavior.getRequiredMemories()) {
-            if (!this.memories.containsKey(requiredMemory)) {
-               this.memories.put(requiredMemory, Optional.empty());
-            }
+            this.registerMemory(requiredMemory);
          }
 
          ((Set)((Map)this.availableBehaviorsByPriority.computeIfAbsent((Integer)pair.getFirst(), (key) -> Maps.newHashMap())).computeIfAbsent(activity, (key) -> Sets.newLinkedHashSet())).add(behavior);
@@ -333,17 +401,7 @@ public class Brain<E extends LivingEntity> {
    }
 
    private void forgetOutdatedMemories() {
-      for(Map.Entry<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> entry : this.memories.entrySet()) {
-         if (((Optional)entry.getValue()).isPresent()) {
-            ExpirableValue<?> memory = (ExpirableValue)((Optional)entry.getValue()).get();
-            if (memory.hasExpired()) {
-               this.eraseMemory((MemoryModuleType)entry.getKey());
-            }
-
-            memory.tick();
-         }
-      }
-
+      this.memories.values().forEach(MemorySlot::tick);
    }
 
    public void stopAll(final ServerLevel level, final E body) {
@@ -398,8 +456,17 @@ public class Brain<E extends LivingEntity> {
       }
    }
 
-   private boolean isEmptyCollection(final Object object) {
-      return object instanceof Collection && ((Collection)object).isEmpty();
+   private static boolean isEmptyCollection(final Object object) {
+      boolean var10000;
+      if (object instanceof Collection<?> collection) {
+         if (collection.isEmpty()) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    public boolean isBrainDead() {
@@ -420,7 +487,7 @@ public class Brain<E extends LivingEntity> {
 
       public Brain<E> makeBrain(final E body, final Packed packed) {
          List<ActivityData<E>> activities = this.activities.createActivities(body);
-         return new Brain<E>(this.memoryTypes, this.sensorTypes, activities, packed.memories);
+         return new Brain<E>(this.memoryTypes, this.sensorTypes, activities, packed.memories, body.getRandom());
       }
    }
 
@@ -441,5 +508,13 @@ public class Brain<E extends LivingEntity> {
    @FunctionalInterface
    public interface ActivitySupplier<E extends LivingEntity> {
       List<ActivityData<E>> createActivities(E body);
+   }
+
+   public interface Visitor {
+      <U> void acceptEmpty(MemoryModuleType<U> type);
+
+      <U> void accept(MemoryModuleType<U> type, U value);
+
+      <U> void accept(MemoryModuleType<U> type, U value, long timeToLive);
    }
 }

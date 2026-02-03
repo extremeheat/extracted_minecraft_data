@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,14 +32,14 @@ public abstract class TreeDecorator {
    }
 
    public static final class Context {
-      private final LevelSimulatedReader level;
+      private final WorldGenLevel level;
       private final BiConsumer<BlockPos, BlockState> decorationSetter;
       private final RandomSource random;
       private final ObjectArrayList<BlockPos> logs;
       private final ObjectArrayList<BlockPos> leaves;
       private final ObjectArrayList<BlockPos> roots;
 
-      public Context(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> decorationSetter, final RandomSource random, final Set<BlockPos> trunkSet, final Set<BlockPos> foliageSet, final Set<BlockPos> rootSet) {
+      public Context(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> decorationSetter, final RandomSource random, final Set<BlockPos> trunkSet, final Set<BlockPos> foliageSet, final Set<BlockPos> rootSet) {
          super();
          this.level = level;
          this.decorationSetter = decorationSetter;
@@ -68,7 +68,7 @@ public abstract class TreeDecorator {
          return this.level.isStateAtPosition(pos, predicate);
       }
 
-      public LevelSimulatedReader level() {
+      public WorldGenLevel level() {
          return this.level;
       }
 

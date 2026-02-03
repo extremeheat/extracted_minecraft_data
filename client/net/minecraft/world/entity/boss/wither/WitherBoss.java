@@ -20,6 +20,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -78,7 +79,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
    public WitherBoss(final EntityType<? extends WitherBoss> type, final Level level) {
       super(type, level);
-      this.bossEvent = (ServerBossEvent)(new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS)).setDarkenScreen(true);
+      this.bossEvent = (ServerBossEvent)Util.make(new ServerBossEvent(Mth.createInsecureUUID(this.random), this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS), (e) -> e.setDarkenScreen(true));
       this.moveControl = new FlyingMoveControl(this, 10, false);
       this.setHealth(this.getMaxHealth());
       this.xpReward = 50;

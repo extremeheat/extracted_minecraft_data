@@ -32,7 +32,7 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
 
    public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
       positionModel(poseStack);
-      submitNodeCollector.submitModel(this.model, Direction.SOUTH, poseStack, RenderTypes.entityCutoutNoCull(this.texture), lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, Direction.SOUTH, poseStack, RenderTypes.entityCutout(this.texture), lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

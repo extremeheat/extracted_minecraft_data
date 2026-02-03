@@ -100,10 +100,10 @@ public class Raid {
    private int raidOmenLevel;
    private boolean active;
    private int groupsSpawned;
-   private final ServerBossEvent raidEvent;
    private int postRaidTicks;
    private int raidCooldownTicks;
-   private final RandomSource random;
+   private final RandomSource random = RandomSource.create();
+   private final ServerBossEvent raidEvent;
    private final int numGroups;
    private RaidStatus status;
    private int celebrationTicks;
@@ -111,8 +111,7 @@ public class Raid {
 
    public Raid(final BlockPos center, final Difficulty difficulty) {
       super();
-      this.raidEvent = new ServerBossEvent(RAID_NAME_COMPONENT, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
-      this.random = RandomSource.create();
+      this.raidEvent = new ServerBossEvent(Mth.createInsecureUUID(this.random), RAID_NAME_COMPONENT, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
       this.waveSpawnPos = Optional.empty();
       this.active = true;
       this.raidCooldownTicks = 300;
@@ -124,8 +123,7 @@ public class Raid {
 
    private Raid(final boolean started, final boolean active, final long ticksActive, final int raidOmenLevel, final int groupsSpawned, final int raidCooldownTicks, final int postRaidTicks, final float totalHealth, final int numGroups, final RaidStatus status, final BlockPos center, final Set<UUID> heroesOfTheVillage) {
       super();
-      this.raidEvent = new ServerBossEvent(RAID_NAME_COMPONENT, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
-      this.random = RandomSource.create();
+      this.raidEvent = new ServerBossEvent(Mth.createInsecureUUID(this.random), RAID_NAME_COMPONENT, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
       this.waveSpawnPos = Optional.empty();
       this.started = started;
       this.active = active;

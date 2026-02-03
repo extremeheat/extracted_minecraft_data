@@ -75,7 +75,7 @@ public class FilePackResources extends AbstractPackResources {
                if (Identifier.isValidNamespace(namespace)) {
                   namespaces.add(namespace);
                } else {
-                  LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", namespace, this.zipFileAccess.file);
+                  LOGGER.warn("Non {} character in namespace {} in pack {}, ignoring", new Object[]{"[a-z0-9_.-]", namespace, this.zipFileAccess.file});
                }
             }
          }

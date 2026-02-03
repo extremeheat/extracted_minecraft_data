@@ -5,6 +5,9 @@ import java.util.List;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -41,11 +44,13 @@ import org.jspecify.annotations.Nullable;
 
 public class Tadpole extends AbstractFish {
    private static final int DEFAULT_AGE = 0;
+   private static final EntityDataAccessor<Boolean> AGE_LOCKED;
    @VisibleForTesting
-   public static int ticksToBeFrog = Math.abs(-24000);
+   public static int ticksToBeFrog;
    public static final float HITBOX_WIDTH = 0.4F;
    public static final float HITBOX_HEIGHT = 0.3F;
    private int age = 0;
+   protected int ageLockParticleTimer = 0;
    private static final Brain.Provider<Tadpole> BRAIN_PROVIDER;
 
    public Tadpole(final EntityType<? extends AbstractFish> type, final Level level) {
@@ -87,20 +92,36 @@ public class Tadpole extends AbstractFish {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide()) {
+      if (!this.level().isClientSide() && !this.isAgeLocked()) {
          this.setAge(this.age + 1);
       }
 
+      this.ageLockParticleTimer = AgeableMob.makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer);
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
       output.putInt("Age", this.age);
+      output.putBoolean("AgeLocked", this.isAgeLocked());
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       this.setAge(input.getIntOr("Age", 0));
+      this.setAgeLocked(input.getBooleanOr("AgeLocked", false));
+   }
+
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(AGE_LOCKED, false);
+   }
+
+   protected void setAgeLocked(final boolean locked) {
+      this.entityData.set(AGE_LOCKED, locked);
+   }
+
+   public boolean isAgeLocked() {
+      return (Boolean)this.entityData.get(AGE_LOCKED);
    }
 
    protected @Nullable SoundEvent getAmbientSound() {
@@ -117,12 +138,21 @@ public class Tadpole extends AbstractFish {
 
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
-      if (this.isFood(itemStack)) {
+      if (this.isFood(itemStack) && !this.isAgeLocked()) {
          this.feed(player, itemStack);
+         return InteractionResult.SUCCESS;
+      } else if (AgeableMob.canUseGoldenDandelion(itemStack, true, this.ageLockParticleTimer, this)) {
+         AgeableMob.setAgeLocked(this, this::isAgeLocked, player, itemStack, (mob) -> this.setAgeLockedData());
          return InteractionResult.SUCCESS;
       } else {
          return (InteractionResult)Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
       }
+   }
+
+   private void setAgeLockedData() {
+      this.setAgeLocked(!this.isAgeLocked());
+      this.setAge(0);
+      this.ageLockParticleTimer = 40;
    }
 
    public boolean fromBucket() {
@@ -134,12 +164,16 @@ public class Tadpole extends AbstractFish {
 
    public void saveToBucketTag(final ItemStack bucket) {
       Bucketable.saveDefaultDataToBucketTag(this, bucket);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, (tag) -> tag.putInt("Age", this.getAge()));
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, (tag) -> {
+         tag.putInt("Age", this.getAge());
+         tag.putBoolean("AgeLocked", this.isAgeLocked());
+      });
    }
 
    public void loadFromBucketTag(final CompoundTag tag) {
       Bucketable.loadDefaultDataFromBucketTag(this, tag);
       tag.getInt("Age").ifPresent(this::setAge);
+      this.setAgeLocked(tag.getBooleanOr("AgeLocked", false));
    }
 
    public ItemStack getBucketItemStack() {
@@ -202,6 +236,8 @@ public class Tadpole extends AbstractFish {
    }
 
    static {
+      AGE_LOCKED = SynchedEntityData.<Boolean>defineId(Tadpole.class, EntityDataSerializers.BOOLEAN);
+      ticksToBeFrog = Math.abs(-24000);
       BRAIN_PROVIDER = Brain.<Tadpole>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.HURT_BY, SensorType.FROG_TEMPTATIONS), (var0) -> TadpoleAi.getActivities());
    }
 }

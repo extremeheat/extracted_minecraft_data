@@ -18,7 +18,7 @@ public class ShulkerModel extends EntityModel<ShulkerRenderState> {
    private final ModelPart head;
 
    public ShulkerModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutoutNoCullZOffset);
+      super(root, RenderTypes::entityCutoutZOffset);
       this.lid = root.getChild("lid");
       this.head = root.getChild("head");
    }

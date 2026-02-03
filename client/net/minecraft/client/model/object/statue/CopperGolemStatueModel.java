@@ -7,7 +7,7 @@ import net.minecraft.core.Direction;
 
 public class CopperGolemStatueModel extends Model<Direction> {
    public CopperGolemStatueModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutoutNoCull);
+      super(root, RenderTypes::entityCutout);
    }
 
    public void setupAnim(final Direction direction) {

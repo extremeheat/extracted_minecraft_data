@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -31,11 +31,11 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.FANCY_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
       int assumedFoliageHeight = 5;
       int height = treeHeight + 2;
       int trunkHeight = Mth.floor((double)height * 0.618);
-      setDirtAt(level, trunkSetter, random, origin.below(), config);
+      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), config);
       double foliageDensity = 1.0;
       int clustersPerY = Math.min(1, Mth.floor(1.382 + Math.pow(1.0 * (double)height / 13.0, 2.0)));
       int trunkTop = origin.getY() + trunkHeight;
@@ -81,7 +81,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       return attachments;
    }
 
-   private boolean makeLimb(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos startPos, final BlockPos endPos, final boolean doPlace, final TreeConfiguration config) {
+   private boolean makeLimb(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos startPos, final BlockPos endPos, final boolean doPlace, final TreeConfiguration config) {
       if (!doPlace && Objects.equals(startPos, endPos)) {
          return true;
       } else {
@@ -131,7 +131,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       return (double)localY >= (double)height * 0.2;
    }
 
-   private void makeBranches(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int height, final BlockPos origin, final List<FoliageCoords> foliageCoords, final TreeConfiguration config) {
+   private void makeBranches(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int height, final BlockPos origin, final List<FoliageCoords> foliageCoords, final TreeConfiguration config) {
       for(FoliageCoords endCoord : foliageCoords) {
          int branchBase = endCoord.getBranchBase();
          BlockPos baseCoord = new BlockPos(origin.getX(), branchBase, origin.getZ());

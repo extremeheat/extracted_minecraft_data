@@ -139,7 +139,7 @@ public class AllayAi {
    }
 
    private static void onItemThrown(final ServerLevel level, final Allay thrower, final ItemStack item, final BlockPos targetPos) {
-      getLikedPlayer(thrower).ifPresent((player) -> CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.trigger(player, targetPos, item));
+      getLikedPlayer(thrower).ifPresent((player) -> CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.trigger(player, targetPos.below(), item));
       if (level.getGameTime() % 7L == 0L && level.getRandom().nextDouble() < 0.9) {
          float pitch = (Float)Util.getRandom(Allay.THROW_SOUND_PITCHES, level.getRandom());
          level.playSound((Entity)null, thrower, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, pitch);

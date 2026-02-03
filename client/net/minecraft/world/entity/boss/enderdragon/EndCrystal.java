@@ -15,7 +15,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
@@ -107,7 +107,7 @@ public class EndCrystal extends Entity {
    }
 
    private void onDestroyedBy(final ServerLevel level, final DamageSource source) {
-      EndDragonFight fight = level.getDragonFight();
+      EnderDragonFight fight = level.getDragonFight();
       if (fight != null) {
          fight.onCrystalDestroyed(this, source);
       }

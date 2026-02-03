@@ -1,7 +1,6 @@
 package net.minecraft.gametest.framework;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -31,11 +30,12 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class StructureUtils {
    public static final int DEFAULT_Y_SEARCH_RADIUS = 10;
-   public static final String DEFAULT_TEST_STRUCTURES_DIR = "Minecraft.Server/src/test/convertables/data";
-   public static Path testStructuresDir = Paths.get("Minecraft.Server/src/test/convertables/data");
+   public static @Nullable Path testStructuresTargetDir;
+   public static @Nullable Path testStructuresSourceDir;
 
    public StructureUtils() {
       super();

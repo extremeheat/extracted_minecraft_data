@@ -118,7 +118,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
          }
 
          void apply(final ServerLevel level) {
-            level.setWeatherParameters(this.clearTime, this.rainTime, this.raining, this.thundering);
+            level.getServer().setWeatherParameters(this.clearTime, this.rainTime, this.raining, this.thundering);
          }
 
          public String getSerializedName() {

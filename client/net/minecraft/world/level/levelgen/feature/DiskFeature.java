@@ -43,13 +43,15 @@ public class DiskFeature extends Feature<DiskConfiguration> {
          pos.setY(y);
          if (config.target().test(level, pos)) {
             BlockState state = config.stateProvider().getState(level, random, pos);
-            level.setBlock(pos, state, 2);
-            if (!placedAbove) {
-               this.markAboveForPostProcessing(level, pos);
-            }
+            if (state != null) {
+               level.setBlock(pos, state, 2);
+               if (!placedAbove) {
+                  this.markAboveForPostProcessing(level, pos);
+               }
 
-            placedAny = true;
-            placedAbove = true;
+               placedAny = true;
+               placedAbove = true;
+            }
          } else {
             placedAbove = false;
          }

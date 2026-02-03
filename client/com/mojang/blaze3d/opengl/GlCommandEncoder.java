@@ -11,6 +11,7 @@ import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
 import com.mojang.blaze3d.systems.GpuQuery;
 import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -53,11 +54,11 @@ class GlCommandEncoder implements CommandEncoderBackend {
       this.drawFbo = device.directStateAccess().createFrameBufferObject();
    }
 
-   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
+   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
       return this.createRenderPass(label, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
    }
 
-   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
+   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
       this.inRenderPass = true;
       this.device.debugLabels().pushDebugGroup(label);
       int fbo = ((GlTextureView)colorTexture).getFbo(this.device.directStateAccess(), depthTexture == null ? null : depthTexture.texture());
@@ -83,7 +84,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
 
       GlStateManager._viewport(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0));
       this.lastPipeline = null;
-      return new RenderPass(new GlRenderPass(this, this.device, depthTexture != null), this.device);
+      return new GlRenderPass(this, this.device, depthTexture != null);
    }
 
    public boolean isInRenderPass() {

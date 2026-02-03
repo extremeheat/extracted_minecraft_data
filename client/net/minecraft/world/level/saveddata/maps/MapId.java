@@ -24,7 +24,7 @@ public record MapId(int id) implements TooltipProvider {
    }
 
    public String key() {
-      return "map_" + this.id;
+      return "maps/" + this.id;
    }
 
    public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {

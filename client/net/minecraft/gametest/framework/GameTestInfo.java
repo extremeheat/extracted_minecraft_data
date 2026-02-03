@@ -93,18 +93,19 @@ public class GameTestInfo {
 
          if (this.error != null) {
             this.finish();
-         }
-
-         if (!this.chunksLoaded) {
-            Stream var10000 = this.testInstanceBlockEntity.getStructureBoundingBox().intersectingChunks();
-            ServerLevel var10001 = this.level;
-            Objects.requireNonNull(var10001);
-            if (!var10000.allMatch(var10001::areEntitiesActuallyLoadedAndTicking)) {
-               return;
+         } else {
+            if (!this.chunksLoaded) {
+               Stream var10000 = this.testInstanceBlockEntity.getStructureBoundingBox().intersectingChunks();
+               ServerLevel var10001 = this.level;
+               Objects.requireNonNull(var10001);
+               if (!var10000.allMatch(var10001::areEntitiesActuallyLoadedAndTicking)) {
+                  return;
+               }
             }
+
+            this.chunksLoaded = true;
          }
 
-         this.chunksLoaded = true;
          this.tickInternal();
          if (this.isDone()) {
             if (this.error != null) {

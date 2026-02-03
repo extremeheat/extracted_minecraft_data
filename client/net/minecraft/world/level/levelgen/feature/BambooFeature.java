@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.BambooStalkBlock;
@@ -42,7 +43,7 @@ public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
                      int zd = zz - origin.getZ();
                      if (xd * xd + zd * zd <= r * r) {
                         podzolPos.set(xx, level.getHeight(Heightmap.Types.WORLD_SURFACE, xx, zz) - 1, zz);
-                        if (isDirt(level.getBlockState(podzolPos))) {
+                        if (level.getBlockState(podzolPos).is(BlockTags.BENEATH_BAMBOO_PODZOL_REPLACEABLE)) {
                            level.setBlock(podzolPos, Blocks.PODZOL.defaultBlockState(), 2);
                         }
                      }

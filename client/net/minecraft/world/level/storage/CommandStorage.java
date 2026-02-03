@@ -14,13 +14,13 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import org.jspecify.annotations.Nullable;
 
 public class CommandStorage {
-   private static final String ID_PREFIX = "command_storage_";
+   private static final String COMMAND_STORAGE = "command_storage";
    private final Map<String, Container> namespaces = new HashMap();
-   private final DimensionDataStorage storage;
+   private final SavedDataStorage savedDataStorage;
 
-   public CommandStorage(final DimensionDataStorage storage) {
+   public CommandStorage(final SavedDataStorage savedDataStorage) {
       super();
-      this.storage = storage;
+      this.savedDataStorage = savedDataStorage;
    }
 
    public CompoundTag get(final Identifier id) {
@@ -33,7 +33,7 @@ public class CommandStorage {
       if (container != null) {
          return container;
       } else {
-         Container newContainer = (Container)this.storage.get(CommandStorage.Container.type(namespace));
+         Container newContainer = (Container)this.savedDataStorage.get(CommandStorage.Container.type(namespace));
          if (newContainer != null) {
             this.namespaces.put(namespace, newContainer);
          }
@@ -47,7 +47,7 @@ public class CommandStorage {
       if (container != null) {
          return container;
       } else {
-         Container newContainer = (Container)this.storage.computeIfAbsent(CommandStorage.Container.type(namespace));
+         Container newContainer = (Container)this.savedDataStorage.computeIfAbsent(CommandStorage.Container.type(namespace));
          this.namespaces.put(namespace, newContainer);
          return newContainer;
       }
@@ -59,10 +59,6 @@ public class CommandStorage {
 
    public Stream<Identifier> keys() {
       return this.namespaces.entrySet().stream().flatMap((e) -> ((Container)e.getValue()).getKeys((String)e.getKey()));
-   }
-
-   private static String createId(final String namespace) {
-      return "command_storage_" + namespace;
    }
 
    private static class Container extends SavedData {
@@ -79,7 +75,7 @@ public class CommandStorage {
       }
 
       public static SavedDataType<Container> type(final String namespace) {
-         return new SavedDataType<Container>(CommandStorage.createId(namespace), Container::new, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
+         return new SavedDataType<Container>(Identifier.fromNamespaceAndPath(namespace, "command_storage"), Container::new, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
       }
 
       public CompoundTag get(final String id) {

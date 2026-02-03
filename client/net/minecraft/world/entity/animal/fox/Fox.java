@@ -107,6 +107,7 @@ import org.jspecify.annotations.Nullable;
 public class Fox extends Animal {
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID;
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
+   private static final float BABY_SCALE = 0.6F;
    private static final int FLAG_SITTING = 1;
    public static final int FLAG_CROUCHING = 4;
    public static final int FLAG_INTERESTED = 8;
@@ -133,6 +134,7 @@ public class Fox extends Animal {
    private float interestedAngleO;
    private float crouchAmount;
    private float crouchAmountO;
+   private static final float MAX_CROUCH_AMOUNT = 5.0F;
    private int ticksSinceEaten;
 
    public Fox(final EntityType<? extends Fox> type, final Level level) {
@@ -523,8 +525,8 @@ public class Fox extends Animal {
       this.crouchAmountO = this.crouchAmount;
       if (this.isCrouching()) {
          this.crouchAmount += 0.2F;
-         if (this.crouchAmount > 3.0F) {
-            this.crouchAmount = 3.0F;
+         if (this.crouchAmount > 5.0F) {
+            this.crouchAmount = 5.0F;
          }
       } else {
          this.crouchAmount = 0.0F;
@@ -549,7 +551,7 @@ public class Fox extends Animal {
    }
 
    public boolean isFullyCrouched() {
-      return this.crouchAmount == 3.0F;
+      return this.crouchAmount == 5.0F;
    }
 
    public void setIsCrouching(final boolean isCrouching) {
@@ -687,7 +689,7 @@ public class Fox extends Animal {
       };
       STALKABLE_PREY = (entity) -> entity instanceof Chicken || entity instanceof Rabbit;
       AVOID_PLAYERS = (entity) -> !entity.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity);
-      BABY_DIMENSIONS = EntityType.FOX.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
+      BABY_DIMENSIONS = EntityType.FOX.getDimensions().scale(0.6F).withEyeHeight(0.2975F);
       TRUSTED_LIST_CODEC = EntityReference.codec().listOf();
    }
 
@@ -1384,8 +1386,13 @@ public class Fox extends Animal {
                Fox.this.setXRot(Mth.rotLerp(0.2F, Fox.this.getXRot(), 0.0F));
             } else {
                double direction = movement.horizontalDistance();
-               double rotation = Math.signum(-movement.y) * Math.acos(direction / movement.length()) * 57.2957763671875;
-               Fox.this.setXRot((float)rotation);
+               float upwardsBias = Fox.this.jumping && movement.y > 0.0 ? 6.5F : 1.0F;
+               double biasedY = movement.y * (double)upwardsBias;
+               double len = Math.sqrt(direction * direction + biasedY * biasedY);
+               if (len > 9.999999747378752E-6) {
+                  double rotation = Math.signum(-biasedY) * Math.acos(direction / len) * 57.2957763671875;
+                  Fox.this.setXRot((float)rotation);
+               }
             }
          }
 

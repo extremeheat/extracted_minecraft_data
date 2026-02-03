@@ -123,7 +123,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    protected @Nullable RenderType getRenderType(final S state, final boolean isBodyVisible, final boolean forceTransparent, final boolean appearGlowing) {
       Identifier texture = this.getTextureLocation(state);
       if (forceTransparent) {
-         return RenderTypes.itemEntityTranslucentCull(texture);
+         return RenderTypes.entityTranslucentCullItemTarget(texture);
       } else if (isBodyVisible) {
          return this.model.renderType(texture);
       } else {

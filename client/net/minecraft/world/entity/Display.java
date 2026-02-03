@@ -512,9 +512,7 @@ public abstract class Display extends Entity {
       }
 
       protected void updateRenderSubState(final boolean shouldInterpolate, final float progress) {
-         ItemStack itemStack = this.getItemStack();
-         itemStack.setEntityRepresentation(this);
-         this.itemRenderState = new ItemRenderState(itemStack, this.getItemTransform());
+         this.itemRenderState = new ItemRenderState(this.getItemStack(), this.getItemTransform());
       }
 
       static {

@@ -357,14 +357,6 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.getEntityData().set(DATA_ITEM, itemStack);
    }
 
-   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
-      super.onSyncedDataUpdated(accessor);
-      if (DATA_ITEM.equals(accessor)) {
-         this.getItem().setEntityRepresentation(this);
-      }
-
-   }
-
    public void setTarget(final @Nullable UUID target) {
       this.target = target;
    }

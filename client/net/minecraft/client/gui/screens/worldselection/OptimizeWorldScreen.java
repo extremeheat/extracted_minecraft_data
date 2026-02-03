@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.worldselection;
 
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -21,6 +23,8 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -43,12 +47,19 @@ public class OptimizeWorldScreen extends Screen {
       try {
          WorldOpenFlows worldOpenFlows = minecraft.createWorldOpenFlows();
          PackRepository packRepository = ServerPacksSource.createPackRepository(levelSourceAccess);
+         Dynamic<?> unfixedDataTag = levelSourceAccess.getUnfixedDataTagWithFallback();
+         int dataVersion = NbtUtils.getDataVersion(unfixedDataTag);
+         if (DataFixers.getFileFixer().requiresFileFixing(dataVersion)) {
+            throw new IllegalStateException("Can't optimize world before file fixing; shouldn't be able to get here");
+         } else {
+            Dynamic<?> dataTag = DataFixTypes.LEVEL.updateToCurrentVersion(DataFixers.getDataFixer(), unfixedDataTag, dataVersion);
 
-         try (WorldStem worldStem = worldOpenFlows.loadWorldStem(levelSourceAccess.getDataTag(), false, packRepository)) {
-            WorldData worldData = worldStem.worldData();
-            RegistryAccess.Frozen registryAccess = worldStem.registries().compositeAccess();
-            levelSourceAccess.saveDataTag(registryAccess, worldData);
-            return new OptimizeWorldScreen(callback, dataFixer, levelSourceAccess, worldData, eraseCache, registryAccess);
+            try (WorldStem worldStem = worldOpenFlows.loadWorldStem(levelSourceAccess, dataTag, false, packRepository)) {
+               WorldData worldData = worldStem.worldDataAndGenSettings().data();
+               RegistryAccess.Frozen registryAccess = worldStem.registries().compositeAccess();
+               levelSourceAccess.saveDataTag(worldData);
+               return new OptimizeWorldScreen(callback, dataFixer, levelSourceAccess, worldData, eraseCache, registryAccess);
+            }
          }
       } catch (Exception e) {
          LOGGER.warn("Failed to load datapacks, can't optimize world", e);

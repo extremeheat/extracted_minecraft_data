@@ -49,7 +49,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
    private void findNewTarget(final ServerLevel level) {
       if (this.currentPath != null && this.currentPath.isDone()) {
          BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         int crystals = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
+         int crystals = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().aliveCrystals();
          if (this.dragon.getRandom().nextInt(crystals + 3) == 0) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.LANDING_APPROACH);
             return;
@@ -83,7 +83,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
             --targetNodeIndex;
          }
 
-         if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() >= 0) {
+         if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().aliveCrystals() >= 0) {
             targetNodeIndex %= 12;
             if (targetNodeIndex < 0) {
                targetNodeIndex += 12;

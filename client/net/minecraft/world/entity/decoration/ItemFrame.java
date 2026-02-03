@@ -255,7 +255,6 @@ public class ItemFrame extends HangingEntity {
          }
       }
 
-      itemStack.setEntityRepresentation((Entity)null);
    }
 
    public ItemStack getItem() {
@@ -308,10 +307,6 @@ public class ItemFrame extends HangingEntity {
    }
 
    private void onItemChanged(final ItemStack item) {
-      if (!item.isEmpty() && item.getFrame() != this) {
-         item.setEntityRepresentation(this);
-      }
-
       this.recalculateBoundingBox();
    }
 

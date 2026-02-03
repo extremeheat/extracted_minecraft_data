@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +19,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.gametest.framework.FailedTestTracker;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestInstance;
@@ -41,7 +39,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.FileUtil;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -52,11 +49,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.loader.TemplatePathFactory;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import org.slf4j.Logger;
 
 public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxRenderable, BeaconBeamOwner {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component INVALID_TEST_NAME = Component.translatable("test_instance_block.invalid_test");
    private static final List<BeaconBeamOwner.Section> BEAM_CLEARED = List.of();
    private static final List<BeaconBeamOwner.Section> BEAM_RUNNING = List.of(new BeaconBeamOwner.Section(ARGB.color(128, 128, 128)));
@@ -264,23 +265,32 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
    }
 
    public static boolean export(final ServerLevel level, final Identifier structureId, final Consumer<Component> feedbackOutput) {
-      Path outputDir = StructureUtils.testStructuresDir;
-      Path inputFile = level.getStructureManager().createAndValidatePathToGeneratedStructure(structureId, ".nbt");
-      Path outputFile = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, inputFile, structureId.getPath(), outputDir.resolve(structureId.getNamespace()).resolve("structure"));
-      if (outputFile == null) {
-         feedbackOutput.accept(Component.literal("Failed to export " + String.valueOf(inputFile)).withStyle(ChatFormatting.RED));
+      StructureTemplateManager structureManager = level.getStructureManager();
+      TemplatePathFactory testTemplatePathFactory = structureManager.testTemplates();
+      if (testTemplatePathFactory == null) {
+         feedbackOutput.accept(Component.literal("Test structure exporting is disabled").withStyle(ChatFormatting.RED));
          return true;
       } else {
-         try {
-            FileUtil.createDirectoriesSafe(outputFile.getParent());
-         } catch (IOException var7) {
-            feedbackOutput.accept(Component.literal("Could not create folder " + String.valueOf(outputFile.getParent())).withStyle(ChatFormatting.RED));
+         Optional<StructureTemplate> structureTemplate = structureManager.get(structureId);
+         if (structureTemplate.isEmpty()) {
+            feedbackOutput.accept(Component.literal("Could not find structure " + String.valueOf(structureId)).withStyle(ChatFormatting.RED));
             return true;
-         }
+         } else {
+            Path outputFile = testTemplatePathFactory.createAndValidatePathToStructure(structureId, StructureTemplateManager.RESOURCE_TEXT_STRUCTURE_LISTER);
 
-         String var10001 = String.valueOf(structureId);
-         feedbackOutput.accept(Component.literal("Exported " + var10001 + " to " + String.valueOf(outputFile.toAbsolutePath())));
-         return false;
+            try {
+               StructureTemplateManager.save(outputFile, (StructureTemplate)structureTemplate.get(), true);
+            } catch (Exception e) {
+               LOGGER.error("Failed to save structure file {} to {}", new Object[]{structureId, outputFile, e});
+               String var10001 = String.valueOf(structureId);
+               feedbackOutput.accept(Component.literal("Failed to save structure file " + var10001 + " to " + String.valueOf(outputFile)).withStyle(ChatFormatting.RED));
+               return true;
+            }
+
+            String var9 = String.valueOf(structureId);
+            feedbackOutput.accept(Component.literal("Exported " + var9 + " to " + String.valueOf(outputFile.toAbsolutePath())));
+            return false;
+         }
       }
    }
 

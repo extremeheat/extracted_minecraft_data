@@ -1,6 +1,8 @@
 package net.minecraft.world.entity;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -58,16 +60,28 @@ public abstract class AgeableMob extends PathfinderMob {
 
    protected InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       ItemStack itemInHand = player.getItemInHand(hand);
-      if (itemInHand.getItem() == Items.GOLDEN_DANDELION && this.isBaby() && this.ageLockParticleTimer == 0 && !this.is(EntityTypeTags.CANNOT_BE_AGE_LOCKED)) {
-         this.setAgeLocked(!this.isAgeLocked());
-         this.setAge(-24000);
-         this.ageLockParticleTimer = 40;
-         itemInHand.consume(1, player);
-         this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), this.isAgeLocked() ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS, 1.0F, 1.0F);
+      if (canUseGoldenDandelion(itemInHand, this.isBaby(), this.ageLockParticleTimer, this)) {
+         setAgeLocked(this, this::isAgeLocked, player, itemInHand, (mob) -> this.setAgeLockedData());
          return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(player, hand);
       }
+   }
+
+   public static boolean canUseGoldenDandelion(final ItemStack itemInHand, final boolean isBaby, final int cooldown, final Mob mob) {
+      return itemInHand.getItem() == Items.GOLDEN_DANDELION && isBaby && cooldown == 0 && !mob.is(EntityTypeTags.CANNOT_BE_AGE_LOCKED);
+   }
+
+   private void setAgeLockedData() {
+      this.setAgeLocked(!this.isAgeLocked());
+      this.setAge(-24000);
+      this.ageLockParticleTimer = 40;
+   }
+
+   public static void setAgeLocked(final Mob mob, final Supplier<Boolean> isAgedLocked, final Player player, final ItemStack itemInHand, final Consumer<Mob> setAgeLockData) {
+      setAgeLockData.accept(mob);
+      itemInHand.consume(1, player);
+      mob.level().playSound((Entity)null, (BlockPos)mob.blockPosition(), (Boolean)isAgedLocked.get() ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS, 1.0F, 1.0F);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -176,14 +190,19 @@ public abstract class AgeableMob extends PathfinderMob {
          }
       }
 
-      if (this.ageLockParticleTimer > 0) {
-         if (this.level().isClientSide() && this.ageLockParticleTimer % 4 == 0) {
-            this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
+      this.ageLockParticleTimer = makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer);
+   }
+
+   public static int makeAgeLockedParticle(final Level level, final Mob mob, int ageLockParticleTimer) {
+      if (ageLockParticleTimer > 0) {
+         if (level.isClientSide() && ageLockParticleTimer % 4 == 0) {
+            level.addParticle(ParticleTypes.HAPPY_VILLAGER, mob.getRandomX(1.0), mob.getRandomY() + 0.5, mob.getRandomZ(1.0), 0.0, 0.0, 0.0);
          }
 
-         --this.ageLockParticleTimer;
+         --ageLockParticleTimer;
       }
 
+      return ageLockParticleTimer;
    }
 
    protected void ageBoundaryReached() {

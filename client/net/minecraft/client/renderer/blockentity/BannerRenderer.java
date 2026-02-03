@@ -129,7 +129,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
 
    private static <S> void submitPatternLayer(final MaterialSet materials, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Model<S> model, final S state, final Material material, final DyeColor color, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
       int diffuseColor = color.getTextureDiffuseColor();
-      submitNodeCollector.submitModel(model, state, poseStack, material.renderType(RenderTypes::entityNoOutline), lightCoords, overlayCoords, diffuseColor, materials.get(material), 0, breakProgress);
+      submitNodeCollector.submitModel(model, state, poseStack, material.renderType((texture) -> RenderTypes.entityTranslucent(texture, false)), lightCoords, overlayCoords, diffuseColor, materials.get(material), 0, breakProgress);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

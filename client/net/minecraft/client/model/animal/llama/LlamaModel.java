@@ -1,7 +1,5 @@
 package net.minecraft.client.model.animal.llama;
 
-import java.util.Map;
-import java.util.function.UnaryOperator;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,13 +7,11 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.LlamaRenderState;
 import net.minecraft.util.Mth;
 
 public class LlamaModel extends EntityModel<LlamaRenderState> {
-   public static final MeshTransformer BABY_TRANSFORMER = LlamaModel::transformToBaby;
    private final ModelPart head;
    private final ModelPart rightHindLeg;
    private final ModelPart leftHindLeg;
@@ -50,32 +46,6 @@ public class LlamaModel extends EntityModel<LlamaRenderState> {
       root.addOrReplaceChild("right_front_leg", leg, PartPose.offset(-3.5F, 10.0F, -5.0F));
       root.addOrReplaceChild("left_front_leg", leg, PartPose.offset(3.5F, 10.0F, -5.0F));
       return LayerDefinition.create(mesh, 128, 64);
-   }
-
-   private static MeshDefinition transformToBaby(final MeshDefinition mesh) {
-      float scale = 2.0F;
-      float headScale = 0.7F;
-      float bodyScale = 1.1F;
-      UnaryOperator<PartPose> headTransform = (p) -> p.translated(0.0F, 21.0F, 3.52F).scaled(0.71428573F, 0.64935064F, 0.7936508F);
-      UnaryOperator<PartPose> bodyTransform = (p) -> p.translated(0.0F, 33.0F, 0.0F).scaled(0.625F, 0.45454544F, 0.45454544F);
-      UnaryOperator<PartPose> defaultTransform = (p) -> p.translated(0.0F, 33.0F, 0.0F).scaled(0.45454544F, 0.41322312F, 0.45454544F);
-      MeshDefinition babyMesh = new MeshDefinition();
-
-      for(Map.Entry<String, PartDefinition> entry : mesh.getRoot().getChildren()) {
-         String name = (String)entry.getKey();
-         PartDefinition part = (PartDefinition)entry.getValue();
-         UnaryOperator var10000;
-         switch (name) {
-            case "head" -> var10000 = headTransform;
-            case "body" -> var10000 = bodyTransform;
-            default -> var10000 = defaultTransform;
-         }
-
-         UnaryOperator<PartPose> transform = var10000;
-         babyMesh.getRoot().addOrReplaceChild(name, part.transformed(transform));
-      }
-
-      return babyMesh;
    }
 
    public void setupAnim(final LlamaRenderState state) {

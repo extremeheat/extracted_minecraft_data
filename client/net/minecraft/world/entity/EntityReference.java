@@ -15,6 +15,7 @@ import net.minecraft.world.level.entity.UUIDLookup;
 import net.minecraft.world.level.entity.UniquelyIdentifyable;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 public final class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
@@ -40,6 +41,7 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
       this.entity = Either.left(uuid);
    }
 
+   @Contract("!null -> !null; null -> null")
    public static <T extends UniquelyIdentifyable> @Nullable EntityReference<T> of(final @Nullable T entity) {
       return entity != null ? new EntityReference(entity) : null;
    }

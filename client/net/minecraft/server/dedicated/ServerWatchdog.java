@@ -45,7 +45,7 @@ public class ServerWatchdog implements Runnable {
             CrashReport report = createWatchdogCrashReport("Watching Server", this.server.getRunningThread().threadId());
             this.server.fillSystemReport(report.getSystemReport());
             CrashReportCategory serverStats = report.addCategory("Performance stats");
-            serverStats.setDetail("Random tick rate", (CrashReportDetail)(() -> this.server.getWorldData().getGameRules().getAsString(GameRules.RANDOM_TICK_SPEED)));
+            serverStats.setDetail("Random tick rate", (CrashReportDetail)(() -> this.server.getGameRules().getAsString(GameRules.RANDOM_TICK_SPEED)));
             serverStats.setDetail("Level stats", (CrashReportDetail)(() -> (String)Streams.stream(this.server.getAllLevels()).map((level) -> {
                   String var10000 = String.valueOf(level.dimension().identifier());
                   return var10000 + ": " + level.getWatchdogStats();

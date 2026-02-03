@@ -2,6 +2,7 @@ package net.minecraft.world.entity;
 
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -79,7 +80,7 @@ public interface NeutralMob {
          LivingEntity persistentTarget = EntityReference.getLivingEntity(persistentAngerTarget, level);
          if (persistentTarget instanceof Player) {
             Player player = (Player)persistentTarget;
-            if (player.isCreative() || player.isSpectator()) {
+            if (player.isCreative() || player.isSpectator() || level.getDifficulty() == Difficulty.PEACEFUL) {
                this.stopBeingAngry();
             }
          }
@@ -90,7 +91,7 @@ public interface NeutralMob {
    private static boolean isValidPlayerTarget(final LivingEntity target) {
       boolean var10000;
       if (target instanceof Player player) {
-         if (!player.isCreative() && !player.isSpectator()) {
+         if (!player.isCreative() && !player.isSpectator() && player.level().getDifficulty() != Difficulty.PEACEFUL) {
             var10000 = true;
             return var10000;
          }

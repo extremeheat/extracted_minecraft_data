@@ -162,6 +162,10 @@ public class MemoryModuleType<U> {
       return this.codec;
    }
 
+   public boolean canSerialize() {
+      return this.codec.isPresent();
+   }
+
    private static <U> MemoryModuleType<U> register(final String name, final Codec<U> codec) {
       return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(name), new MemoryModuleType(Optional.of(codec)));
    }

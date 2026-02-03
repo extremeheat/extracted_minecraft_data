@@ -82,7 +82,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       }
    }
 
-   private int getMaxFreeTreeHeight(final LevelSimulatedReader level, final int maxTreeHeight, final BlockPos treePos, final TreeConfiguration config) {
+   private int getMaxFreeTreeHeight(final WorldGenLevel level, final int maxTreeHeight, final BlockPos treePos, final TreeConfiguration config) {
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
       for(int y = 0; y <= maxTreeHeight + 1; ++y) {

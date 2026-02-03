@@ -170,6 +170,10 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return pos.getX() >= -30000000 && pos.getZ() >= -30000000 && pos.getX() < 30000000 && pos.getZ() < 30000000 ? this.getRawBrightness(pos, skyDarkening) : 15;
    }
 
+   default int getEffectiveSkyBrightness(final BlockPos pos) {
+      return this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken();
+   }
+
    /** @deprecated */
    @Deprecated
    default boolean hasChunkAt(final int blockX, final int blockZ) {

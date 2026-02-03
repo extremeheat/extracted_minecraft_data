@@ -6,7 +6,6 @@ import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
@@ -61,6 +60,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.CsvOutput;
@@ -102,11 +102,10 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
-import net.minecraft.world.level.levelgen.structure.LegacyStructureDataHandler;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
@@ -154,8 +153,8 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    private int serverViewDistance;
    private final WorldGenContext worldGenContext;
 
-   public ChunkMap(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer dataFixer, final StructureTemplateManager structureManager, final Executor executor, final BlockableEventLoop<Runnable> mainThreadExecutor, final LightChunkGetter chunkGetter, final ChunkGenerator generator, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<DimensionDataStorage> overworldDataStorage, final TicketStorage ticketStorage, final int serverViewDistance, final boolean syncWrites) {
-      super(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "chunk"), levelStorage.getDimensionPath(level.dimension()).resolve("region"), dataFixer, syncWrites, DataFixTypes.CHUNK, LegacyStructureDataHandler.getLegacyTagFixer(level.dimension(), overworldDataStorage, dataFixer));
+   public ChunkMap(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer dataFixer, final StructureTemplateManager structureManager, final Executor executor, final BlockableEventLoop<Runnable> mainThreadExecutor, final LightChunkGetter chunkGetter, final ChunkGenerator generator, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<SavedDataStorage> overworldDataStorage, final TicketStorage ticketStorage, final int serverViewDistance, final boolean syncWrites) {
+      super(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "chunk"), levelStorage.getDimensionPath(level.dimension()).resolve("region"), dataFixer, syncWrites, DataFixTypes.CHUNK);
       this.visibleChunkMap = this.updatingChunkMap.clone();
       this.pendingUnloads = new Long2ObjectLinkedOpenHashMap();
       this.pendingGenerationTasks = new ArrayList();
@@ -875,10 +874,10 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return this.upgradeChunkTag(tag, -1, getChunkDataFixContextTag(this.level.dimension(), this.generator().getTypeNameForDataFixer()), SharedConstants.getCurrentVersion().dataVersion().version());
    }
 
-   public static CompoundTag getChunkDataFixContextTag(final ResourceKey<Level> dimension, final Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> generator) {
+   public static CompoundTag getChunkDataFixContextTag(final ResourceKey<Level> dimension, final Optional<Identifier> generatorIdentifier) {
       CompoundTag contextTag = new CompoundTag();
       contextTag.putString("dimension", dimension.identifier().toString());
-      generator.ifPresent((k) -> contextTag.putString("generator", k.identifier().toString()));
+      generatorIdentifier.ifPresent((identifier) -> contextTag.putString("generator", identifier.toString()));
       return contextTag;
    }
 

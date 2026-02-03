@@ -123,7 +123,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
    }
 
    public static RenderType getSkullRenderType(final SkullBlock.Type type, final @Nullable Identifier texture) {
-      return RenderTypes.entityCutoutNoCullZOffset(texture != null ? texture : (Identifier)SKIN_BY_TYPE.get(type));
+      return RenderTypes.entityCutoutZOffset(texture != null ? texture : (Identifier)SKIN_BY_TYPE.get(type));
    }
 
    public static RenderType getPlayerSkinRenderType(final Identifier texture) {

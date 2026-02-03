@@ -49,8 +49,8 @@ import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -62,7 +62,7 @@ public class ServerChunkCache extends ChunkSource {
    private final ThreadedLevelLightEngine lightEngine;
    private final MainThreadExecutor mainThreadProcessor;
    public final ChunkMap chunkMap;
-   private final DimensionDataStorage dataStorage;
+   private final SavedDataStorage savedDataStorage;
    private final TicketStorage ticketStorage;
    private long lastInhabitedUpdate;
    private boolean spawnEnemies = true;
@@ -75,7 +75,7 @@ public class ServerChunkCache extends ChunkSource {
    @VisibleForDebug
    private NaturalSpawner.@Nullable SpawnState lastSpawnState;
 
-   public ServerChunkCache(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer fixerUpper, final StructureTemplateManager structureTemplateManager, final Executor executor, final ChunkGenerator generator, final int viewDistance, final int simulationDistance, final boolean syncWrites, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<DimensionDataStorage> overworldDataStorage) {
+   public ServerChunkCache(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer fixerUpper, final StructureTemplateManager structureTemplateManager, final Executor executor, final ChunkGenerator generator, final int viewDistance, final int simulationDistance, final boolean syncWrites, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<SavedDataStorage> overworldDataStorage) {
       super();
       this.level = level;
       this.mainThreadProcessor = new MainThreadExecutor(level);
@@ -88,8 +88,8 @@ public class ServerChunkCache extends ChunkSource {
          LOGGER.error("Failed to create dimension data storage directory", e);
       }
 
-      this.dataStorage = new DimensionDataStorage(dataFolder, fixerUpper, level.registryAccess());
-      this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.TYPE);
+      this.savedDataStorage = new SavedDataStorage(dataFolder, fixerUpper, level.registryAccess());
+      this.ticketStorage = (TicketStorage)this.savedDataStorage.computeIfAbsent(TicketStorage.TYPE);
       this.chunkMap = new ChunkMap(level, levelStorage, fixerUpper, structureTemplateManager, executor, this.mainThreadProcessor, this, generator, chunkStatusListener, overworldDataStorage, this.ticketStorage, viewDistance, syncWrites);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
@@ -276,7 +276,7 @@ public class ServerChunkCache extends ChunkSource {
 
    public void close() throws IOException {
       this.save(true);
-      this.dataStorage.close();
+      this.savedDataStorage.close();
       this.lightEngine.close();
       this.chunkMap.close();
    }
@@ -522,8 +522,8 @@ public class ServerChunkCache extends ChunkSource {
       return this.chunkMap.getChunkDebugData(pos);
    }
 
-   public DimensionDataStorage getDataStorage() {
-      return this.dataStorage;
+   public SavedDataStorage getDataStorage() {
+      return this.savedDataStorage;
    }
 
    public PoiManager getPoiManager() {

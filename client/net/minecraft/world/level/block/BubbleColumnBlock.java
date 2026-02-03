@@ -92,7 +92,12 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
    }
 
    private static boolean canOccupy(final Block bubbleColumn, final BlockState occupyState) {
-      return occupyState.is(bubbleColumn) || occupyState.getFluidState().is(FluidTags.BUBBLE_COLUMN_CAN_OCCUPY) && occupyState.getFluidState().isSource() && occupyState.getFluidState().getAmount() >= 8;
+      if (occupyState.is(bubbleColumn)) {
+         return true;
+      } else {
+         FluidState occupyFluid = occupyState.getFluidState();
+         return occupyFluid.is(FluidTags.BUBBLE_COLUMN_CAN_OCCUPY) && occupyState.getBlock() instanceof LiquidBlock && occupyFluid.isSource() && occupyFluid.getAmount() >= 8;
+      }
    }
 
    private static BlockState getColumnState(final Block bubbleColumn, final BlockState belowState, final BlockState occupyState) {

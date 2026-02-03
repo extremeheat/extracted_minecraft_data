@@ -13,7 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -41,8 +41,8 @@ public class CherryTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.CHERRY_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
-      setDirtAt(level, trunkSetter, random, origin.below(), config);
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), config);
       int firstBranchOffsetFromOrigin = Math.max(0, treeHeight - 1 + this.branchStartOffsetFromTop.sample(random));
       int secondBranchOffsetFromOrigin = Math.max(0, treeHeight - 1 + this.secondBranchStartOffsetFromTop.sample(random));
       if (secondBranchOffsetFromOrigin >= firstBranchOffsetFromOrigin) {
@@ -81,7 +81,7 @@ public class CherryTrunkPlacer extends TrunkPlacer {
       return attachments;
    }
 
-   private FoliagePlacer.FoliageAttachment generateBranch(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config, final Function<BlockState, BlockState> sidewaysStateModifier, final Direction branchDirection, final int offsetFromOrigin, final boolean middleContinuesUpwards, final BlockPos.MutableBlockPos logPos) {
+   private FoliagePlacer.FoliageAttachment generateBranch(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config, final Function<BlockState, BlockState> sidewaysStateModifier, final Direction branchDirection, final int offsetFromOrigin, final boolean middleContinuesUpwards, final BlockPos.MutableBlockPos logPos) {
       logPos.set(origin).move(Direction.UP, offsetFromOrigin);
       int branchEndPosOffsetFromOrigin = treeHeight - 1 + this.branchEndOffsetFromTop.sample(random);
       boolean extendBranchAwayFromTrunk = middleContinuesUpwards || branchEndPosOffsetFromOrigin < offsetFromOrigin;

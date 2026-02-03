@@ -2,6 +2,7 @@ package net.minecraft.world.level.saveddata.maps;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -28,6 +29,6 @@ public class MapIndex extends SavedData {
    }
 
    static {
-      TYPE = new SavedDataType<MapIndex>("idcounts", MapIndex::new, CODEC, DataFixTypes.SAVED_DATA_MAP_INDEX);
+      TYPE = new SavedDataType<MapIndex>(Identifier.withDefaultNamespace("maps/last_id"), MapIndex::new, CODEC, DataFixTypes.SAVED_DATA_MAP_INDEX);
    }
 }

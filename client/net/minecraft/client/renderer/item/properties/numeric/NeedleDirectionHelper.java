@@ -17,10 +17,6 @@ public abstract class NeedleDirectionHelper {
 
    public float get(final ItemStack itemStack, @Nullable ClientLevel clientLevel, @Nullable ItemOwner owner, final int seed) {
       if (owner == null) {
-         owner = itemStack.getEntityRepresentation();
-      }
-
-      if (owner == null) {
          return 0.0F;
       } else {
          if (clientLevel == null) {

@@ -397,7 +397,7 @@ public class ItemBlockRenderTypes {
 
    public static RenderType getRenderType(final BlockState state) {
       ChunkSectionLayer renderType = getChunkRenderType(state);
-      return renderType == ChunkSectionLayer.TRANSLUCENT ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockSheet();
+      return renderType == ChunkSectionLayer.TRANSLUCENT ? Sheets.translucentBlockSheet() : Sheets.cutoutBlockSheet();
    }
 
    public static ChunkSectionLayer getRenderLayer(final FluidState state) {

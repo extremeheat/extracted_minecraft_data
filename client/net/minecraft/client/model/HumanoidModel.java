@@ -46,7 +46,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    public final ModelPart leftLeg;
 
    public HumanoidModel(final ModelPart root) {
-      this(root, RenderTypes::entityCutoutNoCull);
+      this(root, RenderTypes::entityCutout);
    }
 
    public HumanoidModel(final ModelPart root, final Function<Identifier, RenderType> renderType) {

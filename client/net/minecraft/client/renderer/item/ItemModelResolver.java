@@ -31,7 +31,7 @@ public class ItemModelResolver {
    }
 
    public void updateForNonLiving(final ItemStackRenderState output, final ItemStack item, final ItemDisplayContext displayContext, final Entity entity) {
-      this.updateForTopItem(output, item, displayContext, entity.level(), (ItemOwner)null, entity.getId());
+      this.updateForTopItem(output, item, displayContext, entity.level(), entity, entity.getId());
    }
 
    public void updateForTopItem(final ItemStackRenderState output, final ItemStack item, final ItemDisplayContext displayContext, final @Nullable Level level, final @Nullable ItemOwner owner, final int seed) {

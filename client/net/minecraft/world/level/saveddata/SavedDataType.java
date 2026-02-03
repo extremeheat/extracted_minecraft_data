@@ -2,9 +2,10 @@ package net.minecraft.world.level.saveddata;
 
 import com.mojang.serialization.Codec;
 import java.util.function.Supplier;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.datafix.DataFixTypes;
 
-public record SavedDataType<T extends SavedData>(String id, Supplier<T> constructor, Codec<T> codec, DataFixTypes dataFixType) {
+public record SavedDataType<T extends SavedData>(Identifier id, Supplier<T> constructor, Codec<T> codec, DataFixTypes dataFixType) {
    public SavedDataType {
       super();
    }
@@ -27,6 +28,6 @@ public record SavedDataType<T extends SavedData>(String id, Supplier<T> construc
    }
 
    public String toString() {
-      return "SavedDataType[" + this.id + "]";
+      return "SavedDataType[" + String.valueOf(this.id) + "]";
    }
 }

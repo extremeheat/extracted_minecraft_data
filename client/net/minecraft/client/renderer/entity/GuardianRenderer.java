@@ -168,6 +168,6 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
    }
 
    static {
-      BEAM_RENDER_TYPE = RenderTypes.entityCutoutNoCull(GUARDIAN_BEAM_LOCATION);
+      BEAM_RENDER_TYPE = RenderTypes.entityCutout(GUARDIAN_BEAM_LOCATION);
    }
 }

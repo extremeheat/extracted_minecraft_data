@@ -98,6 +98,7 @@ public class Axolotl extends Animal implements Bucketable {
    public final AnimationState idleUnderWaterAnimationState;
    public final AnimationState idleUnderWaterOnGroundAnimationState;
    public final AnimationState idleOnGroundAnimationState;
+   public final AnimationState playDeadAnimationState;
    private final ImmutableList<AnimationState> ALL_ANIMATIONS;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final int REGEN_BUFF_BASE_DURATION = 100;
@@ -114,7 +115,8 @@ public class Axolotl extends Animal implements Bucketable {
       this.idleUnderWaterAnimationState = new AnimationState();
       this.idleUnderWaterOnGroundAnimationState = new AnimationState();
       this.idleOnGroundAnimationState = new AnimationState();
-      this.ALL_ANIMATIONS = ImmutableList.of(this.swimAnimationState, this.walkAnimationState, this.walkUnderWaterAnimationState, this.idleUnderWaterAnimationState, this.idleUnderWaterOnGroundAnimationState, this.idleOnGroundAnimationState);
+      this.playDeadAnimationState = new AnimationState();
+      this.ALL_ANIMATIONS = ImmutableList.of(this.swimAnimationState, this.walkAnimationState, this.walkUnderWaterAnimationState, this.idleUnderWaterAnimationState, this.idleUnderWaterOnGroundAnimationState, this.idleOnGroundAnimationState, this.playDeadAnimationState);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.moveControl = new AxolotlMoveControl(this);
       this.lookControl = new AxolotlLookControl(this, 20);
@@ -199,7 +201,9 @@ public class Axolotl extends Animal implements Bucketable {
       boolean onGround = this.onGround();
       boolean isMoving = this.walkAnimation.isMoving() || this.getXRot() != this.xRotO || this.getYRot() != this.yRotO;
       this.movingAnimator.tick(isMoving);
-      if (!isPlayingDead) {
+      if (isPlayingDead) {
+         this.soloAnimation(this.playDeadAnimationState);
+      } else {
          if (isMoving) {
             if (isInWater && !onGround) {
                this.soloAnimation(this.swimAnimationState);
@@ -406,6 +410,7 @@ public class Axolotl extends Animal implements Bucketable {
       bucket.copyFrom(DataComponents.AXOLOTL_VARIANT, this);
       CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, (tag) -> {
          tag.putInt("Age", this.getAge());
+         tag.putBoolean("AgeLocked", this.isAgeLocked());
          Brain<?> brain = this.getBrain();
          if (brain.hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN)) {
             tag.putLong("HuntingCooldown", brain.getTimeUntilExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN));
@@ -417,6 +422,7 @@ public class Axolotl extends Animal implements Bucketable {
    public void loadFromBucketTag(final CompoundTag tag) {
       Bucketable.loadDefaultDataFromBucketTag(this, tag);
       this.setAge(tag.getIntOr("Age", 0));
+      this.setAgeLocked(tag.getBooleanOr("AgeLocked", false));
       tag.getLong("HuntingCooldown").ifPresentOrElse((huntingCooldown) -> this.getBrain().setMemoryWithExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN, true, tag.getLongOr("HuntingCooldown", 0L)), () -> this.getBrain().setMemory(MemoryModuleType.HAS_HUNTING_COOLDOWN, Optional.empty()));
    }
 

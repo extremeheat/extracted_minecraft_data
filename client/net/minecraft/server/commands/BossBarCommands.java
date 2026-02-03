@@ -51,13 +51,13 @@ public class BossBarCommands {
    }
 
    private static int getValue(final CommandSourceStack source, final CustomBossEvent bossBar) {
-      source.sendSuccess(() -> Component.translatable("commands.bossbar.get.value", bossBar.getDisplayName(), bossBar.getValue()), true);
-      return bossBar.getValue();
+      source.sendSuccess(() -> Component.translatable("commands.bossbar.get.value", bossBar.getDisplayName(), bossBar.value()), true);
+      return bossBar.value();
    }
 
    private static int getMax(final CommandSourceStack source, final CustomBossEvent bossBar) {
-      source.sendSuccess(() -> Component.translatable("commands.bossbar.get.max", bossBar.getDisplayName(), bossBar.getMax()), true);
-      return bossBar.getMax();
+      source.sendSuccess(() -> Component.translatable("commands.bossbar.get.max", bossBar.getDisplayName(), bossBar.max()), true);
+      return bossBar.max();
    }
 
    private static int getVisible(final CommandSourceStack source, final CustomBossEvent bossBar) {
@@ -100,7 +100,7 @@ public class BossBarCommands {
    }
 
    private static int setValue(final CommandSourceStack source, final CustomBossEvent bossBar, final int value) throws CommandSyntaxException {
-      if (bossBar.getValue() == value) {
+      if (bossBar.value() == value) {
          throw ERROR_NO_VALUE_CHANGE.create();
       } else {
          bossBar.setValue(value);
@@ -110,7 +110,7 @@ public class BossBarCommands {
    }
 
    private static int setMax(final CommandSourceStack source, final CustomBossEvent bossBar, final int value) throws CommandSyntaxException {
-      if (bossBar.getMax() == value) {
+      if (bossBar.max() == value) {
          throw ERROR_NO_MAX_CHANGE.create();
       } else {
          bossBar.setMax(value);
@@ -181,7 +181,7 @@ public class BossBarCommands {
       if (events.get(id) != null) {
          throw ERROR_ALREADY_EXISTS.create(id.toString());
       } else {
-         CustomBossEvent event = events.create(id, ComponentUtils.updateForEntity(source, name, (Entity)null, 0));
+         CustomBossEvent event = events.create(source.getLevel().getRandom(), id, ComponentUtils.updateForEntity(source, name, (Entity)null, 0));
          source.sendSuccess(() -> Component.translatable("commands.bossbar.create.success", event.getDisplayName()), true);
          return events.getEvents().size();
       }

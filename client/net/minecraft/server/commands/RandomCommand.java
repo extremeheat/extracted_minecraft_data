@@ -45,14 +45,14 @@ public class RandomCommand {
 
    private static CompletableFuture<Suggestions> suggestRandomSequence(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) {
       List<String> result = Lists.newArrayList();
-      ((CommandSourceStack)context.getSource()).getLevel().getRandomSequences().forAllSequences((key, sequence) -> result.add(key.toString()));
+      ((CommandSourceStack)context.getSource()).getServer().getRandomSequences().forAllSequences((key, sequence) -> result.add(key.toString()));
       return SharedSuggestionProvider.suggest(result, builder);
    }
 
    private static int randomSample(final CommandSourceStack source, final MinMaxBounds.Ints range, final @Nullable Identifier sequence, final boolean announce) throws CommandSyntaxException {
       RandomSource random;
       if (sequence != null) {
-         random = source.getLevel().getRandomSequence(sequence);
+         random = source.getServer().getRandomSequence(sequence);
       } else {
          random = source.getLevel().getRandom();
       }
@@ -78,26 +78,26 @@ public class RandomCommand {
 
    private static int resetSequence(final CommandSourceStack source, final Identifier sequence) throws CommandSyntaxException {
       ServerLevel level = source.getLevel();
-      level.getRandomSequences().reset(sequence, level.getSeed());
+      source.getServer().getRandomSequences().reset(sequence, level.getSeed());
       source.sendSuccess(() -> Component.translatable("commands.random.reset.success", Component.translationArg(sequence)), false);
       return 1;
    }
 
    private static int resetSequence(final CommandSourceStack source, final Identifier sequence, final int salt, final boolean includeWorldSeed, final boolean includeSequenceId) throws CommandSyntaxException {
       ServerLevel level = source.getLevel();
-      level.getRandomSequences().reset(sequence, level.getSeed(), salt, includeWorldSeed, includeSequenceId);
+      source.getServer().getRandomSequences().reset(sequence, level.getSeed(), salt, includeWorldSeed, includeSequenceId);
       source.sendSuccess(() -> Component.translatable("commands.random.reset.success", Component.translationArg(sequence)), false);
       return 1;
    }
 
    private static int resetAllSequences(final CommandSourceStack source) {
-      int count = source.getLevel().getRandomSequences().clear();
+      int count = source.getServer().getRandomSequences().clear();
       source.sendSuccess(() -> Component.translatable("commands.random.reset.all.success", count), false);
       return count;
    }
 
    private static int resetAllSequencesAndSetNewDefaults(final CommandSourceStack source, final int salt, final boolean includeWorldSeed, final boolean includeSequenceId) {
-      RandomSequences randomSequences = source.getLevel().getRandomSequences();
+      RandomSequences randomSequences = source.getServer().getRandomSequences();
       randomSequences.setSeedDefaults(salt, includeWorldSeed, includeSequenceId);
       int count = randomSequences.clear();
       source.sendSuccess(() -> Component.translatable("commands.random.reset.all.success", count), false);

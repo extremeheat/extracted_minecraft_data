@@ -1,6 +1,7 @@
 package net.minecraft.data;
 
 import java.nio.file.Path;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -66,17 +67,15 @@ public class PackOutput {
       }
 
       public Path file(final Identifier element, final String extension) {
-         Path var10000 = this.root.resolve(element.getNamespace()).resolve(this.kind);
-         String var10001 = element.getPath();
-         return var10000.resolve(var10001 + "." + extension);
+         return element.withPath((UnaryOperator)((path) -> this.kind + "/" + path + "." + extension)).resolveAgainst(this.root);
       }
 
       public Path json(final Identifier element) {
-         return this.root.resolve(element.getNamespace()).resolve(this.kind).resolve(element.getPath() + ".json");
+         return element.withPath((UnaryOperator)((path) -> this.kind + "/" + path + ".json")).resolveAgainst(this.root);
       }
 
       public Path json(final ResourceKey<?> element) {
-         return this.root.resolve(element.identifier().getNamespace()).resolve(this.kind).resolve(element.identifier().getPath() + ".json");
+         return this.json(element.identifier());
       }
    }
 }

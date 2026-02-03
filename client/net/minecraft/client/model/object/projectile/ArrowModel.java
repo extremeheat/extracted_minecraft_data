@@ -14,7 +14,7 @@ import net.minecraft.util.Mth;
 
 public class ArrowModel extends EntityModel<ArrowRenderState> {
    public ArrowModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutout);
+      super(root, RenderTypes::entityCutoutCull);
    }
 
    public static LayerDefinition createBodyLayer() {

@@ -21,12 +21,6 @@ public interface LevelData {
 
    long getGameTime();
 
-   boolean isThundering();
-
-   boolean isRaining();
-
-   void setRaining(boolean raining);
-
    boolean isHardcore();
 
    Difficulty getDifficulty();

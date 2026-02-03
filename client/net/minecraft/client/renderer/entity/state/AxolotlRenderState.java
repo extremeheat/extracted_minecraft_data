@@ -15,6 +15,7 @@ public class AxolotlRenderState extends LivingEntityRenderState {
    public final AnimationState idleUnderWaterAnimationState;
    public final AnimationState idleUnderWaterOnGroundAnimationState;
    public final AnimationState idleOnGroundAnimationState;
+   public final AnimationState playDeadAnimationState;
 
    public AxolotlRenderState() {
       super();
@@ -26,5 +27,6 @@ public class AxolotlRenderState extends LivingEntityRenderState {
       this.idleUnderWaterAnimationState = new AnimationState();
       this.idleUnderWaterOnGroundAnimationState = new AnimationState();
       this.idleOnGroundAnimationState = new AnimationState();
+      this.playDeadAnimationState = new AnimationState();
    }
 }

@@ -125,6 +125,14 @@ public record ChunkPos(int x, int z) {
       return this.z >> 5;
    }
 
+   public static int getRegionX(final long pos) {
+      return getX(pos) >> 5;
+   }
+
+   public static int getRegionZ(final long pos) {
+      return getZ(pos) >> 5;
+   }
+
    public int getRegionLocalX() {
       return this.x & 31;
    }

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.memory;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -55,7 +56,7 @@ public final class MemoryMap implements Iterable<Value<?>> {
    }
 
    static {
-      SERIALIZABLE_MEMORY_MODULE_CODEC = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().validate((type) -> type.getCodec().isPresent() ? DataResult.success(type) : DataResult.error(() -> "Memory module " + String.valueOf(type) + " cannot be encoded"));
+      SERIALIZABLE_MEMORY_MODULE_CODEC = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().validate((type) -> type.canSerialize() ? DataResult.success(type) : DataResult.error(() -> "Memory module " + String.valueOf(type) + " cannot be encoded"));
       CODEC = Codec.dispatchedMap(SERIALIZABLE_MEMORY_MODULE_CODEC, (type) -> (Codec)type.getCodec().orElseThrow()).xmap(MemoryMap::new, (m) -> m.memories);
       EMPTY = new MemoryMap(Map.of());
    }
@@ -67,6 +68,23 @@ public final class MemoryMap implements Iterable<Value<?>> {
 
       public static <U> Value<U> createUnchecked(final MemoryModuleType<U> type, final ExpirableValue<?> value) {
          return new Value<U>(type, value);
+      }
+   }
+
+   public static class Builder {
+      private final ImmutableMap.Builder<MemoryModuleType<?>, ExpirableValue<?>> builder = ImmutableMap.builder();
+
+      public Builder() {
+         super();
+      }
+
+      public <U> Builder add(final MemoryModuleType<U> type, final ExpirableValue<U> value) {
+         this.builder.put(type, value);
+         return this;
+      }
+
+      public MemoryMap build() {
+         return new MemoryMap(this.builder.buildOrThrow());
       }
    }
 }

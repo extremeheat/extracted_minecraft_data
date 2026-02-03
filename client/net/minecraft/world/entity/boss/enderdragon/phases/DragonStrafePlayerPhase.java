@@ -107,7 +107,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
             --targetNodeIndex;
          }
 
-         if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() > 0) {
+         if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().aliveCrystals() > 0) {
             targetNodeIndex %= 12;
             if (targetNodeIndex < 0) {
                targetNodeIndex += 12;

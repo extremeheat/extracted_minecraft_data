@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.Entity;
@@ -315,7 +316,7 @@ public class WorldBorder extends SavedData {
 
    static {
       CODEC = WorldBorder.Settings.CODEC.xmap(WorldBorder::new, Settings::new);
-      TYPE = new SavedDataType<WorldBorder>("world_border", WorldBorder::new, CODEC, DataFixTypes.SAVED_DATA_WORLD_BORDER);
+      TYPE = new SavedDataType<WorldBorder>(Identifier.withDefaultNamespace("world_border"), WorldBorder::new, CODEC, DataFixTypes.SAVED_DATA_WORLD_BORDER);
    }
 
    private class MovingBorderExtent implements BorderExtent {

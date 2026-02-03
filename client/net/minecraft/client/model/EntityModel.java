@@ -11,7 +11,7 @@ public abstract class EntityModel<T extends EntityRenderState> extends Model<T> 
    public static final float MODEL_Y_OFFSET = -1.501F;
 
    protected EntityModel(final ModelPart root) {
-      this(root, RenderTypes::entityCutoutNoCull);
+      this(root, RenderTypes::entityCutout);
    }
 
    protected EntityModel(final ModelPart root, final Function<Identifier, RenderType> renderType) {

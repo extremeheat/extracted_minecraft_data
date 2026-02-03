@@ -11,7 +11,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 public abstract class Sensor<E extends LivingEntity> {
-   private static final RandomSource RANDOM = RandomSource.createThreadSafe();
    private static final int DEFAULT_SCAN_RATE = 20;
    private static final int DEFAULT_TARGETING_RANGE = 16;
    private static final TargetingConditions TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(16.0);
@@ -26,11 +25,14 @@ public abstract class Sensor<E extends LivingEntity> {
    public Sensor(final int scanRate) {
       super();
       this.scanRate = scanRate;
-      this.timeToTick = (long)RANDOM.nextInt(scanRate);
    }
 
    public Sensor() {
       this(20);
+   }
+
+   public void randomlyDelayStart(final RandomSource randomSource) {
+      this.timeToTick = (long)randomSource.nextInt(this.scanRate);
    }
 
    public final void tick(final ServerLevel level, final E body) {

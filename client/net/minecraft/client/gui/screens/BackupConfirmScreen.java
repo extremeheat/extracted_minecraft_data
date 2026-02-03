@@ -7,6 +7,7 @@ import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -22,12 +23,13 @@ public class BackupConfirmScreen extends Screen {
    final Component confirmation;
    protected int id;
    private Checkbox eraseCache;
+   private boolean forceBackup;
 
-   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final boolean promptForCacheErase) {
-      this(onCancel, onProceed, title, description, BACKUP_AND_JOIN, promptForCacheErase);
+   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final boolean promptForCacheErase, final boolean forceBackup) {
+      this(onCancel, onProceed, title, description, BACKUP_AND_JOIN, promptForCacheErase, forceBackup);
    }
 
-   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final Component confirmation, final boolean promptForCacheErase) {
+   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final Component confirmation, final boolean promptForCacheErase, final boolean forceBackup) {
       super(title);
       this.message = MultiLineLabel.EMPTY;
       this.onCancel = onCancel;
@@ -35,6 +37,7 @@ public class BackupConfirmScreen extends Screen {
       this.description = description;
       this.promptForCacheErase = promptForCacheErase;
       this.confirmation = confirmation;
+      this.forceBackup = forceBackup;
    }
 
    protected void init() {
@@ -49,7 +52,13 @@ public class BackupConfirmScreen extends Screen {
       }
 
       this.addRenderableWidget(Button.builder(this.confirmation, (button) -> this.onProceed.proceed(true, this.eraseCache.selected())).bounds(this.width / 2 - 155, 100 + textSize, 150, 20).build());
-      this.addRenderableWidget(Button.builder(SKIP_AND_JOIN, (button) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + textSize, 150, 20).build());
+      Button skipAndJoinButton = Button.builder(SKIP_AND_JOIN, (button) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + textSize, 150, 20).build();
+      if (this.forceBackup) {
+         skipAndJoinButton.active = false;
+         skipAndJoinButton.setTooltip(Tooltip.create(Component.translatable("selecteWorld.backupRequiredTooltip")));
+      }
+
+      this.addRenderableWidget(skipAndJoinButton);
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel.run()).bounds(this.width / 2 - 155 + 80, 124 + textSize, 150, 20).build());
    }
 

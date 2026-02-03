@@ -75,13 +75,14 @@ public class RecoverWorldDataScreen extends Screen {
       Exception old = this.collectIssue(this.storageAccess, true);
       if (current != null && old == null) {
          minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("recover_world.restoring")));
-         EditWorldScreen.makeBackupAndShowToast(this.storageAccess);
-         if (this.storageAccess.restoreLevelDataFromOld()) {
-            minecraft.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
-         } else {
-            minecraft.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
-         }
+         EditWorldScreen.makeBackupAndShowToast(this.storageAccess).thenAcceptAsync((var2) -> {
+            if (this.storageAccess.restoreLevelDataFromOld()) {
+               minecraft.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
+            } else {
+               minecraft.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
+            }
 
+         }, minecraft);
       } else {
          LOGGER.error("Failed to recover world, files not as expected. level.dat: {}, level.dat_old: {}", current != null ? current.getMessage() : "no issues", old != null ? old.getMessage() : "no issues");
          minecraft.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
@@ -112,12 +113,7 @@ public class RecoverWorldDataScreen extends Screen {
 
    private @Nullable Exception collectIssue(final LevelStorageSource.LevelStorageAccess access, final boolean useFallback) {
       try {
-         if (!useFallback) {
-            access.getSummary(access.getDataTag());
-         } else {
-            access.getSummary(access.getDataTagFallback());
-         }
-
+         access.collectIssues(useFallback);
          return null;
       } catch (NbtException | ReportedNbtException | IOException e) {
          return e;

@@ -1,23 +1,26 @@
 package net.minecraft.server.bossevents;
 
 import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.Collection;
 import java.util.Map;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
+import java.util.Objects;
+import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
 
-public class CustomBossEvents {
-   private static final Logger LOGGER = LogUtils.getLogger();
+public class CustomBossEvents extends SavedData {
    private static final Codec<Map<Identifier, CustomBossEvent.Packed>> EVENTS_CODEC;
+   private static final Codec<CustomBossEvents> CODEC;
+   public static final SavedDataType<CustomBossEvents> TYPE;
    private final Map<Identifier, CustomBossEvent> events = Maps.newHashMap();
 
    public CustomBossEvents() {
@@ -28,14 +31,18 @@ public class CustomBossEvents {
       return (CustomBossEvent)this.events.get(id);
    }
 
-   public CustomBossEvent create(final Identifier id, final Component name) {
-      CustomBossEvent result = new CustomBossEvent(id, name);
+   public CustomBossEvent create(final RandomSource random, final Identifier id, final Component name) {
+      CustomBossEvent result = new CustomBossEvent(Mth.createInsecureUUID(random), id, name, this::setDirty);
       this.events.put(id, result);
+      this.setDirty();
       return result;
    }
 
    public void remove(final CustomBossEvent event) {
-      this.events.remove(event.getTextId());
+      if (this.events.remove(event.customId()) != null) {
+         this.setDirty();
+      }
+
    }
 
    public Collection<Identifier> getIds() {
@@ -44,16 +51,6 @@ public class CustomBossEvents {
 
    public Collection<CustomBossEvent> getEvents() {
       return this.events.values();
-   }
-
-   public CompoundTag save(final HolderLookup.Provider registries) {
-      Map<Identifier, CustomBossEvent.Packed> packedEvents = Util.mapValues(this.events, CustomBossEvent::pack);
-      return (CompoundTag)EVENTS_CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), packedEvents).getOrThrow();
-   }
-
-   public void load(final CompoundTag tag, final HolderLookup.Provider registries) {
-      Map<Identifier, CustomBossEvent.Packed> events = (Map)EVENTS_CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag).resultOrPartial((error) -> LOGGER.error("Failed to parse boss bar events: {}", error)).orElse(Map.of());
-      events.forEach((id, packed) -> this.events.put(id, CustomBossEvent.load(id, packed)));
    }
 
    public void onPlayerConnect(final ServerPlayer player) {
@@ -72,5 +69,16 @@ public class CustomBossEvents {
 
    static {
       EVENTS_CODEC = Codec.unboundedMap(Identifier.CODEC, CustomBossEvent.Packed.CODEC);
+      CODEC = EVENTS_CODEC.xmap((events) -> {
+         CustomBossEvents r = new CustomBossEvents();
+         events.forEach((id, packed) -> {
+            Map var10000 = r.events;
+            UUID var10002 = UUID.randomUUID();
+            Objects.requireNonNull(r);
+            var10000.put(id, CustomBossEvent.load(var10002, id, packed, r::setDirty));
+         });
+         return r;
+      }, (c) -> Util.mapValues(c.events, CustomBossEvent::pack));
+      TYPE = new SavedDataType<CustomBossEvents>(Identifier.withDefaultNamespace("custom_boss_events"), CustomBossEvents::new, CODEC, DataFixTypes.SAVED_DATA_CUSTOM_BOSS_EVENTS);
    }
 }

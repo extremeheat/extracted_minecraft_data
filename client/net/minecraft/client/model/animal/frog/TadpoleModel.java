@@ -15,7 +15,7 @@ public class TadpoleModel extends EntityModel<LivingEntityRenderState> {
    private final ModelPart tail;
 
    public TadpoleModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutoutNoCull);
+      super(root, RenderTypes::entityCutout);
       this.tail = root.getChild("tail");
    }
 

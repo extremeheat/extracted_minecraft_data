@@ -84,11 +84,18 @@ public class GameRules {
    }
 
    public GameRules(final FeatureFlagSet enabledFeatures, final GameRuleMap map) {
-      this(enabledFeatures);
-      GameRuleMap var10000 = this.rules;
-      GameRuleMap var10002 = this.rules;
-      Objects.requireNonNull(var10002);
-      var10000.setFromIf(map, var10002::has);
+      super();
+      BuiltInRegistries.GAME_RULE.stream().forEach((gameRule) -> {
+         if (gameRule.isEnabled(enabledFeatures)) {
+            if (!map.has(gameRule)) {
+               map.reset(gameRule);
+            }
+         } else if (map.has(gameRule)) {
+            map.remove(gameRule);
+         }
+
+      });
+      this.rules = map;
    }
 
    public GameRules(final FeatureFlagSet enabledFeatures) {

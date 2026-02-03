@@ -1,13 +1,31 @@
-package net.minecraft.server.packs.linkfs;
+package net.minecraft.util;
 
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import org.jspecify.annotations.Nullable;
 
-abstract class DummyFileAttributes implements BasicFileAttributes {
+public abstract class DummyFileAttributes implements BasicFileAttributes {
+   public static final BasicFileAttributes DIRECTORY = new DummyFileAttributes() {
+      public boolean isRegularFile() {
+         return false;
+      }
+
+      public boolean isDirectory() {
+         return true;
+      }
+   };
+   public static final BasicFileAttributes FILE = new DummyFileAttributes() {
+      public boolean isRegularFile() {
+         return true;
+      }
+
+      public boolean isDirectory() {
+         return false;
+      }
+   };
    private static final FileTime EPOCH = FileTime.fromMillis(0L);
 
-   DummyFileAttributes() {
+   public DummyFileAttributes() {
       super();
    }
 

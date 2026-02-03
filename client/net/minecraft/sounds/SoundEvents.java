@@ -360,6 +360,7 @@ public class SoundEvents {
    public static final SoundEvent CHICKEN_HURT = register("entity.chicken.hurt");
    public static final SoundEvent CHICKEN_HURT_BABY = register("entity.baby_chicken.hurt");
    public static final SoundEvent CHICKEN_STEP = register("entity.chicken.step");
+   public static final SoundEvent CHICKEN_STEP_BABY = register("entity.baby_chicken.step");
    public static final SoundEvent CHISELED_BOOKSHELF_BREAK = register("block.chiseled_bookshelf.break");
    public static final SoundEvent CHISELED_BOOKSHELF_FALL = register("block.chiseled_bookshelf.fall");
    public static final SoundEvent CHISELED_BOOKSHELF_HIT = register("block.chiseled_bookshelf.hit");

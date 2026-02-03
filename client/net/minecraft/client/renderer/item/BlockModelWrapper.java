@@ -41,7 +41,7 @@ public class BlockModelWrapper implements ItemModel {
       if (patt0$temp instanceof BlockItem blockItem) {
          ChunkSectionLayer blockLayer = ItemBlockRenderTypes.getChunkRenderType(blockItem.getBlock().defaultBlockState());
          if (blockLayer != ChunkSectionLayer.TRANSLUCENT) {
-            return Sheets.cutoutBlockSheet();
+            return Sheets.cutoutBlockItemSheet();
          }
       }
 

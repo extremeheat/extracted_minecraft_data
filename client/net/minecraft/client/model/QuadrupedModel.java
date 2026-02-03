@@ -22,7 +22,7 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
    protected final ModelPart leftFrontLeg;
 
    protected QuadrupedModel(final ModelPart root) {
-      this(root, RenderTypes::entityCutoutNoCull);
+      this(root, RenderTypes::entityCutout);
    }
 
    protected QuadrupedModel(final ModelPart root, final Function<Identifier, RenderType> renderType) {

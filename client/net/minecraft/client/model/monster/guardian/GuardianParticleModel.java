@@ -7,6 +7,6 @@ import net.minecraft.util.Unit;
 
 public class GuardianParticleModel extends Model<Unit> {
    public GuardianParticleModel(final ModelPart root) {
-      super(root, RenderTypes::entityCutoutNoCull);
+      super(root, RenderTypes::entityCutout);
    }
 }

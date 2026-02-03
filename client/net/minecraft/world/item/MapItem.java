@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.context.UseOnContext;
@@ -270,7 +271,7 @@ public class MapItem extends Item {
       if (data != null) {
          if (owner instanceof Player) {
             Player player = (Player)owner;
-            data.tickCarriedBy(player, itemStack);
+            data.tickCarriedBy(player, itemStack, (ItemFrame)null);
          }
 
          if (!data.locked && slot != null && slot.getType() == EquipmentSlot.Type.HAND) {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -18,6 +19,7 @@ import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
+import net.minecraft.client.gui.screens.GenericWaitingScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.nbt.NbtException;
@@ -43,8 +45,8 @@ public class EditWorldScreen extends Screen {
    private static final Component BACKUP_FOLDER_BUTTON;
    private static final Component OPTIMIZE_BUTTON;
    private static final Component OPTIMIZE_TITLE;
-   private static final Component OPTIMIIZE_DESCRIPTION;
-   private static final Component OPTIMIIZE_CONFIRMATION;
+   private static final Component OPTIMIZE_DESCRIPTION;
+   private static final Component OPTIMIZE_CONFIRMATION;
    private static final Component SAVE_BUTTON;
    private static final int DEFAULT_WIDTH = 200;
    private static final int VERTICAL_SPACING = 4;
@@ -55,7 +57,7 @@ public class EditWorldScreen extends Screen {
    private final EditBox nameEdit;
 
    public static EditWorldScreen create(final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelAccess, final BooleanConsumer callback) throws IOException {
-      LevelSummary summary = levelAccess.getSummary(levelAccess.getDataTag());
+      LevelSummary summary = levelAccess.fixAndGetSummary();
       return new EditWorldScreen(minecraft, levelAccess, summary.getLevelName(), callback);
    }
 
@@ -77,10 +79,7 @@ public class EditWorldScreen extends Screen {
          button.active = false;
       }).width(200).build())).active = levelAccess.getIconFile().filter((x$0) -> Files.isRegularFile(x$0, new LinkOption[0])).isPresent();
       this.layout.addChild(Button.builder(FOLDER_BUTTON, (button) -> Util.getPlatform().openPath(levelAccess.getLevelPath(LevelResource.ROOT))).width(200).build());
-      this.layout.addChild(Button.builder(BACKUP_BUTTON, (button) -> {
-         boolean success = makeBackupAndShowToast(levelAccess);
-         this.callback.accept(!success);
-      }).width(200).build());
+      this.layout.addChild(Button.builder(BACKUP_BUTTON, (button) -> makeBackupAndShowToast(levelAccess).thenAcceptAsync((success) -> this.callback.accept(!success), minecraft)).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_FOLDER_BUTTON, (button) -> {
          LevelStorageSource levelSource = minecraft.getLevelSource();
          Path path = levelSource.getBackupPath();
@@ -93,13 +92,7 @@ public class EditWorldScreen extends Screen {
 
          Util.getPlatform().openPath(path);
       }).width(200).build());
-      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.setScreen(new BackupConfirmScreen(() -> minecraft.setScreen(this), (backup, eraseCache) -> {
-            if (backup) {
-               makeBackupAndShowToast(levelAccess);
-            }
-
-            minecraft.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache));
-         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, OPTIMIIZE_CONFIRMATION, true))).width(200).build());
+      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.setScreen(new BackupConfirmScreen(() -> minecraft.setScreen(this), (backup, eraseCache) -> conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var4) -> minecraft.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache)), minecraft), OPTIMIZE_TITLE, OPTIMIZE_DESCRIPTION, OPTIMIZE_CONFIRMATION, true, false))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(bottomButtonRow);
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
@@ -143,27 +136,30 @@ public class EditWorldScreen extends Screen {
       this.callback.accept(true);
    }
 
-   public static boolean makeBackupAndShowToast(final LevelStorageSource.LevelStorageAccess access) {
-      long size = 0L;
-      IOException exception = null;
+   public static CompletableFuture<Boolean> conditionallyMakeBackupAndShowToast(final boolean createBackup, final LevelStorageSource.LevelStorageAccess access) {
+      return createBackup ? makeBackupAndShowToast(access) : CompletableFuture.completedFuture(false);
+   }
 
-      try {
-         size = access.makeWorldBackup();
-      } catch (IOException e) {
-         exception = e;
-      }
-
-      if (exception != null) {
-         Component title = Component.translatable("selectWorld.edit.backupFailed");
-         Component message = Component.literal(exception.getMessage());
-         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
-         return false;
-      } else {
+   public static CompletableFuture<Boolean> makeBackupAndShowToast(final LevelStorageSource.LevelStorageAccess access) {
+      Minecraft minecraft = Minecraft.getInstance();
+      minecraft.setScreenAndShow(GenericWaitingScreen.createWaitingWithoutButton(Component.translatable("selectWorld.waitingForBackup.title"), Component.translatable("selectWorld.waitingForBackup.message").withStyle(ChatFormatting.GRAY)));
+      return CompletableFuture.supplyAsync(() -> {
+         try {
+            return access.makeWorldBackup();
+         } catch (IOException e) {
+            throw new RuntimeException(e);
+         }
+      }, Util.backgroundExecutor()).thenApplyAsync((size) -> {
          Component title = Component.translatable("selectWorld.edit.backupCreated", access.getLevelId());
          Component message = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)size / 1048576.0));
-         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
+         minecraft.getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
          return true;
-      }
+      }, minecraft).exceptionallyAsync((exception) -> {
+         Component title = Component.translatable("selectWorld.edit.backupFailed");
+         Component message = Component.literal(exception.getMessage());
+         minecraft.getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
+         return false;
+      }, minecraft);
    }
 
    public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
@@ -179,8 +175,8 @@ public class EditWorldScreen extends Screen {
       BACKUP_FOLDER_BUTTON = Component.translatable("selectWorld.edit.backupFolder");
       OPTIMIZE_BUTTON = Component.translatable("selectWorld.edit.optimize");
       OPTIMIZE_TITLE = Component.translatable("optimizeWorld.confirm.title");
-      OPTIMIIZE_DESCRIPTION = Component.translatable("optimizeWorld.confirm.description");
-      OPTIMIIZE_CONFIRMATION = Component.translatable("optimizeWorld.confirm.proceed");
+      OPTIMIZE_DESCRIPTION = Component.translatable("optimizeWorld.confirm.description");
+      OPTIMIZE_CONFIRMATION = Component.translatable("optimizeWorld.confirm.proceed");
       SAVE_BUTTON = Component.translatable("selectWorld.edit.save");
    }
 }

@@ -51,7 +51,7 @@ public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<Coppe
          poseStack.translate(0.5F, 0.0F, 0.5F);
          CopperGolemStatueModel model = (CopperGolemStatueModel)this.models.get(state.pose);
          Direction direction = state.direction;
-         RenderType renderType = RenderTypes.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(copperGolemStatueBlock.getWeatheringState()).texture());
+         RenderType renderType = RenderTypes.entityCutout(CopperGolemOxidationLevels.getOxidationLevel(copperGolemStatueBlock.getWeatheringState()).texture());
          submitNodeCollector.submitModel(model, direction, poseStack, renderType, state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress);
          poseStack.popPose();
       }

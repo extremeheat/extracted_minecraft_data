@@ -549,12 +549,7 @@ public final class NbtUtils {
       return tag;
    }
 
-   public static Dynamic<Tag> addCurrentDataVersion(final Dynamic<Tag> tag) {
-      int version = SharedConstants.getCurrentVersion().dataVersion().version();
-      return addDataVersion(tag, version);
-   }
-
-   public static Dynamic<Tag> addDataVersion(final Dynamic<Tag> tag, final int version) {
+   public static <T> Dynamic<T> addDataVersion(final Dynamic<T> tag, final int version) {
       return tag.set("DataVersion", tag.createInt(version));
    }
 
@@ -573,6 +568,10 @@ public final class NbtUtils {
 
    public static int getDataVersion(final CompoundTag tag, final int _default) {
       return tag.getIntOr("DataVersion", _default);
+   }
+
+   public static int getDataVersion(final Dynamic<?> dynamic) {
+      return getDataVersion((Dynamic)dynamic, -1);
    }
 
    public static int getDataVersion(final Dynamic<?> dynamic, final int _default) {

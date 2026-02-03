@@ -54,7 +54,6 @@ import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
@@ -65,10 +64,12 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.LevelDataAndDimensions;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import org.jspecify.annotations.Nullable;
@@ -95,7 +96,7 @@ public class GameTestServer extends MinecraftServer {
       enabledPacks.remove("vanilla");
       enabledPacks.addFirst("vanilla");
       WorldDataConfiguration defaultTestConfig = new WorldDataConfiguration(new DataPackConfig(enabledPacks, List.of()), ENABLED_FEATURES);
-      LevelSettings testSettings = new LevelSettings("Test Level", GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(ENABLED_FEATURES), defaultTestConfig);
+      LevelSettings testSettings = new LevelSettings("Test Level", GameType.CREATIVE, LevelSettings.DifficultySettings.DEFAULT, true, defaultTestConfig);
       WorldLoader.PackConfig packConfig = new WorldLoader.PackConfig(packRepository, defaultTestConfig, false, true);
       WorldLoader.InitConfig initConfig = new WorldLoader.InitConfig(packConfig, Commands.CommandSelection.DEDICATED, LevelBasedPermissionSet.OWNER);
 
@@ -104,8 +105,10 @@ public class GameTestServer extends MinecraftServer {
          Stopwatch stopwatch = Stopwatch.createStarted();
          WorldStem worldStem = (WorldStem)Util.blockUntilDone((executor) -> WorldLoader.load(initConfig, (context) -> {
                Registry<LevelStem> noDatapackDimensions = (new MappedRegistry<LevelStem>(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-               WorldDimensions.Complete dimensions = ((WorldPreset)context.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions().bake(noDatapackDimensions);
-               return new WorldLoader.DataLoadOutput(new PrimaryLevelData(testSettings, WORLD_OPTIONS, dimensions.specialWorldProperty(), dimensions.lifecycle()), dimensions.dimensionsRegistryAccess());
+               WorldDimensions worldDimensions = ((WorldPreset)context.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions();
+               WorldDimensions.Complete dimensions = worldDimensions.bake(noDatapackDimensions);
+               PrimaryLevelData levelData = new PrimaryLevelData(testSettings, dimensions.specialWorldProperty(), dimensions.lifecycle());
+               return new WorldLoader.DataLoadOutput(new LevelDataAndDimensions.WorldDataAndGenSettings(levelData, new WorldGenSettings(WORLD_OPTIONS, worldDimensions)), dimensions.dimensionsRegistryAccess());
             }, WorldStem::new, Util.backgroundExecutor(), executor)).get();
          stopwatch.stop();
          LOGGER.debug("Finished resource loading after {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -118,7 +121,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    private GameTestServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<String> testSelection, final boolean verify, final int repeatCount) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer());
+      super(serverThread, levelStorageSource, packRepository, worldStem, Optional.of(new GameRules(ENABLED_FEATURES)), Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer());
       this.testSelection = testSelection;
       this.repeatCount = repeatCount;
       this.verify = verify;

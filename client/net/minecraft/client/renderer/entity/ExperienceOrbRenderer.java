@@ -71,6 +71,6 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
    }
 
    static {
-      RENDER_TYPE = RenderTypes.itemEntityTranslucentCull(EXPERIENCE_ORB_LOCATION);
+      RENDER_TYPE = RenderTypes.entityTranslucentCullItemTarget(EXPERIENCE_ORB_LOCATION);
    }
 }

@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
@@ -25,8 +25,8 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.FORKING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
-      setDirtAt(level, trunkSetter, random, origin.below(), config);
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), config);
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
       Direction leanDirection = Direction.Plane.HORIZONTAL.getRandomDirection(random);
       int leanHeight = treeHeight - random.nextInt(4) - 1;

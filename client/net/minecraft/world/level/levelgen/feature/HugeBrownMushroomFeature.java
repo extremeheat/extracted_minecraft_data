@@ -14,7 +14,7 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
    }
 
    protected void makeCap(final LevelAccessor level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config) {
-      int radius = config.foliageRadius;
+      int radius = config.foliageRadius();
 
       for(int dx = -radius; dx <= radius; ++dx) {
          for(int dz = -radius; dz <= radius; ++dz) {
@@ -30,7 +30,7 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
                boolean east = maxX || zEdge && dx == radius - 1;
                boolean north = minZ || xEdge && dz == 1 - radius;
                boolean south = maxZ || xEdge && dz == radius - 1;
-               BlockState state = config.capProvider.getState(random, origin);
+               BlockState state = config.capProvider().getState(random, origin);
                if (state.hasProperty(HugeMushroomBlock.WEST) && state.hasProperty(HugeMushroomBlock.EAST) && state.hasProperty(HugeMushroomBlock.NORTH) && state.hasProperty(HugeMushroomBlock.SOUTH)) {
                   state = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(HugeMushroomBlock.WEST, west)).setValue(HugeMushroomBlock.EAST, east)).setValue(HugeMushroomBlock.NORTH, north)).setValue(HugeMushroomBlock.SOUTH, south);
                }

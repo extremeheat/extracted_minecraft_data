@@ -407,7 +407,7 @@ public class FileDownload {
             LOGGER.warn("Failed to download file", e);
          }
 
-         this.resourcePackPath = worldPath.resolve(LevelResource.MAP_RESOURCE_FILE.getId()).toFile();
+         this.resourcePackPath = worldPath.resolve(LevelResource.MAP_RESOURCE_FILE.id()).toFile();
       }
 
    }

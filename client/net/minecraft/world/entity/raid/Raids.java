@@ -11,9 +11,9 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.PoiTypeTags;
@@ -23,8 +23,6 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -32,17 +30,12 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Raids extends SavedData {
-   private static final String RAID_FILE_ID = "raids";
+   private static final Identifier RAID_FILE_ID = Identifier.withDefaultNamespace("raids");
    public static final Codec<Raids> CODEC = RecordCodecBuilder.create((i) -> i.group(Raids.RaidWithId.CODEC.listOf().optionalFieldOf("raids", List.of()).forGetter((r) -> r.raidMap.int2ObjectEntrySet().stream().map(RaidWithId::from).toList()), Codec.INT.fieldOf("next_id").forGetter((r) -> r.nextId), Codec.INT.fieldOf("tick").forGetter((r) -> r.tick)).apply(i, Raids::new));
    public static final SavedDataType<Raids> TYPE;
-   public static final SavedDataType<Raids> TYPE_END;
    private final Int2ObjectMap<Raid> raidMap = new Int2ObjectOpenHashMap();
    private int nextId = 1;
    private int tick;
-
-   public static SavedDataType<Raids> getType(final Holder<DimensionType> type) {
-      return type.is(BuiltinDimensionTypes.END) ? TYPE_END : TYPE;
-   }
 
    public Raids() {
       super();
@@ -186,8 +179,7 @@ public class Raids extends SavedData {
    }
 
    static {
-      TYPE = new SavedDataType<Raids>("raids", Raids::new, CODEC, DataFixTypes.SAVED_DATA_RAIDS);
-      TYPE_END = new SavedDataType<Raids>("raids_end", Raids::new, CODEC, DataFixTypes.SAVED_DATA_RAIDS);
+      TYPE = new SavedDataType<Raids>(RAID_FILE_ID, Raids::new, CODEC, DataFixTypes.SAVED_DATA_RAIDS);
    }
 
    private static record RaidWithId(int id, Raid raid) {

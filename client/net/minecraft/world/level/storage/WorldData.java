@@ -3,18 +3,15 @@ package net.minecraft.world.level.storage;
 import com.mojang.serialization.Lifecycle;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
-import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.levelgen.WorldOptions;
 import org.jspecify.annotations.Nullable;
 
 public interface WorldData {
@@ -57,15 +54,11 @@ public interface WorldData {
       }
    }
 
-   @Nullable CompoundTag getCustomBossEvents();
-
-   void setCustomBossEvents(@Nullable CompoundTag customBossEvents);
-
    ServerLevelData overworldData();
 
    LevelSettings getLevelSettings();
 
-   CompoundTag createTag(final RegistryAccess registryAccess, @Nullable CompoundTag playerData);
+   CompoundTag createTag(@Nullable UUID singlePlayerUUID);
 
    boolean isHardcore();
 
@@ -87,15 +80,7 @@ public interface WorldData {
 
    void setDifficultyLocked(final boolean difficultyLocked);
 
-   GameRules getGameRules();
-
-   @Nullable CompoundTag getLoadedPlayerTag();
-
-   EndDragonFight.Data endDragonFightData();
-
-   void setEndDragonFightData(EndDragonFight.Data data);
-
-   WorldOptions worldGenOptions();
+   @Nullable UUID getSinglePlayerUUID();
 
    boolean isFlatWorld();
 

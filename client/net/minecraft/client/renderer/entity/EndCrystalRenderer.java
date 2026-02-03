@@ -75,6 +75,6 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
    }
 
    static {
-      RENDER_TYPE = RenderTypes.entityCutoutNoCull(END_CRYSTAL_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutout(END_CRYSTAL_LOCATION);
    }
 }

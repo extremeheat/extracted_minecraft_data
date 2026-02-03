@@ -1,20 +1,22 @@
 package net.minecraft.world.level.dimension.end;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.SpikeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 
-public enum DragonRespawnAnimation {
-   START {
-      public void tick(final ServerLevel level, final EndDragonFight fight, final List<EndCrystal> crystals, final int time, final BlockPos portal) {
+public enum DragonRespawnStage implements StringRepresentable {
+   START("start") {
+      public void tick(final ServerLevel level, final EnderDragonFight fight, final List<EndCrystal> crystals, final int time) {
          BlockPos beamPos = new BlockPos(0, 128, 0);
 
          for(EndCrystal respawnCrystal : crystals) {
@@ -24,8 +26,8 @@ public enum DragonRespawnAnimation {
          fight.setRespawnStage(PREPARING_TO_SUMMON_PILLARS);
       }
    },
-   PREPARING_TO_SUMMON_PILLARS {
-      public void tick(final ServerLevel level, final EndDragonFight fight, final List<EndCrystal> crystals, final int time, final BlockPos portal) {
+   PREPARING_TO_SUMMON_PILLARS("preparing_to_summon_pillars") {
+      public void tick(final ServerLevel level, final EnderDragonFight fight, final List<EndCrystal> crystals, final int time) {
          if (time < 100) {
             if (time == 0 || time == 50 || time == 51 || time == 52 || time >= 95) {
                level.levelEvent(3001, new BlockPos(0, 128, 0), 0);
@@ -36,16 +38,16 @@ public enum DragonRespawnAnimation {
 
       }
    },
-   SUMMONING_PILLARS {
-      public void tick(final ServerLevel level, final EndDragonFight fight, final List<EndCrystal> crystals, final int time, final BlockPos portal) {
+   SUMMONING_PILLARS("summoning_pillars") {
+      public void tick(final ServerLevel level, final EnderDragonFight fight, final List<EndCrystal> crystals, final int time) {
          int interval = 40;
          boolean startOfBeam = time % 40 == 0;
          boolean endOfBeam = time % 40 == 39;
          if (startOfBeam || endOfBeam) {
-            List<SpikeFeature.EndSpike> spikes = SpikeFeature.getSpikesForLevel(level);
+            List<EndSpikeFeature.EndSpike> spikes = EndSpikeFeature.getSpikesForLevel(level);
             int index = time / 40;
             if (index < spikes.size()) {
-               SpikeFeature.EndSpike spike = (SpikeFeature.EndSpike)spikes.get(index);
+               EndSpikeFeature.EndSpike spike = (EndSpikeFeature.EndSpike)spikes.get(index);
                if (startOfBeam) {
                   for(EndCrystal respawnCrystal : crystals) {
                      respawnCrystal.setBeamTarget(new BlockPos(spike.getCenterX(), spike.getHeight() + 1, spike.getCenterZ()));
@@ -58,7 +60,7 @@ public enum DragonRespawnAnimation {
                   }
 
                   level.explode((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, Level.ExplosionInteraction.BLOCK);
-                  SpikeConfiguration configuration = new SpikeConfiguration(true, ImmutableList.of(spike), new BlockPos(0, 128, 0));
+                  EndSpikeConfiguration configuration = new EndSpikeConfiguration(true, ImmutableList.of(spike), new BlockPos(0, 128, 0));
                   Feature.END_SPIKE.place(configuration, level, level.getChunkSource().getGenerator(), RandomSource.create(), new BlockPos(spike.getCenterX(), 45, spike.getCenterZ()));
                }
             } else if (startOfBeam) {
@@ -68,8 +70,8 @@ public enum DragonRespawnAnimation {
 
       }
    },
-   SUMMONING_DRAGON {
-      public void tick(final ServerLevel level, final EndDragonFight fight, final List<EndCrystal> crystals, final int time, final BlockPos portal) {
+   SUMMONING_DRAGON("summoning_dragon") {
+      public void tick(final ServerLevel level, final EnderDragonFight fight, final List<EndCrystal> crystals, final int time) {
          if (time >= 100) {
             fight.setRespawnStage(END);
             fight.resetSpikeCrystals();
@@ -91,18 +93,26 @@ public enum DragonRespawnAnimation {
 
       }
    },
-   END {
-      public void tick(final ServerLevel level, final EndDragonFight fight, final List<EndCrystal> crystals, final int time, final BlockPos portal) {
+   END("end") {
+      public void tick(final ServerLevel level, final EnderDragonFight fight, final List<EndCrystal> crystals, final int time) {
       }
    };
 
-   private DragonRespawnAnimation() {
+   public static final Codec<DragonRespawnStage> CODEC = StringRepresentable.<DragonRespawnStage>fromEnum(DragonRespawnStage::values);
+   private final String name;
+
+   private DragonRespawnStage(final String name) {
+      this.name = name;
    }
 
-   public abstract void tick(ServerLevel level, EndDragonFight fight, List<EndCrystal> crystals, int time, BlockPos portal);
+   public String getSerializedName() {
+      return this.name;
+   }
+
+   public abstract void tick(ServerLevel level, EnderDragonFight fight, List<EndCrystal> crystals, int time);
 
    // $FF: synthetic method
-   private static DragonRespawnAnimation[] $values() {
-      return new DragonRespawnAnimation[]{START, PREPARING_TO_SUMMON_PILLARS, SUMMONING_PILLARS, SUMMONING_DRAGON, END};
+   private static DragonRespawnStage[] $values() {
+      return new DragonRespawnStage[]{START, PREPARING_TO_SUMMON_PILLARS, SUMMONING_PILLARS, SUMMONING_DRAGON, END};
    }
 }

@@ -48,6 +48,6 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
    }
 
    static {
-      RENDER_TYPE = RenderTypes.entityCutoutNoCull(TEXTURE_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutout(TEXTURE_LOCATION);
    }
 }

@@ -273,8 +273,8 @@ public class OldUsersConverter {
    }
 
    public static boolean convertPlayers(final DedicatedServer server) {
-      final File worldPlayerDirectory = getWorldPlayersDirectory(server);
-      final File worldNewPlayerDirectory = new File(worldPlayerDirectory.getParentFile(), "playerdata");
+      final File worldPlayerDirectory = server.getWorldPath(LevelResource.PLAYER_OLD_DATA_DIR).toFile();
+      final File worldNewPlayerDirectory = new File(worldPlayerDirectory.getParentFile(), LevelResource.PLAYER_DATA_DIR.id());
       final File unknownPlayerDirectory = new File(worldPlayerDirectory.getParentFile(), "unknownplayers");
       if (worldPlayerDirectory.exists() && worldPlayerDirectory.isDirectory()) {
          File[] playerFiles = worldPlayerDirectory.listFiles();
@@ -354,15 +354,10 @@ public class OldUsersConverter {
       } else if (!directory.mkdirs()) {
          throw new ConversionError("Can't create directory " + directory.getName() + " in world save directory.");
       }
+
    }
 
-   public static boolean serverReadyAfterUserconversion(final MinecraftServer server) {
-      boolean ready = areOldUserlistsRemoved();
-      ready = ready && areOldPlayersConverted(server);
-      return ready;
-   }
-
-   private static boolean areOldUserlistsRemoved() {
+   public static boolean areOldUserlistsRemoved() {
       boolean foundUserBanlist = false;
       if (OLD_USERBANLIST.exists() && OLD_USERBANLIST.isFile()) {
          foundUserBanlist = true;
@@ -406,22 +401,6 @@ public class OldUsersConverter {
 
          return false;
       }
-   }
-
-   private static boolean areOldPlayersConverted(final MinecraftServer server) {
-      File worldPlayerDirectory = getWorldPlayersDirectory(server);
-      if (!worldPlayerDirectory.exists() || !worldPlayerDirectory.isDirectory() || worldPlayerDirectory.list().length <= 0 && worldPlayerDirectory.delete()) {
-         return true;
-      } else {
-         LOGGER.warn("**** DETECTED OLD PLAYER DIRECTORY IN THE WORLD SAVE");
-         LOGGER.warn("**** THIS USUALLY HAPPENS WHEN THE AUTOMATIC CONVERSION FAILED IN SOME WAY");
-         LOGGER.warn("** please restart the server and if the problem persists, remove the directory '{}'", worldPlayerDirectory.getPath());
-         return false;
-      }
-   }
-
-   private static File getWorldPlayersDirectory(final MinecraftServer server) {
-      return server.getWorldPath(LevelResource.PLAYER_OLD_DATA_DIR).toFile();
    }
 
    private static void renameOldFile(final File file) {

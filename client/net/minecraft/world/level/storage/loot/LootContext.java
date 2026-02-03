@@ -120,8 +120,8 @@ public class LootContext {
          ServerLevel level = this.getLevel();
          MinecraftServer server = level.getServer();
          Optional var10000 = Optional.ofNullable(this.random).or(() -> {
-            Objects.requireNonNull(level);
-            return randomSequenceKey.map(level::getRandomSequence);
+            Objects.requireNonNull(server);
+            return randomSequenceKey.map(server::getRandomSequence);
          });
          Objects.requireNonNull(level);
          RandomSource random = (RandomSource)var10000.orElseGet(level::getRandom);

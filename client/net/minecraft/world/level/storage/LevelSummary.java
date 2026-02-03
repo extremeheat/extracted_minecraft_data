@@ -9,6 +9,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import org.apache.commons.lang3.StringUtils;
@@ -16,20 +17,23 @@ import org.jspecify.annotations.Nullable;
 
 public class LevelSummary implements Comparable<LevelSummary> {
    public static final Component PLAY_WORLD = Component.translatable("selectWorld.select");
+   public static final Component UPGRADE_AND_PLAY_WORLD = Component.translatable("selectWorld.upgrade_and_play");
    private final LevelSettings settings;
    private final LevelVersion levelVersion;
    private final String levelId;
    private final boolean requiresManualConversion;
+   private final boolean requiresFileFixing;
    private final boolean locked;
    private final boolean experimental;
    private final Path icon;
    private @Nullable Component info;
 
-   public LevelSummary(final LevelSettings settings, final LevelVersion levelVersion, final String levelId, final boolean requiresManualConversion, final boolean locked, final boolean experimental, final Path icon) {
+   public LevelSummary(final LevelSettings settings, final LevelVersion levelVersion, final String levelId, final boolean requiresManualConversion, final boolean requiresFileFixing, final boolean locked, final boolean experimental, final Path icon) {
       super();
       this.settings = settings;
       this.levelVersion = levelVersion;
       this.levelId = levelId;
+      this.requiresFileFixing = requiresFileFixing;
       this.locked = locked;
       this.experimental = experimental;
       this.icon = icon;
@@ -50,6 +54,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
    public boolean requiresManualConversion() {
       return this.requiresManualConversion;
+   }
+
+   public boolean requiresFileFixing() {
+      return this.requiresFileFixing;
    }
 
    public boolean isExperimental() {
@@ -77,7 +85,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public boolean isHardcore() {
-      return this.settings.hardcore();
+      return this.settings.difficultySettings().hardcore();
    }
 
    public boolean hasCommands() {
@@ -104,7 +112,9 @@ public class LevelSummary implements Comparable<LevelSummary> {
       WorldVersion currentVersion = SharedConstants.getCurrentVersion();
       int currentVersionNumber = currentVersion.dataVersion().version();
       int levelVersionNumber = this.levelVersion.minecraftVersion().version();
-      if (!currentVersion.stable() && levelVersionNumber < currentVersionNumber) {
+      if (DataFixers.getFileFixer().requiresFileFixing(levelVersionNumber)) {
+         return LevelSummary.BackupStatus.FILE_FIXING_REQUIRED;
+      } else if (!currentVersion.stable() && levelVersionNumber < currentVersionNumber) {
          return LevelSummary.BackupStatus.UPGRADE_TO_SNAPSHOT;
       } else {
          return levelVersionNumber > currentVersionNumber ? LevelSummary.BackupStatus.DOWNGRADE : LevelSummary.BackupStatus.NONE;
@@ -166,7 +176,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public Component primaryActionMessage() {
-      return PLAY_WORLD;
+      return this.requiresFileFixing() ? UPGRADE_AND_PLAY_WORLD : PLAY_WORLD;
    }
 
    public boolean primaryActionActive() {
@@ -178,11 +188,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public boolean canEdit() {
-      return !this.isDisabled();
+      return !this.isDisabled() && !this.requiresFileFixing();
    }
 
    public boolean canRecreate() {
-      return !this.isDisabled();
+      return !this.isDisabled() && !this.requiresFileFixing();
    }
 
    public boolean canDelete() {
@@ -192,7 +202,8 @@ public class LevelSummary implements Comparable<LevelSummary> {
    public static enum BackupStatus {
       NONE(false, false, ""),
       DOWNGRADE(true, true, "downgrade"),
-      UPGRADE_TO_SNAPSHOT(true, false, "snapshot");
+      UPGRADE_TO_SNAPSHOT(true, false, "snapshot"),
+      FILE_FIXING_REQUIRED(true, false, "file_fixing_required");
 
       private final boolean shouldBackup;
       private final boolean severe;
@@ -218,7 +229,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
       // $FF: synthetic method
       private static BackupStatus[] $values() {
-         return new BackupStatus[]{NONE, DOWNGRADE, UPGRADE_TO_SNAPSHOT};
+         return new BackupStatus[]{NONE, DOWNGRADE, UPGRADE_TO_SNAPSHOT, FILE_FIXING_REQUIRED};
       }
    }
 
@@ -227,7 +238,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private static final Component INFO = Component.translatable("symlink_warning.title").withColor(-65536);
 
       public SymlinkLevelSummary(final String levelId, final Path icon) {
-         super((LevelSettings)null, (LevelVersion)null, levelId, false, false, false, icon);
+         super((LevelSettings)null, (LevelVersion)null, levelId, false, false, false, false, icon);
       }
 
       public String getLevelName() {
@@ -273,7 +284,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private final long lastPlayed;
 
       public CorruptedLevelSummary(final String levelId, final Path icon, final long lastPlayed) {
-         super((LevelSettings)null, (LevelVersion)null, levelId, false, false, false, icon);
+         super((LevelSettings)null, (LevelVersion)null, levelId, false, false, false, false, icon);
          this.lastPlayed = lastPlayed;
       }
 

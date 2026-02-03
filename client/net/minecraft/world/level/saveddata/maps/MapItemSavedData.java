@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -62,7 +63,7 @@ public class MapItemSavedData extends SavedData {
    private int trackedDecorationCount;
 
    public static SavedDataType<MapItemSavedData> type(final MapId id) {
-      return new SavedDataType<MapItemSavedData>(id.key(), () -> {
+      return new SavedDataType<MapItemSavedData>(Identifier.withDefaultNamespace(id.key()), () -> {
          throw new IllegalStateException("Should never create an empty map saved data");
       }, CODEC, DataFixTypes.SAVED_DATA_MAP_DATA);
    }
@@ -139,7 +140,7 @@ public class MapItemSavedData extends SavedData {
       };
    }
 
-   public void tickCarriedBy(final Player tickingPlayer, final ItemStack itemStack) {
+   public void tickCarriedBy(final Player tickingPlayer, final ItemStack itemStack, final @Nullable ItemFrame placedInFrame) {
       if (!this.carriedByPlayers.containsKey(tickingPlayer)) {
          HoldingPlayer holdingPlayer = new HoldingPlayer(tickingPlayer);
          this.carriedByPlayers.put(tickingPlayer, holdingPlayer);
@@ -155,8 +156,8 @@ public class MapItemSavedData extends SavedData {
          HoldingPlayer otherHoldingPlayer = (HoldingPlayer)this.carriedBy.get(i);
          Player otherPlayer = otherHoldingPlayer.player;
          String otherPlayerName = otherPlayer.getPlainTextName();
-         if (!otherPlayer.isRemoved() && (otherPlayer.getInventory().contains(mapMatcher) || itemStack.isFramed())) {
-            if (!itemStack.isFramed() && otherPlayer.level().dimension() == this.dimension && this.trackingPosition) {
+         if (!otherPlayer.isRemoved() && (placedInFrame != null || otherPlayer.getInventory().contains(mapMatcher))) {
+            if (placedInFrame == null && otherPlayer.level().dimension() == this.dimension && this.trackingPosition) {
                this.addDecoration(MapDecorationTypes.PLAYER, otherPlayer.level(), otherPlayerName, otherPlayer.getX(), otherPlayer.getZ(), (double)otherPlayer.getYRot(), (Component)null);
             }
          } else {
@@ -170,16 +171,15 @@ public class MapItemSavedData extends SavedData {
          }
       }
 
-      if (itemStack.isFramed() && this.trackingPosition) {
-         ItemFrame frame = itemStack.getFrame();
-         BlockPos pos = frame.getPos();
+      if (placedInFrame != null && this.trackingPosition) {
+         BlockPos pos = placedInFrame.getPos();
          MapFrame existingFrame = (MapFrame)this.frameMarkers.get(MapFrame.frameId(pos));
-         if (existingFrame != null && frame.getId() != existingFrame.entityId() && this.frameMarkers.containsKey(existingFrame.getId())) {
+         if (existingFrame != null && placedInFrame.getId() != existingFrame.entityId() && this.frameMarkers.containsKey(existingFrame.getId())) {
             this.removeDecoration(getFrameKey(existingFrame.entityId()));
          }
 
-         MapFrame mapFrame = new MapFrame(pos, frame.getDirection().get2DDataValue() * 90, frame.getId());
-         this.addDecoration(MapDecorationTypes.FRAME, tickingPlayer.level(), getFrameKey(frame.getId()), (double)pos.getX(), (double)pos.getZ(), (double)(frame.getDirection().get2DDataValue() * 90), (Component)null);
+         MapFrame mapFrame = new MapFrame(pos, placedInFrame.getDirection().get2DDataValue() * 90, placedInFrame.getId());
+         this.addDecoration(MapDecorationTypes.FRAME, tickingPlayer.level(), getFrameKey(placedInFrame.getId()), (double)pos.getX(), (double)pos.getZ(), (double)(placedInFrame.getDirection().get2DDataValue() * 90), (Component)null);
          MapFrame oldFrame = (MapFrame)this.frameMarkers.put(mapFrame.getId(), mapFrame);
          if (!mapFrame.equals(oldFrame)) {
             this.setDirty();

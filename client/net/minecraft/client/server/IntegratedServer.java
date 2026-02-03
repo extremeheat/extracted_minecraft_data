@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -44,6 +45,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
@@ -64,8 +66,8 @@ public class IntegratedServer extends MinecraftServer {
    private volatile List<SimpleGizmoCollector.GizmoInstance> latestTicksGizmos = new ArrayList();
    private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
 
-   public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Services services, final LevelLoadListener levelLoadListener) {
-      super(serverThread, levelStorageAccess, packRepository, worldStem, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener);
+   public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Services services, final LevelLoadListener levelLoadListener) {
+      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener);
       this.setSingleplayerProfile(minecraft.getGameProfile());
       this.setDemo(minecraft.isDemo());
       this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));
@@ -283,19 +285,24 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    protected GlobalPos selectLevelLoadFocusPos() {
-      CompoundTag loadedPlayerTag = this.worldData.getLoadedPlayerTag();
-      if (loadedPlayerTag == null) {
+      UUID lastSinglePlayerOwnerUUID = this.worldData.getSinglePlayerUUID();
+      if (lastSinglePlayerOwnerUUID == null) {
          return super.selectLevelLoadFocusPos();
       } else {
-         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-            ValueInput input = TagValueInput.create(reporter, this.registryAccess(), loadedPlayerTag);
-            ServerPlayer.SavedPosition loadedPosition = (ServerPlayer.SavedPosition)input.read(ServerPlayer.SavedPosition.MAP_CODEC).orElse(ServerPlayer.SavedPosition.EMPTY);
-            if (loadedPosition.dimension().isPresent() && loadedPosition.position().isPresent()) {
-               return new GlobalPos((ResourceKey)loadedPosition.dimension().get(), BlockPos.containing((Position)loadedPosition.position().get()));
+         Optional<CompoundTag> playerData = this.playerDataStorage.load(new NameAndId(lastSinglePlayerOwnerUUID, "<single player owner>"));
+         if (playerData.isEmpty()) {
+            return super.selectLevelLoadFocusPos();
+         } else {
+            try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
+               ValueInput input = TagValueInput.create(reporter, this.registryAccess(), (CompoundTag)playerData.get());
+               ServerPlayer.SavedPosition loadedPosition = (ServerPlayer.SavedPosition)input.read(ServerPlayer.SavedPosition.MAP_CODEC).orElse(ServerPlayer.SavedPosition.EMPTY);
+               if (loadedPosition.dimension().isPresent() && loadedPosition.position().isPresent()) {
+                  return new GlobalPos((ResourceKey)loadedPosition.dimension().get(), BlockPos.containing((Position)loadedPosition.position().get()));
+               }
             }
-         }
 
-         return super.selectLevelLoadFocusPos();
+            return super.selectLevelLoadFocusPos();
+         }
       }
    }
 

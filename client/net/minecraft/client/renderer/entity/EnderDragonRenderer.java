@@ -34,7 +34,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
    private static final Identifier DRAGON_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
    private static final Identifier DRAGON_EYES_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_eyes.png");
    private static final RenderType RENDER_TYPE;
-   private static final RenderType DECAL;
+   private static final RenderType DYING_RENDER_TYPE;
    private static final RenderType EYES;
    private static final RenderType BEAM;
    private static final float HALF_SQRT_3;
@@ -57,11 +57,10 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       poseStack.translate(0.0F, -1.501F, 0.0F);
       int overlayCoords = OverlayTexture.pack(0.0F, state.hasRedOverlay);
       if (state.deathTime > 0.0F) {
-         int color = ARGB.white(state.deathTime / 200.0F);
-         submitNodeCollector.order(0).submitModel(this.model, state, poseStack, RenderTypes.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), state.lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-         submitNodeCollector.order(1).submitModel(this.model, state, poseStack, DECAL, state.lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         int color = ARGB.white(1.0F - state.deathTime / 200.0F);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
-         submitNodeCollector.order(0).submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       submitNodeCollector.submitModel(this.model, state, poseStack, EYES, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
@@ -180,10 +179,10 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
    }
 
    static {
-      RENDER_TYPE = RenderTypes.entityCutoutNoCull(DRAGON_LOCATION);
-      DECAL = RenderTypes.entityDecal(DRAGON_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutout(DRAGON_LOCATION);
+      DYING_RENDER_TYPE = RenderTypes.entityCutoutDissolve(DRAGON_LOCATION, DRAGON_EXPLODING_LOCATION);
       EYES = RenderTypes.eyes(DRAGON_EYES_LOCATION);
-      BEAM = RenderTypes.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
+      BEAM = RenderTypes.endCrystalBeam(CRYSTAL_BEAM_LOCATION);
       HALF_SQRT_3 = (float)(Math.sqrt(3.0) / 2.0);
    }
 }

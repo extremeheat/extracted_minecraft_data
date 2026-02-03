@@ -13,7 +13,7 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -38,7 +38,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.UPWARDS_BRANCHING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
       BlockPos.MutableBlockPos logPos = new BlockPos.MutableBlockPos();
 
@@ -60,7 +60,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
       return attachments;
    }
 
-   private void placeBranch(final LevelSimulatedReader level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final TreeConfiguration config, final List<FoliagePlacer.FoliageAttachment> attachments, final BlockPos.MutableBlockPos logPos, final int currentHeight, final Direction branchDir, final int branchPos, int branchSteps) {
+   private void placeBranch(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final TreeConfiguration config, final List<FoliagePlacer.FoliageAttachment> attachments, final BlockPos.MutableBlockPos logPos, final int currentHeight, final Direction branchDir, final int branchPos, int branchSteps) {
       int heightAlongBranch = currentHeight + branchPos;
       int logX = logPos.getX();
       int logZ = logPos.getZ();
@@ -89,7 +89,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
 
    }
 
-   protected boolean validTreePos(final LevelSimulatedReader level, final BlockPos pos) {
+   protected boolean validTreePos(final WorldGenLevel level, final BlockPos pos) {
       return super.validTreePos(level, pos) || level.isStateAtPosition(pos, (s) -> s.is(this.canGrowThrough));
    }
 }

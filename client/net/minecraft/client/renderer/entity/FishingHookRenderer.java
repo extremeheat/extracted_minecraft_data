@@ -130,6 +130,6 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
    }
 
    static {
-      RENDER_TYPE = RenderTypes.entityCutout(TEXTURE_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutoutCull(TEXTURE_LOCATION);
    }
 }

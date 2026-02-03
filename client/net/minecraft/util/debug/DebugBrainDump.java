@@ -2,10 +2,12 @@ package net.minecraft.util.debug;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,7 +28,6 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
-import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -110,7 +111,7 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
       int angerLevel = var10000;
       List<String> activities = brain.getActiveActivities().stream().map(Activity::getName).toList();
       List<String> behaviors = brain.getRunningBehaviors().stream().map(BehaviorControl::debugString).toList();
-      List<String> memories = getMemoryDescriptions(serverLevel, entity, gameTime).map((description) -> StringUtil.truncateStringIfNecessary(description, 255, true)).toList();
+      List<String> memories = getMemoryDescriptions(serverLevel, entity, gameTime);
       Set<BlockPos> pois = getKnownBlockPositions(brain, MemoryModuleType.JOB_SITE, MemoryModuleType.HOME, MemoryModuleType.MEETING_POINT);
       Set<BlockPos> potentialPois = getKnownBlockPositions(brain, MemoryModuleType.POTENTIAL_JOB_SITE);
       List var26;
@@ -142,25 +143,40 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
       return gossips;
    }
 
-   private static Stream<String> getMemoryDescriptions(final ServerLevel level, final LivingEntity body, final long timestamp) {
-      return body.getBrain().getMemories().entrySet().stream().map((entry) -> {
-         MemoryModuleType<?> memoryType = (MemoryModuleType)entry.getKey();
-         Optional<? extends ExpirableValue<?>> optionalExpirableValue = (Optional)entry.getValue();
-         return getMemoryDescription(level, timestamp, memoryType, optionalExpirableValue);
-      }).sorted();
+   private static List<String> getMemoryDescriptions(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      final List<String> result = new ArrayList();
+      body.getBrain().forEach(new Brain.Visitor() {
+         public <U> void acceptEmpty(final MemoryModuleType<U> type) {
+            this.collectResult(type, Optional.empty(), OptionalLong.empty());
+         }
+
+         public <U> void accept(final MemoryModuleType<U> type, final U value) {
+            this.collectResult(type, Optional.of(value), OptionalLong.empty());
+         }
+
+         public <U> void accept(final MemoryModuleType<U> type, final U value, final long timeToLive) {
+            this.collectResult(type, Optional.of(value), OptionalLong.of(timestamp));
+         }
+
+         private void collectResult(final MemoryModuleType<?> memoryType, final Optional<?> value, final OptionalLong ttl) {
+            String description = DebugBrainDump.getMemoryDescription(level, timestamp, memoryType, value, ttl);
+            result.add(StringUtil.truncateStringIfNecessary(description, 255, true));
+         }
+      });
+      Collections.sort(result);
+      return result;
    }
 
-   private static String getMemoryDescription(final ServerLevel level, final long timestamp, final MemoryModuleType<?> memoryType, final Optional<? extends ExpirableValue<?>> maybeValue) {
+   private static String getMemoryDescription(final ServerLevel level, final long timestamp, final MemoryModuleType<?> memoryType, final Optional<?> maybeValue, final OptionalLong ttl) {
       String description;
       if (maybeValue.isPresent()) {
-         ExpirableValue<?> expirableValue = (ExpirableValue)maybeValue.get();
-         Object value = expirableValue.getValue();
+         Object value = maybeValue.get();
          if (memoryType == MemoryModuleType.HEARD_BELL_TIME) {
             long timeSince = timestamp - (Long)value;
             description = timeSince + " ticks ago";
-         } else if (expirableValue.canExpire()) {
+         } else if (ttl.isPresent()) {
             String var10000 = getShortDescription(level, value);
-            description = var10000 + " (ttl: " + expirableValue.getTimeToLive() + ")";
+            description = var10000 + " (ttl: " + ttl.getAsLong() + ")";
          } else {
             description = getShortDescription(level, value);
          }

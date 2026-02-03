@@ -250,10 +250,10 @@ public abstract class PlayerList {
    }
 
    public Optional<CompoundTag> loadPlayerData(final NameAndId nameAndId) {
-      CompoundTag singleplayerTag = this.server.getWorldData().getLoadedPlayerTag();
-      if (this.server.isSingleplayerOwner(nameAndId) && singleplayerTag != null) {
+      UUID lastSingleplayerOwnerUUID = this.server.getWorldData().getSinglePlayerUUID();
+      if (this.server.isSingleplayerOwner(nameAndId) && lastSingleplayerOwnerUUID != null) {
          LOGGER.debug("loading single player");
-         return Optional.of(singleplayerTag);
+         return this.playerIo.load(new NameAndId(lastSingleplayerOwnerUUID, "<singleplayer owner>"));
       } else {
          return this.playerIo.load(nameAndId);
       }
@@ -654,10 +654,6 @@ public abstract class PlayerList {
 
    public MinecraftServer getServer() {
       return this.server;
-   }
-
-   public @Nullable CompoundTag getSingleplayerData() {
-      return null;
    }
 
    public void setAllowCommandsForAllPlayers(final boolean allowCommands) {

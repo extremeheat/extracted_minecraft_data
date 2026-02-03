@@ -119,7 +119,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
 
    public DedicatedServerProperties(final Properties settings) {
       super(settings);
-      this.difficulty = this.getMutable("difficulty", dispatchNumberOrString(Difficulty::byId, Difficulty::byName), Difficulty::getKey, Difficulty.EASY);
+      this.difficulty = this.getMutable("difficulty", dispatchNumberOrString(Difficulty::byId, Difficulty::byName), Difficulty::getSerializedName, Difficulty.EASY);
       this.gameMode = this.getMutable("gamemode", dispatchNumberOrString(GameType::byId, GameType::byName), GameType::getName, GameType.SURVIVAL);
       this.levelName = this.get("level-name", "world");
       this.serverPort = this.get("server-port", 25565);

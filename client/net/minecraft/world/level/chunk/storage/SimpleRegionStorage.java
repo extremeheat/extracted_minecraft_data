@@ -1,11 +1,9 @@
 package net.minecraft.world.level.chunk.storage;
 
-import com.google.common.base.Suppliers;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -24,19 +22,12 @@ public class SimpleRegionStorage implements AutoCloseable {
    private final IOWorker worker;
    private final DataFixer fixerUpper;
    private final DataFixTypes dataFixType;
-   private final Supplier<LegacyTagFixer> legacyFixer;
 
    public SimpleRegionStorage(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean syncWrites, final DataFixTypes dataFixType) {
-      this(info, folder, fixerUpper, syncWrites, dataFixType, LegacyTagFixer.EMPTY);
-   }
-
-   public SimpleRegionStorage(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean syncWrites, final DataFixTypes dataFixType, final Supplier<LegacyTagFixer> legacyFixer) {
       super();
       this.fixerUpper = fixerUpper;
       this.dataFixType = dataFixType;
       this.worker = new IOWorker(info, folder, syncWrites);
-      Objects.requireNonNull(legacyFixer);
-      this.legacyFixer = Suppliers.memoize(legacyFixer::get);
    }
 
    public boolean isOldChunkAround(final ChunkPos pos, final int range) {
@@ -52,7 +43,6 @@ public class SimpleRegionStorage implements AutoCloseable {
    }
 
    public CompletableFuture<Void> write(final ChunkPos pos, final Supplier<CompoundTag> supplier) {
-      this.markChunkDone(pos);
       return this.worker.store(pos, supplier);
    }
 
@@ -62,16 +52,16 @@ public class SimpleRegionStorage implements AutoCloseable {
          return chunkTag;
       } else {
          try {
-            chunkTag = ((LegacyTagFixer)this.legacyFixer.get()).applyFix(chunkTag);
             injectDatafixingContext(chunkTag, dataFixContextTag);
-            chunkTag = this.dataFixType.updateToCurrentVersion(this.fixerUpper, chunkTag, Math.max(((LegacyTagFixer)this.legacyFixer.get()).targetDataVersion(), version));
+            chunkTag = this.dataFixType.update(this.fixerUpper, chunkTag, version, targetVersion);
             removeDatafixingContext(chunkTag);
-            NbtUtils.addCurrentDataVersion(chunkTag);
+            NbtUtils.addDataVersion(chunkTag, targetVersion);
             return chunkTag;
          } catch (Exception e) {
             CrashReport report = CrashReport.forThrowable(e, "Updated chunk");
             CrashReportCategory details = report.addCategory("Updated chunk details");
             details.setDetail("Data version", version);
+            details.setDetail("Target version", targetVersion);
             throw new ReportedException(report);
          }
       }
@@ -94,10 +84,6 @@ public class SimpleRegionStorage implements AutoCloseable {
 
    private static void removeDatafixingContext(final CompoundTag chunkTag) {
       chunkTag.remove("__context");
-   }
-
-   protected void markChunkDone(final ChunkPos pos) {
-      ((LegacyTagFixer)this.legacyFixer.get()).markChunkDone(pos);
    }
 
    public CompletableFuture<Void> synchronize(final boolean flush) {

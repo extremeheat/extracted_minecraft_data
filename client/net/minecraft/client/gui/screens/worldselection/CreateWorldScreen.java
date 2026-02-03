@@ -79,10 +79,10 @@ import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import net.minecraft.world.level.storage.LevelDataAndDimensions;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
-import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
@@ -113,7 +113,7 @@ public class CreateWorldScreen extends Screen {
    private @Nullable TabNavigationBar tabNavigationBar;
 
    public static void openFresh(final Minecraft minecraft, final Runnable onClose) {
-      openFresh(minecraft, onClose, (createWorldScreen, finalLayers, worldData, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldData));
+      openFresh(minecraft, onClose, (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
    }
 
    public static void openFresh(final Minecraft minecraft, final Runnable onClose, final CreateWorldCallback createWorld) {
@@ -125,7 +125,7 @@ public class CreateWorldScreen extends Screen {
    public static void testWorld(final Minecraft minecraft, final Runnable onClose) {
       WorldCreationContextMapper worldCreationContext = (managers, registries, cookie) -> new WorldCreationContext(cookie.worldGenSettings().options(), cookie.worldGenSettings().dimensions(), registries, managers, cookie.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, (new GameRuleMap.Builder()).set(GameRules.ADVANCE_TIME, false).set(GameRules.ADVANCE_WEATHER, false).set(GameRules.SPAWN_MOBS, false).build(), FlatLevelGeneratorPresets.REDSTONE_READY));
       Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(context.datapackWorldgen()));
-      openCreateWorldScreen(minecraft, onClose, worldGenSettings, worldCreationContext, WorldPresets.FLAT, (createWorldScreen, finalLayers, worldData, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldData));
+      openCreateWorldScreen(minecraft, onClose, worldGenSettings, worldCreationContext, WorldPresets.FLAT, (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
    }
 
    private static void openCreateWorldScreen(final Minecraft minecraft, final Runnable onClose, final Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings, final WorldCreationContextMapper worldCreationContext, final ResourceKey<WorldPreset> worldPreset, final CreateWorldCallback createWorld) {
@@ -146,13 +146,13 @@ public class CreateWorldScreen extends Screen {
    }
 
    public static CreateWorldScreen createFromExisting(final Minecraft minecraft, final Runnable onClose, final LevelSettings levelSettings, final WorldCreationContext worldCreationContext, final @Nullable Path newDataPackDir) {
-      CreateWorldScreen result = new CreateWorldScreen(minecraft, onClose, worldCreationContext, WorldPresets.fromSettings(worldCreationContext.selectedDimensions()), OptionalLong.of(worldCreationContext.options().seed()), (createWorldScreen, finalLayers, worldData, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldData));
+      CreateWorldScreen result = new CreateWorldScreen(minecraft, onClose, worldCreationContext, WorldPresets.fromSettings(worldCreationContext.selectedDimensions()), OptionalLong.of(worldCreationContext.options().seed()), (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
       result.recreated = true;
       result.uiState.setName(levelSettings.levelName());
       result.uiState.setAllowCommands(levelSettings.allowCommands());
-      result.uiState.setDifficulty(levelSettings.difficulty());
-      result.uiState.getGameRules().setAll((GameRules)levelSettings.gameRules(), (MinecraftServer)null);
-      if (levelSettings.hardcore()) {
+      result.uiState.setDifficulty(levelSettings.difficultySettings().difficulty());
+      result.uiState.getGameRules().setAll((GameRuleMap)worldCreationContext.initialWorldCreationOptions().gameRuleOverwrites(), (MinecraftServer)null);
+      if (levelSettings.difficultySettings().hardcore()) {
          result.uiState.setGameMode(WorldCreationUiState.SelectedGameMode.HARDCORE);
       } else if (levelSettings.gameType().isSurvival()) {
          result.uiState.setGameMode(WorldCreationUiState.SelectedGameMode.SURVIVAL);
@@ -211,19 +211,32 @@ public class CreateWorldScreen extends Screen {
 
    private void onCreate() {
       WorldCreationContext context = this.uiState.getSettings();
-      WorldDimensions.Complete finalDimensions = context.selectedDimensions().bake(context.datapackDimensions());
+      WorldDimensions worldDimensions = context.selectedDimensions();
+      WorldDimensions.Complete finalDimensions = worldDimensions.bake(context.datapackDimensions());
       LayeredRegistryAccess<RegistryLayer> finalLayers = context.worldgenRegistries().replaceFrom(RegistryLayer.DIMENSIONS, finalDimensions.dimensionsRegistryAccess());
       Lifecycle lifecycleFromFeatures = FeatureFlags.isExperimental(context.dataConfiguration().enabledFeatures()) ? Lifecycle.experimental() : Lifecycle.stable();
       Lifecycle lifecycleFromRegistries = finalLayers.compositeAccess().allRegistriesLifecycle();
       Lifecycle lifecycle = lifecycleFromRegistries.add(lifecycleFromFeatures);
       boolean skipWarning = !this.recreated && lifecycleFromRegistries == Lifecycle.stable();
-      LevelSettings levelSettings = this.createLevelSettings(finalDimensions.specialWorldProperty() == PrimaryLevelData.SpecialWorldProperty.DEBUG);
-      PrimaryLevelData worldData = new PrimaryLevelData(levelSettings, this.uiState.getSettings().options(), finalDimensions.specialWorldProperty(), lifecycle);
-      WorldOpenFlows.confirmWorldCreation(this.minecraft, this, lifecycle, () -> this.createWorldAndCleanup(finalLayers, worldData), skipWarning);
+      boolean isDebug = finalDimensions.specialWorldProperty() == PrimaryLevelData.SpecialWorldProperty.DEBUG;
+      LevelSettings levelSettings = this.createLevelSettings(isDebug);
+      GameRules gameRules;
+      if (isDebug) {
+         gameRules = (GameRules)MinecraftServer.DEFAULT_GAME_RULES.get();
+         gameRules.set(GameRules.ADVANCE_TIME, false, (MinecraftServer)null);
+      } else {
+         gameRules = this.uiState.getGameRules();
+      }
+
+      PrimaryLevelData worldData = new PrimaryLevelData(levelSettings, finalDimensions.specialWorldProperty(), lifecycle);
+      WorldOptions options = this.uiState.getSettings().options();
+      WorldGenSettings worldGenSettings = new WorldGenSettings(options, worldDimensions);
+      LevelDataAndDimensions.WorldDataAndGenSettings worldDataAndGenSettings = new LevelDataAndDimensions.WorldDataAndGenSettings(worldData, worldGenSettings);
+      WorldOpenFlows.confirmWorldCreation(this.minecraft, this, lifecycle, () -> this.createWorldAndCleanup(finalLayers, worldDataAndGenSettings, Optional.of(gameRules)), skipWarning);
    }
 
-   private void createWorldAndCleanup(final LayeredRegistryAccess<RegistryLayer> finalLayers, final PrimaryLevelData worldData) {
-      boolean worldCreationSuccessful = this.createWorldCallback.create(this, finalLayers, worldData, this.tempDataPackDir);
+   private void createWorldAndCleanup(final LayeredRegistryAccess<RegistryLayer> finalLayers, final LevelDataAndDimensions.WorldDataAndGenSettings worldDataAndGenSettings, final Optional<GameRules> gameRules) {
+      boolean worldCreationSuccessful = this.createWorldCallback.create(this, finalLayers, worldDataAndGenSettings, gameRules, this.tempDataPackDir);
       this.removeTempDataPackDir();
       if (!worldCreationSuccessful) {
          this.popScreen();
@@ -231,7 +244,7 @@ public class CreateWorldScreen extends Screen {
 
    }
 
-   private boolean createNewWorld(final LayeredRegistryAccess<RegistryLayer> finalLayers, final WorldData worldData) {
+   private boolean createNewWorld(final LayeredRegistryAccess<RegistryLayer> finalLayers, final LevelDataAndDimensions.WorldDataAndGenSettings worldDataAndGenSettings, final Optional<GameRules> gameRules) {
       String worldFolder = this.uiState.getTargetFolder();
       WorldCreationContext context = this.uiState.getSettings();
       queueLoadScreen(this.minecraft, PREPARING_WORLD_DATA);
@@ -240,20 +253,14 @@ public class CreateWorldScreen extends Screen {
          SystemToast.onPackCopyFailure(this.minecraft, worldFolder);
          return false;
       } else {
-         this.minecraft.createWorldOpenFlows().createLevelFromExistingSettings((LevelStorageSource.LevelStorageAccess)newWorldAccess.get(), context.dataPackResources(), finalLayers, worldData);
+         this.minecraft.createWorldOpenFlows().createLevelFromExistingSettings((LevelStorageSource.LevelStorageAccess)newWorldAccess.get(), context.dataPackResources(), finalLayers, worldDataAndGenSettings, gameRules);
          return true;
       }
    }
 
    private LevelSettings createLevelSettings(final boolean isDebug) {
       String name = this.uiState.getName().trim();
-      if (isDebug) {
-         GameRules debugGameRules = new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
-         debugGameRules.set(GameRules.ADVANCE_TIME, false, (MinecraftServer)null);
-         return new LevelSettings(name, GameType.SPECTATOR, false, Difficulty.PEACEFUL, true, debugGameRules, WorldDataConfiguration.DEFAULT);
-      } else {
-         return new LevelSettings(name, this.uiState.getGameMode().gameType, this.uiState.isHardcore(), this.uiState.getDifficulty(), this.uiState.isAllowCommands(), this.uiState.getGameRules(), this.uiState.getSettings().dataConfiguration());
-      }
+      return isDebug ? new LevelSettings(name, GameType.SPECTATOR, new LevelSettings.DifficultySettings(Difficulty.PEACEFUL, false, false), true, WorldDataConfiguration.DEFAULT) : new LevelSettings(name, this.uiState.getGameMode().gameType, new LevelSettings.DifficultySettings(this.uiState.getDifficulty(), this.uiState.isHardcore(), false), this.uiState.isAllowCommands(), this.uiState.getSettings().dataConfiguration());
    }
 
    public boolean keyPressed(final KeyEvent event) {
@@ -353,7 +360,7 @@ public class CreateWorldScreen extends Screen {
          } else {
             WorldCreationContext existingContext = this.uiState.getSettings();
             DynamicOps<JsonElement> writeOps = existingContext.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
-            DataResult<JsonElement> encoded = WorldGenSettings.encode(writeOps, existingContext.options(), existingContext.selectedDimensions()).setLifecycle(Lifecycle.stable());
+            DataResult<JsonElement> encoded = WorldGenSettings.CODEC.encodeStart(writeOps, new WorldGenSettings(existingContext.options(), existingContext.selectedDimensions())).setLifecycle(Lifecycle.stable());
             DynamicOps<JsonElement> readOps = context.datapackWorldgen().<JsonElement>createSerializationContext(JsonOps.INSTANCE);
             WorldGenSettings settings = (WorldGenSettings)encoded.flatMap((r) -> WorldGenSettings.CODEC.parse(readOps, r)).getOrThrow((error) -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + error));
             return new WorldLoader.DataLoadOutput(new DataPackReloadCookie(settings, context.dataConfiguration()), context.datapackDimensions());

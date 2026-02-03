@@ -84,7 +84,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
          if (forceTransparent) {
             return RenderTypes.entityTranslucent(texture, false);
          } else {
-            return isBodyVisible ? RenderTypes.entityCutoutNoCull(texture, false) : null;
+            return isBodyVisible ? RenderTypes.entityCutout(texture, false) : null;
          }
       }
    }

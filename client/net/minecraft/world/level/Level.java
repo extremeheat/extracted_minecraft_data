@@ -121,7 +121,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    protected final RandomSource random = RandomSource.create();
    /** @deprecated */
    @Deprecated
-   private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
+   private final RandomSource soundSeedGenerator = RandomSource.createThreadSafe();
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
    private final boolean isClientSide;
@@ -368,15 +368,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void playSound(final @Nullable Entity except, final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
-      this.playSeededSound(except, x, y, z, sound, source, volume, pitch, this.threadSafeRandom.nextLong());
+      this.playSeededSound(except, x, y, z, sound, source, volume, pitch, this.soundSeedGenerator.nextLong());
    }
 
    public void playSound(final @Nullable Entity except, final double x, final double y, final double z, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch) {
-      this.playSeededSound(except, x, y, z, sound, source, volume, pitch, this.threadSafeRandom.nextLong());
+      this.playSeededSound(except, x, y, z, sound, source, volume, pitch, this.soundSeedGenerator.nextLong());
    }
 
    public void playSound(final @Nullable Entity except, final Entity sourceEntity, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
-      this.playSeededSound(except, sourceEntity, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, this.threadSafeRandom.nextLong());
+      this.playSeededSound(except, sourceEntity, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, this.soundSeedGenerator.nextLong());
    }
 
    public void playLocalSound(final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay) {
@@ -531,16 +531,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       } else {
          return respawnData;
       }
-   }
-
-   protected void prepareWeather() {
-      if (this.levelData.isRaining()) {
-         this.rainLevel = 1.0F;
-         if (this.levelData.isThundering()) {
-            this.thunderLevel = 1.0F;
-         }
-      }
-
    }
 
    public void close() throws IOException {

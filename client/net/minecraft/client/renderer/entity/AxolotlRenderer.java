@@ -47,6 +47,7 @@ public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderSt
       state.idleOnGroundAnimationState.copyFrom(entity.idleOnGroundAnimationState);
       state.idleUnderWaterOnGroundAnimationState.copyFrom(entity.idleUnderWaterOnGroundAnimationState);
       state.idleUnderWaterAnimationState.copyFrom(entity.idleUnderWaterAnimationState);
+      state.playDeadAnimationState.copyFrom(entity.playDeadAnimationState);
    }
 
    private static record AxolotlTextures(Identifier adult, Identifier baby) {

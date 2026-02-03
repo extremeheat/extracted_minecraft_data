@@ -21,7 +21,7 @@ public class RopesLayer<M extends HappyGhastModel> extends RenderLayer<HappyGhas
 
    public RopesLayer(final RenderLayerParent<HappyGhastRenderState, M> renderer, final EntityModelSet modelSet, final Identifier ropesTexture) {
       super(renderer);
-      this.ropes = RenderTypes.entityCutoutNoCull(ropesTexture);
+      this.ropes = RenderTypes.entityCutout(ropesTexture);
       this.adultModel = new HappyGhastModel(modelSet.bakeLayer(ModelLayers.HAPPY_GHAST_ROPES));
       this.babyModel = new HappyGhastModel(modelSet.bakeLayer(ModelLayers.HAPPY_GHAST_BABY_ROPES));
    }

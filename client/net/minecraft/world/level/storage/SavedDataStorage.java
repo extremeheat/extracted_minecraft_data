@@ -27,8 +27,10 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.FastBufferedInputStream;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -37,23 +39,29 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class DimensionDataStorage implements AutoCloseable {
+public class SavedDataStorage implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Map<SavedDataType<?>, Optional<SavedData>> cache = new HashMap();
    private final DataFixer fixerUpper;
    private final HolderLookup.Provider registries;
    private final Path dataFolder;
    private CompletableFuture<?> pendingWriteFuture = CompletableFuture.completedFuture((Object)null);
+   private boolean closed;
 
-   public DimensionDataStorage(final Path dataFolder, final DataFixer fixerUpper, final HolderLookup.Provider registries) {
+   public SavedDataStorage(final Path dataFolder, final DataFixer fixerUpper, final HolderLookup.Provider registries) {
       super();
       this.fixerUpper = fixerUpper;
       this.dataFolder = dataFolder;
       this.registries = registries;
    }
 
-   private Path getDataFile(final String id) {
-      return this.dataFolder.resolve(id + ".dat");
+   private Path getDataFile(final Identifier id) {
+      Path path = id.withSuffix(".dat").resolveAgainst(this.dataFolder);
+      if (!path.toAbsolutePath().startsWith(this.dataFolder.toAbsolutePath())) {
+         throw new IllegalArgumentException("SavedDataStorage attempted file access outside of data directory: {}" + String.valueOf(path));
+      } else {
+         return path;
+      }
    }
 
    public <T extends SavedData> T computeIfAbsent(final SavedDataType<T> type) {
@@ -81,7 +89,7 @@ public class DimensionDataStorage implements AutoCloseable {
       try {
          Path file = this.getDataFile(type.id());
          if (Files.exists(file, new LinkOption[0])) {
-            CompoundTag tag = this.readTagFromDisk(type.id(), type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
+            CompoundTag tag = this.readTagFromDisk(file, type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
             RegistryOps<Tag> ops = this.registries.<Tag>createSerializationContext(NbtOps.INSTANCE);
             return (T)(type.codec().parse(ops, tag.get("data")).resultOrPartial((error) -> LOGGER.error("Failed to parse saved data for '{}': {}", type, error)).orElse((Object)null));
          }
@@ -97,8 +105,8 @@ public class DimensionDataStorage implements AutoCloseable {
       data.setDirty();
    }
 
-   public CompoundTag readTagFromDisk(final String id, final DataFixTypes type, final int newVersion) throws IOException {
-      InputStream in = Files.newInputStream(this.getDataFile(id));
+   public CompoundTag readTagFromDisk(final Path dataFile, final DataFixTypes type, final int newVersion) throws IOException {
+      InputStream in = Files.newInputStream(dataFile);
 
       CompoundTag var8;
       try {
@@ -177,33 +185,37 @@ public class DimensionDataStorage implements AutoCloseable {
    }
 
    public CompletableFuture<?> scheduleSave() {
-      Map<SavedDataType<?>, CompoundTag> tagsToSave = this.collectDirtyTagsToSave();
-      if (tagsToSave.isEmpty()) {
-         return CompletableFuture.completedFuture((Object)null);
+      if (this.closed) {
+         throw new IllegalStateException("Trying to schedule save when SavedDataStorage is already closed");
       } else {
-         int threads = Util.maxAllowedExecutorThreads();
-         int taskCount = tagsToSave.size();
-         if (taskCount > threads) {
-            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((ignored) -> {
-               List<CompletableFuture<?>> tasks = new ArrayList(threads);
-               int bucketSize = Mth.positiveCeilDiv(taskCount, threads);
-
-               for(List<Map.Entry<SavedDataType<?>, CompoundTag>> entries : Iterables.partition(tagsToSave.entrySet(), bucketSize)) {
-                  tasks.add(CompletableFuture.runAsync(() -> {
-                     for(Map.Entry<SavedDataType<?>, CompoundTag> entry : entries) {
-                        this.tryWrite((SavedDataType)entry.getKey(), (CompoundTag)entry.getValue());
-                     }
-
-                  }, Util.ioPool()));
-               }
-
-               return CompletableFuture.allOf((CompletableFuture[])tasks.toArray((x$0) -> new CompletableFuture[x$0]));
-            });
+         Map<SavedDataType<?>, CompoundTag> tagsToSave = this.collectDirtyTagsToSave();
+         if (tagsToSave.isEmpty()) {
+            return CompletableFuture.completedFuture((Object)null);
          } else {
-            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((ignored) -> CompletableFuture.allOf((CompletableFuture[])tagsToSave.entrySet().stream().map((entry) -> CompletableFuture.runAsync(() -> this.tryWrite((SavedDataType)entry.getKey(), (CompoundTag)entry.getValue()), Util.ioPool())).toArray((x$0) -> new CompletableFuture[x$0])));
-         }
+            int threads = Util.maxAllowedExecutorThreads();
+            int taskCount = tagsToSave.size();
+            if (taskCount > threads) {
+               this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((ignored) -> {
+                  List<CompletableFuture<?>> tasks = new ArrayList(threads);
+                  int bucketSize = Mth.positiveCeilDiv(taskCount, threads);
 
-         return this.pendingWriteFuture;
+                  for(List<Map.Entry<SavedDataType<?>, CompoundTag>> entries : Iterables.partition(tagsToSave.entrySet(), bucketSize)) {
+                     tasks.add(CompletableFuture.runAsync(() -> {
+                        for(Map.Entry<SavedDataType<?>, CompoundTag> entry : entries) {
+                           this.tryWrite((SavedDataType)entry.getKey(), (CompoundTag)entry.getValue());
+                        }
+
+                     }, Util.ioPool()));
+                  }
+
+                  return CompletableFuture.allOf((CompletableFuture[])tasks.toArray((x$0) -> new CompletableFuture[x$0]));
+               });
+            } else {
+               this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((ignored) -> CompletableFuture.allOf((CompletableFuture[])tagsToSave.entrySet().stream().map((entry) -> CompletableFuture.runAsync(() -> this.tryWrite((SavedDataType)entry.getKey(), (CompoundTag)entry.getValue()), Util.ioPool())).toArray((x$0) -> new CompletableFuture[x$0])));
+            }
+
+            return this.pendingWriteFuture;
+         }
       }
    }
 
@@ -229,6 +241,7 @@ public class DimensionDataStorage implements AutoCloseable {
       Path path = this.getDataFile(type.id());
 
       try {
+         FileUtil.createDirectoriesSafe(path.getParent());
          NbtIo.writeCompressed(tag, path);
       } catch (IOException e) {
          LOGGER.error("Could not save data to {}", path.getFileName(), e);
@@ -241,6 +254,11 @@ public class DimensionDataStorage implements AutoCloseable {
    }
 
    public void close() {
-      this.saveAndJoin();
+      if (this.closed) {
+         throw new IllegalStateException("Trying to close SavedDataStorage when it is already closed");
+      } else {
+         this.saveAndJoin();
+         this.closed = true;
+      }
    }
 }

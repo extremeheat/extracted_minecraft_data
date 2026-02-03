@@ -218,7 +218,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    private void upload() {
       Path worldFolder = this.minecraft.gameDirectory.toPath().resolve("saves").resolve(this.selectedLevel.getLevelId());
       RealmsWorldOptions worldOptions = RealmsWorldOptions.createFromSettings(this.selectedLevel.getSettings(), this.selectedLevel.levelVersion().minecraftVersionName());
-      RealmsSlot realmsSlot = new RealmsSlot(this.slotId, worldOptions, List.of(RealmsSetting.hardcoreSetting(this.selectedLevel.getSettings().hardcore())));
+      RealmsSlot realmsSlot = new RealmsSlot(this.slotId, worldOptions, List.of(RealmsSetting.hardcoreSetting(this.selectedLevel.isHardcore())));
       RealmsWorldUpload newUpload = new RealmsWorldUpload(worldFolder, realmsSlot, this.minecraft.getUser(), this.realmId, this);
       if (!this.currentUpload.compareAndSet((Object)null, newUpload)) {
          throw new IllegalStateException("Tried to start uploading but was already uploading");

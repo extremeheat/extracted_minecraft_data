@@ -98,7 +98,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       private final ModelPart lid;
 
       public ShulkerBoxModel(final ModelPart root) {
-         super(root, RenderTypes::entityCutoutNoCull);
+         super(root, RenderTypes::entityCutout);
          this.lid = root.getChild("lid");
       }
 

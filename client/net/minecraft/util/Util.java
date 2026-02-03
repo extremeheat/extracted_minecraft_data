@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -746,11 +747,11 @@ public class Util {
       return list.isEmpty() ? Optional.empty() : Optional.of(getRandom(list, random));
    }
 
-   private static BooleanSupplier createRenamer(final Path from, final Path to) {
+   private static BooleanSupplier createRenamer(final Path from, final Path to, final CopyOption... options) {
       return new BooleanSupplier() {
          public boolean getAsBoolean() {
             try {
-               Files.move(from, to);
+               Files.move(from, to, options);
                return true;
             } catch (IOException e) {
                Util.LOGGER.error("Failed to rename", e);
@@ -829,6 +830,10 @@ public class Util {
 
       LOGGER.error("Failed to {}, aborting, progress might be lost", description);
       return false;
+   }
+
+   public static boolean safeMoveFile(final Path fromPath, final Path toPath, final CopyOption... options) {
+      return runWithRetries(10, "move from  " + String.valueOf(fromPath) + " to " + String.valueOf(toPath), createRenamer(fromPath, toPath, options), createFileCreatedCheck(toPath));
    }
 
    public static void safeReplaceFile(final Path targetPath, final Path newPath, final Path backupPath) {

@@ -26,7 +26,7 @@ public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRend
       poseStack.pushPose();
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
       poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot));
-      submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.entityCutout(this.getTextureLocation(state)), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.entityCutoutCull(this.getTextureLocation(state)), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }

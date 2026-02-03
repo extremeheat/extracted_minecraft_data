@@ -168,6 +168,10 @@ public class SkeletonHorse extends AbstractHorse {
       return true;
    }
 
+   public boolean canAgeUp() {
+      return false;
+   }
+
    static {
       BABY_DIMENSIONS = EntityType.SKELETON_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.SKELETON_HORSE.getHeight() - 0.03125F, 0.0F)).scale(0.7F);
    }

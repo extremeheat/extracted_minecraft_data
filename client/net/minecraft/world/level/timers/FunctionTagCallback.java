@@ -9,7 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 
 public record FunctionTagCallback(Identifier tagId) implements TimerCallback<MinecraftServer> {
-   public static final MapCodec<FunctionTagCallback> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("Name").forGetter(FunctionTagCallback::tagId)).apply(i, FunctionTagCallback::new));
+   public static final MapCodec<FunctionTagCallback> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(FunctionTagCallback::tagId)).apply(i, FunctionTagCallback::new));
 
    public FunctionTagCallback {
       super();

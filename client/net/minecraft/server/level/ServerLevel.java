@@ -58,7 +58,6 @@ import net.minecraft.network.protocol.game.ClientboundLevelEventPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
@@ -73,7 +72,6 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.debug.DebugSubscriptions;
@@ -85,7 +83,6 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.RandomSequences;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -144,10 +141,9 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.EntityStorage;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.entity.EntityPersistentStorage;
 import net.minecraft.world.level.entity.EntityTickList;
 import net.minecraft.world.level.entity.EntityTypeTest;
@@ -160,6 +156,8 @@ import net.minecraft.world.level.gameevent.GameEventDispatcher;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureCheck;
@@ -170,12 +168,13 @@ import net.minecraft.world.level.pathfinder.PathTypeCache;
 import net.minecraft.world.level.portal.PortalForcer;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.level.saveddata.WeatherData;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapIndex;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -219,15 +218,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    private final List<BlockEventData> blockEventsToReschedule = new ArrayList(64);
    private boolean handlingTick;
    private final List<CustomSpawner> customSpawners;
-   private @Nullable EndDragonFight dragonFight;
+   private @Nullable EnderDragonFight dragonFight;
    private final Int2ObjectMap<EnderDragonPart> dragonParts = new Int2ObjectOpenHashMap();
    private final StructureManager structureManager;
    private final StructureCheck structureCheck;
    private final boolean tickTime;
-   private final RandomSequences randomSequences;
    private final LevelDebugSynchronizers debugSynchronizers = new LevelDebugSynchronizers(this);
 
-   public ServerLevel(final MinecraftServer server, final Executor executor, final LevelStorageSource.LevelStorageAccess levelStorage, final ServerLevelData levelData, final ResourceKey<Level> dimension, final LevelStem levelStem, final boolean isDebug, final long biomeZoomSeed, final List<CustomSpawner> customSpawners, final boolean tickTime, final @Nullable RandomSequences randomSequences) {
+   public ServerLevel(final MinecraftServer server, final Executor executor, final LevelStorageSource.LevelStorageAccess levelStorage, final ServerLevelData levelData, final ResourceKey<Level> dimension, final LevelStem levelStem, final boolean isDebug, final long biomeZoomSeed, final List<CustomSpawner> customSpawners, final boolean tickTime) {
       super(levelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates());
       this.tickTime = tickTime;
       this.server = server;
@@ -247,26 +245,26 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
       if (this.canHaveWeather()) {
-         this.prepareWeather();
+         this.prepareWeather(server.getWeatherData());
       }
 
-      this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.getType(this.dimensionTypeRegistration()));
+      this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.TYPE);
       if (!server.isSingleplayer()) {
          levelData.setGameType(server.getDefaultGameType());
       }
 
-      long seed = server.getWorldData().worldGenOptions().seed();
+      WorldGenSettings worldGenSettings = server.getWorldGenSettings();
+      WorldOptions options = worldGenSettings.options();
+      long seed = options.seed();
       this.structureCheck = new StructureCheck(this.chunkSource.chunkScanner(), this.registryAccess(), server.getStructureManager(), dimension, generator, this.chunkSource.randomState(), this, generator.getBiomeSource(), seed, fixerUpper);
-      this.structureManager = new StructureManager(this, server.getWorldData().worldGenOptions(), this.structureCheck);
-      if (this.dimension() == Level.END && this.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
-         this.dragonFight = new EndDragonFight(this, seed, server.getWorldData().endDragonFightData());
-      } else {
-         this.dragonFight = null;
+      this.structureManager = new StructureManager(this, options, this.structureCheck);
+      if (this.dimensionType().hasEnderDragonFight()) {
+         this.dragonFight = (EnderDragonFight)this.getDataStorage().computeIfAbsent(EnderDragonFight.TYPE);
+         this.dragonFight.init(this, seed, BlockPos.ZERO);
       }
 
       this.sleepStatus = new SleepStatus();
       this.gameEventDispatcher = new GameEventDispatcher(this);
-      this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(randomSequences, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.TYPE));
       this.waypointManager = new ServerWaypointManager();
       this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
       this.updateSkyBrightness();
@@ -275,16 +273,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    /** @deprecated */
    @Deprecated
    @VisibleForTesting
-   public void setDragonFight(final @Nullable EndDragonFight fight) {
+   public void setDragonFight(final @Nullable EnderDragonFight fight) {
       this.dragonFight = fight;
-   }
-
-   public void setWeatherParameters(final int clearTime, final int rainTime, final boolean raining, final boolean thundering) {
-      this.serverLevelData.setClearWeatherTime(clearTime);
-      this.serverLevelData.setRainTime(rainTime);
-      this.serverLevelData.setThunderTime(rainTime);
-      this.serverLevelData.setRaining(raining);
-      this.serverLevelData.setThundering(thundering);
    }
 
    public Holder<Biome> getUncachedNoiseBiome(final int quartX, final int quartY, final int quartZ) {
@@ -427,7 +417,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          long time = this.levelData.getGameTime() + 1L;
          this.serverLevelData.setGameTime(time);
          Profiler.get().push("scheduledFunctions");
-         this.serverLevelData.getScheduledEvents().tick(this.server, time);
+         this.server.getScheduledEvents().tick(this.server, time);
          Profiler.get().pop();
       }
    }
@@ -641,15 +631,26 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       return DimensionType.MOON_BRIGHTNESS_PER_PHASE[moonPhase.index()];
    }
 
+   private void prepareWeather(final WeatherData weatherData) {
+      if (weatherData.isRaining()) {
+         this.rainLevel = 1.0F;
+         if (weatherData.isThundering()) {
+            this.thunderLevel = 1.0F;
+         }
+      }
+
+   }
+
    private void advanceWeatherCycle() {
       boolean wasRaining = this.isRaining();
       if (this.canHaveWeather()) {
+         WeatherData weatherData = this.getWeatherData();
          if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_WEATHER)) {
-            int clearWeatherTime = this.serverLevelData.getClearWeatherTime();
-            int thunderTime = this.serverLevelData.getThunderTime();
-            int rainTime = this.serverLevelData.getRainTime();
-            boolean thundering = this.levelData.isThundering();
-            boolean raining = this.levelData.isRaining();
+            int clearWeatherTime = weatherData.getClearWeatherTime();
+            int thunderTime = weatherData.getThunderTime();
+            int rainTime = weatherData.getRainTime();
+            boolean thundering = weatherData.isThundering();
+            boolean raining = weatherData.isRaining();
             if (clearWeatherTime > 0) {
                --clearWeatherTime;
                thunderTime = thundering ? 0 : 1;
@@ -680,15 +681,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                }
             }
 
-            this.serverLevelData.setThunderTime(thunderTime);
-            this.serverLevelData.setRainTime(rainTime);
-            this.serverLevelData.setClearWeatherTime(clearWeatherTime);
-            this.serverLevelData.setThundering(thundering);
-            this.serverLevelData.setRaining(raining);
+            weatherData.setThunderTime(thunderTime);
+            weatherData.setRainTime(rainTime);
+            weatherData.setClearWeatherTime(clearWeatherTime);
+            weatherData.setThundering(thundering);
+            weatherData.setRaining(raining);
          }
 
          this.oThunderLevel = this.thunderLevel;
-         if (this.levelData.isThundering()) {
+         if (weatherData.isThundering()) {
             this.thunderLevel += 0.01F;
          } else {
             this.thunderLevel -= 0.01F;
@@ -696,7 +697,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
          this.thunderLevel = Mth.clamp(this.thunderLevel, 0.0F, 1.0F);
          this.oRainLevel = this.rainLevel;
-         if (this.levelData.isRaining()) {
+         if (weatherData.isRaining()) {
             this.rainLevel += 0.01F;
          } else {
             this.rainLevel -= 0.01F;
@@ -728,10 +729,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    @VisibleForTesting
    public void resetWeatherCycle() {
-      this.serverLevelData.setRainTime(0);
-      this.serverLevelData.setRaining(false);
-      this.serverLevelData.setThunderTime(0);
-      this.serverLevelData.setThundering(false);
+      WeatherData weatherData = this.getWeatherData();
+      weatherData.setRainTime(0);
+      weatherData.setRaining(false);
+      weatherData.setThunderTime(0);
+      weatherData.setThundering(false);
    }
 
    public void resetEmptyTime() {
@@ -846,15 +848,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    private void saveLevelData(final boolean sync) {
-      if (this.dragonFight != null) {
-         this.server.getWorldData().setEndDragonFightData(this.dragonFight.saveData());
-      }
-
-      DimensionDataStorage dataStorage = this.getChunkSource().getDataStorage();
+      SavedDataStorage savedDataStorage = this.getChunkSource().getDataStorage();
       if (sync) {
-         dataStorage.saveAndJoin();
+         savedDataStorage.saveAndJoin();
       } else {
-         dataStorage.scheduleSave();
+         savedDataStorage.scheduleSave();
       }
 
    }
@@ -1275,7 +1273,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public @Nullable BlockPos findNearestMapStructure(final TagKey<Structure> structureTag, final BlockPos origin, final int maxSearchRadius, final boolean createReference) {
-      if (!this.server.getWorldData().worldGenOptions().generateStructures()) {
+      if (!this.server.getWorldGenSettings().options().generateStructures()) {
          return null;
       } else {
          Optional<HolderSet.Named<Structure>> tag = this.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(structureTag);
@@ -1310,20 +1308,20 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       return this.noSave;
    }
 
-   public DimensionDataStorage getDataStorage() {
+   public SavedDataStorage getDataStorage() {
       return this.getChunkSource().getDataStorage();
    }
 
    public @Nullable MapItemSavedData getMapData(final MapId id) {
-      return (MapItemSavedData)this.getServer().overworld().getDataStorage().get(MapItemSavedData.type(id));
+      return (MapItemSavedData)this.getServer().getDataStorage().get(MapItemSavedData.type(id));
    }
 
    public void setMapData(final MapId id, final MapItemSavedData data) {
-      this.getServer().overworld().getDataStorage().set(MapItemSavedData.type(id), data);
+      this.getServer().getDataStorage().set(MapItemSavedData.type(id), data);
    }
 
    public MapId getFreeMapId() {
-      return ((MapIndex)this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.TYPE)).getNextMapId();
+      return ((MapIndex)this.getServer().getDataStorage().computeIfAbsent(MapIndex.TYPE)).getNextMapId();
    }
 
    public void setRespawnData(final LevelData.RespawnData respawnData) {
@@ -1599,11 +1597,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public long getSeed() {
-      return this.server.getWorldData().worldGenOptions().seed();
+      return this.server.getWorldGenSettings().options().seed();
    }
 
-   public @Nullable EndDragonFight getDragonFight() {
+   public @Nullable EnderDragonFight getDragonFight() {
       return this.dragonFight;
+   }
+
+   public WeatherData getWeatherData() {
+      return this.server.getWeatherData();
    }
 
    public ServerLevel getLevel() {
@@ -1732,21 +1734,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       return this.server.fuelValues();
    }
 
-   public RandomSource getRandomSequence(final Identifier key) {
-      return this.randomSequences.get(key, this.getSeed());
-   }
-
-   public RandomSequences getRandomSequences() {
-      return this.randomSequences;
-   }
-
    public GameRules getGameRules() {
-      return this.serverLevelData.getGameRules();
+      return this.server.getGameRules();
    }
 
    public CrashReportCategory fillReportDetails(final CrashReport report) {
       CrashReportCategory category = super.fillReportDetails(report);
+      WeatherData weatherData = this.getWeatherData();
       category.setDetail("Loaded entity count", (CrashReportDetail)(() -> String.valueOf(this.entityManager.count())));
+      category.setDetail("Server weather", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Rain time: %d (now: %b), thunder time: %d (now: %b)", weatherData.getRainTime(), this.isRaining(), weatherData.getThunderTime(), this.isThundering())));
       return category;
    }
 

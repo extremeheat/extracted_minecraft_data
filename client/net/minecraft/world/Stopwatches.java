@@ -81,6 +81,6 @@ public class Stopwatches extends SavedData {
 
    static {
       CODEC = Codec.unboundedMap(Identifier.CODEC, Codec.LONG).fieldOf("stopwatches").codec().xmap(Stopwatches::unpack, Stopwatches::pack);
-      TYPE = new SavedDataType<Stopwatches>("stopwatches", Stopwatches::new, CODEC, DataFixTypes.SAVED_DATA_STOPWATCHES);
+      TYPE = new SavedDataType<Stopwatches>(Identifier.withDefaultNamespace("stopwatches"), Stopwatches::new, CODEC, DataFixTypes.SAVED_DATA_STOPWATCHES);
    }
 }

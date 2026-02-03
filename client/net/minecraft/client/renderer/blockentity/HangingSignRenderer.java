@@ -19,7 +19,6 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.util.StringRepresentable;
@@ -52,7 +51,7 @@ public class HangingSignRenderer extends AbstractSignRenderer {
    }
 
    public static Model.Simple createSignModel(final EntityModelSet entityModelSet, final WoodType woodType, final AttachmentType attachmentType) {
-      return new Model.Simple(entityModelSet.bakeLayer(ModelLayers.createHangingSignModelName(woodType, attachmentType)), RenderTypes::entityCutoutNoCull);
+      return new Model.Simple(entityModelSet.bakeLayer(ModelLayers.createHangingSignModelName(woodType, attachmentType)), RenderTypes::entityCutout);
    }
 
    protected float getSignModelRenderScale() {
@@ -92,7 +91,7 @@ public class HangingSignRenderer extends AbstractSignRenderer {
       poseStack.scale(1.0F, -1.0F, -1.0F);
       Unit var10002 = Unit.INSTANCE;
       Objects.requireNonNull(model);
-      submitNodeCollector.submitModel(model, var10002, poseStack, material.renderType(model::renderType), lightCoords, overlayCoords, -1, materials.get(material), OverlayTexture.NO_OVERLAY, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(model, var10002, poseStack, material.renderType(model::renderType), lightCoords, overlayCoords, -1, materials.get(material), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
    }
 

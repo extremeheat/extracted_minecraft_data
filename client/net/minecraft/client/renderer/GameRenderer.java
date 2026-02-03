@@ -599,7 +599,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
          profiler.popPush("guiRendering");
          this.guiRenderer.render(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
-         this.guiRenderer.incrementFrameNumber();
+         this.guiRenderer.endFrame();
          profiler.pop();
          this.useUiLightmap = false;
          graphics.applyCursor(this.minecraft.getWindow());

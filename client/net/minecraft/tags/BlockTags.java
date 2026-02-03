@@ -62,6 +62,9 @@ public final class BlockTags {
    public static final TagKey<Block> EMERALD_ORES = create("emerald_ores");
    public static final TagKey<Block> COPPER_ORES = create("copper_ores");
    public static final TagKey<Block> DIRT = create("dirt");
+   public static final TagKey<Block> MUD = create("mud");
+   public static final TagKey<Block> MOSS_BLOCKS = create("moss_blocks");
+   public static final TagKey<Block> GRASS_BLOCKS = create("grass_blocks");
    public static final TagKey<Block> TERRACOTTA = create("terracotta");
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL = create("completes_find_tree_tutorial");
    public static final TagKey<Block> SHULKER_BOXES = create("shulker_boxes");
@@ -124,12 +127,16 @@ public final class BlockTags {
    public static final TagKey<Block> INFINIBURN_OVERWORLD = create("infiniburn_overworld");
    public static final TagKey<Block> INFINIBURN_NETHER = create("infiniburn_nether");
    public static final TagKey<Block> INFINIBURN_END = create("infiniburn_end");
+   public static final TagKey<Block> SUBSTRATE_OVERWORLD = create("substrate_overworld");
    public static final TagKey<Block> BASE_STONE_OVERWORLD = create("base_stone_overworld");
    public static final TagKey<Block> STONE_ORE_REPLACEABLES = create("stone_ore_replaceables");
    public static final TagKey<Block> DEEPSLATE_ORE_REPLACEABLES = create("deepslate_ore_replaceables");
    public static final TagKey<Block> BASE_STONE_NETHER = create("base_stone_nether");
    public static final TagKey<Block> OVERWORLD_CARVER_REPLACEABLES = create("overworld_carver_replaceables");
    public static final TagKey<Block> NETHER_CARVER_REPLACEABLES = create("nether_carver_replaceables");
+   public static final TagKey<Block> BENEATH_TREE_PODZOL_REPLACEABLE = create("beneath_tree_podzol_replaceable");
+   public static final TagKey<Block> BENEATH_BAMBOO_PODZOL_REPLACEABLE = create("beneath_bamboo_podzol_replaceable");
+   public static final TagKey<Block> CANNOT_REPLACE_BELOW_TREE_TRUNK = create("cannot_replace_below_tree_trunk");
    public static final TagKey<Block> CANDLE_CAKES = create("candle_cakes");
    public static final TagKey<Block> CAULDRONS = create("cauldrons");
    public static final TagKey<Block> CRYSTAL_SOUND_BLOCKS = create("crystal_sound_blocks");
@@ -143,6 +150,10 @@ public final class BlockTags {
    public static final TagKey<Block> MOSS_REPLACEABLE = create("moss_replaceable");
    public static final TagKey<Block> LUSH_GROUND_REPLACEABLE = create("lush_ground_replaceable");
    public static final TagKey<Block> AZALEA_ROOT_REPLACEABLE = create("azalea_root_replaceable");
+   public static final TagKey<Block> ICE_SPIKE_REPLACEABLE = create("ice_spike_replaceable");
+   public static final TagKey<Block> FOREST_ROCK_CAN_PLACE_ON = create("forest_rock_can_place_on");
+   public static final TagKey<Block> HUGE_BROWN_MUSHROOM_CAN_PLACE_ON = create("huge_brown_mushroom_can_place_on");
+   public static final TagKey<Block> HUGE_RED_MUSHROOM_CAN_PLACE_ON = create("huge_red_mushroom_can_place_on");
    public static final TagKey<Block> SNOW = create("snow");
    public static final TagKey<Block> MINEABLE_WITH_AXE = create("mineable/axe");
    public static final TagKey<Block> MINEABLE_WITH_HOE = create("mineable/hoe");

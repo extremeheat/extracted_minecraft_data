@@ -41,14 +41,15 @@ import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
+import net.minecraft.util.worldupdate.UpgradeProgress;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelDataAndDimensions;
@@ -130,29 +131,17 @@ public class Main {
          String levelName = (String)Optional.ofNullable((String)options.valueOf(worldName)).orElse(settings.getProperties().levelName);
          LevelStorageSource levelStorageSource = LevelStorageSource.createDefault(universePath.toPath());
          LevelStorageSource.LevelStorageAccess access = levelStorageSource.validateAndCreateAccess(levelName);
-         Dynamic<?> loadedDataTag;
+         Dynamic<?> levelDataTag;
          if (access.hasWorldData()) {
-            LevelSummary summary;
+            Dynamic<?> levelDataUnfixed;
             try {
-               loadedDataTag = access.getDataTag();
-               summary = access.getSummary(loadedDataTag);
-            } catch (NbtException | ReportedNbtException | IOException e) {
-               LevelStorageSource.LevelDirectory levelDirectory = access.getLevelDirectory();
-               LOGGER.warn("Failed to load world data from {}", levelDirectory.dataFile(), e);
-               LOGGER.info("Attempting to use fallback");
-
-               try {
-                  loadedDataTag = access.getDataTagFallback();
-                  summary = access.getSummary(loadedDataTag);
-               } catch (NbtException | ReportedNbtException | IOException ex) {
-                  LOGGER.error("Failed to load world data from {}", levelDirectory.oldDataFile(), ex);
-                  LOGGER.error("Failed to load world data from {} and {}. World files may be corrupted. Shutting down.", levelDirectory.dataFile(), levelDirectory.oldDataFile());
-                  return;
-               }
-
-               access.restoreLevelDataFromOld();
+               levelDataUnfixed = access.getUnfixedDataTagWithFallback();
+            } catch (NbtException | ReportedNbtException | IOException ex) {
+               LOGGER.error("Failed to load world data. World files may be corrupted. Shutting down.", ex);
+               return;
             }
 
+            LevelSummary summary = access.fixAndGetSummaryFromTag(levelDataUnfixed);
             if (summary.requiresManualConversion()) {
                LOGGER.info("This world must be opened in an older version (like 1.6.4) to be safely converted");
                return;
@@ -162,11 +151,17 @@ public class Main {
                LOGGER.info("This world was created by an incompatible version.");
                return;
             }
+
+            try {
+               levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress());
+            } catch (IOException e) {
+               LOGGER.error("Failed to upgrade the file structure of the world.", e);
+               return;
+            }
          } else {
-            loadedDataTag = null;
+            levelDataTag = null;
          }
 
-         Dynamic<?> levelDataTag = loadedDataTag;
          boolean safeModeEnabled = options.has(safeMode);
          if (safeModeEnabled) {
             LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
@@ -180,8 +175,8 @@ public class Main {
             worldStem = (WorldStem)Util.blockUntilDone((executor) -> WorldLoader.load(worldLoadConfig, (context) -> {
                   Registry<LevelStem> datapackDimensions = context.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
                   if (levelDataTag != null) {
-                     LevelDataAndDimensions worldData = LevelStorageSource.getLevelDataAndDimensions(levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldgen());
-                     return new WorldLoader.DataLoadOutput(worldData.worldData(), worldData.dimensions().dimensionsRegistryAccess());
+                     LevelDataAndDimensions worldData = LevelStorageSource.getLevelDataAndDimensions(access, levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldgen());
+                     return new WorldLoader.DataLoadOutput(worldData.worldDataAndGenSettings(), worldData.dimensions().dimensionsRegistryAccess());
                   } else {
                      LOGGER.info("No existing world data, creating new world");
                      return createNewWorldData(settings, context, datapackDimensions, options.has(demo), options.has(bonusChest));
@@ -193,15 +188,15 @@ public class Main {
          }
 
          RegistryAccess.Frozen registryHolder = worldStem.registries().compositeAccess();
-         WorldData data = worldStem.worldData();
+         WorldData data = worldStem.worldDataAndGenSettings().data();
          boolean recreateRegionFilesValue = options.has(recreateRegionFiles);
          if (options.has(forceUpgrade) || recreateRegionFilesValue) {
             forceUpgrade(access, DataFixers.getDataFixer(), options.has(eraseCache), () -> true, registryHolder, recreateRegionFilesValue);
          }
 
-         access.saveDataTag(registryHolder, data);
+         access.saveDataTag(data);
          final DedicatedServer dedicatedServer = (DedicatedServer)MinecraftServer.spin((thread) -> {
-            DedicatedServer server = new DedicatedServer(thread, access, packRepository, worldStem, settings, DataFixers.getDataFixer(), services);
+            DedicatedServer server = new DedicatedServer(thread, access, packRepository, worldStem, Optional.empty(), settings, DataFixers.getDataFixer(), services);
             server.setPort((Integer)options.valueOf(port));
             server.setDemo(options.has(demo));
             server.setId((String)options.valueOf(serverId));
@@ -225,7 +220,7 @@ public class Main {
 
    }
 
-   private static WorldLoader.DataLoadOutput<WorldData> createNewWorldData(final DedicatedServerSettings settings, final WorldLoader.DataLoadContext context, final Registry<LevelStem> datapackDimensions, final boolean demoMode, final boolean bonusChest) {
+   private static WorldLoader.DataLoadOutput<LevelDataAndDimensions.WorldDataAndGenSettings> createNewWorldData(final DedicatedServerSettings settings, final WorldLoader.DataLoadContext context, final Registry<LevelStem> datapackDimensions, final boolean demoMode, final boolean bonusChest) {
       LevelSettings createLevelSettings;
       WorldOptions worldOptions;
       WorldDimensions dimensions;
@@ -235,14 +230,15 @@ public class Main {
          dimensions = WorldPresets.createNormalWorldDimensions(context.datapackWorldgen());
       } else {
          DedicatedServerProperties properties = settings.getProperties();
-         createLevelSettings = new LevelSettings(properties.levelName, properties.gameMode.get(), properties.hardcore, properties.difficulty.get(), false, new GameRules(context.dataConfiguration().enabledFeatures()), context.dataConfiguration());
+         createLevelSettings = new LevelSettings(properties.levelName, properties.gameMode.get(), new LevelSettings.DifficultySettings(properties.difficulty.get(), properties.hardcore, false), false, context.dataConfiguration());
          worldOptions = bonusChest ? properties.worldOptions.withBonusChest(true) : properties.worldOptions;
          dimensions = properties.createDimensions(context.datapackWorldgen());
       }
 
       WorldDimensions.Complete finalDimensions = dimensions.bake(datapackDimensions);
       Lifecycle lifecycle = finalDimensions.lifecycle().add(context.datapackWorldgen().allRegistriesLifecycle());
-      return new WorldLoader.DataLoadOutput<WorldData>(new PrimaryLevelData(createLevelSettings, worldOptions, finalDimensions.specialWorldProperty(), lifecycle), finalDimensions.dimensionsRegistryAccess());
+      PrimaryLevelData primaryLevelData = new PrimaryLevelData(createLevelSettings, finalDimensions.specialWorldProperty(), lifecycle);
+      return new WorldLoader.DataLoadOutput<LevelDataAndDimensions.WorldDataAndGenSettings>(new LevelDataAndDimensions.WorldDataAndGenSettings(primaryLevelData, new WorldGenSettings(worldOptions, dimensions)), finalDimensions.dimensionsRegistryAccess());
    }
 
    private static void writePidFile(final Path path) {

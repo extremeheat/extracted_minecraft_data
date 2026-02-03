@@ -9,16 +9,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockBlobConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockColumnConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockPileConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.DeltaFeatureCon
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.DripstoneClusterConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.FallenTreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
@@ -72,7 +72,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<FossilFeatureConfiguration> FOSSIL;
    public static final Feature<HugeMushroomFeatureConfiguration> HUGE_RED_MUSHROOM;
    public static final Feature<HugeMushroomFeatureConfiguration> HUGE_BROWN_MUSHROOM;
-   public static final Feature<NoneFeatureConfiguration> ICE_SPIKE;
+   public static final Feature<SpikeConfiguration> SPIKE;
    public static final Feature<NoneFeatureConfiguration> GLOWSTONE_BLOB;
    public static final Feature<NoneFeatureConfiguration> FREEZE_TOP_LAYER;
    public static final Feature<NoneFeatureConfiguration> VINES;
@@ -85,12 +85,12 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<NoneFeatureConfiguration> MONSTER_ROOM;
    public static final Feature<NoneFeatureConfiguration> BLUE_ICE;
    public static final Feature<BlockStateConfiguration> ICEBERG;
-   public static final Feature<BlockStateConfiguration> FOREST_ROCK;
+   public static final Feature<BlockBlobConfiguration> BLOCK_BLOB;
    public static final Feature<DiskConfiguration> DISK;
    public static final Feature<LakeFeature.Configuration> LAKE;
    public static final Feature<OreConfiguration> ORE;
    public static final Feature<NoneFeatureConfiguration> END_PLATFORM;
-   public static final Feature<SpikeConfiguration> END_SPIKE;
+   public static final Feature<EndSpikeConfiguration> END_SPIKE;
    public static final Feature<NoneFeatureConfiguration> END_ISLAND;
    public static final Feature<EndGatewayConfiguration> END_GATEWAY;
    public static final SeagrassFeature SEAGRASS;
@@ -156,18 +156,6 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       return level.ensureCanWrite(origin) ? this.place(new FeaturePlaceContext(Optional.empty(), level, chunkGenerator, random, origin, config)) : false;
    }
 
-   protected static boolean isStone(final BlockState state) {
-      return state.is(BlockTags.BASE_STONE_OVERWORLD);
-   }
-
-   public static boolean isDirt(final BlockState state) {
-      return state.is(BlockTags.DIRT);
-   }
-
-   public static boolean isGrassOrDirt(final LevelSimulatedReader level, final BlockPos pos) {
-      return level.isStateAtPosition(pos, Feature::isDirt);
-   }
-
    public static boolean checkNeighbors(final Function<BlockPos, BlockState> blockGetter, final BlockPos pos, final Predicate<BlockState> predicate) {
       BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
@@ -215,7 +203,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       FOSSIL = register("fossil", new FossilFeature(FossilFeatureConfiguration.CODEC));
       HUGE_RED_MUSHROOM = register("huge_red_mushroom", new HugeRedMushroomFeature(HugeMushroomFeatureConfiguration.CODEC));
       HUGE_BROWN_MUSHROOM = register("huge_brown_mushroom", new HugeBrownMushroomFeature(HugeMushroomFeatureConfiguration.CODEC));
-      ICE_SPIKE = register("ice_spike", new IceSpikeFeature(NoneFeatureConfiguration.CODEC));
+      SPIKE = register("spike", new SpikeFeature(SpikeConfiguration.CODEC));
       GLOWSTONE_BLOB = register("glowstone_blob", new GlowstoneFeature(NoneFeatureConfiguration.CODEC));
       FREEZE_TOP_LAYER = register("freeze_top_layer", new SnowAndFreezeFeature(NoneFeatureConfiguration.CODEC));
       VINES = register("vines", new VinesFeature(NoneFeatureConfiguration.CODEC));
@@ -228,12 +216,12 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       MONSTER_ROOM = register("monster_room", new MonsterRoomFeature(NoneFeatureConfiguration.CODEC));
       BLUE_ICE = register("blue_ice", new BlueIceFeature(NoneFeatureConfiguration.CODEC));
       ICEBERG = register("iceberg", new IcebergFeature(BlockStateConfiguration.CODEC));
-      FOREST_ROCK = register("forest_rock", new BlockBlobFeature(BlockStateConfiguration.CODEC));
+      BLOCK_BLOB = register("block_blob", new BlockBlobFeature(BlockBlobConfiguration.CODEC));
       DISK = register("disk", new DiskFeature(DiskConfiguration.CODEC));
       LAKE = register("lake", new LakeFeature(LakeFeature.Configuration.CODEC));
       ORE = register("ore", new OreFeature(OreConfiguration.CODEC));
       END_PLATFORM = register("end_platform", new EndPlatformFeature(NoneFeatureConfiguration.CODEC));
-      END_SPIKE = register("end_spike", new SpikeFeature(SpikeConfiguration.CODEC));
+      END_SPIKE = register("end_spike", new EndSpikeFeature(EndSpikeConfiguration.CODEC));
       END_ISLAND = register("end_island", new EndIslandFeature(NoneFeatureConfiguration.CODEC));
       END_GATEWAY = register("end_gateway", new EndGatewayFeature(EndGatewayConfiguration.CODEC));
       SEAGRASS = (SeagrassFeature)register("seagrass", new SeagrassFeature(ProbabilityFeatureConfiguration.CODEC));

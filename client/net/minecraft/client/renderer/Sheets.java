@@ -38,16 +38,11 @@ public class Sheets {
    public static final Identifier MAP_DECORATIONS_SHEET = Identifier.withDefaultNamespace("textures/atlas/map_decorations.png");
    public static final Identifier PAINTINGS_SHEET = Identifier.withDefaultNamespace("textures/atlas/paintings.png");
    public static final Identifier CELESTIAL_SHEET = Identifier.withDefaultNamespace("textures/atlas/celestials.png");
-   private static final RenderType SHULKER_BOX_SHEET_TYPE;
-   private static final RenderType BED_SHEET_TYPE;
-   private static final RenderType BANNER_SHEET_TYPE;
-   private static final RenderType SHIELD_SHEET_TYPE;
-   private static final RenderType SIGN_SHEET_TYPE;
-   private static final RenderType CHEST_SHEET_TYPE;
    private static final RenderType ARMOR_TRIMS_SHEET_TYPE;
    private static final RenderType ARMOR_TRIMS_DECAL_SHEET_TYPE;
-   private static final RenderType SOLID_BLOCK_SHEET;
    private static final RenderType CUTOUT_BLOCK_SHEET;
+   private static final RenderType TRANSLUCENT_BLOCK_SHEET;
+   private static final RenderType CUTOUT_BLOCK_ITEM_SHEET;
    private static final RenderType TRANSLUCENT_BLOCK_ITEM_SHEET;
    private static final RenderType TRANSLUCENT_ITEM_SHEET;
    public static final MaterialMapper ITEMS_MAPPER;
@@ -100,44 +95,20 @@ public class Sheets {
       super();
    }
 
-   public static RenderType bannerSheet() {
-      return BANNER_SHEET_TYPE;
-   }
-
-   public static RenderType shieldSheet() {
-      return SHIELD_SHEET_TYPE;
-   }
-
-   public static RenderType bedSheet() {
-      return BED_SHEET_TYPE;
-   }
-
-   public static RenderType shulkerBoxSheet() {
-      return SHULKER_BOX_SHEET_TYPE;
-   }
-
-   public static RenderType signSheet() {
-      return SIGN_SHEET_TYPE;
-   }
-
-   public static RenderType hangingSignSheet() {
-      return SIGN_SHEET_TYPE;
-   }
-
-   public static RenderType chestSheet() {
-      return CHEST_SHEET_TYPE;
-   }
-
    public static RenderType armorTrimsSheet(final boolean decal) {
       return decal ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
    }
 
-   public static RenderType solidBlockSheet() {
-      return SOLID_BLOCK_SHEET;
-   }
-
    public static RenderType cutoutBlockSheet() {
       return CUTOUT_BLOCK_SHEET;
+   }
+
+   public static RenderType translucentBlockSheet() {
+      return TRANSLUCENT_BLOCK_SHEET;
+   }
+
+   public static RenderType cutoutBlockItemSheet() {
+      return CUTOUT_BLOCK_ITEM_SHEET;
    }
 
    public static RenderType translucentItemSheet() {
@@ -238,18 +209,13 @@ public class Sheets {
    }
 
    static {
-      SHULKER_BOX_SHEET_TYPE = RenderTypes.entityCutoutNoCull(SHULKER_SHEET);
-      BED_SHEET_TYPE = RenderTypes.entitySolid(BED_SHEET);
-      BANNER_SHEET_TYPE = RenderTypes.entityNoOutline(BANNER_SHEET);
-      SHIELD_SHEET_TYPE = RenderTypes.entityNoOutline(SHIELD_SHEET);
-      SIGN_SHEET_TYPE = RenderTypes.entityCutoutNoCull(SIGN_SHEET);
-      CHEST_SHEET_TYPE = RenderTypes.entityCutout(CHEST_SHEET);
       ARMOR_TRIMS_SHEET_TYPE = RenderTypes.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
       ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderTypes.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
-      SOLID_BLOCK_SHEET = RenderTypes.entitySolid(TextureAtlas.LOCATION_BLOCKS);
-      CUTOUT_BLOCK_SHEET = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_ITEM_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_ITEMS);
+      CUTOUT_BLOCK_SHEET = RenderTypes.entityCutoutCull(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_BLOCK_SHEET = RenderTypes.entityTranslucentCullItemTarget(TextureAtlas.LOCATION_BLOCKS);
+      CUTOUT_BLOCK_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_ITEMS);
       ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_ITEMS, "item");
       BLOCKS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "block");
       BLOCK_ENTITIES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "entity");

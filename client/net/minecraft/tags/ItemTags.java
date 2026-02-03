@@ -62,6 +62,9 @@ public final class ItemTags {
    public static final TagKey<Item> EMERALD_ORES = bind("emerald_ores");
    public static final TagKey<Item> COPPER_ORES = bind("copper_ores");
    public static final TagKey<Item> DIRT = bind("dirt");
+   public static final TagKey<Item> MUD = bind("mud");
+   public static final TagKey<Item> MOSS_BLOCKS = bind("moss_blocks");
+   public static final TagKey<Item> GRASS_BLOCKS = bind("grass_blocks");
    public static final TagKey<Item> TERRACOTTA = bind("terracotta");
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL = bind("completes_find_tree_tutorial");
    public static final TagKey<Item> SHULKER_BOXES = bind("shulker_boxes");

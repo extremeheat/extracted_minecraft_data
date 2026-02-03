@@ -9,7 +9,7 @@ import net.minecraft.util.RandomSource;
 import org.apache.commons.lang3.StringUtils;
 
 public class WorldOptions {
-   public static final MapCodec<WorldOptions> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.LONG.fieldOf("seed").stable().forGetter(WorldOptions::seed), Codec.BOOL.fieldOf("generate_features").orElse(true).stable().forGetter(WorldOptions::generateStructures), Codec.BOOL.fieldOf("bonus_chest").orElse(false).stable().forGetter(WorldOptions::generateBonusChest), Codec.STRING.lenientOptionalFieldOf("legacy_custom_options").stable().forGetter((s) -> s.legacyCustomOptions)).apply(i, i.stable(WorldOptions::new)));
+   public static final MapCodec<WorldOptions> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.LONG.fieldOf("seed").stable().forGetter(WorldOptions::seed), Codec.BOOL.fieldOf("generate_structures").orElse(true).stable().forGetter(WorldOptions::generateStructures), Codec.BOOL.fieldOf("bonus_chest").orElse(false).stable().forGetter(WorldOptions::generateBonusChest), Codec.STRING.lenientOptionalFieldOf("legacy_custom_options").stable().forGetter((s) -> s.legacyCustomOptions)).apply(i, i.stable(WorldOptions::new)));
    public static final WorldOptions DEMO_OPTIONS = new WorldOptions((long)"North Carolina".hashCode(), true, true);
    private final long seed;
    private final boolean generateStructures;

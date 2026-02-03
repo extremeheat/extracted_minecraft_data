@@ -85,7 +85,7 @@ public class RandomSequences extends SavedData {
    }
 
    static {
-      TYPE = new SavedDataType<RandomSequences>("random_sequences", RandomSequences::new, CODEC, DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
+      TYPE = new SavedDataType<RandomSequences>(Identifier.withDefaultNamespace("random_sequences"), RandomSequences::new, CODEC, DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
    }
 
    private class DirtyMarkingRandomSource implements RandomSource {

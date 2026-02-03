@@ -31,7 +31,7 @@ public class ScheduleCommand {
    private static final SimpleCommandExceptionType ERROR_SAME_TICK = new SimpleCommandExceptionType(Component.translatable("commands.schedule.same_tick"));
    private static final DynamicCommandExceptionType ERROR_CANT_REMOVE = new DynamicCommandExceptionType((s) -> Component.translatableEscape("commands.schedule.cleared.failure", s));
    private static final SimpleCommandExceptionType ERROR_MACRO = new SimpleCommandExceptionType(Component.translatableEscape("commands.schedule.macro"));
-   private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (c, p) -> SharedSuggestionProvider.suggest(((CommandSourceStack)c.getSource()).getServer().getWorldData().overworldData().getScheduledEvents().getEventsIds(), p);
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (c, p) -> SharedSuggestionProvider.suggest(((CommandSourceStack)c.getSource()).getServer().getScheduledEvents().getEventsIds(), p);
 
    public ScheduleCommand() {
       super();
@@ -47,7 +47,7 @@ public class ScheduleCommand {
       } else {
          long tickTime = source.getLevel().getGameTime() + (long)time;
          Identifier callbackId = (Identifier)callback.getFirst();
-         TimerQueue<MinecraftServer> queue = source.getServer().getWorldData().overworldData().getScheduledEvents();
+         TimerQueue<MinecraftServer> queue = source.getServer().getScheduledEvents();
          Optional<CommandFunction<CommandSourceStack>> function = ((Either)callback.getSecond()).left();
          if (function.isPresent()) {
             if (function.get() instanceof MacroFunction) {
@@ -76,7 +76,7 @@ public class ScheduleCommand {
    }
 
    private static int remove(final CommandSourceStack source, final String id) throws CommandSyntaxException {
-      int count = source.getServer().getWorldData().overworldData().getScheduledEvents().remove(id);
+      int count = source.getServer().getScheduledEvents().remove(id);
       if (count == 0) {
          throw ERROR_CANT_REMOVE.create(id);
       } else {

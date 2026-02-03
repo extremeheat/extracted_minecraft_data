@@ -7,14 +7,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class FileToIdConverter {
-   private final String prefix;
-   private final String extension;
-
-   public FileToIdConverter(final String prefix, final String extension) {
+public record FileToIdConverter(String prefix, String extension) {
+   public FileToIdConverter {
       super();
-      this.prefix = prefix;
-      this.extension = extension;
    }
 
    public static FileToIdConverter json(final String prefix) {
@@ -35,11 +30,15 @@ public class FileToIdConverter {
       return file.withPath(path.substring(this.prefix.length() + 1, path.length() - this.extension.length()));
    }
 
+   public boolean extensionMatches(final Identifier id) {
+      return id.getPath().endsWith(this.extension);
+   }
+
    public Map<Identifier, Resource> listMatchingResources(final ResourceManager manager) {
-      return manager.listResources(this.prefix, (id) -> id.getPath().endsWith(this.extension));
+      return manager.listResources(this.prefix, this::extensionMatches);
    }
 
    public Map<Identifier, List<Resource>> listMatchingResourceStacks(final ResourceManager manager) {
-      return manager.listResourceStacks(this.prefix, (id) -> id.getPath().endsWith(this.extension));
+      return manager.listResourceStacks(this.prefix, this::extensionMatches);
    }
 }

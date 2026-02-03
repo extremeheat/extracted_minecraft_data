@@ -115,7 +115,6 @@ public class HashCache {
 
          allowedFiles.addAll(cache.data().keySet());
       });
-      allowedFiles.add(this.rootDir.resolve("version.json"));
       final MutableInt found = new MutableInt();
       final MutableInt removed = new MutableInt();
       Files.walkFileTree(this.rootDir, new SimpleFileVisitor<Path>() {

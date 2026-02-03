@@ -87,7 +87,7 @@ public class SignRenderer extends AbstractSignRenderer {
 
    public static Model.Simple createSignModel(final EntityModelSet entityModelSet, final WoodType woodType, final boolean standing) {
       ModelLayerLocation layer = standing ? ModelLayers.createStandingSignModelName(woodType) : ModelLayers.createWallSignModelName(woodType);
-      return new Model.Simple(entityModelSet.bakeLayer(layer), RenderTypes::entityCutoutNoCull);
+      return new Model.Simple(entityModelSet.bakeLayer(layer), RenderTypes::entityCutout);
    }
 
    public static LayerDefinition createSignLayer(final boolean standing) {

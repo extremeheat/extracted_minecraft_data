@@ -8,33 +8,40 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.timeline.Timeline;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-public class ServerClockManager implements ClockManager {
-   private final MinecraftServer server;
+public class ServerClockManager extends SavedData implements ClockManager {
+   public static final SavedDataType<ServerClockManager> TYPE;
+   private final PackedClockStates packedClockStates;
+   private MinecraftServer server;
    private final Map<Holder<WorldClock>, ClockInstance> clocks = new HashMap();
 
-   public ServerClockManager(final MinecraftServer server) {
+   private ServerClockManager(final PackedClockStates packedClockStates) {
       super();
+      this.packedClockStates = packedClockStates;
+   }
+
+   public void init(final MinecraftServer server) {
       this.server = server;
       server.registryAccess().lookupOrThrow(Registries.WORLD_CLOCK).listElements().forEach((definition) -> this.clocks.put(definition, new ClockInstance()));
       server.registryAccess().lookupOrThrow(Registries.TIMELINE).listElements().forEach((timeline) -> ((Timeline)timeline.value()).registerTimeMarkers(this::registerTimeMarker));
+      this.packedClockStates.clocks().forEach((definition, state) -> {
+         ClockInstance instance = this.getInstance(definition);
+         instance.loadFrom(state);
+      });
    }
 
    private void registerTimeMarker(final ResourceKey<ClockTimeMarker> timeMarkerId, final ClockTimeMarker timeMarker) {
       this.getInstance(timeMarker.clock()).timeMarkers.put(timeMarkerId, timeMarker);
-   }
-
-   public void loadFrom(final PackedClockStates states) {
-      states.clocks().forEach((definition, state) -> {
-         ClockInstance instance = this.getInstance(definition);
-         instance.loadFrom(state);
-      });
    }
 
    public PackedClockStates packState() {
@@ -45,6 +52,7 @@ public class ServerClockManager implements ClockManager {
       boolean advanceTime = (Boolean)this.server.getGlobalGameRules().get(GameRules.ADVANCE_TIME);
       if (advanceTime) {
          this.clocks.values().forEach(ClockInstance::tick);
+         this.setDirty();
       }
 
    }
@@ -87,6 +95,7 @@ public class ServerClockManager implements ClockManager {
       action.accept(instance);
       Map<Holder<WorldClock>, ClockState> updates = Map.of(clock, instance.packNetworkState(this.server));
       this.server.getPlayerList().broadcastAll(new ClientboundSetTimePacket(this.getGameTime(), updates));
+      this.setDirty();
    }
 
    public long getTotalTicks(final Holder<WorldClock> definition) {
@@ -109,6 +118,10 @@ public class ServerClockManager implements ClockManager {
 
    public Stream<ResourceKey<ClockTimeMarker>> commandTimeMarkersForClock(final Holder<WorldClock> clock) {
       return this.getInstance(clock).timeMarkers.entrySet().stream().filter((entry) -> ((ClockTimeMarker)entry.getValue()).showInCommands()).map(Map.Entry::getKey);
+   }
+
+   static {
+      TYPE = new SavedDataType<ServerClockManager>(Identifier.withDefaultNamespace("world_clocks"), () -> new ServerClockManager(PackedClockStates.EMPTY), PackedClockStates.CODEC.xmap(ServerClockManager::new, ServerClockManager::packState), DataFixTypes.SAVED_DATA_WORLD_CLOCKS);
    }
 
    private static class ClockInstance {

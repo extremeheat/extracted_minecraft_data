@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.ReportedException;
@@ -27,7 +26,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.storage.LegacyTagFixer;
 import net.minecraft.world.level.chunk.storage.RecreatingSimpleRegionStorage;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
@@ -53,10 +51,9 @@ public class RegionStorageUpgrader {
    private @Nullable List<FileToUpgrade> files;
    private final int startIndex;
    private final @Nullable CompoundTag dataFixContextTag;
-   private final Supplier<LegacyTagFixer> legacyFixer;
    private final Int2ObjectMap<TagModifier> tagModifiers;
 
-   protected RegionStorageUpgrader(final DataFixer dataFixer, final DataFixTypes dataFixType, final String type, final String folderName, final int defaultVersion, final boolean recreateRegionFiles, final UpgradeProgress upgradeProgress, final int startIndex, final @Nullable CompoundTag dataFixContextTag, final Supplier<LegacyTagFixer> legacyFixer, final Int2ObjectMap<TagModifier> tagModifiers) {
+   protected RegionStorageUpgrader(final DataFixer dataFixer, final DataFixTypes dataFixType, final String type, final String folderName, final int defaultVersion, final boolean recreateRegionFiles, final UpgradeProgress upgradeProgress, final int startIndex, final @Nullable CompoundTag dataFixContextTag, final Int2ObjectMap<TagModifier> tagModifiers) {
       super();
       this.dataFixer = dataFixer;
       this.dataFixType = dataFixType;
@@ -67,7 +64,6 @@ public class RegionStorageUpgrader {
       this.upgradeProgress = upgradeProgress;
       this.startIndex = startIndex;
       this.dataFixContextTag = dataFixContextTag;
-      this.legacyFixer = legacyFixer;
       this.tagModifiers = tagModifiers;
    }
 
@@ -82,7 +78,7 @@ public class RegionStorageUpgrader {
    public void upgrade() {
       if (this.dimensionKey != null && this.storage != null && this.files != null) {
          if (!this.files.isEmpty()) {
-            float totalSize = (float)this.upgradeProgress.getTotalFiles();
+            float totalSize = (float)this.upgradeProgress.getTotalFileFixStats().totalOperations();
             this.upgradeProgress.setStatus(UpgradeProgress.Status.UPGRADING);
             ListIterator<FileToUpgrade> iterator = this.files.listIterator();
 
@@ -133,12 +129,12 @@ public class RegionStorageUpgrader {
    }
 
    protected final SimpleRegionStorage createStorage(final RegionStorageInfo info, final Path regionFolder) {
-      return (SimpleRegionStorage)(this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(info.withTypeSuffix("source"), regionFolder, info.withTypeSuffix("target"), resolveRecreateDirectory(regionFolder), this.dataFixer, true, this.dataFixType, this.legacyFixer) : new SimpleRegionStorage(info, regionFolder, this.dataFixer, true, this.dataFixType, this.legacyFixer));
+      return (SimpleRegionStorage)(this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(info.withTypeSuffix("source"), regionFolder, info.withTypeSuffix("target"), resolveRecreateDirectory(regionFolder), this.dataFixer, true, this.dataFixType) : new SimpleRegionStorage(info, regionFolder, this.dataFixer, true, this.dataFixType));
    }
 
    private List<FileToUpgrade> getFilesToProcess(final RegionStorageInfo info, final Path regionFolder) {
       List<FileToUpgrade> filesToUpgrade = getAllChunkPositions(info, regionFolder);
-      this.upgradeProgress.addTotalFiles(filesToUpgrade.size());
+      this.upgradeProgress.addTotalFileFixOperations(filesToUpgrade.size());
       this.upgradeProgress.addTotalChunks(filesToUpgrade.stream().mapToInt((fileToUpgrade) -> fileToUpgrade.chunksToUpgrade().size()).sum());
       return filesToUpgrade;
    }
@@ -277,13 +273,10 @@ public class RegionStorageUpgrader {
       private boolean recreateRegionFiles;
       private UpgradeProgress upgradeProgress = new UpgradeProgress.Noop();
       private @Nullable CompoundTag dataFixContextTag;
-      private Supplier<LegacyTagFixer> legacyFixer;
-      private Int2ObjectAVLTreeMap<TagModifier> tagModifiers;
+      private Int2ObjectAVLTreeMap<TagModifier> tagModifiers = new Int2ObjectAVLTreeMap();
 
       public Builder(final DataFixer dataFixer) {
          super();
-         this.legacyFixer = LegacyTagFixer.EMPTY;
-         this.tagModifiers = new Int2ObjectAVLTreeMap();
          this.dataFixer = dataFixer;
       }
 
@@ -326,11 +319,6 @@ public class RegionStorageUpgrader {
          return this;
       }
 
-      public Builder setLegacyFixer(final Supplier<LegacyTagFixer> legacyFixer) {
-         this.legacyFixer = legacyFixer;
-         return this;
-      }
-
       public Builder addTagModifier(final int version, final TagModifier tagModifier) {
          if (this.tagModifiers.containsKey(version)) {
             throw new IllegalStateException("Can't add two fixers for the same data version");
@@ -346,11 +334,11 @@ public class RegionStorageUpgrader {
       }
 
       public Builder copy() {
-         return (new Builder(this.dataFixer)).setDataFixType(this.dataFixType).setType(this.type).setFolderName(this.folderName).setDefaultVersion(this.defaultVersion).setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress).setDataFixContextTag(this.dataFixContextTag).setLegacyFixer(this.legacyFixer).setTagModifiers(this.tagModifiers.clone());
+         return (new Builder(this.dataFixer)).setDataFixType(this.dataFixType).setType(this.type).setFolderName(this.folderName).setDefaultVersion(this.defaultVersion).setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress).setDataFixContextTag(this.dataFixContextTag).setTagModifiers(this.tagModifiers.clone());
       }
 
       public RegionStorageUpgrader build(final int previousCopiesFileAmounts) {
-         return new RegionStorageUpgrader(this.dataFixer, (DataFixTypes)Objects.requireNonNull(this.dataFixType), (String)Objects.requireNonNull(this.type), (String)Objects.requireNonNull(this.folderName), this.defaultVersion, this.recreateRegionFiles, this.upgradeProgress, previousCopiesFileAmounts, this.dataFixContextTag, this.legacyFixer, this.tagModifiers);
+         return new RegionStorageUpgrader(this.dataFixer, (DataFixTypes)Objects.requireNonNull(this.dataFixType), (String)Objects.requireNonNull(this.type), (String)Objects.requireNonNull(this.folderName), this.defaultVersion, this.recreateRegionFiles, this.upgradeProgress, previousCopiesFileAmounts, this.dataFixContextTag, this.tagModifiers);
       }
    }
 

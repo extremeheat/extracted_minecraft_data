@@ -30,7 +30,7 @@ public class LakeFeature extends Feature<Configuration> {
       if (origin.getY() <= level.getMinY() + 4) {
          return false;
       } else {
-         origin = origin.below(4);
+         origin = origin.offset(-8, -4, -8);
          boolean[] grid = new boolean[2048];
          int spots = random.nextInt(4) + 4;
 

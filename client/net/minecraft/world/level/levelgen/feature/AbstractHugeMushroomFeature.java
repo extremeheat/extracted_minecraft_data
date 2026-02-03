@@ -18,7 +18,7 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
    protected void placeTrunk(final LevelAccessor level, final RandomSource random, final BlockPos origin, final HugeMushroomFeatureConfiguration config, final int treeHeight, final BlockPos.MutableBlockPos blockPos) {
       for(int dy = 0; dy < treeHeight; ++dy) {
          blockPos.set(origin).move(Direction.UP, dy);
-         this.placeMushroomBlock(level, blockPos, config.stemProvider.getState(random, origin));
+         this.placeMushroomBlock(level, blockPos, config.stemProvider().getState(random, origin));
       }
 
    }
@@ -40,15 +40,14 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
       return treeHeight;
    }
 
-   protected boolean isValidPosition(final LevelAccessor level, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config) {
+   protected boolean isValidPosition(final WorldGenLevel level, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config) {
       int y = origin.getY();
       if (y >= level.getMinY() + 1 && y + treeHeight + 1 <= level.getMaxY()) {
-         BlockState belowState = level.getBlockState(origin.below());
-         if (!isDirt(belowState) && !belowState.is(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT)) {
+         if (!config.canPlaceOn().test(level, origin.below())) {
             return false;
          } else {
             for(int dy = 0; dy <= treeHeight; ++dy) {
-               int radius = this.getTreeRadiusForHeight(-1, -1, config.foliageRadius, dy);
+               int radius = this.getTreeRadiusForHeight(-1, -1, config.foliageRadius(), dy);
 
                for(int dx = -radius; dx <= radius; ++dx) {
                   for(int dz = -radius; dz <= radius; ++dz) {

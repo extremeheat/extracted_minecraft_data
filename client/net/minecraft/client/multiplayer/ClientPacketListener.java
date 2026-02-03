@@ -376,7 +376,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final RandomSource random = RandomSource.createThreadSafe();
    private CommandDispatcher<ClientSuggestionProvider> commands = new CommandDispatcher();
    private ClientRecipeContainer recipes = new ClientRecipeContainer(Map.of(), SelectableRecipe.SingleInputSet.empty());
-   private final UUID id = UUID.randomUUID();
    private Set<ResourceKey<Level>> levels;
    private final RegistryAccess.Frozen registryAccess;
    private final FeatureFlagSet enabledFeatures;
@@ -1406,10 +1405,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (event == ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE) {
          player.displayClientMessage(Component.translatable("block.minecraft.spawn.not_valid"), false);
       } else if (event == ClientboundGameEventPacket.START_RAINING) {
-         this.level.getLevelData().setRaining(true);
          this.level.setRainLevel(0.0F);
       } else if (event == ClientboundGameEventPacket.STOP_RAINING) {
-         this.level.getLevelData().setRaining(false);
          this.level.setRainLevel(1.0F);
       } else if (event == ClientboundGameEventPacket.CHANGE_GAME_MODE) {
          this.minecraft.gameMode.setLocalMode(GameType.byId(param));
@@ -2379,10 +2376,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public DebugQueryHandler getDebugQueryHandler() {
       return this.debugQueryHandler;
-   }
-
-   public UUID getId() {
-      return this.id;
    }
 
    public Set<ResourceKey<Level>> levels() {

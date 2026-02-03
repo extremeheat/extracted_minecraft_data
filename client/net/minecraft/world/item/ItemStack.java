@@ -58,7 +58,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -119,7 +118,6 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
    @Deprecated
    private final @Nullable Holder<Item> item;
    private final PatchedDataComponentMap components;
-   private @Nullable Entity entityRepresentation;
 
    public static DataResult<ItemStack> validateStrict(final ItemStack itemStack) {
       DataResult<?> result = validateComponents(itemStack.getComponents());
@@ -978,25 +976,6 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
 
    public ItemEnchantments getEnchantments() {
       return (ItemEnchantments)this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-   }
-
-   public boolean isFramed() {
-      return this.entityRepresentation instanceof ItemFrame;
-   }
-
-   public void setEntityRepresentation(final @Nullable Entity entity) {
-      if (!this.isEmpty()) {
-         this.entityRepresentation = entity;
-      }
-
-   }
-
-   public @Nullable ItemFrame getFrame() {
-      return this.entityRepresentation instanceof ItemFrame ? (ItemFrame)this.getEntityRepresentation() : null;
-   }
-
-   public @Nullable Entity getEntityRepresentation() {
-      return !this.isEmpty() ? this.entityRepresentation : null;
    }
 
    public void forEachModifier(final EquipmentSlotGroup slot, final TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> consumer) {

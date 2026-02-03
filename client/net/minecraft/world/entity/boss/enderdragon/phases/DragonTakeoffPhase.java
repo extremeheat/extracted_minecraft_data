@@ -43,7 +43,7 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
       int currentNodeIndex = this.dragon.findClosestNode();
       Vec3 lookVector = this.dragon.getHeadLookVector(1.0F);
       int targetNodeIndex = this.dragon.findClosestNode(-lookVector.x * 40.0, 105.0, -lookVector.z * 40.0);
-      if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() > 0) {
+      if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().aliveCrystals() > 0) {
          targetNodeIndex %= 12;
          if (targetNodeIndex < 0) {
             targetNodeIndex += 12;

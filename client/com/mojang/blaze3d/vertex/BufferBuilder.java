@@ -38,7 +38,7 @@ public class BufferBuilder implements VertexConsumer {
          this.vertexSize = format.getVertexSize();
          this.initialElementsToFill = format.getElementsMask() & ~VertexFormatElement.POSITION.mask();
          this.offsetsByElement = format.getOffsetsByElement();
-         boolean isFullFormat = format == DefaultVertexFormat.NEW_ENTITY;
+         boolean isFullFormat = format == DefaultVertexFormat.ENTITY;
          boolean isBlockFormat = format == DefaultVertexFormat.BLOCK;
          this.fastFormat = isFullFormat || isBlockFormat;
          this.fullFormat = isFullFormat;

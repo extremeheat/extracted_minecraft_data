@@ -24,18 +24,18 @@ public class RenderTypes {
    private static final Function<Identifier, RenderType> ARMOR_TRANSLUCENT;
    private static final Function<Identifier, RenderType> ENTITY_SOLID;
    private static final Function<Identifier, RenderType> ENTITY_SOLID_Z_OFFSET_FORWARD;
-   private static final Function<Identifier, RenderType> ENTITY_CUTOUT;
-   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_CUTOUT_NO_CULL;
-   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_CUTOUT_NO_CULL_Z_OFFSET;
-   private static final Function<Identifier, RenderType> ITEM_ENTITY_TRANSLUCENT_CULL;
+   private static final Function<Identifier, RenderType> ENTITY_CUTOUT_CULL;
+   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_CUTOUT;
+   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_CUTOUT_Z_OFFSET;
+   private static final BiFunction<Identifier, Identifier, RenderType> ENTITY_CUTOUT_DISSOLVE;
+   private static final Function<Identifier, RenderType> ENTITY_TRANSLUCENT_CULL_ITEM_TARGET;
+   private static final Function<Identifier, RenderType> ITEM_CUTOUT;
+   private static final Function<Identifier, RenderType> ITEM_TRANSLUCENT;
    private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_TRANSLUCENT;
    private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_TRANSLUCENT_EMISSIVE;
-   private static final Function<Identifier, RenderType> ENTITY_SMOOTH_CUTOUT;
+   private static final Function<Identifier, RenderType> END_CRYSTAL_BEAM;
    private static final BiFunction<Identifier, Boolean, RenderType> BEACON_BEAM;
-   private static final Function<Identifier, RenderType> ENTITY_DECAL;
-   private static final Function<Identifier, RenderType> ENTITY_NO_OUTLINE;
    private static final Function<Identifier, RenderType> ENTITY_SHADOW;
-   private static final Function<Identifier, RenderType> DRAGON_EXPLOSION_ALPHA;
    private static final Function<Identifier, RenderType> EYES;
    private static final RenderType LEASH;
    private static final RenderType WATER_MASK;
@@ -104,28 +104,40 @@ public class RenderTypes {
       return (RenderType)ENTITY_SOLID_Z_OFFSET_FORWARD.apply(texture);
    }
 
+   public static RenderType entityCutoutCull(final Identifier texture) {
+      return (RenderType)ENTITY_CUTOUT_CULL.apply(texture);
+   }
+
+   public static RenderType entityCutout(final Identifier texture, final boolean affectsOutline) {
+      return (RenderType)ENTITY_CUTOUT.apply(texture, affectsOutline);
+   }
+
    public static RenderType entityCutout(final Identifier texture) {
-      return (RenderType)ENTITY_CUTOUT.apply(texture);
+      return entityCutout(texture, true);
    }
 
-   public static RenderType entityCutoutNoCull(final Identifier texture, final boolean affectsOutline) {
-      return (RenderType)ENTITY_CUTOUT_NO_CULL.apply(texture, affectsOutline);
+   public static RenderType entityCutoutZOffset(final Identifier texture, final boolean affectsOutline) {
+      return (RenderType)ENTITY_CUTOUT_Z_OFFSET.apply(texture, affectsOutline);
    }
 
-   public static RenderType entityCutoutNoCull(final Identifier texture) {
-      return entityCutoutNoCull(texture, true);
+   public static RenderType entityCutoutZOffset(final Identifier texture) {
+      return entityCutoutZOffset(texture, true);
    }
 
-   public static RenderType entityCutoutNoCullZOffset(final Identifier texture, final boolean affectsOutline) {
-      return (RenderType)ENTITY_CUTOUT_NO_CULL_Z_OFFSET.apply(texture, affectsOutline);
+   public static RenderType entityCutoutDissolve(final Identifier texture, final Identifier maskTexture) {
+      return (RenderType)ENTITY_CUTOUT_DISSOLVE.apply(texture, maskTexture);
    }
 
-   public static RenderType entityCutoutNoCullZOffset(final Identifier texture) {
-      return entityCutoutNoCullZOffset(texture, true);
+   public static RenderType entityTranslucentCullItemTarget(final Identifier texture) {
+      return (RenderType)ENTITY_TRANSLUCENT_CULL_ITEM_TARGET.apply(texture);
    }
 
-   public static RenderType itemEntityTranslucentCull(final Identifier texture) {
-      return (RenderType)ITEM_ENTITY_TRANSLUCENT_CULL.apply(texture);
+   public static RenderType itemCutout(final Identifier texture) {
+      return (RenderType)ITEM_CUTOUT.apply(texture);
+   }
+
+   public static RenderType itemTranslucent(final Identifier texture) {
+      return (RenderType)ITEM_TRANSLUCENT.apply(texture);
    }
 
    public static RenderType entityTranslucent(final Identifier texture, final boolean affectsOutline) {
@@ -144,28 +156,16 @@ public class RenderTypes {
       return entityTranslucentEmissive(texture, true);
    }
 
-   public static RenderType entitySmoothCutout(final Identifier texture) {
-      return (RenderType)ENTITY_SMOOTH_CUTOUT.apply(texture);
+   public static RenderType endCrystalBeam(final Identifier texture) {
+      return (RenderType)END_CRYSTAL_BEAM.apply(texture);
    }
 
    public static RenderType beaconBeam(final Identifier texture, final boolean translucent) {
       return (RenderType)BEACON_BEAM.apply(texture, translucent);
    }
 
-   public static RenderType entityDecal(final Identifier texture) {
-      return (RenderType)ENTITY_DECAL.apply(texture);
-   }
-
-   public static RenderType entityNoOutline(final Identifier texture) {
-      return (RenderType)ENTITY_NO_OUTLINE.apply(texture);
-   }
-
    public static RenderType entityShadow(final Identifier texture) {
       return (RenderType)ENTITY_SHADOW.apply(texture);
-   }
-
-   public static RenderType dragonExplosionAlpha(final Identifier texture) {
-      return (RenderType)DRAGON_EXPLOSION_ALPHA.apply(texture);
    }
 
    public static RenderType eyes(final Identifier texture) {
@@ -324,21 +324,33 @@ public class RenderTypes {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_SOLID_Z_OFFSET_FORWARD).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING_FORWARD).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("entity_solid_z_offset_forward", state);
       }));
-      ENTITY_CUTOUT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+      ENTITY_CUTOUT_CULL = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("entity_cutout_cull", state);
+      }));
+      ENTITY_CUTOUT = Util.memoize((BiFunction)((texture, affectsOutline) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
          return RenderType.create("entity_cutout", state);
       }));
-      ENTITY_CUTOUT_NO_CULL = Util.memoize((BiFunction)((texture, affectsOutline) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT_NO_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
-         return RenderType.create("entity_cutout_no_cull", state);
+      ENTITY_CUTOUT_Z_OFFSET = Util.memoize((BiFunction)((texture, affectsOutline) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT_Z_OFFSET).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
+         return RenderType.create("entity_cutout_z_offset", state);
       }));
-      ENTITY_CUTOUT_NO_CULL_Z_OFFSET = Util.memoize((BiFunction)((texture, affectsOutline) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT_NO_CULL_Z_OFFSET).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
-         return RenderType.create("entity_cutout_no_cull_z_offset", state);
+      ENTITY_CUTOUT_DISSOLVE = Util.memoize((BiFunction)((texture, maskTexture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT_DISSOLVE).withTexture("Sampler0", texture).withTexture("DissolveMaskSampler", maskTexture).useLightmap().useOverlay().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("entity_cutout_dissolve", state);
       }));
-      ITEM_ENTITY_TRANSLUCENT_CULL = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_ENTITY_TRANSLUCENT_CULL).withTexture("Sampler0", texture).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
-         return RenderType.create("item_entity_translucent_cull", state);
+      ENTITY_TRANSLUCENT_CULL_ITEM_TARGET = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_CULL).withTexture("Sampler0", texture).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("entity_translucent_cull_item_target", state);
+      }));
+      ITEM_CUTOUT = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT).withTexture("Sampler0", texture).useLightmap().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("item_cutout", state);
+      }));
+      ITEM_TRANSLUCENT = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).withTexture("Sampler0", texture).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("item_translucent", state);
       }));
       ENTITY_TRANSLUCENT = Util.memoize((BiFunction)((texture, affectsOutline) -> {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
@@ -348,29 +360,17 @@ public class RenderTypes {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE).withTexture("Sampler0", texture).useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
          return RenderType.create("entity_translucent_emissive", state);
       }));
-      ENTITY_SMOOTH_CUTOUT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_SMOOTH_CUTOUT).withTexture("Sampler0", texture).useLightmap().useOverlay().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
-         return RenderType.create("entity_smooth_cutout", state);
+      END_CRYSTAL_BEAM = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.END_CRYSTAL_BEAM).withTexture("Sampler0", texture).useLightmap().setOutline(RenderSetup.OutlineProperty.NONE).createRenderSetup();
+         return RenderType.create("end_crystal_beam", state);
       }));
       BEACON_BEAM = Util.memoize((BiFunction)((texture, translucent) -> {
          RenderSetup state = RenderSetup.builder(translucent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup();
          return RenderType.create("beacon_beam", state);
       }));
-      ENTITY_DECAL = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_DECAL).withTexture("Sampler0", texture).useLightmap().useOverlay().createRenderSetup();
-         return RenderType.create("entity_decal", state);
-      }));
-      ENTITY_NO_OUTLINE = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_NO_OUTLINE).withTexture("Sampler0", texture).useLightmap().useOverlay().sortOnUpload().createRenderSetup();
-         return RenderType.create("entity_no_outline", state);
-      }));
       ENTITY_SHADOW = Util.memoize((Function)((texture) -> {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_SHADOW).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup();
          return RenderType.create("entity_shadow", state);
-      }));
-      DRAGON_EXPLOSION_ALPHA = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.DRAGON_EXPLOSION_ALPHA).withTexture("Sampler0", texture).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
-         return RenderType.create("entity_alpha", state);
       }));
       EYES = Util.memoize((Function)((texture) -> RenderType.create("eyes", RenderSetup.builder(RenderPipelines.EYES).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       LEASH = RenderType.create("leash", RenderSetup.builder(RenderPipelines.LEASH).useLightmap().createRenderSetup());
